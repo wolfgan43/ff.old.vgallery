@@ -107,7 +107,7 @@ function system_get_layers($selective = NULL, $settings_path = null) {
 																				);			
 				$layer_diff 													= (strlen($settings_path) - strlen($layer_path));
 				if(!array_key_exists($ID_layer, $arrLayer)) {
-					if(array_key_exists($layer_name, $globals->page["template"]["unknown"])) {
+					if($globals->page["template"]["unknown"][$layer_name]) {
 						$globals->page["template"]["layers"]["vars"][$layer_name] = $ID_layer;
 						$globals->page["template"]["found"][$layer_name] = "layers";
 						unset($globals->page["template"]["unknown"][$layer_name]);
@@ -181,7 +181,7 @@ function system_get_sections($selective = NULL, $settings_path = null, $process_
 		$layer_set = $db->toSql(implode(",", array_keys($template["layers"])), "Text", false);
 	}
 
-	if($globals->page["template"]) 
+	if($globals->page["template"])
     { 
     	if($globals->page["template"]["sections"]["key"])
     		$arrWhere[] = "layout_location.ID IN(" . implode(", ", $globals->page["template"]["sections"]["key"]) . ")";
@@ -269,7 +269,7 @@ function system_get_sections($selective = NULL, $settings_path = null, $process_
 																				);
 				$section_diff 													= (strlen($settings_path) - strlen($section_path));
 				if(!array_key_exists($ID_section, $template["sections"])) {
-					if(array_key_exists($section_name, $globals->page["template"]["unknown"])) {
+					if($globals->page["template"]["unknown"][$section_name]) {
 						$globals->page["template"]["sections"]["vars"][$section_name] = $ID_section;
 						$globals->page["template"]["found"][$section_name] = "sections";
 						unset($globals->page["template"]["unknown"][$section_name]);
@@ -481,7 +481,7 @@ function system_get_blocks($template, $settings_path = null, $navadmin = AREA_SH
 	                continue;
 
 				if(!array_key_exists($ID_block, $template["blocks"])) {
-					if(array_key_exists($block_name, $globals->page["template"]["unknown"])) {
+					if($globals->page["template"]["unknown"][$block_name]) {
 						$globals->page["template"]["blocks"]["vars"][$block_name] = $ID_block;
 						$globals->page["template"]["found"][$block_name] = "blocks";
 						unset($globals->page["template"]["unknown"][$block_name]);

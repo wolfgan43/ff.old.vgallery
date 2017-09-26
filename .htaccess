@@ -34,21 +34,24 @@ RewriteCond   %{HTTP_HOST}      ^static\.blueocarina\.net$
 RewriteCond   %{REQUEST_URI}  	!^/cm/showfiles\.php
 RewriteRule   ^(.*)    /cm/showfiles\.php/$0 [L,QSA]
 
+RewriteCond   %{HTTP_HOST}  	^dev\.blueocarina\.net$ [OR]
 RewriteCond   %{HTTP_HOST}  	^www\.blueocarina\.net$
 RewriteCond   %{REQUEST_URI}  	^/asset
 RewriteRule   ^asset/(.*)    /cache/$1 [L]
 
+RewriteCond   %{HTTP_HOST}  	^dev\.blueocarina\.net$ [OR]
 RewriteCond   %{HTTP_HOST}  	^www\.blueocarina\.net$
 RewriteCond   %{REQUEST_URI}  	^/media 
 RewriteRule   ^media/(.*)    /cache/_thumb/$1 [L]
 
+RewriteCond   %{HTTP_HOST}  	^dev\.blueocarina\.net$ [OR]
 RewriteCond   %{HTTP_HOST}  	^www\.blueocarina\.net$
 RewriteCond   %{REQUEST_URI}	^/modules
 RewriteCond   %{REQUEST_URI}	!^/modules/([^/]+)/themes(.+)
 RewriteRule  ^modules/([^/]+)(.+)  /modules/$1/themes$2 [L,QSA]
 
-RewriteCond   %{HTTP_HOST}  	^www\.blueocarina\.net$ [OR]
-RewriteCond   %{HTTP_HOST}  	^vgallery\.alex$
+RewriteCond   %{HTTP_HOST}  	^dev\.blueocarina\.net$ [OR]
+RewriteCond   %{HTTP_HOST}  	^www\.blueocarina\.net$
 RewriteCond   %{REQUEST_URI}  	!^/index\.php
 RewriteCond   %{REQUEST_URI}  	!^/cm/main\.php
 RewriteCond   %{REQUEST_URI}  	!^/cm/showfiles\.php
