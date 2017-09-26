@@ -1,0 +1,97 @@
+/* fattura */
+
+.document { max-width:860px; }
+
+.document  .header {
+	overflow:hidden;
+	margin:0 0 30px;
+}
+
+.document .logo {
+	clear:both;
+	margin:0 0 10px;
+}
+
+.document  .customer-bill, .document .customer-shipping {
+	width:50%;
+	float:left;
+	overflow:hidden;
+
+}
+.document H3 { font-size:18px; display:block; margin:20px 0 10px; } 
+
+
+.document .customer-shipping { text-align:right; }
+
+.document  .content { overflow:hidden; clear:both; padding:10px 0 0 0;}
+
+.document  .content DIV { margin:0 0 10px; }
+
+.document TABLE { width:100%; clear:both; margin:10px 0 0 0; }
+
+.document TABLE TH {
+	padding:10px;
+	border:1px solid #b7b7b7;
+	background:#ddd;
+	vertical-align:middle;
+	font-weight:normal;
+}
+
+.document TABLE TD {
+	border:1px solid #b7b7b7;
+	padding:10px;
+	vertical-align:middle;
+}
+
+.document TABLE TD.right { width:110px; }
+
+.document .content DIV.container { margin:22px 0; }
+
+.document .container.cartasi TABLE TH { 
+	background:#FF6E28; 
+	color:#fff; 
+	border:1px solid #88553c;
+}
+.document .container.paypal TABLE TH { 
+	background:#0079C1; 
+	color:#fff;
+	border:1px solid #325062;
+}
+
+.document .ddt-data {
+	border:1px solid #b7b7b7;
+	overflow:hidden;
+	margin:10px 0 0;
+}
+
+.document .ddt-data DIV {
+	padding:10px 0;
+	float:left;
+	width:33%
+
+}
+
+.document .ddt-data DIV LABEL {
+	margin:0 0 0 5px;
+	font-weight:bold;
+}
+
+.document .footer {
+	overflow:hidden;
+	width:100%;
+	clear:both;
+	margin:30px 0 0;
+	text-align:center;
+}
+
+.ffButton.preview-action {
+	overflow: hidden;
+	width: 100%;
+	border-bottom: 1px solid #ddd;
+}
+.ffButton.preview-action A {
+	display: block;
+	float: right;
+	width: 24px;
+	height: 24px;
+}

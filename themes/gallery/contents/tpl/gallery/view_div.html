@@ -1,0 +1,127 @@
+<!--BeginSezPreview-->
+<!--BeginSezShowImage-->
+<div class="gallery_detail_image">
+    <!--BeginSezShowImageNoLink-->
+    <img src="{show_preview}" alt="{alt_name}" title="{title_thumb}" />
+    <!--EndSezShowImageNoLink-->
+    <!--BeginSezShowImageLink-->
+    <a href="{show_file}" class="{class_plugin}" rel="{rel_plugin}"><img src="{show_preview}" alt="{alt_name}" title="{title_thumb}" /></a>
+    <!--EndSezShowImageLink-->
+</div>
+<!--EndSezShowImage-->
+<!--BeginSezAction-->
+<div class="gallery_detail_action" id="{unic_id}Saction">
+    <!--BeginSezActionDownload-->
+    <a href="{download_file}">{_download_file}</a>
+    <!--EndSezActionDownload-->
+    <!--BeginSezActionInline-->
+    <a href="{show_file_in}">{_inline_file}</a>
+    <!--EndSezActionInline-->
+    <!--BeginSezActionOutline-->
+    <a href="#" onclick="window.open('{show_file_out}','file'); return false;">{_outline_file}</a>
+    <!--EndSezActionOutline-->
+</div>
+<!--EndSezAction-->
+<div class="{class_plugin}">
+    <!--BeginSezGroupFields-->
+    <ul class="shadetabs">
+        <!--BeginSezFieldGeneral-->
+        <li class="general_field">
+            <a href="#{unic_id}Sgeneral">{_general_group}</a>
+        </li>
+        <!--EndSezFieldGeneral-->
+        <!--BeginSezFieldDescription--> 
+        <li class="description_field">
+            <a href="#{unic_id}Sdescription">{_description_group}</a>
+        </li>
+        <!--EndSezFieldDescription-->
+        <!--BeginSezFieldDetail--> 
+        <li class="detail_field">
+            <a href="#{unic_id}Sdetail">{_detail_group}</a>
+        </li>
+        <!--EndSezFieldDetail-->
+        <!--BeginSezFieldEcommerce--> 
+        <li class="ecommerce_field">
+            <a href="#{unic_id}Secommerce">{_ecommerce_group}</a>
+        </li>
+        <!--EndSezFieldEcommerce-->
+    </ul>
+    <!--EndSezGroupFields-->
+
+    <!--BeginSezGeneral-->
+    <div class="general" id="{unic_id}Sgeneral">
+        <!--BeginSezGeneralTitle-->
+        <h3>{_general_title}</h3>
+        <!--EndSezGeneralTitle-->
+        <!--BeginSezGeneralName-->
+		<div class="item">
+        <label class="name">{_general_name}</label>
+        {name}
+		</div>
+        <!--EndSezGeneralName-->
+        <!--BeginSezGeneralType-->
+        <div class="item">
+		<label class="type">{_general_type}</label>
+        {type}
+		</div>
+        <!--EndSezGeneralType-->
+        <!--BeginSezGeneralSize-->
+		<div class="item">
+        <label class="size">{_general_size}</label>
+        {size}
+		</div>
+        <!--EndSezGeneralSize-->
+        <!--BeginSezGeneralPath-->
+		<div class="item">
+        <label class="path">{_general_path}</label>
+        {path}
+		</div>
+        <!--EndSezGeneralPath-->
+        <!--BeginSezGeneralFileTime-->
+		<div class="item">
+        <label class="filetime">{_general_filetime}</label>
+        {filetime}
+		</div>
+        <!--EndSezGeneralFileTime-->
+    </div>
+    <!--EndSezGeneral-->
+    <!--BeginSezDescription-->
+    <div class="description" id="{unic_id}Sdescription">
+        <!--BeginSezDescriptionAlias-->
+        <h3>{alias}</h3>
+        <!--EndSezDescriptionAlias-->
+        <!--BeginSezDescriptionValue-->
+		<div class="item">
+        <label class="value">{_description_value}</label>
+        {description}
+		</div>
+        <!--EndSezDescriptionValue-->
+        <!--BeginSezDescriptionLanguage-->
+        <label class="language">{_description_language}</label>
+        {descriptionlanguage}
+        <!--EndSezDescriptionLanguage-->
+    </div>
+    <!--EndSezDescription-->
+    <!--BeginSezDetail-->
+    <div class="detail" id="{unic_id}Sdetail">
+        <!--BeginSezDetailTitle-->
+        <h3>{_detail_title}</h3>
+        <!--EndSezDetailTitle-->
+        <!--BeginSezDetailDescription-->
+        <div class="detail_item">
+		<label class="{real_name}">{title}</label>
+        {description}
+		</div>
+        <!--EndSezDetailDescription-->
+    </div>
+    <!--EndSezDetail-->
+    <!--BeginSezEcommerce-->
+    <div class="ecommerce" id="{unic_id}Secommerce">
+        {ecommerce_cart}
+    </div>
+    <!--EndSezEcommerce-->
+</div>
+<!--EndSezPreview--> 
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->

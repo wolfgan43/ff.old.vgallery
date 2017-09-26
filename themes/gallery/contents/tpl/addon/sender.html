@@ -1,0 +1,11 @@
+<div class="sender">
+    <p class="error">{strError}</p>
+
+	<input type="hidden" class="reference" value="{sender_reference}" />
+	<div class="to{class_hidden}">
+		<div class="name"><label>{_sender_name_label}</label><input type="text" value="{sender_name}" /></div>
+		<div class="mail"><label>{_sender_mail_label}</label><input type="text" value="{sender_mail}" /></div>
+		<a href="javascript:void(0);" class="re-send hide" onclick="ff.cms.sender(this);">{_sender_resend}</a>
+	</div>
+	<a href="javascript:void(0);" class="send" onclick="ff.cms.sender(this);">{_sender_send}</a>
+</div>

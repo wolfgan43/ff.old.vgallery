@@ -1,0 +1,141 @@
+/* toolbar admin */
+/*
+div.toolbar {
+    position: absolute;
+    height: auto;
+    z-index: 999; 
+   
+    background:#367ae7;
+	background-image: linear-gradient(bottom, rgb(54,122,231) 44%, rgb(76,144,253) 78%);
+	background-image: -o-linear-gradient(bottom, rgb(54,122,231) 44%, rgb(76,144,253) 78%);
+	background-image: -moz-linear-gradient(bottom, rgb(54,122,231) 44%, rgb(76,144,253) 78%);
+	background-image: -webkit-linear-gradient(bottom, rgb(54,122,231) 44%, rgb(76,144,253) 78%);
+	background-image: -ms-linear-gradient(bottom, rgb(54,122,231) 44%, rgb(76,144,253) 78%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.44, rgb(54,122,231)), color-stop(0.78, rgb(76,144,253)));
+    border: 1px solid #2b5cb9;
+    margin: 0;
+    padding: 2px 4px;
+	border-radius: 2px;
+	-khtml-border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+}
+
+
+
+div.toolbar h3 {
+    color: #FFFFFF;
+    font-size: 10px;
+    display: inline;
+    vertical-align:top;
+    padding-left: 4px;
+	float:left;
+}
+
+
+.toolbar A.admin-link,
+.toolbar A.admin-link:link,
+.toolbar A.admin-link:active,
+.toolbar A.admin-link:visited {
+	float:left;
+	color: #fff;
+	text-shadow: 0;
+	margin: 2px 3px;
+	display:block;
+	width:16px;
+	height:20px;
+}
+.toolbar A.admin-link-title,
+.toolbar A.admin-link-title:link,
+.toolbar A.admin-link-title:active,
+.toolbar A.admin-link-title:visited  {
+	padding: 2px 0 2px 20px !important;
+	margin: 2px 3px !important;
+	font-style: normal !important;
+	font-family: helvetica, arial ,sans-serif !important;
+	text-decoration: none !important;
+	text-shadow: 0 !important;
+	color: #fff !important;
+	font-size: 10px !important;
+	line-height: 22px !important;
+	text-transform: capitalize !important;
+
+}
+.toolbar A.ico-hide,
+.toolbar A.ico-hide:link,
+.toolbar A.ico-hide:active,
+.toolbar A.ico-hide:visited {
+	float:left;
+	color: #fff;
+	text-shadow: 0;
+	margin: 2px 3px;
+	display:block;
+	width:16px;
+	height:20px;
+	background:url(../../../images/toolbar-sprite.png) -6px -401px no-repeat;
+}
+.toolbar A.layout_edit {background:url(../../../images/toolbar-sprite.png) -6px -401px no-repeat;}
+.toolbar A.layout_delete {background:url(../../../images/toolbar-sprite.png) -6px -366px no-repeat;}
+.toolbar A.section_edit {background:url(../../../images/toolbar-sprite.png) -6px -130px no-repeat;}
+.toolbar A.section_delete {background:url(../../../images/toolbar-sprite.png) -5px -200px no-repeat;}
+.toolbar A.section_properties {background:url(../../../images/toolbar-sprite.png)  -6px -300px no-repeat;}
+.toolbar A.section_settings {background:url(../../../images/toolbar-sprite.png) -6px -432px no-repeat;}
+.toolbar A.section_adddir {background:url(../../../images/toolbar-sprite.png) -6px -165px no-repeat;}
+.toolbar A.section_addnew {background:url(../../../images/toolbar-sprite.png) -6px -102px no-repeat;}
+.toolbar A.section_ecommerce {background:url(../../../images/toolbar-sprite.png) -97px -34px no-repeat;}
+.toolbar A.module_edit {background:url(../../../images/toolbar-sprite.png) -6px -130px no-repeat;}
+.toolbar A.module_delete {background:url(../../../images/toolbar-sprite.png) -5px -202px no-repeat;}
+*/
+
+.toolbar A {
+	background:url(../../../images/toolbar-sprite.png) no-repeat rgba(0,0,0,0.65);
+	color: #fff;
+	padding: 1px 0 0 0;
+	font-size: 11px; 
+	white-space: nowrap;
+	margin-left: 4px;
+} 
+ 
+/*
+.toolbar A.admin-link,
+.toolbar A.admin-link:link,
+.toolbar A.admin-link:active,
+.toolbar A.admin-link:visited {
+    float:left;
+    color: #fff;
+    text-shadow: 0;
+    display:block;
+    width:16px;
+    height:20px;
+}
+*/
+.toolbar  A.admin-link-title,
+.toolbar A.admin-link-title:link,
+.toolbar A.admin-link-title:active,
+.toolbar A.admin-link-title:visited  {
+    padding: 2px 5px 1px 20px !important;
+    text-shadow: 0 !important;
+    color: #fff !important;
+    border-radius: 8px 4px 4px 8px;      
+
+
+}
+
+
+
+.toolbar A.layout_edit {background-position: -6px -401px;}
+.toolbar A.layout_delete {background-position: -6px -366px;}
+.toolbar A.section_edit {background-position: -6px -130px;}
+.toolbar A.section_delete {background-position: -5px -200px;}
+.toolbar A.section_properties {background-position:  -6px -300px;}
+.toolbar A.section_settings {background-position: -6px -432px;}
+.toolbar A.section_adddir {background-position: -6px -165px;}
+.toolbar A.section_addnew {background-position: -6px -102px;}
+.toolbar A.section_ecommerce {background-position: -97px -34px;}
+.toolbar A.module_edit {background-position: -6px -130px;}
+.toolbar A.module_delete {background-position: -5px -202px;}
+
+
+
+
+

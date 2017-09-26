@@ -1,0 +1,102 @@
+<?php
+/**
+*   VGallery: CMS based on FormsFramework
+    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ * @package VGallery
+ * @subpackage module
+ * @author Alessandro Stucchi <wolfgan@gmail.com>
+ * @copyright Copyright (c) 2004, Alessandro Stucchi
+ * @license http://opensource.org/licenses/gpl-3.0.html
+ * @link https://github.com/wolfgan43/vgallery
+ */
+
+if (!AREA_MODULES_SHOW_MODIFY) {
+    ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
+}
+
+// -------------------------
+//          RECORD
+// -------------------------
+
+$oRecord = ffRecord::factory($cm->oPage);
+$oRecord->id = "ModulesModify";
+$oRecord->resources[] = $oRecord->id;
+$oRecord->title = ffTemplate::_get_word_by_code("modules_modify_title");
+$oRecord->src_table = "modules";
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "ID";
+$oField->base_type = "Number";
+$oRecord->addKeyField($oField);
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "module_name";
+$oField->label = ffTemplate::_get_word_by_code("modules_name");
+$oField->extended_type = "Selection";
+
+foreach(glob(FF_DISK_PATH . "/conf" . GALLERY_PATH_MODULE . "/*", GLOB_ONLYDIR) as $real_file) { 
+    if (is_dir($real_file)) {
+        $oField->multi_pairs[] = array(new ffData(basename($real_file)), new ffData(ffTemplate::_get_word_by_code(basename($real_file))));
+        
+    }
+}
+
+$oField->required = true;
+$oRecord->addContent($oField);
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "module_params";
+$oField->label = ffTemplate::_get_word_by_code("modules_params");
+$oRecord->addContent($oField);
+
+
+$cm->oPage->addContent($oRecord);
+
+/*
+$oDetail = ffDetails::factory($cm->oPage);
+$oDetail->id = "ModulesModifyDetail";
+$oDetail->title = ffTemplate::_get_word_by_code("modules_modify_detail_title");
+$oDetail->src_table = "rel_modules_path";
+$oDetail->order_default = "ID";
+$oDetail->fields_relationship = array ("ID_module" => "ID");
+$oDetail->display_new = true;
+$oDetail->display_delete = true;
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "ID";
+$oField->base_type = "Number";
+$oDetail->addKeyField($oField);
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "path";
+$oField->label = ffTemplate::_get_word_by_code("modules_modify_detail_path");
+$oDetail->addContent($oField);
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "cascading";
+$oField->label = ffTemplate::_get_word_by_code("modules_modify_detail_cascading");
+$oField->base_type = "Number";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oDetail->addContent($oField);
+
+$oRecord->setDetail($oDetail);
+$cm->oPage->addContent($oDetail);
+           */
+//if($_REQUEST["keys"]["IDs"]) {
+

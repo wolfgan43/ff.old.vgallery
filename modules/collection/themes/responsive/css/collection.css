@@ -1,0 +1,279 @@
+.layer2{
+    padding-top: 75px;
+    padding-bottom: 50px;
+}
+
+TABLE { 
+    clear:both;
+    width:100%;
+    border:1px solid #eee;
+    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.32, #FAFAFA), color-stop(0.66, #FFFFFF));
+    background-image: -moz-linear-gradient( center bottom, #FAFAFA 32%, #FFFFFF 66% );
+}
+
+
+
+
+THEAD TR TH {
+	padding:5px 0 0 0;
+	text-align:center;
+	color:#777;
+	font-weight:400;
+	height:20px;
+	white-space:nowrap;
+	overflow:hidden;
+	text-shadow:1px 1px 1px #fff;
+}
+THEAD TR TH A:link, THEAD TR TH A:visited, THEAD TR TH A:active {
+	color:#777;
+}
+THEAD TR TH A:hover{
+	color:#777;
+}
+
+TABLE TR {
+	border-bottom:1px solid #bababa;
+}
+TABLE TR.negative {
+	background:#E3E3E3;
+}
+
+TABLE TD {
+	border-left:1px solid #EEE;
+	border-right:1px solid #EEE;
+	height:24px;
+	padding:0 6px;
+	overflow:hidden;
+	text-shadow:1px 1px 1px #fefefe;
+        
+}
+
+.grid .search {
+	position: relative;
+}
+
+.choose-possibility h1 {
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+h2,
+.book-preview,
+.videogame-preview{
+    margin-bottom: 15px;
+}
+
+
+.link-setting A {
+    background-position:center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    color: white !important;
+    display: block;
+    height: 100%;
+    font-size: 20px;
+}
+
+.link-setting
+, .short-link .link{
+    text-align: center;
+    height: 100px;
+    overflow: hidden;
+    border: 2px solid;
+    border-radius: 25px;
+    display: inline-block;
+    margin: 1%;
+    width: 30%;
+}
+
+.short-link {
+    text-align: center;
+}
+
+.short-link,
+.choose-possibility {
+    text-align: center;
+}
+
+.add-manually {
+width: 87%;
+margin: 0 auto;
+}
+
+.add-manually,
+.choose {
+    text-align: center;
+    height: 100px;
+    overflow: hidden;
+}
+
+.choose {
+    display: inline-block;
+    margin: 1%;
+}
+
+
+.choose {
+    width: 20%;
+}
+
+.add-manually A,
+.choose A {
+    display: block;
+    height: 100%;
+    background-position:center;
+    background-repeat: no-repeat;
+    color: white !important;
+}
+
+.add-manually A {
+    background-color: navy;
+    font-size: 24px;
+}
+.choose A {
+	
+	background-color: #66CCFF;
+	font-size: 16px;
+}
+
+.loader{
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,0.1);
+	
+}
+
+.cover-image IMG,
+.first-information IMG {
+    height:170px;
+    width:auto;
+}
+
+.cover-image,
+.basic-information,
+.first-information,
+.first-block,
+.second-block {
+    width: 49%;
+    display: inline-block;
+}
+
+.cover-image,
+.first-information {
+    text-align: center;
+}
+
+.basic-information,
+.first-block,
+.second-block {
+    vertical-align: top;
+}
+
+.first-block > DIV,
+.second-block > DIV,
+.book-preview > DIV{
+    margin-bottom: 5px;
+}
+
+.place,
+.book-author,
+.editore,
+.page-count {
+    margin-bottom: 5px;
+}
+
+
+#L1 li{
+    width: 25%;
+    display: block;
+    /*float: left;*/
+    text-align: center;
+    font-size: 15px;
+}
+
+#L1 li:hover{border-bottom: 2px solid #black; }
+
+#L1 li a{
+    text-decoration: none;
+}
+#L1 li a.active{font-weight: bold; font-size: 18px;}
+
+
+#L1 a.current{
+    margin-top: -15px !important;
+    padding-top: 12px;
+    height: 50px;
+    display: block;
+    background: #14abd1;
+    
+}
+#L1 a.active{
+    /*margin-top: -15px !important;*/
+    padding-top: 12px;
+    height: 50px;
+    display: block;
+    background-color: transparent !important;
+
+}
+#L1 li.active a{background-color: transparent !important;}
+.navbar-toggle {
+    margin-right: 55px;
+    background-color: #008CB0;
+    border-radius: 0;
+    margin-bottom: 7px;
+    border-color: transparent !important;
+}
+
+#L1 .home{
+    height: 50px;
+    background: url(../images/joeapproves-mini.png) no-repeat;
+    background-position: center center;
+    /*margin-top: -15px;*/
+}
+#L1 .home:hover{border-bottom: none;}
+#L1 .home a{
+    width:40px;
+    height: 40px;
+    display: block;
+    margin:0 auto;
+}
+#L1 ul{
+    width: 98%;
+}
+
+.film .add-manually A,
+.film .choose A {
+    background-image: url(../images/film.png);
+}
+
+.book .add-manually A,
+.book .choose A {
+    background-image: url(../images/book.png);
+}
+
+.videogame .add-manually A,
+.videogame .choose A {
+    background-image: url(../images/videogame.png);
+}
+
+.intro-img {
+    margin-bottom: 20px;
+}
+
+.loginBox {
+    background: url(../images/joeapproves.png) left bottom no-repeat;
+    text-align: center;
+    
+}
+
+.loginBox .standard-login,
+.loginBox P {
+    width: 250px;
+}
+
+.fa-star:before {
+    color: #FFCC33
+}

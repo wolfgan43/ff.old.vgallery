@@ -1,0 +1,4 @@
+.slidingpanel {
+	display: none;
+    overflow: auto;
+}

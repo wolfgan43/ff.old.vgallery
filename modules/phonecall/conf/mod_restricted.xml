@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+	<menu>
+		<phonecall path="/restricted/phonecall" label="_phonecall" redir="/restricted/phonecall/pending">
+            <pending path="/restricted/phonecall/pending" label="_phonecall_pending" />
+			<archived path="/restricted/phonecall/archived" label="_phonecall_archived" />
+            <users path="/restricted/phonecall/anagraph" label="_phonecall_user" params="ag=1&amp;ct=phonecall&amp;bg=0&amp;sg=0&amp;cg=1&amp;cf=0&amp;cnf=1&amp;gmap=0&amp;user=1&amp;rg=0&amp;am=vertical&amp;tab=0&amp;ug=phonecall|phonecalluser&amp;fu=1&amp;cef=1" /> 
+        </phonecall>
+	</menu>
+</configdata>

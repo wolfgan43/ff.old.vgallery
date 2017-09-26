@@ -1,0 +1,44 @@
+<div id="ffActivation" class="{container_class}">
+    <div class="{inner_wrap_class}">
+        <div class="inner-box">
+            <!--BeginSectLogoPre-->
+            <div class="{logo_class}"><!--BeginSectLogoImgPre--><img src="{logo_login}" /><!--EndSectLogoImgPre--></div>
+            <!--EndSectLogoPre-->
+            <div class="{login_class}">
+                <!--BeginSezTitle-->
+                <h2>{_activation_title}</h2>
+                <!--EndSezTitle-->
+                <!--BeginSezError-->
+                <div class="{error_class}">{strError}</div>
+                <!--EndSezError-->
+                <!--BeginSezActivation-->
+                <p>{_activation_info}</p>
+                <div class="{row_class}">
+                    <!--BeginSectUsernameLabel-->
+                    <label for="username">{_activation_username}</label>
+                    <!--EndSectUsernameLabel-->
+                    <input type="text" id="username" name="username" value="{username}" onkeydown="return ff.submitProcessKey(event, 'btLogin')" placeholder="{_activation_username}"/>
+                </div>    
+                <div class="{actions_class}">
+                    <a class="{activation_button_class}" href="javascript:void(0);" id="btLogin" onclick="ff.cms.login.submit('active', 'ffActivation', this);">{_activation_confirm}</a>
+                    <a class="{back_class}" href="{back_url}">{_back_to_site}</a>
+                </div>
+                <!--EndSezActivation-->
+                <!--BeginSezActive-->
+                <div class="{row_class}">
+                    <p>{active_description}</p> 
+                    <div class="{actions_class}">
+	                    <a class="{back_class}" href="{site_path}/login">{_activation_back_to_login}</a>
+                    </div>
+	                <script type="text/javascript">
+	                    setTimeout("window.location.href = '{site_path}/login'", 10000);  
+	                </script>
+                </div>
+                <!--EndSezActive-->
+            </div>
+            <!--BeginSectLogoPost-->
+            <div class="{logo_class}"><!--BeginSectLogoImgPost--><img src="{logo_login}" /><!--EndSectLogoImgPost--></div>
+            <!--EndSectLogoPost-->    
+        </div>
+    </div>
+</div>

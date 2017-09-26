@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configdata>
+    <default_class_suffix>html</default_class_suffix>
+    <default_css>
+        <main>
+            <path></path>
+            <file>main.css</file>
+            <priority>normal</priority>
+        </main>
+    </default_css>
+    <default_js>
+    </default_js>
+    <modules>
+        <restricted>
+	    </restricted>
+    </modules>
+</configdata>

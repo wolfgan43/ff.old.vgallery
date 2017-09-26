@@ -1,0 +1,211 @@
+<!--BeginSectHeaders-->
+<!--EndSectHeaders-->
+<div id="{component_id}" class="{class}"> 
+	<div id="{component}hidden">
+		<input type="hidden" id="{component}detailaction" name="{component}detailaction" value="" />
+		<!--BeginSectHiddenField-->
+		<input type="hidden" id="{component}{id}" name="{component}{id}" value="{value}" />
+		<!--EndSectHiddenField-->
+	</div>
+
+	<div id="{component}data" class="{class}">
+		<!--BeginSectTitle-->
+		<h2>{discl_bt}{title}</h2>
+		<!--EndSectTitle-->
+		{fixed_pre_content} 
+
+	    <!--BeginSectDescription-->
+	    <div class="descrizione">{description}</div>
+	    <!--EndSectDescription-->
+
+		<!--BeginSectError-->
+		<div class="error">{strError}</div>
+		<!--EndSectError-->
+
+		<div id="{component_id}_discl_sect">
+			<fieldset class="basic-setting">
+				<div class="{row_class} field name input">
+					<label>{_vgallery_field_name}</label>
+					{name_field}
+				</div>
+				<div class="{row_class} field schemaorg input">
+					<label>{_admin_vgallery_type_schemaorg_field}</label>
+					{schemaorg_field}
+				</div>
+				<div class="{row_class} field ID-data-type autocomplete">
+					<label>{_admin_vgallery_type_data_type}</label>
+					{tblsrc_field}
+				</div>
+				<div class="{row_class} field data-source actex">
+					<label>{_admin_vgallery_type_data_source}</label>
+					{items_field}
+				</div>
+				<div class="{row_class} field data-limit actex">
+					<label>{_admin_vgallery_type_data_limit}</label>
+					{data_limit_field}
+				</div>
+				<div class="{row_class} field data-sort actex">
+					<label>{_admin_vgallery_type_data_sort}</label>
+					{data_sort_field}
+				</div>
+				<div class="{row_class} field data-sort-method actex">
+					<label>{_admin_vgallery_type_data_sort_method}</label>
+					{data_sort_method_field}
+				</div> 
+				<div class="{row_class} field ID-extended-type actex">
+					<label>{_admin_vgallery_type_extended_type}</label>
+					{ID_extended_type_field}
+				</div>
+			</fieldset>
+			<fieldset class ="setting-thumb-detail">
+				<table class="setting-advanced ffGrid">
+					<thead>
+					<tr>
+						<th></th><th class="thumb">Thumb {enable_thumb_field}</th><th class="detail">Detail {enable_detail_field}</th>
+					</tr>
+					</thead>
+					<tbody>
+                    	<tr class="even">
+							<td><label>{_admin_vgallery_type_group}</label></td>
+							<td class="thumb actex">{ID_group_thumb_field}{parent_thumb_field}</td>
+							<td class="detail actex">{ID_group_detail_field}{parent_detail_field}</td>
+						</tr>
+						<tr class="odd">
+							<td><label>{_admin_vgallery_type_enable_lastlevel}</label></td>
+							<td class="thumb actex">{enable_lastlevel_field}</td>
+							<td></td>
+						</tr>
+						<tr class="even">
+							<td><label>{_admin_vgallery_type_enable_label}</label></td>
+							<td class="thumb checkbox">{enable_thumb_label_field}</td>
+							<td class="detail checkbox">{enable_detail_label_field}</td>
+						</tr>
+                        <tr class="odd">
+                            <td><label>{_admin_vgallery_type_label_htmltag}</label></td>
+                            <td class="thumb checkbox">{ID_label_thumb_htmltag_field}</td>
+                            <td class="detail checkbox">{ID_label_detail_htmltag_field}</td>
+                        </tr>
+						<tr class="even">
+							<td><label>{_admin_vgallery_type_settings_type}</label></td>
+							<td class="thumb">{settings_type_thumb_field}</td>
+							<td class="detail">{settings_type_detail_field}</td>
+						</tr>
+						<tr class="odd">
+							<td><label>{_admin_vgallery_type_display_view_mode}</label></td>
+							<td class="thumb">{display_view_mode_thumb_field}</td>
+							<td class="detail">{display_view_mode_detail_field}</td>
+						</tr>
+						<tr class="even">
+							<td><label>{_admin_vgallery_type_htmltag}</label></td>
+							<td class="thumb actex">{ID_thumb_htmltag_field}</td>
+							<td class="detail actex">{ID_detail_htmltag_field}</td>
+						</tr>
+						<tr class="odd">
+							<td><label>{_admin_vgallery_type_limit}</label></td>
+							<td class="thumb">{thumb_limit_field}</td>
+							<td class="detail"></td>
+						</tr>
+						<tr class="even">
+							<td><label>{_admin_vgallery_type_enable_empty}</label></td>
+							<td class="thumb checkbox">{enable_thumb_empty_field}</td>
+							<td class="detail checkbox">{enable_detail_empty_field}</td>
+						</tr>
+						<tr class="odd">
+							<td><label>{_admin_vgallery_type_enable_sort}</label></td>
+							<td class="thumb checkbox">{enable_sort_field}</td>
+							<td></td>
+						</tr>
+						<tr class="even">
+							<td><label>{_admin_vgallery_type_enable_cascading}</label></td>
+							<td class="thumb checkbox">{enable_thumb_cascading_field}</td>
+							<td class="detail checkbox">{enable_detail_cascading_field}</td>
+						</tr>
+						<tr class="odd">
+							<td><label>{_admin_vgallery_type_custom_field}</label>
+								<!--BeginSezCustomFieldTag-->
+								<div class="tag">
+									<!--BeginSezCustomFieldTagItem-->
+									<div>
+									<label class="tag-type {admin_vgallery_tag_field_class}">{admin_vgallery_tag_field_label}</label><span></span>
+									</div>
+									<!--EndSezCustomFieldTagItem-->
+								</div>
+								<!--EndSezCustomFieldTag-->
+							</td>
+							<td class="thumb">{custom_thumb_field_field}</td>
+							<td class="detail">{custom_detail_field_field}</td>
+						</tr>
+                        <tr class="even">
+                            <td><label>{_admin_vgallery_type_fixed_pre_content}</label></td>
+                            <td class="thumb">{fixed_pre_content_thumb_field}</td>
+                            <td class="detail">{fixed_pre_content_detail_field}</td>
+                        </tr>                        
+                        <tr class="odd">
+                            <td><label>{_admin_vgallery_type_fixed_post_content}</label></td>
+                            <td class="thumb">{fixed_post_content_thumb_field}</td>
+                            <td class="detail">{fixed_post_content_detail_field}</td>
+                        </tr>
+						<tr class="even">
+							<td><label>{_admin_vgallery_type_limit_by_layouts}</label></td>
+							<td class="thumb">{limit_thumb_by_layouts_field}</td>
+							<td class="detail">{limit_detail_by_layouts_field}</td>
+						</tr>
+					</tbody>
+				</table>
+			</fieldset>
+			
+			<fieldset class="backoffice"><legend>{_vgallery_field_backoffice}</legend>
+				<div class="{row_class} field require checkbox">
+					<label>{_admin_vgallery_type_require}</label>
+					{require_field}
+				</div>
+				<div class="{row_class} field ID-check-control combo">
+					<label>{_admin_vgallery_type_check_control}</label>
+					{ID_check_control_field}
+				</div>
+				<div class="{row_class} field ID-group-backoffice actex">
+					<label>{_admin_vgallery_type_ID_group_backoffice}</label>
+					{ID_group_backoffice_field}
+				</div>
+				<div class="{row_class} field disable-multilang checkbox">
+					<label>{_admin_vgallery_type_disable_multilang}</label>
+					{disable_multilang_field}
+				</div>
+				<div class="{row_class} field enable-description checkbox"> 
+					<label>{_admin_vgallery_type_enable_description}</label>
+					{enable_description_field}
+				</div>
+				
+				<table class="user-permission ffGrid">
+					<input id="VGalleryFieldModify_limit_by_groups" name="VGalleryFieldModify_limit_by_groups" value="{value_limit_by_groups}" type="hidden">
+					<input id="VGalleryFieldModify_limit_by_groups_frontend" name="VGalleryFieldModify_limit_by_groups_frontend" value="{value_limit_by_groups_frontend}" type="hidden">
+					<tr class="row">
+						<th></th><th>{_admin_vgallery_type_limit_groups_frontend}</th><th>{_admin_vgallery_type_limit_groups}</th>
+					</tr>
+						<!--BeginSezUserTypeItem-->
+						<tr class="row">
+							<td><label>{user_type_name}</label></td>
+							<td><input class="VGalleryFieldModify_limit_by_groups_frontend" type="checkbox" value="{ID_user_type}"{properties_frontend}></td>
+							<td><input class="VGalleryFieldModify_limit_by_groups" type="checkbox" value="{ID_user_type}"{properties}></td> 
+						</tr>
+						<!--EndSezUserTypeItem-->
+					
+				</table>
+				
+			</fieldset>
+			
+			<!--BeginSectRequiredNote-->
+			{_require_note}
+			<!--EndSectRequiredNote-->
+
+		</div>
+	</div>
+
+	<!--BeginSectControls-->
+	<div class="actions dialogActionsPanel">{ActionButtons} {ActionButtonCancel}</div>
+	<!--EndSectControls-->
+	{fixed_post_content}
+</div>
+<!--BeginSectFooters-->
+<!--EndSectFooters-->
+

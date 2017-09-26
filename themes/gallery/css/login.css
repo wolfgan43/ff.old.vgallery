@@ -1,0 +1,104 @@
+html, body, #content {
+	background:#fff !important;
+}
+
+.loginBox:before {
+	content:"";
+	display:block;
+	clear:both;
+	position:absolute;
+	right:55%;
+	width:45%;
+	height:100%;
+
+	background:url('../images/logo-login.png') center right no-repeat;
+}
+
+.loginBox:after {
+	display:block;
+	height:90%;
+width:1px;
+	border-radius:50%;
+box-shadow:0 0 8px rgba(0,0,0,0.5);
+background:rgba(0,0,0,0.1);
+	content:"";
+	position:absolute;
+	left:47.5%;
+	top:5%;
+	overflow:hidden;
+
+	
+}
+
+.loginBox{
+	padding: 1em 0 1em 50%;
+	background-position:25% 50%;
+	background:white;
+	position:fixed;
+	width:100%;
+	top:25%;
+}
+
+
+
+.ui-dialog-content .loginBox{
+	position:relative;
+}
+
+.loginBox input{
+	width:392px;
+}
+
+.loginBox p{
+	width:392px;
+	text-align:center;
+	margin:0 !important;
+}
+
+.loginBox a:link,.loginBox a:visited{
+	font-size:11px;
+	color:#3b78e7;
+}
+
+.loginBox a:hover{
+	text-decoration:underline;
+}
+
+a#modsec_googlelogin {
+	background-image: url(../images/social/google.png);
+	box-sizing: border-box;
+	ms-box-sizing: border-box;
+	webkit-box-sizing: border-box;
+	moz-box-sizing: border-box;
+	width: 410px;
+	height: 51px;
+	display: block;
+	padding-left: 64px;
+	padding-top: 14px;
+	color: white;
+}
+
+.actions INPUT {
+	font-size:1em;
+	color:#fff;
+	text-transform:uppercase;
+	border:1px solid transparent;
+	cursor:pointer;
+	line-height:2.5em;
+	height: 3em;
+	border-bottom:4px solid rgba(0,0,0,0.2);
+	padding:0 1em;
+	border-color:#2f68cd;
+	background:#4081f5;
+	color:#fff;
+	margin-bottom:1em;
+		transition:0.3s;
+}
+
+.actions INPUT:hover {
+	background:#3b78e7; 
+}
+
+.janrainContent DIV { text-align:center !important; }
+
+

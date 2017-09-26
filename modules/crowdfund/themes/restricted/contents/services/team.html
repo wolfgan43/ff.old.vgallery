@@ -1,0 +1,42 @@
+<div class="team">
+    <h3>{_crowdfund_idea_team}</h3>
+	<!--BeginSezTeamMemberLinkedin-->
+	<div class="linkedin">
+		<script src="//platform.linkedin.com/in.js" type="text/javascript"></script>
+		<script type="IN/MemberProfile" data-id="{team_linkedin_account}" data-format="inline" data-related="false"></script>
+	</div>
+	<!--EndSezTeamMemberLinkedin-->
+
+	<!--BeginSezTeamMember-->
+	<div class="member">
+		<div class="member-detail">
+			<div class="member-information"> 
+				<!--BeginSezTeamMemberProfileLinkTop-->
+				<a href="{site_path}{user_profile_path}{member_team_smart_url}">
+				<!--EndSezTeamMemberProfileLinkTop-->			
+				<span class="teamref">{team_reference}</span>
+				<!--BeginSezTeamMemberProfileLinkBottom-->
+				</a>
+				<!--EndSezTeamMemberProfileLinkBottom-->
+				<span class="teamrole">{team_role}</span>
+			</div>
+			<div class="member-go-to-profile">
+				<!--BeginSezGoToProfileButton-->
+				<a class="ffButton go-to-profile" href="{site_path}{user_profile_path}{member_team_smart_url}">{_go_to_profile}</a>
+				<!--EndSezGoToProfileButton-->
+			</div>
+		</div>
+		<!--BeginSezTeamMemberAvatar--> 
+		<div class="member-image">
+			<!--BeginSezTeamMemberAvatarLinkTop-->
+			<a href="{site_path}{user_profile_path}{member_team_smart_url}">
+			<!--EndSezTeamMemberAvatarLinkTop-->
+				<img src="{team_avatar}" />
+			<!--BeginSezTeamMemberAvatarLinkBottom-->
+			</a>
+			<!--EndSezTeamMemberAvatarLinkBottom-->
+		</div>
+		<!--EndSezTeamMemberAvatar-->
+	</div>
+	<!--EndSezTeamMember-->
+</div>

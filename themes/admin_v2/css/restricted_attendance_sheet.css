@@ -1,0 +1,66 @@
+#content {
+	max-width:none;
+	/* momentaneamente nascosto */
+	/*overflow-y:hidden;*/
+}
+
+TH.status { min-width:190px; }
+
+.today {
+	line-height: 40px;
+	font-size: 20px;
+	overflow: hidden;
+}
+.today .data {
+	line-height: 64px;
+	font-size: 20px;
+}
+.today .badges {
+	/*display:inline;*/
+	margin:0 0 15px;
+}
+.today .ico-badgeinactive,
+.today .ico-badgein,
+.today .ico-badgeout {
+	background: url(../images/badgeout.png) 0 0 no-repeat;
+	color: #fff;
+	border: 0;
+	padding: 10px 10px 8px 38px;
+	font-size: 14px;
+	line-height: 42px;
+}
+.today .ico-badgein {
+	background: url(../images/badgein.png) 0 0 no-repeat;
+}
+.today .ico-badgeinactive {
+	background: #f5f5f5;
+	color: #666;
+	border-radius:4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	padding: 10px 18px 8px 18px;
+}
+.today .ico-badgeout:hover {
+	background: url(../images/badgeout.png) 0 -34px no-repeat;	
+}
+.today .ico-badgein:hover {
+	background: url(../images/badgein.png) 0 -34px no-repeat;
+}
+.today .modifyrecord {
+	display: inline;
+	float: right;
+	font-size: 14px;
+	padding: 0 4px 0 4px;
+	margin: 10px 0 0;
+	line-height: 40px;
+	background: #f9f9f9;
+	border: 1px solid #f5f5f5;
+	border-radius:4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+}
+.today .modifyrecord A {
+	padding: 4px 0 10px 38px;
+	background: url(../images/ico-modify-sheet.png) no-repeat;
+	color: #3881ff;	
+}

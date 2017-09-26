@@ -1,0 +1,931 @@
+/* Reset css */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    background: transparent;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+/* remember to define focus styles! */
+:focus {
+    outline: 0;
+}
+
+/* remember to highlight inserts somehow! */
+ins {
+    text-decoration: none;
+}
+
+del {
+    text-decoration: line-through;
+}
+/* tables still need 'cellspacing="0"' in the markup */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+/* It's time to rock */
+a, a:link, a:visited, a:active {
+	color:#0C68BD;
+	text-decoration:none;
+}
+
+a:hover {
+	color:#2785DA;
+}
+HTML {
+	background:#f4f6f8 url(../images/cloudcalls_bg.jpg) repeat top left;
+}
+BODY{
+	font-family:Arial,Verdana,sans-serif;
+	font-size:11px;
+	color:#444;
+	line-height:18px;
+	font-weight:400;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	-webkit-font-smoothing: antialiased;
+}
+.hidden { display:none; }
+.right { text-align:right; }
+.center { text-align:center; }
+.left { text-align:left; }
+#topbar {
+	height:30px;
+	overflow:hidden;
+	background-image: linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -o-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -moz-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -webkit-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -ms-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -webkit-gradient( linear,left bottom,left top,color-stop(0.34, rgb(33,33,33)),color-stop(0.84, rgb(71,70,71)))!important;
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#212121', endColorstr='#474647',GradientType=0 ) !important; /* IE6-8 */
+	font-size:12px;
+}
+
+#account {
+	float:left;
+	line-height:30px;
+	color:#eee;
+	padding:0 5px;
+	text-shadow:1px 1px 2px #000;
+	filter: dropshadow(color=#000000,offX=1,offY=1);
+}
+#account strong {
+	margin:0 4px;
+}
+#account img {
+	width:24px;
+	vertical-align: middle;
+	height:24px;
+}
+#submenu {
+	width:410px;
+	margin:0 auto;
+}
+
+#submenu UL LI {
+	float:left;	
+}
+#submenu UL LI A {
+	border-right:1px solid #484848;
+	display:block;
+	padding:6px 20px;
+	color:#eee;
+	letter-spacing:1px;
+	text-shadow:1px 1px 2px #000;
+	filter: dropshadow(color=#000000,offX=1,offY=1);
+}
+#submenu UL LI A:hover {
+	background-image: linear-gradient(bottom, rgb(89,87,89) 33%, rgb(117,116,117) 67%);
+	background-image: -o-linear-gradient(bottom, rgb(89,87,89) 33%, rgb(117,116,117) 67%);
+	background-image: -moz-linear-gradient(bottom, rgb(89,87,89) 33%, rgb(117,116,117) 67%);
+	background-image: -webkit-linear-gradient(bottom, rgb(89,87,89) 33%, rgb(117,116,117) 67%);
+	background-image: -ms-linear-gradient(bottom, rgb(89,87,89) 33%, rgb(117,116,117) 67%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.33, rgb(89,87,89)), color-stop(0.67, rgb(117,116,117)));
+}
+#submenu UL LI A.selected {
+	background-image: linear-gradient(bottom, rgb(60,150,8) 34%, rgb(90,191,17) 84%);
+	background-image: -o-linear-gradient(bottom, rgb(60,150,8) 34%, rgb(90,191,17) 84%);
+	background-image: -moz-linear-gradient(bottom, rgb(60,150,8) 34%, rgb(90,191,17) 84%);
+	background-image: -webkit-linear-gradient(bottom, rgb(60,150,8) 34%, rgb(90,191,17) 84%);
+	background-image: -ms-linear-gradient(bottom, rgb(60,150,8) 34%, rgb(90,191,17) 84%);
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0.34, rgb(60,150,8)),color-stop(0.84, rgb(90,191,17)));
+}
+.logout-ico {
+	display: block;
+	float: right;
+	width: 40px;
+	height: 40px;
+	background: url(../images/logout-ico.png) 0 -6px no-repeat;
+}
+.logout-ico:hover {
+	opacity:0.7;
+}
+
+/* struttura */
+#header {
+	width:980px;
+	height:100px;
+	margin:0 auto;
+	background:url(../images/cloudcalls_logo.png) 0 50% no-repeat;
+}
+#content {
+	position:relative;
+	clear:both;
+	overflow:hidden;
+	margin:0 auto;
+	width:970px;
+	padding:0 0 5px;
+	min-height:450px;
+	background:#fff;
+	border: 1px solid #DDD;
+	border-top: 1px solid #E5E5E5;
+	border-bottom:1px solid #ccc;
+	-webkit-box-shadow: 0px 5px 12px -8px #555555;
+	-moz-box-shadow:    0px 5px 12px -8px #555555;
+	box-shadow: 0px 5px 12px -8px #555555;
+}
+.grid {
+	padding:0 10px 10px;
+}
+/* anagrafica */
+
+
+#Anagraph_GridData {
+    clear:both;
+    padding: 10px 0;
+	overflow:hidden;
+	margin-bottom:20px;
+}
+
+#Anagraph .row {
+    background:#f6f6f6;
+    background-image: linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -o-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -moz-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -webkit-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -ms-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.43, rgb(244,244,244)), color-stop(0.72, rgb(255,255,255)) );
+    border:1px solid #dddddd;
+    width:300px;
+    height:60px;
+    clear:none;
+    overflow: inherit;
+    float:left;
+    margin:0 5px 10px 5px;
+    position: relative;
+}
+
+#Anagraph .row:hover {
+    border:1px solid #bbbbbb;
+    -moz-box-shadow: 0 0 5px #888;
+    -webkit-box-shadow: 0 0 5px #888;
+    box-shadow: 0 0 5px #888;
+}
+#Anagraph .anagraph-head {
+	display: none;
+}
+#Anagraph SPAN.avatar {
+	display: block;
+	float: left;
+	width: 50px;
+	height: 50px;
+	padding: 4px;
+}
+#Anagraph IMG.avatar {
+	width: 50px;
+	height: 50px;	
+	margin-top: -5px;
+	margin-left: -5px;
+}
+#Anagraph SPAN.reference A {
+	font-size: 16px !important;
+	line-height: 18px;
+}
+#Anagraph_GridData .actions {
+	position:absolute;
+	top:0;
+	right:0;
+	width:24px;
+	height:24px;
+	
+}
+
+/* footer */
+.footer {
+	padding:5px 0;
+	color:#333;
+	text-align:center;
+	clear:both;
+}
+.heading A, 
+TABLE TR TD A, TABLE TR TD A:link, TABLE TR TD A:active, TABLE TR TD A:active, TABLE TR TD A:visited {
+    color:#666;
+}
+.heading {
+	height: 32px;
+   	padding: 3px 5px 0;
+	background: #222;
+	margin: 0;
+
+}
+.heading H2 {
+    display: none;
+}
+
+.ffWidget_timepicker {
+	height:26px;
+	background:#fff;
+}
+/* Utenti */
+#Anagraph_export {
+	color:#333;
+	font-size:12px;
+	font-family:Verdana, Arial, sans-serif;
+	background:url(../images/export.png) no-repeat;
+	cursor: pointer;
+	padding:7px 32px 6px 10px;
+	margin-top:0;
+}
+#Anagraph_export:hover {
+	color:#888;
+}
+/* Input */
+
+.textarea {
+    width:98%;
+    height:450px;
+}
+
+.ffWidget_editarea {
+    width:100%;
+    height:450px;
+}
+
+TD .text {
+    width:98%;
+}
+/* tabelle */
+table.ffGrid {
+	width:100%;
+	margin-bottom:25px;
+}
+table.ffGrid TR TH {
+	padding: 6px;
+	font-weight: normal;
+	color: #10542a;
+	background-image: linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -o-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -moz-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -webkit-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -ms-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.09, rgb(247,247,247)), color-stop(0.71, rgb(255,255,255)) );
+	border-bottom: 1px solid #e5e5e5;
+	border-top: 1px solid #f7f7f7;
+	text-align: left;
+}
+table.ffGrid TR TH.ffButton {
+	padding: 6px 0;
+}
+table.ffGrid TR TH A {
+	color: #10542a;
+}
+table.ffGrid TR.negative {
+	background:#f5f5f5;
+}
+table.ffGrid TBODY TR:hover {
+	background: #fce8ac;
+}
+table.ffGrid TD {
+	vertical-align: middle;
+	padding:6px 2px;
+	color: #333;
+	font-size:11px;
+}
+table.ffGrid TD.ffButton {
+	padding: 6px 0;
+}
+table.ffGrid TD A {
+	color: #333;
+}
+table.ffGrid .ffField {
+	border-right:1px solid #e9ecf2;
+}
+table.ffGrid TBODY TR:hover .ffField {
+	border-right:1px solid #e9cf7f;
+}
+.ffGrid IMG.avatar {
+	width:50px;
+	height:50px;
+	background: url(../images/empty-avatar.png) no-repeat;
+} 
+.ffField.date {
+	min-width:72px;
+}
+.ffField.time {
+	min-width:68px;
+}
+.ffField.owner {
+	min-width:104px;
+}
+.ffField.recipient {
+	min-width:118px;
+}
+
+.ffField.reference {
+	min-width:116px;
+}
+a.ico-edit {
+	background:url(../images/edit-ico.png) no-repeat;
+}
+a.ico-delete {
+	background:url(../images/delete.png) no-repeat;
+}
+a.ico-edit:hover,
+a.ico-delete:hover {
+	opacity:0.8;
+}
+#Anagraph .data {
+	line-height:16px;
+}
+#Anagraph .reference {
+	font-size:14px;
+	color:#10542a;
+}
+#Anagraph .reference,
+#Anagraph .email {
+	display:block;
+}
+#Anagraph .created, 
+#Anagraph .categories {
+	display:none;
+}
+
+#Anagraph .central-content {
+	padding:5px
+}
+/* navigazione */
+.FormsGridCommands {
+	clear: both;
+}
+
+.FormsGridCommands.cleared.top {
+	width:100%;
+	overflow:hidden;
+	background: #F7F7F7;
+	border-bottom: 1px solid #E5E5E5;
+	margin: 0 0 0 -10px;
+	padding: 0 10px 0;
+	
+}
+.FormsGridCommands.bottom{
+	position:absolute;
+	bottom:0;
+	right:10px;
+	overflow:hidden;
+	padding:10px 0;
+}
+.perPage, .pages, .choice, .totelem {
+	float: right;
+	width:auto;
+	padding: 4px 6px;
+	line-height: 18px;
+	color: #6e6e6e;
+	margin: 4px;
+	border: 1px solid #d9d9d9;
+	border-radius:3px;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	background-image: linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -o-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -moz-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -webkit-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -ms-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.01, rgb(241,241,241)), color-stop(0.51, rgb(245,245,245)) );
+}
+.perPage:hover, .pages:hover, .choice:hover, .totelem:hover {
+	border: 1px solid #c6c6c6;
+	-moz-box-shadow: 0 0 3px #ddd;
+	-webkit-box-shadow: 0 0 3px #ddd;
+	box-shadow: 0 0 3px #ddd;
+}
+.totelem {
+	display:none;
+}
+.pages A { color: #666; letter-spacing: 1px; float: left; height: 18px; padding:0 4px; margin:0 5px 0 0; }
+.pages A.current { color: #3c9608; }
+.pages A.first:hover { background:url(../images/admin-ico.png) -96px -28px no-repeat; }
+.pages A.prev:hover { background:url(../images/admin-ico.png) -72px -28px no-repeat; }
+.pages A.prev-frame:hover { background:url(../images/admin-ico.png) -122px -28px no-repeat; }
+.pages A.next:hover { background:url(../images/admin-ico.png) -196px -28px no-repeat; }
+.pages A.next-frame:hover { background:url(../images/admin-ico.png) -145px -28px no-repeat; }
+.pages A.last:hover { background:url(../images/admin-ico.png) -172px -28px no-repeat; }
+.pages A.first { background:url(../images/admin-ico.png) -96px -60px no-repeat; }
+.pages A.prev { background:url(../images/admin-ico.png) -72px -60px no-repeat; }
+.pages A.prev-frame { background:url(../images/admin-ico.png) -122px -60px no-repeat; }
+.pages A.next { background:url(../images/admin-ico.png) -196px -60px no-repeat; }
+.pages A.next-frame { background:url(../images/admin-ico.png) -145px -60px no-repeat; }
+.pages A.last { background:url(../images/admin-ico.png) -172px -60px no-repeat; }
+
+.pages A.first.disabled { background:url(../images/admin-ico.png) -96px -43px no-repeat; }
+.pages A.prev.disabled { background:url(../images/admin-ico.png) -72px -43px no-repeat; }
+.pages A.prev-frame.disabled { background:url(../images/admin-ico.png) -122px -43px no-repeat; }
+.pages A.next.disabled { background:url(../images/admin-ico.png) -196px -43px no-repeat; }
+.pages A.next-frame.disabled { background:url(../images/admin-ico.png) -145px -43px no-repeat; }
+.pages A.last.disabled { background:url(../images/admin-ico.png) -172px -43px no-repeat; }
+.choice INPUT.currentpage {
+	height: 14px;
+	font-size: 11px;
+	border: 1px solid #ddd;
+}
+.perPage a {
+	background: #e5e5e5;
+	color: #666;
+	height: 18px;
+	line-height: 18px;
+	padding: 2px 4px;
+	border: 1px solid #dbdbdb;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	border-radius:2px;
+}
+.perPage a:hover {
+	background: #f4f4f4;
+}
+
+.perPage .current {
+	background: #5abf11;
+	border:1px solid #3c9608;
+	color: #fff;
+}
+/* bottoni */
+.ui-dialog .button, 
+.ui-dialog .ffRecord .detailActions .detailSubmit,
+#UpdaterDomain .heading .link,
+A.cancel,
+.noactivebuttons,
+.detailSubmit,
+.activebuttons,
+.heading .actions A {
+	background:#5abf11;
+	background-image: none;
+	border:1px solid #3c9607;
+	color: #fff;
+	padding: 8px 6px;
+	cursor: pointer;
+}
+
+.heading .actions {
+	float:right;
+	margin:0 10px;
+}
+.detailSubmit,
+.activebuttons,
+.noactivebuttons {
+	border: 0;
+	padding: 4px 6px 5px;
+}
+#UpdaterDomain .heading .link:hover,
+A.cancel:hover,
+.detailSubmit:hover,
+.activebuttons:hover,
+.noactivebuttons:hover,
+.heading .actions A:hover {
+	background:#3c9607;
+}
+A.addNew {
+	font-size:12px;
+	font-family:Verdana, Arial, sans-serif;
+	background:url(../images/addnew.png) no-repeat;
+	cursor: pointer;
+}
+A.addNew, A.addNew:link, A.addNew:visited, A.addNew:active, .heading .actions A  {
+	color: #333;
+	float: right;
+	padding: 4px 34px 6px 10px;
+
+}
+A.addNew:hover {
+	color:#888;
+}
+.ui-tabs A.addNew {
+	font-size:12px;
+}
+/* campi */
+
+.input,
+.combo,
+.select,
+.textarea,
+INPUT.password,
+.ffWidget_timepicker,
+.ffWidget_activecomboex,
+.ffWidget_datepicker_text,
+.detailQTA,
+.ricerca-semplice .input,
+.ui-autocomplete-input {
+	background:#fff;
+	-webkit-appearance: none;
+	border: 1px solid #d9d9d9;
+	padding: 6px 6px 3px;
+}
+.textarea:focus,
+.input:focus,
+.combo:focus,
+.select:focus,
+INPUT.password:focus,
+.ffWidget_activecomboex:focus,
+.ffWidget_datepicker_text:focus,
+.ffWidget_timepicker:focus,
+.detailQTA:focus{
+	background:#f5f5f5;
+	border: 1px solid #5abf11;	
+}
+.heading .search {
+	position: relative;
+}
+
+.ricerca-semplice {
+	float: left;
+	width: 416px;
+	position: relative;
+}
+.ricerca-semplice .input {
+	padding:4px 4px;
+	width: 368px;
+}
+.ricerca-semplice .noactivebuttons {
+	float: right;
+	background: url(../images/search.png) no-repeat;
+	padding: 16px 14px 4px;
+	border: 0;
+	text-indent: -1000px;
+	font-size: 0;
+	line-height: 0;
+	margin: 4px 0 0;
+}
+.ricerca-semplice .noactivebuttons:hover {
+	opacity:0.7;
+}
+.ricerca-semplice .simple {
+	width: 16px;
+	position: absolute;
+	top: 12px;
+	left: 360px;
+}
+.search_more {
+	display: block;
+	width: 16px;
+	height: 16px;
+	line-height: 0;
+	font-size: 0;
+	text-indent: -10000px;
+	background: url(../images/admin-ico.png) -4px -50px no-repeat;
+}
+.search_more:hover {
+	background: url(../images/admin-ico.png) -4px -66px no-repeat;
+}
+.search .set {
+	width: 432px;
+	padding: 10px;
+	background: #fff;
+	position: absolute;
+	z-index: 100;
+	top: 25px;
+	left: 0;
+	border: 1px solid #cccccc;
+	border-top: 1px solid #EEE;
+	-moz-box-shadow: 12px 12px 20px -14px #888;
+	-webkit-box-shadow: 12px 12px 20px -14px #888;
+	box-shadow: 12px 12px 20px -14px #888;
+}
+.search .set LABEL {
+	display: block;
+	font-size: 14px;
+	color: #666;
+	line-height: 28px;
+}
+.search .set .ffWidget_activecomboex,
+.search .set .hasDatepicker,
+.search .set .combo {
+	border-top: 1px solid #c0c0c0;
+	width: 426px;
+}
+.search .set .hasDatepicker {
+	width: 390px;
+}
+.ui-datepicker-trigger {
+	margin: 0 4px;	
+}
+
+.heading .sort-block {
+	margin: 0 5px;
+	float: left;
+	position: relative;
+	display:none;
+}
+.heading .sort-block LABEL {
+	line-height: 32px;
+	color: #888;
+	margin: 0 4px 0 0;
+}
+.heading .sort-block a.dropdown-sort {
+	border: 1px solid #d9d9d9;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	border-radius:2px;
+	padding: 8px 24px 8px 16px;
+	line-height:32px;
+	background: url(../images/admin-ico.png) 142px -56px no-repeat;
+}
+.heading .dropdown-sort-data UL {
+	position: absolute;
+	z-index: 100;
+	top: 32px;
+	left: 64px;
+	width:160px !important;
+	padding:0;
+	background:#fff;
+	border:1px solid #cbcbcb;
+	-moz-box-shadow: 1px 1px 3px #ddd;
+	-webkit-box-shadow: 1px 1px 3px #ddd;
+	box-shadow: 1px 1px 3px #ddd;
+}
+.heading .dropdown-sort-data UL LI {
+	clear: both;
+}
+.heading .dropdown-sort-data UL LI A {
+	padding:5px !important;
+	display: block;
+	width: 150px !important;
+	font-size: 12px !important;	
+	border-bottom: 1px solid #f8f8f8;	
+}
+.heading .dropdown-sort-data UL LI A:hover {
+	background: #fff0be;
+	border-bottom: 1px solid #f1dd9f;
+}
+
+.heading .dropdown-sort-div {
+	float: right;
+}
+span.data{
+    font-size: 11px;
+    line-height:14px;
+}
+#phonecall_advsearch .noactivebuttons {
+	width:100%;
+	padding: 6px 4px;
+}
+/* icone */
+.ffButton {
+	width: 24px;
+    padding:0;
+    margin:0;
+}
+.ffButton A {
+    display:inline-block;
+    width:24px;
+    height:24px;
+    padding:0;
+}
+
+.ffButton.preview-action {
+	overflow: hidden;
+	width: 100%;
+	border-bottom: 1px solid #ddd;
+}
+.ffButton.preview-action A {
+	display: block;
+	float: right;
+	width: 24px;
+	height: 24px;
+}
+/* modded UI */
+.ui-tabs {
+	padding:0 !important;
+	position:static !important;
+}
+
+.ui-tabs-nav {
+	font-size:12px !important;
+	padding: 0 .2em 0 0 !important;
+	background-image: linear-gradient(bottom, rgb(235,235,235) 34%, rgb(245,245,245) 84%) !important;
+	background-image: -o-linear-gradient(bottom, rgb(235,235,235) 34%, rgb(245,245,245) 84%) !important;
+	background-image: -moz-linear-gradient(bottom, rgb(235,235,235) 34%, rgb(245,245,245) 84%) !important;
+	background-image: -webkit-linear-gradient(bottom, rgb(235,235,235) 34%, rgb(245,245,245) 84%) !important;
+	background-image: -ms-linear-gradient(bottom, rgb(235,235,235) 34%, rgb(245,245,245) 84%) !important;
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.34, rgb(235,235,235)), color-stop(0.84, rgb(245,245,245))) !important;
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ebebeb', endColorstr='#f5f5f5',GradientType=0 ) !important; /* IE6-8 */ 
+}
+.ui-tabs-panel {
+	border-width: 0 !important;
+	padding: 0 0 1em !important;
+}
+.ui-state-default {
+	background: #F7F7F7 !important;
+	border: 1px solid #E5E5E5 !important;
+}
+.ui-tabs-selected.ui-state-active {
+	border:0 !important;
+	background-image: linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -o-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -moz-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -webkit-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -ms-linear-gradient(bottom, rgb(33,33,33) 34%, rgb(71,70,71) 84%)!important;
+	background-image: -webkit-gradient( linear,left bottom,left top,color-stop(0.34, rgb(33,33,33)),color-stop(0.84, rgb(71,70,71)))!important;
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#212121', endColorstr='#474647',GradientType=0 ) !important; /* IE6-8 */
+}
+.ui-dialog .ui-widget-header {
+	color: #099204 !important;
+	font-size: 16px !important;
+	font-weight: normal !important;
+}
+.ui-dialog .button, 
+.ui-dialog .ffRecord .detailActions .detailSubmit {
+	background:#5abf11 !important;
+	background-image: none !important;
+	color: #fff !important;
+	padding: 8px 6px !important;
+	cursor: pointer !important;
+	border:1px solid #3c9607 !important;
+}
+.ui-dialog .button:hover, 
+.ui-dialog .ffRecord .detailActions .detailSubmit:hover {
+	background:#3c9607 !important;
+}
+/* add new phonecall */
+#PhonecallModify_data { width: 600px;}
+#UserModify_data .row,
+#AnagraphModify_data .row,
+#PhonecallModify_data .row {
+	overflow:hidden;
+}
+#PhonecallModify_data .time {
+	float: left;
+	width: 44%;
+	margin: 0 0 5px 20px;
+}
+.default .date {
+	float: left;
+	width: 44%;
+}
+.default .recipient {
+	background:#f7f7f7;
+	border-top:1px solid #ddd;
+	padding:10px 0 0;
+	clear:both;
+}
+.default .cc {
+	padding:0 0 5px;
+	border-bottom:1px solid #e5e5e5;
+	background:#f7f7f7;
+}
+.default .cc LABEL,
+.default .recipient LABEL{
+	display:block ;
+	float:left ;
+	width:160px ;
+	padding:0 5px;
+	line-height:32px;
+}
+.default .cc .select,
+.default .recipient .select {
+	width: 390px;
+}
+.applicant {
+	margin:10px 0 5px;
+}
+.applicant LABEL {
+	display:block;
+	width:100px;
+	float:left;
+	line-height:32px;
+	margin:0 5px;
+}
+.applicant .input {
+	width:172px;
+}
+.applicant .reference input {
+	width:468px;
+}
+.applicant .cell,
+.applicant .phone {
+	float:left;
+}
+.message .textarea {
+	height:80px !important;
+	width:572px !important;
+	resize:none;
+}
+.message .row {
+	background: #DCFADC;
+	padding:0 0 5px 5px;
+}
+.message .row.email {
+	background:none;
+}
+.ui-dialog .actions {
+	text-align:center !important;
+	padding:6px 0;
+}
+/* add new TO */
+
+#AnagraphModify_data .settings,
+#UserModify_data LEGEND,
+#AnagraphModify_data LEGEND {
+	display:none;
+}
+#AnagraphModify_data {
+	width:500px;
+}
+#UserModify_data .label {
+	line-height:32px;
+	color:#3c9607;
+}
+#UserModify_data LABEL,
+#AnagraphModify_data LABEL {
+	display:block;
+	width:55px;
+	float: left;
+	line-height: 32px;
+	margin: 0 5px;
+
+}
+#AnagraphModify_data .cell,
+#AnagraphModify_data .email,
+#AnagraphModify_data .name {
+	float:left;
+	width:48%;
+}
+
+#AnagraphModify_data .input {
+	width:158px;
+}
+#AnagraphModify_data .user .desc {
+	color: #3c9607;
+	font-size: 14px;
+	padding: 6px;
+	border-top: 1px solid #EEE;
+}
+#AnagraphModify_data .user LABEL {
+	width:125px;
+}
+#AnagraphModify_data .user INPUT.password,
+#AnagraphModify_data .user .input {
+	width:326px;
+}
+#AnagraphModify_data .user .combo {
+	width:340px;
+}
+#AnagraphModify_data .uid SELECT {
+	width:298px;
+}
+/* add account */
+#UserModify_data {
+	width:350px;
+}
+#UserModify_data LABEL {
+	width:140px;
+}
+#UserModify_data INPUT.password,
+#UserModify_data .input {
+	width:170px;
+}
+.error {
+	display:block;
+	width:400px;
+	position:absolute;
+	top:50%;
+	left:50%;
+	margin-left:-204px;
+	padding:8px;
+	text-align:center;
+	font-size:14px;
+	-moz-box-shadow: 0 0 5px #E44F4F;
+	-webkit-box-shadow: 0 0 5px #E44F4F;
+	box-shadow: 0 0 5px #E44F4F;
+	background: #E73939;
+	color: white;
+	border: 1px solid #C02C2C;
+}

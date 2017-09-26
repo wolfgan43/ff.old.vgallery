@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+	<menu>
+            <collection path="/restricted/collection" label="_collection">
+                <book path="/restricted/collection/book" label="_collection_book" />
+                <film path="/restricted/collection/film" label="_collection_film" />
+                <videogame path="/restricted/collection/videogame" label="_collection_videogame" />
+            </collection>
+	</menu>
+         
+        <collection-general label="collection-general">
+            <MOD_COLLECTION_GROUP_ADMIN label="Group ADMIN" default="collection-admin" required="true" extended_type="Selection" source_SQL = "
+                    (
+                        SELECT 
+                                [CM_TABLE_PREFIX]mod_security_groups.name AS ID
+                                , [CM_TABLE_PREFIX]mod_security_groups.name AS name
+                        FROM 
+                                [CM_TABLE_PREFIX]mod_security_groups
+                    )
+            " />
+            <MOD_COLLECTION_GROUP_USER label="Group user" default="collection-user" required="true" extended_type="Selection" source_SQL = "
+                    (
+                        SELECT 
+                                [CM_TABLE_PREFIX]mod_security_groups.name AS ID
+                                , [CM_TABLE_PREFIX]mod_security_groups.name AS name
+                        FROM 
+                                [CM_TABLE_PREFIX]mod_security_groups
+                    )
+            " />
+        </collection-general>
+		
+        <collection-graphic label="collection-graphic">	
+                <MOD_COLLECTION_THEME label="Theme" default="collction" />
+                <MOD_COLLECTION_JQUERYUI_THEME label="Theme jQueryUI" default="collection" />
+        </collection-graphic>
+</configdata>

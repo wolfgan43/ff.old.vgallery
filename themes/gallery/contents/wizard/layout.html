@@ -1,0 +1,20 @@
+<div class="layout-container">
+
+	<div class="canvas-container">
+		<div class="canvas-header">
+			<div  id="wg-resolution" class="canvas-resolution">
+				<a class="canvas-resolution-flip" href="javascript:ff.cms.layout.flipResolution();"><i class="icon ico-flip"></i></a>
+				<a class="canvas-resolution-size" href="javascript:ff.cms.layout.changeResolution();"></a>
+				<span class="canvas-orientation"></span>
+			</div>
+			<a id="wg-addrow" class="canvas-addrow" href="javascript:ff.cms.layout.addRow();"><i class="icon ico-add"></i>Add Row</a>
+			<a id="wg-wrapper" class="canvas-addrow" href="javascript:ff.cms.layout.wrapRows();"><i class="icon ico-wrap"></i>Wrap Rows</a>
+		</div>
+		<div id="wg-canvas-wrapper" class="canvas-wrapper">
+			<div id="wg-canvas" class="canvas"></div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		ff.cms.layout.init();
+	</script>
+</div>

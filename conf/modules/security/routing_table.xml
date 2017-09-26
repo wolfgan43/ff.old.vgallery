@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+    <rule>
+        <priority>TOP</priority>
+        <source>.*</source>
+        <destination>
+            <module>security</module>
+            <url>/session$0</url>
+        </destination>
+        <process_next />
+        <accept_path_info />
+    </rule>
+	<rule id="mod_sec_login">
+        <priority>NORMAL</priority>
+        <source>^/login(.*)|^/admin/login(.*)|^/restricted/login(.*)|^/builder/login(.*)|^/ecommerce/login(.*)</source>
+        <destination>
+            <module>security</module>
+            <url>/login$1</url>
+        </destination>
+        <reverse>/login</reverse>
+        <index>10</index>  
+	</rule>
+    <rule id="mod_sec_activation_it">
+        <priority>NORMAL</priority>
+        <source>^/login/attivazione(.*)</source>
+        <reverse>/login/attivazione</reverse>
+        <destination>
+            <url>/conf/gallery/auth/activation$1</url>
+        </destination>
+        <accept_path_info />
+        <index>20</index>  
+    </rule>
+    <rule  id="mod_sec_recover_it">
+        <priority>NORMAL</priority>
+        <source>^/login/recuperapassword(.*)</source>
+        <reverse>/login/recuperapassword</reverse>
+        <destination>
+            <url>/conf/gallery/auth/lostpassword$1</url>
+        </destination>
+        <accept_path_info />
+        <index>20</index>  
+    </rule>    
+    <rule  id="mod_sec_recover_username_it">
+        <priority>NORMAL</priority>
+        <source>^/login/recuperapassword/username(.*)</source>
+        <reverse>/login/recuperapassword/username</reverse>
+        <destination>
+            <url>/conf/gallery/auth/lostpassword/username$1</url>
+        </destination>
+        <accept_path_info />
+        <index>20</index>  
+    </rule>    
+    <rule id="mod_sec_register_it">
+        <priority>NORMAL</priority>
+        <source>^/registrazione(.*)</source>
+        <reverse>/registrazione</reverse>
+    </rule>
+    <rule id="mod_sec_register_en">
+        <priority>NORMAL</priority>
+        <source>^/en/registration(.*)</source>
+        <reverse>/en/registration</reverse>
+    </rule>
+    <rule id="mod_sec_activation">
+        <priority>NORMAL</priority>
+        <source>^/login/activation(.*)</source>
+        <reverse>/login/activation</reverse>
+        <destination>
+            <url>/conf/gallery/auth/activation$1</url>
+        </destination>
+        <accept_path_info />
+        <index>20</index>  
+    </rule>
+    <rule  id="mod_sec_recover">
+        <priority>NORMAL</priority>
+        <source>^/login/lostpassword(.*)</source>
+        <reverse>/login/lostpassword</reverse>
+        <destination>
+            <url>/conf/gallery/auth/lostpassword$1</url>
+        </destination>
+        <accept_path_info />
+        <index>20</index>  
+    </rule>
+    <rule  id="mod_sec_recover_username">
+        <priority>NORMAL</priority>
+        <source>^/login/lostpassword/username(.*)</source>
+        <reverse>/login/lostpassword/username</reverse>
+        <destination>
+            <url>/conf/gallery/auth/lostpassword/username$1</url>
+        </destination>
+        <accept_path_info />
+        <index>20</index>  
+    </rule> 
+    <rule id="mod_sec_register">
+        <priority>NORMAL</priority>
+        <source>^/register(.*)</source>
+        <reverse>/register</reverse>
+    </rule>
+    <rule id="mod_sec_social">
+        <priority>VERY_HIGH</priority>
+		<source>/login/social(/[^/]*)?(/[^/]*)?$</source>
+        <destination>
+            <module>security</module>
+            <url>/social$1$2</url>
+        </destination>
+        <reverse>/login/social</reverse>
+    </rule> 
+    <!--
+    <rule id="mod_sec_check_session">
+        <priority>HIGH</priority>
+        <source>/services/mod_security/check_session</source>
+		<destination>
+			<module>security</module>
+			<url>/services/check_session</url>
+		</destination>
+        <index>999</index>
+		<reverse>/services/mod_security/check_session</reverse>
+    </rule>
+	<rule id="mod_sec_recover">
+		<priority>NORMAL</priority>
+		<source>/recover(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/recover$1</url>
+		</destination>
+		<reverse>/recover</reverse>
+	</rule>
+	<rule id="mod_sec_recover_success">
+		<reverse>/recover/success</reverse>
+	</rule>	
+	<rule id="mod_sec_change_password">
+		<priority>NORMAL</priority>
+		<source>/change_password(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/change_password$1</url>
+		</destination>
+		<reverse>/change_password</reverse>
+	</rule>
+	-->
+    <!--<rule id="mod_sec_dashboard">
+        <priority>NORMAL</priority>
+        <source>^/user/dashboard(.*)</source>
+        <destination>
+            <url>/conf/gallery/auth$1</url>
+        </destination>
+        <reverse>/user/dashboard</reverse> 
+        <accept_path_info />
+    </rule>-->  	
+	<rule id="mod_sec_profile">
+		<priority>NORMAL</priority>
+		<source>^/restricted/dashboard(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/profile$1</url>
+		</destination>
+		<reverse>/restricted/dashboard</reverse>
+	</rule>
+	<rule id="mod_sec_domains">
+		<priority>NORMAL</priority>
+		<source>^/admin/domains(.*)</source>
+		<destination>
+			<url>/conf/gallery/mc$1</url>
+		</destination>
+		 <reverse>/admin/domains</reverse>
+		 <accept_path_info />
+	</rule>
+    <rule id="mod_sec_profiling">
+		<priority>NORMAL</priority>
+		<source>^/admin/profiling(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/profiling$1</url>
+		</destination>
+		<reverse>/admin/profiling</reverse>
+	</rule>
+	<rule id="mod_sec_users">
+        <priority>NORMAL</priority>
+        <source>^/admin/auth/users(.*)</source>
+        <destination> 
+            <url>/ui/restricted/auth/users$1</url>
+        </destination>
+	    <reverse>/admin/auth/users</reverse>
+    </rule>
+	<rule id="mod_sec_setparams">
+		<priority>NORMAL</priority>
+		<source>^/restricted/security/setparams(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/services/set_params</url>
+		</destination>
+		<reverse>/restricted/security/setparams</reverse>
+	</rule>	
+	<rule>
+		<priority>NORMAL</priority>
+		<source>^/services/resources-json/mod-security-packages(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/services/resources</url>
+		</destination>
+	</rule>
+	<rule>
+		<priority>NORMAL</priority>
+		<source>^/services/fb_auth(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/services/fb_auth</url>
+		</destination>
+	</rule>
+	<rule>
+		<priority>NORMAL</priority>
+		<source>^/services/janrain_auth(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/services/janrain_auth</url>
+		</destination>
+	</rule>
+	<!--<rule>
+		<priority>VERY_HIGH</priority>
+		<source>^/admin(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/auth$0</url>
+		</destination>
+        <accept_path_info />
+        <process_next />
+	</rule>
+    <rule>
+        <priority>VERY_HIGH</priority>
+        <source>^/builder(.*)</source>
+        <destination>
+            <module>security</module>
+            <url>/auth$0</url>
+        </destination>
+        <accept_path_info />
+        <process_next />
+    </rule>
+    <rule>
+        <priority>VERY_HIGH</priority>
+        <source>^/restricted(.*)</source>
+        <destination>
+            <module>security</module>
+            <url>/auth$0</url>
+        </destination>
+        <accept_path_info />
+        <process_next />
+    </rule>    
+ 	<rule>
+        <priority>VERY_HIGH</priority>
+        <source>^/ecommerce(.*)</source>
+        <destination>
+            <module>security</module>
+            <url>/auth$0</url>
+        </destination>
+        <accept_path_info />
+        <process_next />
+    </rule>  -->  
+    <rule id="mod_sec_oauth2">
+		<priority>NORMAL</priority>
+		<source>^/login/social/oauth2/(.+)</source>
+		<destination>
+			<module>security</module>
+			<url>/oauth2/$1</url>
+		</destination>
+		<reverse>/login/social/oauth2</reverse>
+	</rule>
+	<rule>
+		<priority>NORMAL</priority>
+		<source>^/admin/auth/oauth/(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/apiserver/$1</url>
+		</destination>
+	</rule>
+	<rule id="mod_sec_oauth2_service">
+		<priority>NORMAL</priority>
+		<source>^/services/oauth2/(.+)</source>
+		<destination>
+			<module>security</module>
+			<url>/services/oauth2/$1</url>
+		</destination>
+		<reverse>/services/oauth2</reverse>
+	</rule>
+</configdata>

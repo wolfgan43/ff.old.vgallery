@@ -1,0 +1,60 @@
+<!--BeginSezVGallerys-->
+<!--BeginSezPageNavigatorTop-->
+<div class="pagenavigator top{max_col_class}"> {PageNavigator} </div>
+<!--EndSezPageNavigatorTop-->
+<table border="0" cellspacing="0" cellpadding="0">
+    <tbody>
+        <!--BeginSezVGalleryRow-->
+        <tr class="vg-row{row_class}">
+            <!--BeginSezVGallery-->
+            <td{item_properties}>
+ 				<!--BeginSezVGalleryImageTop-->
+                <div class="vg-img{img_class}">
+                <!--BeginSezVGalleryImageTopNode--> 
+                {content}
+                <!--EndSezVGalleryImageTopNode-->
+                </div>
+                <!--EndSezVGalleryImageTop-->
+
+                <!--BeginSezVGalleryDescriptionStart-->
+                <div class="vg-desc{desc_class}">
+                <!--EndSezVGalleryDescriptionStart-->
+                
+                <!--BeginSezVGalleryGroup-->
+		            <!--BeginSezVGalleryGroupContainerStart-->
+			        <div class="vg-grp{group_class}"> 
+		            <!--EndSezVGalleryGroupContainerStart-->                
+                
+                <!--BeginSezVGalleryDescriptionNode-->
+                {content}
+                <!--EndSezVGalleryDescriptionNode-->
+
+                <!--BeginSezVGalleryGroupContainerEnd-->
+                </div>
+                <!--EndSezVGalleryGroupContainerEnd-->
+                <!--EndSezVGalleryGroup-->
+                
+                <!--BeginSezVGalleryDescriptionEnd-->
+                </div>
+                <!--EndSezVGalleryDescriptionEnd-->   
+                
+ 				<!--BeginSezVGalleryImageBottom-->
+                <div class="vg-img{img_class}">
+                <!--BeginSezVGalleryImageBottomNode--> 
+                {content}
+                <!--EndSezVGalleryImageBottomNode--> 
+                </div>
+                <!--EndSezVGalleryImageBottom-->
+            </td>
+            <!--EndSezVGallery-->
+        </tr>
+        <!--EndSezVGalleryRow-->
+    </tbody>
+</table>
+<!--BeginSezPageNavigatorBottom-->
+<div class="pagenavigator bottom{max_col_class}"> {PageNavigator} </div>
+<!--EndSezPageNavigatorBottom-->
+<!--EndSezVGallerys-->
+<!--BeginSezError-->
+<p class="{error_class}{max_col_class}">{strError}</p>
+<!--EndSezError-->

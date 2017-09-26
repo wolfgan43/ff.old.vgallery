@@ -1,0 +1,12 @@
+.link-setting.genre A {
+    background-image: url(../images/genre.png);
+}
+
+.link-setting.piattaforma A {
+    background-image: url(../images/piattaforma.png);
+}
+
+.link-setting.publisher A {
+    background-image: url(../images/editor.png);
+}
+

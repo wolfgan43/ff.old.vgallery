@@ -1,0 +1,389 @@
+Tutte le API si basano sulla struttura dello schema.php
+Esistono schema.php di default.
+Questo array multidimensionale puo essere esteso dichiarando nuovi membri in specifici percorsi:
+
+/library/gallery/schema.php 					=> Schema.php core dello schema.
+/module/[nome modulo]/conf/schema.php 			=> estensione e overriding dello schema core.
+													Ogni modulo ha un solo schema. Possono esserci caricati piu moduli contemporaneamente.
+													La priorita del modulo dipende dal servizio che chiama la definizione.
+													Esempio: Se una api risiede nel modulo A, sara prioritario lo schema del modulo A percui verra caricato come ultimo file.
+/themes/site/schema.php							=> Schema specifico del sito in questione. 
+													Questo schema e prioritario su tutti gli altri e quindi viene sempre caricato per ultimo.
+													
+Prototype dello schema:
+
+$schema["[nome servizio]"] => array(
+	"table" => "[nome tabella primaria]"		=> Opzionale. Se omesso verra preso il nome del servizio come tabella primaria.
+	, "sql" => array(
+		"insert" => array([] => "sql string prototype [ID_result] + [tag della tabella primaria]")
+	
+	)
+	, "struct_data" = array(
+	    "type" => "article"
+	    , "microdata" => array(
+			"scope" => "http://schema.org/Article"
+	    )
+	    , "microformat" => null
+	)
+	, "field" = array(
+	    "owner" => array(
+			"type" => "image"
+			, "thumb" => "100x100"
+    		, "unic" => true	    
+			, "struct_data" => array(
+			    "type" => "person"
+			    , "microdata" => array(
+					"prop" => "name"
+					, "scope" => "http://schema.org/Person"
+			    )
+			    , "microformat" => array(
+					"prop" => array(
+					    "class" => "fn"
+					)
+					, "scope" => array(
+					)
+			    )
+			)
+	    )
+	    , "tags" => array(
+			"struct_data" => array(
+			    "type" => "article"
+			    , "microdata" => array(
+					"prop" => "keywords"
+					, "scope" => "http://schema.org/Article"
+			    )
+			    , "microformat" => null
+			)
+	    )
+	)
+	"field_default" = array(
+		"ID" => "ID"
+		, "name" => "smart_url"
+		, "permalink" => "url"
+		, "created" => "created"
+		, "last_update" => "last_update"
+		, "meta_title" => "title"
+		, "meta_description" => "description"
+	)
+	, "category" = array(
+		"table" => "vgallery"
+		, "field" => array(
+			"select" => array(
+				"limit_type" => "limit_type"
+				, "ID" => "ID_vgallery"
+			)
+			, "where" => array(
+				"name" => "name = [KEY]"
+			)
+			, "primary_rel" => "ID_vgallery"
+		)	
+
+	)
+	, "external_field" = array(
+		"primary" => array(
+			"table" => "vgallery_fields"
+			, "field" => array(
+				"select" => array(
+					"vgallery_fields.ID" => "ID"
+					, "vgallery_fields.name"  => "name"
+					, "extended_type.name" =>  "type"
+				)
+				, "join" => array(
+					"extended_type" => array("ID" => "ID_extended_type")
+					, "vgallery_type" => array("ID" => "ID_type")
+				)
+				, "where" => array(
+					"limit_type" => "FIND_IN_SET(vgallery_type.ID, [VALUE])"
+					, "limit_id" => "vgallery_fields.ID IN([VALUE])"
+					, "limit_name" => "vgallery_fields.name IN([VALUE])"
+				)
+				, "order" => array(
+					"order_thumb" => "desc"
+				)
+			)
+		)
+		, "storage" => array(
+			"table" => "vgallery_rel_nodes_fields"
+			, "field" => array(
+				"select" => array(
+					"description" => null
+				)
+				, "join" => null
+				, "where" => array(
+					"ID_node" => "vgallery_rel_nodes_fields.ID_nodes = vgallery_nodes.ID"
+					, "ID_field" => "vgallery_rel_nodes_fields.ID_fields = [KEY]"
+				)
+			) 
+		)
+		, "field_default" => array(
+		)
+	)
+	, "relationship" => array(
+		["nome tabella relazionata"] => array(
+			"key" => "nome campo"
+			, "rel_key" => "nome campo"
+			, "multi" => "bool"
+		
+		)
+	
+	)
+	, "action" = array(
+	    "default" => array(
+	    	"ID" => "keys[formnode-ID]"
+			, "ID_value" => "[ID]"
+	    )
+	    , "addnew" => array(
+	    	"path" => "modify"
+			, "action" => "insert"
+			, "path" => "/restricted/modules/form/modify[PATHINFO]"
+			, "params" => array()
+	    )
+	    , "edit" => array(
+	    	"ID" => "keys[formnode-ID]"
+			, "ID_value" => "[ID]"
+			, "path" => "/restricted/modules/form/modify"
+			, "action" => "update"
+			, "params" => array()
+	    )
+	    , "delete" => array(
+	    	"ID" => "keys[formnode-ID]"
+			, "ID_value" => "[ID]"
+			, "path" => "/restricted/modules/form/modify"
+			, "action" => "delete"
+			, "source_action" => "confirmdelete"
+			, "component" => "FormManageModify"
+			, "params" => array()
+	    )
+	    , "visible" => array(
+	    	"ID" => "keys[formnode-ID]"
+			, "ID_value" => "[ID]"
+			, "path" => "/restricted/modules/form/modify"
+			, "action" => "update"
+			, "component" => null
+			, "params" => array(
+				"setvisible" => array(
+					"hide" => "[status]"
+					, "type" => "NOT"
+					, "extended_type" => "Boolean" //non gestito
+			    )
+			)
+	    )
+	)
+)
+
+
+
+
+
+
+Creando un file all'interno dei seguenti percorsi viene automaticamente richiamato dalla procedura delle API Rest.
+Quando viene trovata una API valida gli altri percorsi a seguire vengono saltati.
+
+Creazione di una api specifica per un sito:
+/api/1.0/mia-api.php							=> 		://[dominio]/api/1.0/mia-api
+
+Creazione di una api all'interno di un modulo:
+/modules/[nome modulo]/api/1.0/mia-api.php		=>		://[dominio]/api/1.0/mia-api
+
+Persorso di sistema di base.
+/conf/gallery/sys/api/1.0/mia-api.php  			=> 		://[dominio]/api/1.0/mia-api
+
+
+
+
+Variabili in ingresso:
+
+$schema_def 									=> Raggiude tutte le variabili a seguire e altre info. Da usare solo in casi eccezionali
+													(Array Associativo Multidimensionale).
+
+$service_module									=> Descrive quali moduli hanno informazioni sfruttabili per le API
+													(Array Associativo) estendibile.
+$service_schema									=> Lista di motori di render disponibili. I Motori delle API di base sono: list, detail, updater.
+													(Array) estendibile.
+$service_path_info								=> Percorso successivo al nome dell'API richiamata. Esempio /api/1.0/mia-api/mio-percorso/mio-sotto-percorso => /mio-percorso/mio-sotto-percorso
+													Solitamente viene usato per limitare la selezione degli elementi in base al motore di render usato:
+													Se ad esempio il motore e list allora questa variabile verra usata come discriminante di categoria.
+													Se ad esempio il motore e detail allora questa variabile verra usata come id dell'elemento da ricercare
+													(String)
+$target											=> Nome dell'Api. Questa variabile identifica tu
+
+
+
+Variabili di ritorno
+
+$service
+
+
+$service["name"]							//nome con il quale si richiama l'api
+$service["type"]							//tipo di api: Lista di elementi dettaglio di un elemento
+$service["ID"]								//se e di tipo deatil questo e il campo che serve per selezionare l'elemento basato su ID
+$service["prototype"] => array( 			//struttura di output dell'api.
+	"user_info" = array(
+		"user" => "username"
+		, "email" => null
+		, "surname" => null
+		, "gender" => null
+		, "avatar" => null
+		, "speciality" => false
+		, "answer_count" => false
+		, "article_count" => false
+		, "interview_count" => false
+	)
+);
+$service["add_field"]
+$service["category"]
+$service["revision"]
+$service["external_field"] => array(
+	"primary" => array(
+		"table" => 
+		, "field" => array(
+			"select" => array(
+			
+			)
+			, "join" => array(
+			
+			)
+			, "where" => array(
+			
+			)
+			, "order" => array(
+			
+			)
+		)
+	)
+	, "storage" => array(
+		"table" => 
+		, "field" => array(
+			"select" => array(
+			
+			)
+			, "join" => array(
+			
+			)
+			, "where" => array(
+			
+			)
+			, "order" => array(
+			
+			)
+		)
+		, "field_default" => array(
+		
+		)
+	)
+
+)
+$service["field_default"]
+
+
+
+
+$return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*************
+*  OVERRIDE ACCESSO ALLE INFORMAZIONI INTERNE AL DB
+*/
+
+
+
+Funzioni che sovrascrivono il comportamento standard delle API.
+Tali funzioni si applicato a tutte le versioni
+
+Esempio di funzioni in ordine di priorita di caricamento. Quando viene trovata una funziona valida gli altri percorsi a seguire vengono saltati.
+
+Creazione di una funzione specifica per un sito:
+/api/get_mia-api.php							=> 		://[dominio]/api/1.0/mia-api
+
+Creazione di una funzione all'interno di un modulo:
+/modules/[nome modulo]/api/get_mia-api.php		=>		://[dominio]/api/1.0/mia-api
+
+Persorso di sistema di base.
+/conf/gallery/sys/api/get_mia-api.php  			=> 		://[dominio]/api/1.0/mia-api
+
+
+Variabili di ingresso nelle funzioni
+$limit_data = array(									Opzioni per limitare l'output dei record e dei campi. 
+														Se lasciato a null l'api tornera tutti i record della tabella con tutti i campi primari ed eventualmente tutti i campi esterni correlati
+	"field" => array(									Gestisce i campi che si vogliono mandare in output
+		"primary" => array(								Se specificato permette di visualizzare solo i campi della tabella primaria dichiarati. Gli altri verranno esclusi dall'output.
+			"field_name" => "field_AS"					Array Associativo di n elementi 
+															La Chiave e il nome del campo nella tabella primaria 
+															Il valore e l'alias che si vuole viualizzare come campo in output. Se lasciato a null il campo in output avra il valore del nome del campo della tabella.
+			...
+		)
+		, "external" => true							Booleano che permette di aggiungere o escludere dall'output i campi esterni correlati alla tabella primaria
+														Nel caso ci siano campi esterni e che siano abilitati alla visualizzazione si possono specificare i seguenti parametri
+		, "id" => "[IDs comma separated]"					Permette di vusualizzare in output solo i campi esterni che il cui ID rientra nel set specificato
+		, "name" => "[field name comma separated]"			Permette di vusualizzare in output solo i campi esterni che il cui nome rientra nel set specificato
+														I due parametri sono in OR se usati contemporaneamente
+	)													
+														Opzioni per limitare l'output dei record
+														I parametri Key Value devono essere usati in combinazione.
+	, "key" => [field name]								Nome del campo che si vuole usare per limitare la selezione
+	, "value" => "[condition of key string or numeric]"	Valore per limitare la selezione.
+														Questo parametro puo essere un numero o una stringa
+															Se e un numero verra applicata questa formula : [KEY] IN([VALUE])
+															Se e una stringa verra applicata questa formula : [KEY] LIKE %[VALUE]%
+)
+
+
+$params = array(
+	"category" => array()
+	, "revision" => array()
+	, "external_field" => array()
+	, add_field => array()
+	, [other where field]
+)
+$sort_field = array() or string
+$sort_dir = ASC or DESC
+$search = string
+
+
+
+Variabili di ritorno delle funzioni:
+
+$sSQL												Sql ben formato con il quale vengono recuperate le informazioni dal database.
+													I campi definiti verranno utilizzati per generare l'output dell'api 
+													come tutti i record processati dalla chiamata SQL.

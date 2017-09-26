@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Products><!--BeginSezItem-->
+	<Offer>
+		<Name>{meta_title}</Name>
+		<Brand>{product}</Brand>
+		<Description>{meta_description}</Description>
+		<OriginalPrice>{price_original}</OriginalPrice>
+		<Price>{price_discounted}</Price>
+		<Code>{id}</Code>
+		<Link>{permalink}</Link>
+		<Stock>{stock}</Stock>
+		<Categories>{categories}</Categories><!--BeginSezImage-->
+		<Image>{cover}</Image><!--EndSezImage-->
+		<ShippingCost>{shipping_price}</ShippingCost>
+		<EanCode>{isbn}</EanCode>
+		<Weight>{weight}</Weight><!--BeginSezMedia-->
+		<Image{media_count}>{media_url}</Image{media_count}><!--EndSezMedia-->
+	</Offer><!--EndSezItem-->
+</Products>

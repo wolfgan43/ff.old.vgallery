@@ -1,0 +1,97 @@
+<div class="film-information">
+    <div class="first-information">
+            <img src="{img_path}" title="{img_title}" />
+            <!--BeginSezFilmDescription-->
+            <div class="descrizione">{film_description}</div>
+            <!--EndSezFilmDescription-->
+    </div>
+    <div class="basic-information">
+        <h2 class="title">{film_title} <!--BeginSezFilmOriginalTitle-->(orig. "{film_original_title}")<!--EndSezFilmOriginalTitle--></h2>
+        <div Class="first-block">
+            <!--BeginSezFilmIMDbVote-->
+            <div class="imdb-vote">
+                <h4 class="imdb-vote-label">{_mod_collection_film_imdb_vote}</h4>
+                <span class="imdb-vote-number">{film_imdb_vote}</span>
+            </div>
+            <!--EndSezFilmIMDbVote-->
+            <!--BeginSezFilmPersonalVote-->
+            <div class="personal-vote">
+                <h4 class="personal-vote-label">{_mod_collection_film_personal_vote}</h4>
+                <span class="personal-vote-number">{film_personal_vote}</span>
+            </div>
+            <!--EndSezFilmPersonalVote-->
+            
+            <!--BeginSezFilmDuration-->
+            <div class="duration">
+                <h4 class="duration-label">{_mod_collection_film_modify_duration}</h4>
+                <span class="duration-min">{film_duration}</span>
+            </div>
+            <!--EndSezFilmDuration-->
+            <!--BeginSezFilmYear-->
+            <div class="year">
+                <h4 class="year-label">{_mod_collection_film_year}</h4>
+                <span class="year-number">{film_year}</span>
+            </div>
+            <!--EndSezFilmYear-->
+            
+            <!--BeginSezFilmGenre-->
+            <div class="genre">
+                <h4 class="genre-label">{_mod_collection_film_modify_genre}</h4>
+                <!--BeginSezFilmGenreItem-->
+                <div class="genre-item"><a href="{film_genre_link}">{film_genre}</a></div>
+                <!--EndSezFilmGenreItem-->
+            </div>
+            <!--EndSezFilmGenre-->
+            <!--BeginSezFilmLink-->
+            <div class="link">
+                <h4 class="link-label">{_mod_collection_film_modify_imbd_link}</h4>
+                <span class="link-url"><a href="{film_link}" target="_blank">{_mod_collection_go_to_site}</a></span>
+            </div>
+            <!--EndSezFilmLink-->
+            
+        </div>
+        <div class="second-block">
+            
+            <div class="director">
+                <h4 class="director-label">{_mod_collection_film_director}</h4>
+                <span class="director-name"><a href="{film_director_link}">{film_director}</a></span>
+            </div>
+            <div class="actor">
+                <h4 class="actor-label">{_mod_collection_film_actor}</h4>
+                <!--BeginSezFilmActor-->
+                <div class="actor-item"><a href="{film_actor_link}">{film_actor}</a></div>
+                <!--EndSezFilmActor-->
+            </div>
+            <!--BeginSezFilmLanguage-->
+            <div class="language">
+                <h4 class="language-label">{_mod_collection_film_modify_language}</h4>
+                <!--BeginSezFilmLanguageItem-->
+                <div class="language-item"><a href="{film_language_link}">{film_language}</a></div>
+                <!--EndSezFilmLanguageItem-->
+            </div>
+            <!--EndSezFilmLanguage-->
+            <!--BeginSezFilmSubtitle-->
+            <div class="subtitle">
+                <h4 class="subtitle-label">{_mod_collection_film_modify_subtitle}</h4>
+                <!--BeginSezFilmSubtitleItem-->
+                <div class="subtitle-item"><a href="{film_subtitle_link}">{film_subtitle}</a></div>
+                <!--EndSezFilmSubtitleItem-->
+            </div>
+            <!--EndSezFilmSubtitle-->
+            
+        </div>
+        
+    </div>
+    <!--BeginSezFilmSupport-->
+    <table class="support">
+        <tr>
+            <th>{_mod_collection_film_modify_suppot}</th><th>{_mod_collection_film_modify_quality}</th><th>{_mod_collection_film_modify_language}</th><th>{_mod_collection_film_modify_subtitle}</th>
+        </tr>
+        <!--BeginSezFilmSupportItem-->
+        <tr>
+            <td><a href="{film_support_link}">{film_support_name}</a></td><td><a href="{film_quality_link}">{film_quality}</a></td><td>{film_language}</td><td>{film_subtitle}</td>
+        </tr>
+        <!--EndSezFilmSupportItem-->
+    </table>
+    <!--EndSezFilmSupport-->
+</div>

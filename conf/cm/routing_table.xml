@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ffxml>
+    <rule id="actexparse">
+        <priority>HIGH</priority>
+        <source>(?!^/updater/check/file(.*))/actexparse$</source>
+        <destination>
+            <url>/themes/responsive/ff/ffField/widgets/actex/actexparse</url> 
+        </destination>
+        <reverse>/actexparse</reverse>
+        <index>999</index>
+    </rule>
+	<rule id="parsedata">
+		<priority>HIGH</priority>
+		<source>(?!^/updater/check/file(.*))/parsedata$</source>
+		<destination>
+			<url>/themes/responsive/ff/ffField/widgets/activecomboex/parsedata</url>
+		</destination>
+		<reverse>/parsedata</reverse>
+        <index>999</index>
+	</rule>
+    <rule id="aparsedata">
+        <priority>HIGH</priority>
+        <source>(?!^/updater/check/file(.*))/aparsedata$</source>
+        <destination>
+            <url>/themes/responsive/ff/ffField/widgets/autocomplete/parsedata</url>
+        </destination>
+        <reverse>/aparsedata</reverse>
+        <index>999</index>
+    </rule>    
+    <rule id="atparsedata">
+        <priority>HIGH</priority>
+        <source>(?!^/updater/check/file(.*))/atparsedata$</source>
+        <destination>
+            <url>/themes/responsive/ff/ffField/widgets/autocompletetoken/parsedata</url> 
+        </destination>
+        <reverse>/atparsedata</reverse>
+        <index>999</index>
+    </rule>
+	<rule id="dialog">
+		<priority>HIGH</priority>
+		<source>(?!^/updater/check/file(.*))/dialog/{0,1}$</source>
+		<destination>
+			<url>[MAIN_THEME]/ff/dialog</url>
+		</destination>
+		<index>999</index>
+		<reverse>/dialog</reverse>
+	</rule>
+	<rule>
+		<priority>NORMAL</priority>
+		<source>^/admin/configuration/cm/layout(.*)</source>
+		<destination>
+			<url>/cm/contents/layout$1</url>
+		</destination>
+	</rule>
+	<rule>
+		<priority>NORMAL</priority>
+		<source>^/admin/layout/cm/showfiles(.*)</source>
+		<destination>
+			<url>/cm/contents/showfiles$1</url>
+		</destination>
+	</rule>
+	<rule id="getlibs">
+        <source>^/srv/getlibs$</source>
+        <destination>
+            <url>/cm/contents/getlibs</url>
+        </destination>
+        <reverse>/srv/getlibs</reverse>
+        <index>10</index>
+    </rule>		
+	<rule id="ds">
+		<priority>NORMAL</priority>
+		<source>^/admin/ds(.*)</source>
+		<destination>
+			<url>/cm/contents/ds$1</url>
+		</destination>
+		<accept_path_info />
+		<reverse>/admin/ds</reverse>
+		<index>999</index>
+	</rule>
+	<rule>
+		<priority>BOTTOM</priority>
+		<source>(.*)</source>
+		<destination>
+			<url>$0</url>
+			<content_root>/contents</content_root>
+		</destination>
+        <accept_path_info />
+        <process_next />
+	</rule>
+</ffxml>

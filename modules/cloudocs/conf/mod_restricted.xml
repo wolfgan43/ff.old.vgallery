@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+	<menu>
+		<cloudocs path="/restricted/cloudocs" label="_cloudocs" redir="/restricted/cloudocs/docs">
+            <docs path="/restricted/cloudocs/docs" label="_cloudocs_docs" />
+            <category path="/restricted/cloudocs/category" label="_cloudocs_category" />
+            <customer path="/restricted/cloudocs/anagraph" label="_cloudocs_customer" /> 
+        </cloudocs>
+	</menu>
+</configdata>

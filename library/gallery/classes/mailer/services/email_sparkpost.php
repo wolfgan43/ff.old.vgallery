@@ -1,0 +1,98 @@
+<?php
+/**
+ *   VGallery: CMS based on FormsFramework
+Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ * @package VGallery
+ * @subpackage core
+ * @author Alessandro Stucchi <wolfgan@gmail.com>
+ * @copyright Copyright (c) 2004, Alessandro Stucchi
+ * @license http://opensource.org/licenses/gpl-3.0.html
+ * @link https://github.com/wolfgan43/vgallery
+ */
+
+
+class mailerLocalhost
+{
+    const TYPE                                              = "email";
+
+    private $device                                         = null;
+    private $config                                         = null;
+    private $data                                           = null;
+    private $mailer                                         = null;
+
+    public function __construct($mailer, $data = null, $config = null)
+    {
+        $this->mailer = $mailer;
+        $this->setConfig($config);
+        //$this->setData($data);
+    }
+
+    public function getDevice()
+    {
+        return $this->device;
+    }
+    public function getConfig()
+    {
+        return $this->config;
+    }
+    private function setConfig($config = null)
+    {
+        $this->config = $this->mailer->getConfig($this::TYPE);
+
+        if (!$this->config["password"])
+        {
+            if (is_file($this->mailer->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT)))
+            {
+                require_once($this->mailer->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT));
+
+                $this->config["host"] = (defined("A_SMTP_HOST")
+                    ? A_SMTP_HOST
+                    : "smtp.sparkpostmail.com"
+                );
+                $this->config["name"] = (defined("FF_DATABASE_NAME")
+                    ? FF_DATABASE_NAME
+                    : "SMTP_Injection"
+                );
+                $this->config["username"] = (defined("A_SMTP_USER")
+                    ? A_SMTP_USER
+                    : ""
+                );
+                $this->config["password"] = (defined("A_SMTP_PASSWORD")
+                    ? A_SMTP_PASSWORD
+                    : ""
+                );
+
+                $this->config["auth"] = (defined("SMTP_AUTH")
+                    ? SMTP_AUTH
+                    : true
+                );
+                $this->config["port"] = (defined("A_SMTP_PORT")
+                    ? A_SMTP_PORT
+                    : "587"
+                );
+                $this->config["secure"] = (defined("A_SMTP_SECURE")
+                    ? A_SMTP_SECURE
+                    : "tls"
+                );
+            }
+        }
+    }
+    /*private function setData($data = null)
+    {
+        $this->data = $this->mailer->getData($this::TYPE, $data);
+    }*/
+}

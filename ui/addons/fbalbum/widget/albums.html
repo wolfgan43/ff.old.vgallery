@@ -1,0 +1,328 @@
+<div id="fbalbum-{real_name}"></div>
+<script>
+ff.injectCSS("fbalbum", "/themes/library/plugins/jquery.fbalbum/css/jquery.fbalbum.css", function() {
+	ff.pluginLoad("jQuery.Isotope","/themes/library/plugins/jquery.isotope/jquery.isotope.js", function() {
+		<!--BeginSezFancyBox-->
+			ff.injectCSS("{fancybox}", "/themes/library/plugins/jquery.fancybox/jquery.fancybox.css", function() {
+				ff.pluginLoad("jQuery.{fancybox}","/themes/library/plugins/jquery.fancybox/jquery.fancybox.js");
+			});
+		<!--EndSezFancyBox-->
+		<!--BeginSezColorBox-->
+			ff.injectCSS("colorbox", "/themes/library/plugins/jquery.colorbox/jquery.colorbox.css", function() {
+				ff.pluginLoad("jQuery.colorbox","/themes/library/plugins/jquery.colorbox/jquery.colorbox.js");
+			});
+		<!--EndSezColorBox-->
+		<!--BeginSezPrettyPhoto-->
+			ff.injectCSS("prettyphoto", "/themes/library/plugins/jquery.prettyphoto/jquery.prettyphoto.css", function() {
+				ff.pluginLoad("jQuery.prettyphoto","/themes/library/plugins/jquery.prettyphoto/jquery.prettyphoto.js");
+			});
+		<!--EndSezPrettyPhoto-->
+		<!--BeginSezToolTip--> 
+			ff.injectCSS("qtip", "/themes/library/plugins/jquery.qtip2/jquery.qtip.css", function() {
+				ff.pluginLoad("jQuery.fn.qtip","/themes/library/plugins/jquery.qtip2/jquery.qtip.js");
+			});
+		<!--EndSezToolTip-->
+		
+		ff.pluginLoad("FB", "http://connect.facebook.net/{fb_lang}/all.js", function() {
+			ff.pluginLoad("jQuery.fn.FB_Album","/themes/library/plugins/jquery.fbalbum/jquery.fbalbum.js", function() {
+				jQuery('#fbalbum-{real_name}').FB_Album({         
+					facebookID:						"{facebook_id}", // Your Facebook ID 
+					excludeAlbums:					[{exclude_album}], // ID's of albums that are to be exclude from showing; seperate by comma 
+					facebookToken:					'',		// Facebook Access Token for Personal / Restricted Facebook Pages
+					singleAlbumOnly:				false,										// Set to "true" if you want to show only one specific Facebook Album
+					singleAlbumID:					'',											// Define the ID of the single album you want to show
+					showSelectionOnly:				false,										// Set to "true" if you want to show only specified albums; otherwise all albums will be pulled (minus the ones marked to be excluded)
+					includeAlbums:					[],											// ID's of albums that you want to be shown (only applies if "showSelectionOnly" is set to "true")
+					maxNumberGalleries:				9, // Define how many galleries should be pulled from Facebook 
+					excludeTimeLine:				true,										// Define if the "Timeline" album should be excluded automatically
+					maxNumberImages:				50, // Define how many images per gallery should be pulled from Facebook 
+					excludeImages:					[{exclude_image}], // ID's of images that are to be exclude from showing; seperate by comma 
+					maxGraphLimit:					1000,										// Internal Setting for Graph Request (only used if "maxNumberGalleries" is "0")
+					weservImageScaler:				false,										// If set to true, the script will utilize the Cloud Based weserv.nl Service to scale Thumbnails
+					senchaImageScaler:				false,										// If set to true, the script will utilize the Cloud Based Sencha.io Service to scale Thumbnails
+					innerImageScaler:				false,										// If set to true, the script will use an internal php function to scale images to size, otherwise a cloud based service must be used
+					PathInternalPHP:				'PHP/TimThumb.php',							// Define path and name to internal PHP Image Scaler
+
+					imageLazyLoad:					true,										// Define if lazyload for thumbnails should be utilized (images will only be loaded if in view)
+					imageSpinnerAnimation:			true,										// If "true", the gallery will show a spinner animation until the thumbnail image has been fully loaded
+
+					responsiveGallery:				true,										// Define if gallery is supposed to be responsive to window size changes
+					responsiveWidth:				90,											// Set percent of window width the responsive frameID container should have; only enter number but no '%' behind number
+					fixedWidth:						800,										// Set window width in px for a fixed size frameID container; only enter number but no 'px' behind number
+
+					detectIFrame:					true,										// If set to "true", script will auto adjust width and height of the iFrame the script is embedded in
+					iFrameHeightAdjust:				24,											// Define an adjustment in px that will be used to offset the height adjustment for the iFrame the gallery is embedded in (if applicable)
+
+					PathMomentLanguageFile:         'JS/Language/',                             // Define the path to where the individual language files for Moment.js are located
+					FromNowLanguage:				'en',                                       // Define the language for the from-now (i.e. 2 months ago) time phrases; please see manual for listing of available languages
+
+					PathNoCoverImage:				'CSS/Images/no_cover.png',					// Set path to image to be used if Facebook doesn't provide a Cover Image for an album
+					allowAlbumDescription:			true,										// Set to "true" if you want to allow the album description in album view
+					showDescriptionStart:			false,										// Set to "true" if you want to show the album description by default; toggle button can be used to show/hide
+					showCommentsLikes:				true,
+
+					cacheAlbumContents:				false,										// Set to "true" if you want to keep albums already loaded in DOM and reuse or "false" for reloading every time
+
+					paginationLayoutAlbums:			true,										// Set to "true" if you want to use pagination for the album thumbnails
+					smartAlbumsPerPageAllow:		true,										// If "true", the script will auto paginate the album thumbnails based on screen dimensions
+					setAlbumsByPages:				false,										// If "true", you can manually set the total number of pages for album thumbnails
+					numberAlbumsPerPage:			9,											// Set the number of albums that should be shown per page (if paginationLayoutAlbums = true)
+					numberPagesForAlbums:			3,											// Set the number of pages for album thubmnails that should be shown (if setAlbumsByPages = true)
+					albumsPagerControls:			true,										// If "true", a select box with all available pages wil be provided for quicker Album Navigation
+					infiniteScrollAlbums:			false,										// Set to "true" if you want to use infinite scroll for album thumbnails
+					infiniteScrollAlbumsSmart:		true,										// If "true", the script will automatically determine the number of thumbnails to load per infinite scroll event
+					infiniteScrollAlbumsBlock:		9,											// Manually set the number of thumbnails to load per infinite scroll event (applies if "infiniteScrollAlbumsSmart" = false)
+
+					paginationLayoutPhotos:			true,										// Set to "true" if you want to use pagination for the photo thumbnails
+					smartPhotosPerPageAllow:		true,										// If "true", the script will auto paginate the photo thumbnails based on screen dimensions
+					setPhotosByPages:				false,										// If "true", you can manually set the total number of pages for photo thumbnails
+					numberPhotosPerPage:			16,											// Set the number of photos that should be shown per page (if paginationLayoutPhotos = true)
+					numberPagesForPhotos:			6,											// Set the number of pages for photo thumbnails that should be shown (if setPhotosByPages = true)
+					showBottomControlBar:			true,										// Set to "true" if you want to show a control bar at the bottom of the detailed album view (includes a 2nd "Back" and a "Scroll to Top" Button)
+					photosPagerControls:			true,										// If "true", a select box with all available pages will be provided for quicker Photo Navigation
+					infiniteScrollPhotos:			false,										// Set to "true" if you want to use infinite scroll for photo thumbnails
+					infiniteScrollPhotosSmart:		true,										// If "true", the script will automatically determine the number of thumbnails to load per infinite scroll event
+					infiniteScrollPhotosBlock:		16,											// Manually set the number of thumbnails to load per infinite scroll event (applies if "infiniteScrollPhotosBlock" = false)
+
+					infiniteScrollOffset:			100,										// Define an additional offset in px which increases the height the user needs to scroll down before an infinite scroll event get triggered
+					infiniteScrollMore:				true,										// If "true", a "Scroll down to show more Items!" message will be shown below the thumbnails
+
+					showTopPaginationBar:			true,										// If "true", a pagination control bar (first / prev / next / last page) will be shown above the thumbnails
+					showBottomPaginationBar:		true,										// If "true", a pagination control bar (first / prev / next / last page) will be shown below the thumbnails
+					showThumbInfoInPageBar:			true,										// If "true", thumbnail count (i.e. Album 1 to 6 out of 20) will be shown in Pagination Bars
+
+					floatingControlBar:				true,										// If set to "true", the control bar will follow the user while scrolling up/down (only if not in iFrame!)
+					controlBarTopOffset:			10,											// Allows for an offset in px for the floating controlbar in order to account for menus or other top-fixed elements
+					showFloatingReturnButton:		false,										// If "true", a return button will be shown in album detail view
+					showFloatingToTopButton:		true,										// If "true", a Go-To-Top button will be shown in the floating control bar
+
+					// Settings for Tooltips
+					// ---------------------
+					tooltipTipAnchor:				'alt',									// Define what anchor or data-key should be used to store tooltips (i.e. "alt", "title", etc.)
+					tooltipUseInternal:				{use_tooltip},										// Define if the internal tooltip script (qTip2) should be utilized
+						tooltipDesign:				'ui-tooltip-jtools',								// Define which design to choose from for the qTip2 Plugin
+					createTooltipsAlbums:			{use_tooltip},										// Add Tooltip class "TipGallery" to Album Thumbnails
+					createTooltipsPhotos:			{use_tooltip},										// Add Tooltip class "TipPhoto" to Photo Thumbnails
+					createTooltipsLightbox:			{use_tooltip},										// Add Tooltip class "TipLightbox" to Description Text in Lightbox
+					customTooltipsClass:			'',											// Add a Custom Class Name to all Items that include Tooltip Item
+					tooltipTitleBar:				false,										// Define if a Tooltip Title Bar should be shown
+					tooltipCloseButton:				false,										// Define if Tooltips should get a Close Button
+					tooltipThemeRoller:				false,										// Define whether or not the UI-Widget classes of the Themeroller UI styles are applied to the Tooltip
+					tooltipTipCorner:				false,										// Define if the Tooltips should have a Corner to create a Speech Bubble Effect
+					tooltipOffsetX:					0,											// Define an additional X-Scale (Horizontal) Tooltip Offset
+					tooltipOffsetY:					30,											// Define an additional Y-Scale (Vertical) Tooltip Offset
+					tooltipPositionTarget:			'mouse',									// Define HTML element the tooltip will be positioned in relation to; 'mouse' or the 'event' (position at target that triggered the tooltip)
+					tooltipPositionMy:				'top center',								// Define where the corner of the Tooltip should be positioned in relation to the Target Element
+					tooltipPositionAt:				'bottom center',							// Define the corner of the Target Element to position the Tooltip corner in relation to
+
+					// General Settings for Filter/Search Feature
+					// ------------------------------------------
+					albumsFilterAllow:				true,										// If "true", provides a filter to filter albums by either dates created or last updated
+						albumsFilterAllEnabled:		false,										// If "true", all album filter selections will be unchecked by default
+						useAlbumsUpdated:			true,										// If "true", filter will use date last updated; if "false", filter will use date created
+					photosFilterAllow:				true,										// If "true", provides a filter to filter photos by dates last added to the album
+						photosFilterAllEnabled:		false,										// If "true", all photo filter selections will be unchecked by default
+					sortFilterNewToOld:				true,										// If "true", all filter criteria will be sorted from newest to oldest or reverse when "false"
+					albumSearchControls:			true,										// If "true", a album search feature will be provided
+
+					// General Settings for Sorting Feature
+					// ------------------------------------
+					albumSortControls:			true,										// Allow for Sorting of Album Thumbnails
+					albumAllowSortName:			true,										// Allow for Sorting by Album Name
+					albumAllowSortItems:		true,										// Allow for Sorting by Number of Images per Album
+					albumAllowSortCreated:		true,										// Allow for Sorting by Date Album has been created
+					albumAllowSortUpdate:		true,										// Allow for Sorting by Date Album has last been updated
+					albumAllowSortFacebook:		false,										// Allow for Sorting by order as provided by Facebook
+					albumAllowSortID:			false,										// Allow for Sorting by Facebook ID
+					albumAllowSortPreSet:		false,										// Allow for Sorting by order in which preset ID's have been entered
+					photoSortControls:			true,										// Allow for Sorting of Photo Thumbnails
+					photoAllowSortAdded:		true,										// Allow for Sorting by Date Photo has been added to Album
+					photoAllowSortUpdate:		true,										// Allow for Sorting by Date Photo has last been updated
+					photoAllowSortFacebook:		false,										// Allow for Sorting by order as provided by Facebook
+					photoAllowSortID:			false,										// Allow for Sorting by Facebook ID
+
+					// Settings for Initial Album Thumbnail Sorting Order
+					// --------------------------------------------------
+					defaultSortDirectionASC:	true,										// Set to "true" for ascending (oldest to newest) and "false" for descending (newest to oldest) default sort direction for album thumbnails
+					defaultSortByAlbumTitle:	true,										// Set to "true" if the default sorting criteria should be the album title
+					defaultSortByNumberImages:	false,										// Set to "true" if the default sorting criteria should be the number of images per album
+					defaultSortByDateCreated:	false,										// Set to "true" if the default sorting criteria should be the date at which album was created
+					defaultSortByDateUpdated:	false,										// Set to "true" if the default sorting criteria should be the date at which album was last updated
+					defaultSortByFacebookOrder:	false,										// Set to "true" if the default sorting criteria should be the order at which albums were received from Facebook
+					defaultSortByFacebookID:	false,										// Set to "true" if the default sorting criteria should be the album ID as assigned by Facebook
+					defaultSortByPreSet:		false,										// Set to "true" if the default sorting critetia should be the order in which preset ID's have been entered
+
+					// Settings for Initial Photo Thumbnail Sorting Order
+					// --------------------------------------------------
+					defaultPhotoDirectionsASC:		true,										// Set to "true" for ascending (oldest to newest) and "false" (newest to oldest) for descending default sort direction for photo thumbnails
+						defaultPhotoSortAdded:		true,										// Set to "true" if the default sorting criteria should be the date at which photo was added to the album
+						defaultPhotoSortUpdated:	false,										// Set to "true" if the default sorting criteria should be the date at which photo was last updated
+						defaultPhotoSortOrder:		false,										// Set to "true" if the default sorting criteria should be the order at which photos were received from Facebook
+						defaultPhotoSortID:			false,										// Set to "true" if the default sorting criteria should be the photo ID assigned by Facebook
+
+					// Settings for Text Items in Sorting Controls
+					// -------------------------------------------
+					PagesButtonText:				'Change Page',								// Define Text for Page Gallery Button
+					SortButtonTextAlbums:			'Sort Albums',								// Define Text for Sorting Button (Albums)
+					SortButtonTextPhotos:			'Sort Photos',								// Define Text for Sorting Button (Photos)
+						SortNameText:				'Album Name',								// Define Text for Sorting Option (Sort by Album Name)
+						SortItemsText:				'Number Images',							// Define Text for Sorting Option (Sort by Number Items)
+						SortAddedText:				'Date Added',								// Define Text for Sorting Option (Sort by Date Photo Added to Album)
+						SortCreatedText:			'Date Created',								// Define Text for Sorting Option (Sort by Date Created)
+						SortUpdatedText:			'Last Update',								// Define Text for Sorting Option (Sort by Date Updated)
+						SortFacebookText:			'Facebook Order',							// Define Text for Sorting Option (Sort by Order as provided by Facebook)
+						SortIDText:					'Facebook ID',								// Define Text for Sorting Option (Sort by Facebook ID)
+						SortPreSetText:				'Custom Order',								// Define Text for Sorting Option (Sort by Order in which pre-set ID's have been entered)
+					FilterButtonTextAlbums:			'Last Updated',								// Define Text for Filter Button (Albums)
+					FilterButtonTextPhotos:			'Last Added',								// Define Text for Filter Button (Photos)
+					SearchButtonTextAlbums:			'Search Albums',							// Define Text for Search Button (Albums)
+					SearchButtonTextPhotos:			'Search Photos',							// Define Text for Search Button (Photos)
+					SearchDefaultText:				'Search ...',								// Define Text for Default Search Term
+
+					// Settings for Text Items in Album Preview
+					// ----------------------------------------
+					AlbumContentPreText:			'Content:',									// Adjust width of CSS classes .albumCount, .albumCreate, .albumUpdate, .albumNumber if necessary
+					AlbumCreatedPreText:			'Created:',									// Adjust width of CSS classes .albumCount, .albumCreate, .albumUpdate, .albumNumber if necessary
+					AlbumUpdatedPreText:			'Updated:',									// Adjust width of CSS classes .albumCount, .albumCreate, .albumUpdate, .albumNumber if necessary
+					AlbumShareMePreText:			'Share Album:',								// Define text shown before "Share Album" Links
+					AlbumSharesPreText:				'Share Views:',								// Define text shown before the number of total Album Shares
+					AlbumNumericIDPreText:			'Album ID:',								// Adjust width of CSS classes .albumCount, .albumCreate, .albumUpdate, .albumNumber if necessary
+					OutOfTotalImagesPreText:		'out of',									// Define pre text when there are more images in album that the script is allowed to pull
+					SingleImageWord:				'Image',									// Define word for a single Image
+					MultiImagesWord:				'Images',									// Define word for multiple Images
+
+					// Settings for Text Items in Photo Preview
+					// ----------------------------------------
+					AlbumBackButtonText:			'Back',										// Define text for back button in album preview
+					AlbumTitlePreText:				'Album Name:',								// Define text shown before album name
+					AlbumCommentsText:				'Show Comments',							// Define text to be shown in button that shows Album Comments
+					AlbumLinkButtonText:			'Click here to view Album on Facebook',		// Define text shown for text link to original Facebook Album
+					AlbumNoDescription:				'No Album Description available.',			// Define text to be shown if there is no Album description available
+					ImageLocationPreText:			'Picture(s) taken at',						// Define text shown before image location text (actual loaction pulled from Facebook; if available)
+					ImageNumberPreText:				'Image ID:',								// Define text shown before Image ID Number
+					ImageShareMePreText:			'Share Image:',								// Define text shown before "Share Image" Links
+					ImageSharesPreText:				'Share Views:',								// Define text shown before the number of total Photo Shares
+					lightBoxNoDescription:			'No Image Description available.',			// Define text to be shown in Lightbox if no Image Description available
+
+					// Settings for Text Items in Pagination Summary Bar
+					// -------------------------------------------------
+					PaginationShowingText:          'Showing',                                  // Define text part in "SHOWING Albums/Photos x to y out of z"
+					PaginationAlbumsText:           'Albums',                                   // Define text part in "Showing ALBUMS/Photos x to y out of z"
+					PaginationPhotosText:           'Photos',                                   // Define text part in "Showing Albums/PHOTOS x to y out of z"
+					PaginationItemsToText:          'to',                                       // Define text part in "Showing Albums/Photos x TO y out of z"
+					PaginationOutOfTotalText:       'out of',                                   // Define text part in "Showing Albums/Photos x to y OUT OF z"
+					PaginationPageText:             'Page',                                     // Define text part in "PAGE x of z"
+					PaginationPageOfText:           'of',                                       // Define text part in "Page x OF z"
+
+					// Settings for Text Items in Share Buttons
+					// ----------------------------------------
+					SocialShareAlbumText:			'Check out this Album on Facebook ... ',	// Define text to be shown in Twitter Share Text (before Link to Album)
+					SocialSharePhotoText:			'Check out this Photo on Facebook ... ',	// Define text to be shown in Twitter Share Text (before Link to Photo)
+
+					// Settings for Text Items in Infinite Scroll
+					InfiniteScrollMore:				'Scroll down to show more Items!',			// Define text to be shown below thumbnails if Infinite Scroll is enabled
+					InfiniteScrollLoad:				'Loading ...',								// Define text to be shown on screen when an Infinite Scroll Event has been triggered
+
+					// Settings for Album Thumbnails
+					// -----------------------------
+					albumNameTitle:					true,										// Add Name / Title of Album to each Album Thumbnail
+						albumNameAbove:				true,										// If "true", the album name will be shown above the thumbnail, otherwise below
+						albumNameShorten:			true,										// If "true", the album name shown will automatically be shortened to avoid unnecessary linebreaks
+					albumImageCount:				true,										// Add Image Count per Album Below Album Thumbnail
+					albumDateCreate:				true,										// Add Date Created below Album Thumbnail
+						albumCreateFromNow:			true,										// Define if date created should be converted into a "from now" period (i.e. 2 days ago)
+					albumDateUpdate:				false,										// Add Date Last Updated below Album Thumbnail
+						albumUpdateFromNow:			true,										// Define if date last updated should be converted into a "from now" period (i.e. 2 days ago)
+					albumFacebookID:				false,										// Add Album ID below Album Thumbnail; ID can be used to exclude album from showing
+
+					matchAlbumPhotoThumbs:			false,										// Set to true if you want to make the album thumbnails look like the photo thumbnails (photo thumbnail settings will be used)
+						albumWrapperWidth:			290,										// Define width for each Album Wrapper (should equal albumThumWidth + 2x albumFrameOffset!)
+						albumThumbWidth: 			280,										// Define width for each Album Thumbnail (deduct at least 2x albumFrameOffset from albumWrapperWidth to allow for frame offset)
+						albumThumbHeight: 			200,										// Define Height for each Album Thumbnail
+						albumFrameOffset:			5,											// Define offset for 2nd Album Thumbnail border to create stacked effect (set to "0" (zero) to disable stack effect)
+						albumThumbPadding:			0,											// This is just a placeholder variable; no need to change since it will be automatically filled!
+					albumWrapperMargin:				10,											// Define margin for each Album Wrapper
+					albumShadowOffset:				12,											// Define additional offset (top) for album shadow to fine-tune shadow position
+					albumInfoOffset:				0,											// Define additional offset (top) for album information section (name, content, dates)
+					albumThumbOverlay:				true,										// Add Magnifier Overlay to Thumbnail
+					albumThumbRotate:				true,										// Add Hover Rotate / Rumble Effect to Album Thumbnail (rotate does not work in IE 8 or less; rumble effect compensates)
+						albumRumbleX:				3,											// Define Rumble Movement on X-Scale for Album Thumbnails
+						albumRumbleY:				3,											// Define Rumble Movement on Y-Scale for Album Thumbnails
+						albumRotate:				3,											// Define Rotation Angle on X+Y-Scale for Album Thumbnails
+						albumRumbleSpeed:			150,										// Define Speed for Rumble / Rotate Effect for Album Thumbnails
+					albumShowPaperClipL:			true,										// PaperClip on the left
+					albumShowPaperClipR:			false,										// PaperClip on the Right
+					albumShowPushPin:				false,										// Centered Pushin
+					albumShowShadow:				true,										// Show Shadow below Album Thumbnail (use only one shadow type below)
+						albumShadowA:				true,										// Images Show Shadow Type 1 (default if none selected and "albumShowShadow" = "true")
+						albumShadowB:				false,										// Images Show Shadow Type 2
+						albumShadowC:				false,										// Images Show Shadow Type 3
+					albumCCS3Shadow:				false,										// CSS3 Show Shadow Type (adds class "ShadowCSS3" to elements; independent from image shadow types)
+					albumShowSocialShare:			true,										// Add Section to share album via Facebook, Twitter and Google
+						albumSocialSharePopup:		false,										// If "true", the Album Social Share links will open in a popup window instead of a new tab
+						albumTitleSummaryLength:	25,											// Define the Length (Number of Characters) of the Album Title to be used in Share Links
+					albumThumbSocialShare:			false,										// If "true", the Social Share button will be shown as overlay in the Album Thumbnail, otherwise, below
+					albumShortSocialShare:			true,										// If "true", the Album Share URL will be shortened, using the http://safe.mn URL Shortener Service
+						albumShowOrder:				false,										// Show Number of album (derived from order as provided by Facebook)
+
+					// Settings for Photo Thumbnails
+					// -----------------------------
+					photoThumbWidth: 				210,										// Define Width for each Photo Thumbnail
+					photoThumbHeight: 				155,										// Define Height for each Photo Thumbnail
+					photoThumbMargin: 				10,											// Define Margin (top-left-bottom-right) for each Photo Thumbnail for space between each thumbnails
+					photoThumbPadding:				5,											// Define Padding (top-left-bottom-right) for each Photo Thumbnail for photo frame
+					photoThumbOverlay:				true,										// Add Magnifier Overlay to Photo Thumbnail
+					photoThumbRotate:				true,										// Add Hover Rotate / Rumble Effect to Photo Thumbnail (rotate does not work in IE 8 or less; rumble effect compensates)
+						photoRumbleX:				5,											// Define Rumble Movement on X-Scale for Photo Thumbnails
+						photoRumbleY:				5,											// Define Rumble Movement on Y-Scale for Photo Thumbnails
+						photoRotate:				5,											// Define Rotation Angle on X+Y-Scale for Photo Thumbnails
+						photoRumbleSpeed:			150,										// Define Speed for Rumble / Rotate Effect for Photo Thumbnails
+					photoShowClearTape:				true,										// Add Clear Tape on Top of Photo Thumbnail
+					photoShowYellowTape:			false,										// Add Yellow Tape on Top of Photo Thumbnail
+					photoShowPushPin:				false,										// Add Centered Pushin on Top of Photo Thumbnail
+					photoShowIconFBLink:			true,										// Set to "true" if you want to show a icon link to the original Facebook Album
+					photoShowTextFBLink:			true,										// Set to "true" if you want to show a text link to the original Facebook Album
+					photoShowNumber:				false,										// Add Facebook Image ID Number below Thumbnail
+					photoShowSocialShare:			true,										// Add Section to share photo via Facebook, Twitter and Google
+						photoSocialSharePopup:		false,										// If "true", the Photo Social Share links will open in a popup window instead of a new tab
+						photoTitleSummaryLength:	50,											// Define the Length (Number of Characters) of the Photo Description to be used in Share Links
+						photoThumbSocialShare:		false,										// If "true", the Social Share button will be shown as overlay in the Photo Thumbnail, otherwise, below
+						photoShortSocialShare:		false,										// If "true", the Photo Share URL will be shortened, using the http://safe.mn URL Shortener Service
+						photoShowOrder:				false,										// Show Number of photo (derived from order as provided by Facebook)
+
+					// Settings for Optional Lightboxes
+					// --------------------------------
+					fancyBoxAllow:					{use_fancybox},										// Add fancyBox (Lightbox) to Photo Thumbnails; if not, images will open up in new tab / window
+					fancyBoxOptions: 				{},											// Options for fancyBox Lightbox Plugin (currently not active yet; preparation for future update!)
+					colorBoxAllow:					{use_colorbox},										// Add colorBox (Lightbox) to Photo Thumbnails; if not, images will open up in new tab / window
+					colorBoxOptions: 				{},											// Options for colorBox Lightbox Plugin (currently not active yet; preparation for future update!)
+					prettyPhotoAllow:				{use_prettyphoto},										// Add prettyPhoto (Lightbox) to Photo Thumbnails; if not, images will open up in new tab / window
+					prettyPhotoOptions:				{},											// Options for prettyPhoto Lightbox Plugin (currently not active yet; preparation for future update!)
+					photoBoxAllow:					false,										// Add photoBox (Lightbox) to Photo Thumbnails; if not, images will open up in new tab / window
+					photoPhotoOptions:				{},											// Options for photoBox Lightbox Plugin (currently not active yet; preparation for future update!)
+					lightboxCustomClass:			'',											// Add a Custom Class Name to all Items that can be opened with a Lightbox
+					lightboxSocialShare:			false,										// If "true", the social share buttons will be shown in the Lightbox (NOT for photoBox!)
+
+					// Debug Settings (Experimental)
+					// -----------------------------
+					consoleLogging:					false,										// Define if error/success messages and notices should be logged into the browser developer console
+					outputGraphAlbums:				false,
+					outputGraphPhotos:				false,
+					outputCountAlbumID:				false,										// Shows a popup with album counter and album ID for each album found and not excluded while looping
+
+					// Don't change any ID's unless you are also updating the corresponding CSS file
+					// -----------------------------------------------------------------------------
+					frameID: 						$(this).attr("id"),							// ID of element in which overall gallery script is to be shown
+					loaderID: 						'FB_Album_Loader',							// ID of element in which gallery loader animation is to be shown ... ensure ID matches the one used in CSS settings!
+					galleryID: 						'FB_Album_Display',							// ID of element in which gallery thumbnails are to be shown ... ensure ID matches the one used in CSS settings!
+					errorID: 						'FB_Error_Display',							// ID of element in which error messages are to be shown ... ensure ID matches the one used in CSS settings!
+					infiniteAlbumsID:				'FB_Album_Infinite_Albums',
+					infinitePhotosID:				'FB_Album_Infinite_Photos',
+					infiniteLoadID:					'FB_Album_Infinite_Load',
+					infiniteMoreID:					'FB_Album_Infinite_More'
+				}); 
+			});
+		});
+	});
+}); 
+</script>

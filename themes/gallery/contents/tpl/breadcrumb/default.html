@@ -1,0 +1,38 @@
+<!--BeginSezBreadCrumbTitleTop-->
+<h1 class="breadcrumb-title">[[PAGE_HEADER]]</h1>
+<!--EndSezBreadCrumbTitleTop-->
+
+<!--BeginSezNavigationBackTop-->
+	<a class="breadcrumb-back" href="{ret_url}">{_breadcrumb_back}</a>
+<!--EndSezNavigationBackTop-->
+
+<!--BeginSezNavigation-->
+<ul class="breadcrumb" itemprop="breadcrumb" itemscope="" itemtype="http://schema.org/Breadcrumb">
+  <!--BeginSezNavigationTitle-->
+  <li class="nav-title">{_breadcrumb_title}</li>
+  <!--EndSezNavigationTitle-->
+  <!--BeginSezNavigationHome-->
+  <li class="nav-home{current}">
+      <a href="http://{domain_inset}{site_path}{home_path}">{home_name}</a>
+  </li>
+  <!--EndSezNavigationHome-->
+  <!--BeginSezNavigationActualPath-->
+  <li class="nav-item{current}" itemprop="url" data-original-title="{part_actual_name}">
+      <!--BeginSezNavigationLinkPart-->
+      <a href="http://{domain_inset}{site_path}{part_actual_path}">{part_actual_name}</a>
+      <!--EndSezNavigationLinkPart-->
+      <!--BeginSezNavigationNoLinkPart-->
+      <span itemprop="name">[[PAGE_HEADER]]</span> 
+      <!--EndSezNavigationNoLinkPart-->
+  </li>
+  <!--EndSezNavigationActualPath-->
+</ul>
+<!--EndSezNavigation-->
+
+<!--BeginSezNavigationBackBottom-->
+	<a class="breadcrumb-back" href="{ret_url}">{_breadcrumb_back}</a>
+<!--EndSezNavigationBackBottom-->
+
+<!--BeginSezBreadCrumbTitleBottom-->
+<h1 class="breadcrumb-title">[[PAGE_HEADER]]</h1>
+<!--EndSezBreadCrumbTitleBottom-->

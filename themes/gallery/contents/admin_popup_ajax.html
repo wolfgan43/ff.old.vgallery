@@ -1,0 +1,73 @@
+<ul class="popup" title="{item_name}">
+    <!--BeginSezLayoutModify-->
+    <li class="{class_name}" title="{_layout_modify}">  
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_modify_path}?keys[ID]={item_id}&amp;location={item_location}&amp;path={item_path}&amp;ret_url={ret_url}');" class="{block_edit_class}">{block_edit_icon}{_layout_modify}</a>
+    </li>
+    <!--EndSezLayoutModify-->
+    <!--BeginSezLayoutDefaultModify-->
+    <li class="{class_name}" title="{_layout_modify}">  
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_default_modify_path}?ret_url={ret_url}');" class="{block_edit_class}">{block_edit_icon}{_layout_modify}</a>
+    </li>
+    <!--EndSezLayoutDefaultModify-->
+    <!--BeginSezLayoutDelete-->
+    <li class="{class_name}" title="{_layout_delete}">  
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_delete_path}');" class="{block_delete_class}">{block_delete_icon}{_layout_delete}</a>
+    </li>
+    <!--EndSezLayoutDelete-->
+    <!--BeginSezMenuAdminAddDir-->
+    <li class="{class_name}" title="{_adddir}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage{huge_addnew}', '{item_path}');" class="{layout_adddir_class}">{layout_adddir_icon}{_adddir}</a>
+    </li>
+    <!--EndSezMenuAdminAddDir-->
+    <!--BeginSezMenuAdminAddNew-->
+    <li class="{class_name}" title="{_addnew}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage{huge_addnew}', '{item_path}');" class="{layout_addnew_class}">{layout_addnew_icon}{_addnew}</a>
+    </li>
+    <!--EndSezMenuAdminAddNew-->
+    <!--BeginSezMenuAdminModify-->
+    <li class="{class_name}" title="{_modify}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage{huge_modify}', '{item_path}');" class="{layout_edit_class}">{layout_edit_icon}{_modify}</a>
+    </li>
+    <!--EndSezMenuAdminModify-->
+    <!--BeginSezMenuAdminDelete-->
+    <li class="{class_name}" title="{_delete}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_path}');" class="{layout_delete_class}">{layout_delete_icon}{_delete}</a>
+    </li>
+    <!--EndSezMenuAdminDelete-->
+    <!--BeginSezModuleModify-->
+    <li class="{class_name}" title="{_module_modify}">  
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage{huge_form}', '{item_modify_path}');" class="{layout_edit_class}">{layout_edit_icon}{_module_modify}</a>
+    </li>
+    <!--EndSezModuleModify-->
+    <!--BeginSezModuleDelete-->
+    <li class="{class_name}" title="{_module_delete}">  
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_delete_path}');" class="{layout_delete_class}">{layout_delete_icon}{_module_delete}</a>
+    </li>
+    <!--EndSezModuleDelete-->
+	<!--BeginSezModuleExtra-->
+	<li class="{class_name}" title="{_module_property}">  
+		<a href="javascript:ff.ffPage.dialog.doOpen('dialogManage{huge_form}', '{item_path}');" class="{layout_property_class}">{layout_property_icon}{_module_property}</a>
+	</li>
+	<!--EndSezModuleExtra-->
+
+    <!--BeginSezMenuAdminExtra-->
+    <li class="{class_name}" title="{_property}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_path}');" class="{layout_property_class}">{layout_property_icon}{_property}</a>
+    </li>
+    <!--EndSezMenuAdminExtra-->
+    <!--BeginSezMenuAdminFields-->
+    <li class="{class_name}" title="{_fields}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_path}');" class="{layout_fields_class}">{layout_fields_icon}{_fields}</a>
+    </li>
+    <!--EndSezMenuAdminFields-->
+    <!--BeginSezMenuAdminEcommerce-->
+    <li class="{class_name}" title="{_ecommerce}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_path}');" class="{layout_ecommerce_class}">{layout_ecommerce_icon}{_ecommerce}</a>
+    </li>
+    <!--EndSezMenuAdminEcommerce-->
+    <!--BeginSezMenuAdminSetting-->
+    <li class="{class_name}" title="{_setting}">
+        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{item_path}?area={item_type}');" class="{layout_setting_class}">{layout_setting_icon}{_setting}</a>
+    </li>
+    <!--EndSezMenuAdminSetting-->
+</ul>

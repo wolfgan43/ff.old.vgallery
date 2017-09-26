@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+
+    <formsframework id="forms_framework" enable="1" />
+
+    <ffmoduleattendance id="ff_module/attendance" enable="0" />
+
+    <ffmodulecloudocs id="ff_module/cloudocs" enable="0" />
+
+    <ffmodulegraph id="ff_module/graph" enable="0" />
+
+    <ffthemeadmin id="ff_theme/admin" enable="0" />
+
+    <ffthemeadminv2 id="ff_theme/admin_v2" enable="1" />
+
+    <ffthemeadminv4 id="ff_theme/admin_v4" enable="0" />
+
+    <ffthemeclouddocs id="ff_theme/clouddocs" enable="0" />
+
+    <vgallerycms id="vgallery_cms" enable="1" />
+
+    <vgallerymastercontrol id="vgallery_master_control" enable="0" />
+
+    <vgallerypluginjqueryaccordion id="vgallery_plugin/jquery.accordion" enable="1" />
+
+    <vgallerypluginjqueryajaxcontent id="vgallery_plugin/jquery.ajaxcontent" enable="1" />
+
+    <vgallerypluginjqueryatooltip id="vgallery_plugin/jquery.atooltip" enable="1" />
+
+    <vgallerypluginjquerybackgroundresize id="vgallery_plugin/jquery.background.resize" enable="1" />
+
+    <vgallerypluginjquerycarousel id="vgallery_plugin/jquery.carousel" enable="1" />
+
+    <vgallerypluginjquerycloudzoom id="vgallery_plugin/jquery.cloudzoom" enable="1" />
+
+    <vgallerypluginjquerycluetip id="vgallery_plugin/jquery.cluetip" enable="1" />
+
+    <vgallerypluginjquerycluetipclick id="vgallery_plugin/jquery.cluetipclick" enable="1" />
+
+    <vgallerypluginjquerycontentflow id="vgallery_plugin/jquery.contentflow" enable="1" />
+
+    <vgallerypluginjquerycoverflip id="vgallery_plugin/jquery.coverflip" enable="1" />
+
+    <vgallerypluginjquerycrosslide id="vgallery_plugin/jquery.crosslide" enable="1" />
+
+    <vgallerypluginjquerycycle id="vgallery_plugin/jquery.cycle" enable="1" />
+
+    <vgallerypluginjquerydynatree id="vgallery_plugin/jquery.dynatree" enable="1" />
+
+    <vgallerypluginjqueryeasyslider id="vgallery_plugin/jquery.easyslider" enable="1" />
+
+    <vgallerypluginjqueryfancybox id="vgallery_plugin/jquery.fancybox" enable="1" />
+
+    <vgallerypluginjqueryfeaturelist id="vgallery_plugin/jquery.featurelist" enable="1" />
+
+    <vgallerypluginjqueryissuu id="vgallery_plugin/jquery.issuu" enable="1" />
+
+    <vgallerypluginjqueryjcarousel id="vgallery_plugin/jquery.jcarousel" enable="1" />
+
+    <vgallerypluginjqueryjjmenu id="vgallery_plugin/jquery.jjmenu" enable="1" />
+
+    <vgallerypluginjqueryjstree id="vgallery_plugin/jquery.jstree" enable="1" />
+
+    <vgallerypluginjqueryjstreeold id="vgallery_plugin/jquery.jstree.old" enable="1" />
+
+    <vgallerypluginjquerykwicks id="vgallery_plugin/jquery.kwicks" enable="1" />
+
+    <vgallerypluginjquerylavalamp id="vgallery_plugin/jquery.lavalamp" enable="1" />
+
+    <vgallerypluginjquerylightbox id="vgallery_plugin/jquery.lightbox" enable="1" />
+
+    <vgallerypluginjqueryliscroll id="vgallery_plugin/jquery.liscroll" enable="1" />
+
+    <vgallerypluginjquerymbytplayer id="vgallery_plugin/jquery.mb.ytplayer" enable="1" />
+
+    <vgallerypluginjquerymenualternative id="vgallery_plugin/jquery.menu.alternative" enable="1" />
+
+    <vgallerypluginjquerymenudropdown id="vgallery_plugin/jquery.menu.dropdown" enable="1" />
+
+    <vgallerypluginjquerymiddlegallery id="vgallery_plugin/jquery.middlegallery" enable="1" />
+
+    <vgallerypluginjquerynivoslider id="vgallery_plugin/jquery.nivoslider" enable="1" />
+
+    <vgallerypluginjqueryorbit id="vgallery_plugin/jquery.orbit" enable="1" />
+
+    <vgallerypluginjquerypimg id="vgallery_plugin/jquery.pimg" enable="1" />
+
+    <vgallerypluginjquerypopeye id="vgallery_plugin/jquery.popeye" enable="1" />
+
+    <vgallerypluginjquerypregiogallery id="vgallery_plugin/jquery.pregiogallery" enable="1" />
+
+    <vgallerypluginjqueryprettyphoto id="vgallery_plugin/jquery.prettyphoto" enable="1" />
+
+    <vgallerypluginjqueryroundabout id="vgallery_plugin/jquery.roundabout" enable="1" />
+
+    <vgallerypluginjquerysimplemenu id="vgallery_plugin/jquery.simplemenu" enable="1" />
+
+    <vgallerypluginjquerysimplemenuclick id="vgallery_plugin/jquery.simplemenuclick" enable="1" />
+
+    <vgallerypluginjqueryslidingpanel id="vgallery_plugin/jquery.slidingpanel" enable="1" />
+
+    <vgallerypluginjquerysuperfish id="vgallery_plugin/jquery.superfish" enable="1" />
+
+    <vgallerypluginjquerytabs id="vgallery_plugin/jquery.tabs" enable="1" />
+
+    <vgallerypluginjquerytoolbar id="vgallery_plugin/jquery.toolbar" enable="1" />
+
+    <vgallerypluginjquerytoolbaradmin id="vgallery_plugin/jquery.toolbaradmin" enable="1" />
+
+    <vgallerypluginjquerytoolsoverlay id="vgallery_plugin/jquery.tools.overlay" enable="1" />
+
+    <vgallerypluginjqueryuploadify id="vgallery_plugin/jquery.uploadify" enable="1" />
+
+    <vgallerypluginjqueryverticalslider id="vgallery_plugin/jquery.verticalslider" enable="1" />
+
+    <vgallerypluginjqueryvideobar id="vgallery_plugin/jquery.videobar" enable="1" />
+
+    <vgallerypluginjqueryyoutube id="vgallery_plugin/jquery.youtube" enable="1" />
+
+    <vgallerypluginswfobjectaudioplayer id="vgallery_plugin/swfobject.audioplayer" enable="1" />
+
+    <vgallerypluginswfobjectbasicsoundplayer id="vgallery_plugin/swfobject.basicsoundplayer" enable="1" />
+
+    <vgallerypluginswfobjectcompactplayer id="vgallery_plugin/swfobject.compactplayer" enable="1" />
+
+    <vgallerypluginswfobjectdewplayer id="vgallery_plugin/swfobject.dewplayer" enable="1" />
+
+    <vgallerypluginswfobjectniftyplayer id="vgallery_plugin/swfobject.niftyplayer" enable="1" />
+
+    <vgallerypluginswfobjectsimpleplayer id="vgallery_plugin/swfobject.simpleplayer" enable="1" />
+
+    <vgallerypluginswfobjectwpaudioplayer id="vgallery_plugin/swfobject.wpaudioplayer" enable="1" />
+
+    <vgallerymodulecalendar id="vgallery_module/calendar" enable="1" />
+
+    <vgallerymodulefacebook id="vgallery_module/facebook" enable="1" />
+
+    <vgallerymoduleform id="vgallery_module/form" enable="1" />
+
+    <vgallerymodulemaps id="vgallery_module/maps" enable="1" />
+
+    <vgallerymodulenewsletter id="vgallery_module/newsletter" enable="1" />
+
+    <vgallerymoduleregister id="vgallery_module/register" enable="1" />
+
+    <vgallerymodulesearch id="vgallery_module/search" enable="1" />
+
+    <vgallerymoduleshare id="vgallery_module/share" enable="1" />
+
+    <vgallerymoduleshippingprice id="vgallery_module/shippingprice" enable="1" />
+
+    <vgallerymoduleswf id="vgallery_module/swf" enable="1" />
+
+    <vgallerymoduletagcloud id="vgallery_module/tagcloud" enable="1" />
+
+    <vgallerymodulevideobar id="vgallery_module/videobar" enable="1" />
+
+    <externalappajaxplorer id="external_app/ajaxplorer" enable="0" />
+
+    <externalappamcharts id="external_app/amcharts" enable="0" />
+
+    <externalappckeditor id="external_app/ckeditor" enable="1" />
+
+    <externalappckfinder id="external_app/ckfinder" enable="0" />
+
+    <externalappjquerytools id="external_app/jquery.tools" enable="0" />
+
+    <externalappkcfinder id="external_app/kcfinder" enable="1" />
+
+    <externalapptinymce id="external_app/tiny_mce" enable="0" />
+
+    <jqueryuithemebase id="jqueryui_theme/base" enable="1" />
+
+    <jqueryuithemechromium id="jqueryui_theme/chromium" enable="1" />
+
+    <jqueryuithemecloudocs id="jqueryui_theme/cloudocs" enable="0" />
+
+    <jqueryuithememerceoteca id="jqueryui_theme/merceoteca" enable="0" />
+
+    <jqueryuithemenoir id="jqueryui_theme/noir" enable="0" />
+
+    <jqueryuithemenoiradv id="jqueryui_theme/noir-adv" enable="0" />
+
+    <jqueryuithemeoredgreen id="jqueryui_theme/oredgreen" enable="0" />
+
+    <jqueryuithemepinkcivetta id="jqueryui_theme/pink-civetta" enable="0" />
+
+    <jqueryuithemesmoothness id="jqueryui_theme/smoothness" enable="0" />
+
+    <jqueryuithemeuilightness id="jqueryui_theme/ui-lightness" enable="0" />
+
+    <jqueryuithemevoodoo id="jqueryui_theme/voodoo" enable="0" />
+
+    <jqueryuithemexodus id="jqueryui_theme/xodus" enable="0" />
+
+    <externalpluginjqueryajaxcontent id="external_plugin/jquery.ajaxcontent" enable="1" />
+
+    <externalpluginjqueryanchor id="external_plugin/jquery.anchor" enable="1" />
+
+    <externalpluginjqueryatooltip id="external_plugin/jquery.atooltip" enable="1" />
+
+    <externalpluginjquerybackgroundresize id="external_plugin/jquery.background.resize" enable="1" />
+
+    <externalpluginjquerybackstretch id="external_plugin/jquery.backstretch" enable="1" />
+
+    <externalpluginjquerybbq id="external_plugin/jquery.bbq" enable="0" />
+
+    <externalpluginjquerybgiframe id="external_plugin/jquery.bgiframe" enable="1" />
+
+    <externalpluginjquerybgpos id="external_plugin/jquery.bgpos" enable="1" />
+
+    <externalpluginjquerybgstretcher id="external_plugin/jquery.bgstretcher" enable="1" />
+
+    <externalpluginjqueryblockui id="external_plugin/jquery.blockui" enable="1" />
+
+    <externalpluginjquerycarousel id="external_plugin/jquery.carousel" enable="1" />
+
+    <externalpluginjquerycheckbox id="external_plugin/jquery.checkbox" enable="1" />
+
+    <externalpluginjquerycloudzoom id="external_plugin/jquery.cloudzoom" enable="1" />
+
+    <externalpluginjquerycluetip id="external_plugin/jquery.cluetip" enable="1" />
+
+    <externalpluginjquerycodaslider id="external_plugin/jquery.coda.slider" enable="1" />
+
+    <externalpluginjquerycontentflow id="external_plugin/jquery.contentflow" enable="1" />
+
+    <externalpluginjquerycookie id="external_plugin/jquery.cookie" enable="1" />
+
+    <externalpluginjquerycorner id="external_plugin/jquery.corner" enable="0" />
+
+    <externalpluginjquerycoverscroll id="external_plugin/jquery.coverscroll" enable="1" />
+
+    <externalpluginjquerycrosslide id="external_plugin/jquery.crosslide" enable="1" />
+
+    <externalpluginjquerycycle id="external_plugin/jquery.cycle" enable="1" />
+
+    <externalpluginjquerydimensions id="external_plugin/jquery.dimensions" enable="1" />
+
+    <externalpluginjquerydynatree id="external_plugin/jquery.dynatree" enable="1" />
+
+    <externalpluginjqueryeasing id="external_plugin/jquery.easing" enable="1" />
+
+    <externalpluginjqueryeasyslider id="external_plugin/jquery.easyslider" enable="1" />
+
+    <externalpluginjqueryfacebookwall id="external_plugin/jquery.facebookwall" enable="1" />
+
+    <externalpluginjqueryfancybox id="external_plugin/jquery.fancybox" enable="1" />
+
+    <externalpluginjqueryfeaturelist id="external_plugin/jquery.featurelist" enable="1" />
+
+    <externalpluginjqueryhotkeys id="external_plugin/jquery.hotkeys" enable="1" />
+
+    <externalpluginjqueryhoverintent id="external_plugin/jquery.hoverintent" enable="1" />
+
+    <externalpluginjqueryjcarousel id="external_plugin/jquery.jcarousel" enable="1" />
+
+    <externalpluginjqueryjjmenu id="external_plugin/jquery.jjmenu" enable="1" />
+
+    <externalpluginjqueryjscrollpane id="external_plugin/jquery.jscrollpane" enable="1" />
+
+    <externalpluginjqueryjstree id="external_plugin/jquery.jstree" enable="1" />
+
+    <externalpluginjqueryjstreeold id="external_plugin/jquery.jstree.old" enable="1" />
+
+    <externalpluginjquerykwicks id="external_plugin/jquery.kwicks" enable="1" />
+
+    <externalpluginjquerylavalamp id="external_plugin/jquery.lavalamp" enable="1" />
+
+    <externalpluginjquerylightbox id="external_plugin/jquery.lightbox" enable="1" />
+
+    <externalpluginjqueryliscroll id="external_plugin/jquery.liscroll" enable="1" />
+
+    <externalpluginjquerylocalscroll id="external_plugin/jquery.localscroll" enable="1" />
+
+    <externalpluginjquerymaphighlight id="external_plugin/jquery.maphighlight" enable="1" />
+
+    <externalpluginjquerymbytplayer id="external_plugin/jquery.mb.ytplayer" enable="1" />
+
+    <externalpluginjquerymetadata id="external_plugin/jquery.metadata" enable="1" />
+
+    <externalpluginjquerymousewheel id="external_plugin/jquery.mousewheel" enable="1" />
+
+    <externalpluginjquerynivoslider id="external_plugin/jquery.nivoslider" enable="1" />
+
+    <externalpluginjqueryorbit id="external_plugin/jquery.orbit" enable="1" />
+
+    <externalpluginjqueryphotowall id="external_plugin/jquery.photowall" enable="1" />
+
+    <externalpluginjquerypimg id="external_plugin/jquery.pimg" enable="1" />
+
+    <externalpluginjqueryplaceholder id="external_plugin/jquery.placeholder" enable="0" />
+
+    <externalpluginjquerypngfix id="external_plugin/jquery.pngfix" enable="1" />
+
+    <externalpluginjquerypnotify id="external_plugin/jquery.pnotify" enable="1" />
+
+    <externalpluginjquerypopeye id="external_plugin/jquery.popeye" enable="1" />
+
+    <externalpluginjqueryprettyphoto id="external_plugin/jquery.prettyphoto" enable="1" />
+
+    <externalpluginjqueryprintelement id="external_plugin/jquery.printelement" enable="1" />
+
+    <externalpluginjquerypulse id="external_plugin/jquery.pulse" enable="1" />
+
+    <externalpluginjqueryqtip id="external_plugin/jquery.qtip" enable="0" />
+
+    <externalpluginjqueryrightclick id="external_plugin/jquery.rightclick" enable="1" />
+
+    <externalpluginjqueryroundabout id="external_plugin/jquery.roundabout" enable="1" />
+
+    <externalpluginjqueryscrollto id="external_plugin/jquery.scrollto" enable="1" />
+
+    <externalpluginjqueryserialscroll id="external_plugin/jquery.serialscroll" enable="1" />
+
+    <externalpluginjquerysimplemenu id="external_plugin/jquery.simplemenu" enable="1" />
+
+    <externalpluginjquerysimplemenuclick id="external_plugin/jquery.simplemenuclick" enable="1" />
+
+    <externalpluginjqueryslideto id="external_plugin/jquery.slideto" enable="1" />
+
+    <externalpluginjquerystars id="external_plugin/jquery.stars" enable="1" />
+
+    <externalpluginjquerystorage id="external_plugin/jquery.storage" enable="1" />
+
+    <externalpluginjquerysuperfish id="external_plugin/jquery.superfish" enable="1" />
+
+    <externalpluginjquerysupersubs id="external_plugin/jquery.supersubs" enable="1" />
+
+    <externalpluginjquerytimers id="external_plugin/jquery.timers" enable="1" />
+
+    <externalpluginjquerytipsy id="external_plugin/jquery.tipsy" enable="1" />
+
+    <externalpluginjquerytmpl id="external_plugin/jquery.tmpl" enable="1" />
+
+    <externalpluginjquerytokeninput id="external_plugin/jquery.tokeninput" enable="1" />
+
+    <externalpluginjqueryuploadify id="external_plugin/jquery.uploadify" enable="1" />
+
+    <externalpluginjqueryvgplaceholder id="external_plugin/jquery.vgplaceholder" enable="0" />
+
+    <externalpluginjquerywaypoint id="external_plugin/jquery.waypoint" enable="1" />
+
+    <externalpluginjqueryytchromeless id="external_plugin/jquery.ytchromeless" enable="0" />
+
+    <externalpluginnetzgestabevel id="external_plugin/netzgesta.bevel" enable="0" />
+
+    <externalpluginnetzgestacorner id="external_plugin/netzgesta.corner" enable="0" />
+
+    <externalpluginnetzgestacurl id="external_plugin/netzgesta.curl" enable="0" />
+
+    <externalpluginnetzgestaglossy id="external_plugin/netzgesta.glossy" enable="0" />
+
+    <externalpluginnetzgestamapper id="external_plugin/netzgesta.mapper" enable="0" />
+
+    <externalpluginnetzgestareflex id="external_plugin/netzgesta.reflex" enable="0" />
+
+    <externalpluginnetzgestasphere id="external_plugin/netzgesta.sphere" enable="0" />
+
+    <externalpluginswfobjectaudioplayer id="external_plugin/swfobject.audioplayer" enable="1" />
+
+    <externalpluginswfobjectbasicsoundplayer id="external_plugin/swfobject.basicsoundplayer" enable="1" />
+
+    <externalpluginswfobjectcompactplayer id="external_plugin/swfobject.compactplayer" enable="1" />
+
+    <externalpluginswfobjectdewplayer id="external_plugin/swfobject.dewplayer" enable="1" />
+
+    <externalpluginswfobjectniftyplayer id="external_plugin/swfobject.niftyplayer" enable="1" />
+
+    <externalpluginswfobjectsimpleplayer id="external_plugin/swfobject.simpleplayer" enable="1" />
+
+    <externalpluginswfobjectwpaudioplayer id="external_plugin/swfobject.wpaudioplayer" enable="1" />
+
+</configdata>

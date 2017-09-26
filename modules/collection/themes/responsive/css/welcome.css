@@ -1,0 +1,30 @@
+.intro-img {
+    background-image: url(/uploads/list.jpg);
+    height: 150px;
+    background-size: cover;
+}
+
+.intro {
+    text-align: center;
+}
+
+.link A {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: block;
+    height: 100%;
+    font-size: 20px;
+}
+
+.film A {
+    background-image: url(../images/film.png);
+}
+
+.book A {
+    background-image: url(../images/book.png);
+}
+
+.videogame A {
+    background-image: url(../images/piattaforma.png);
+}

@@ -1,0 +1,62 @@
+<div class="menu-idea">
+	<!--BeginSezIdeaMenu-->
+	<div class="group info">
+		<ul>
+			<!--BeginSezIdeaMenuItem-->
+			<li class="menuidea {item_class}">
+				<a href="javascript:void(0);" onclick="{idea_modify_action}"><span class="status"><span class="{item_status}">{item_index}</span></span>{item_label}<span class="count">{item_count}</span></a>
+				<div>{item_description}
+					<!--BeginSezIdeaSubMenu-->
+						<div class="child">
+							<!--BeginSezIdeaSubMenuItem-->
+							<a class="{item_class}" href="{item_url}">{item_label}</a>
+							<!--EndSezIdeaSubMenuItem-->
+						</div>
+					<!--EndSezIdeaSubMenu-->
+				</div>
+			</li>
+			<!--EndSezIdeaMenuItem-->
+		</ul>
+	</div>
+	<!--EndSezIdeaMenu-->
+	<!--BeginSezRewardMenu-->
+	<div class="group reward">
+		<ul>
+			<!--BeginSezRewardMenuItem-->
+			<li class="menureward {item_class}">
+				<a href="javascript:void(0);" onclick="{idea_modify_action}"><span class="status"><span class="{item_status}"></span></span>{item_label}<span class="count">{item_count}</span></a>
+				<div>{item_description}
+					<!--BeginSezRewardSubMenu-->
+						<div class="child">
+							<!--BeginSezRewardSubMenuItem-->
+							<a class="{item_class}" href="{item_url}">{item_label}</a>
+							<!--EndSezRewardSubMenuItem-->
+						</div>
+					<!--EndSezRewardSubMenu-->				
+				</div>
+			</li>
+			<!--EndSezRewardMenuItem-->
+		</ul>
+	</div>
+	<!--EndSezRewardMenu--> 
+	<!--BeginSezFeedbackMenu-->
+	<div class="group feedback">
+		<ul>
+			<!--BeginSezFeedbackMenuItem-->
+			<li class="menufeedback {item_class}">
+				<a href="javascript:void(0);" onclick="{idea_modify_action}"><span class="status"><span class="{item_status}"></span></span>{item_label}<span class="count">{item_count}</span></a>
+				<div>{item_description}
+					<!--BeginSezFeedbackSubMenu-->
+						<div class="child">
+							<!--BeginSezFeedbackSubMenuItem-->
+							<a class="{item_class}" href="{item_url}">{item_label}</a>
+							<!--EndSezFeedbackSubMenuItem-->
+						</div>
+					<!--EndSezFeedbackSubMenu-->
+				</div>
+			</li>
+			<!--EndSezFeedbackMenuItem-->
+		</ul>
+	</div>
+	<!--EndSezFeedbackMenu-->
+</div>

@@ -1,0 +1,104 @@
+
+
+
+
+body {
+padding:0;
+font-family:Verdana, arial, sans-serif;
+border:0;
+margin:10%;
+background:#DDD;
+}
+a {
+color:#333;
+font-weight:bold;
+text-decoration: underline;
+}
+a:hover {
+text-decoration: none;
+color:#FFDAAE;
+}
+.group {
+text-align:left;
+padding: 0 30px 10px 10px;
+}
+p {
+padding:5px;
+}
+H4 {
+font-size:12px;
+line-height:13px;
+}
+
+
+
+
+
+
+{group_name}
+
+
+{headers_label}
+{headers_value}
+
+
+
+
+
+
+
+{pre_body}
+
+
+{owner}
+
+
+
+
+
+{group_name}
+
+
+
+{fields_label}
+{fields_value}
+
+
+
+
+
+
+
+
+{fields_label}
+
+
+
+
+
+
+
+{fields_value}
+
+
+
+
+
+
+
+
+
+{post_body}
+
+{_mail_thanks_message}
+
+
+{_mail_footer_privacy_title}
+{_mail_footer_privacy_text}
+
+{_mail_footer_site_owner} {_mail_footer_site_copyright}
+  
+
+
+
+asd

@@ -1,0 +1,53 @@
+<!--BeginSezTitle-->
+    <h2 class="title">{title}</h2>
+<!--EndSezTitle-->
+<!--BeginSezMenu-->
+	<ul class="nav">
+       <!--BeginSezHomeHeader-->
+		<li {item_properties}>
+            <!--BeginSezHomeImg-->
+			<a{class_elem} href="{show_file}" <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{home}" /></a>
+            <!--EndSezHomeImg-->
+            <!--BeginSezHomeNoImg-->
+			<a{class_elem} href="{show_file}" <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}>{home}</a>
+            <!--EndSezHomeNoImg-->
+           
+			<!--BeginSezHomeFooter-->
+			</ul>
+		<!--EndSezHomeFooter-->
+		</li>
+	<!--EndSezHomeHeader-->
+    <!--BeginSezItem-->
+        <li {item_properties}>
+            <!--BeginSezItemImg-->
+                <!--BeginSezItemImgHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" /></a>
+                <!--EndSezItemImgHere-->
+                <!--BeginSezItemImgNoHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" /></a>
+                <!--EndSezItemImgNoHere-->
+                <!--BeginSezItemImgNoLink-->
+                    <img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" />
+                <!--EndSezItemImgNoLink-->
+            <!--EndSezItemImg-->
+            <!--BeginSezItemNoImg-->
+                <!--BeginSezItemNoImgHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}>{item}</a>
+                <!--EndSezItemNoImgHere-->
+                <!--BeginSezItemNoImgNoHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}>{item}</a>
+                <!--EndSezItemNoImgNoHere-->
+                <!--BeginSezItemNoImgNoLink-->
+                    <span class="no-link">{item}</span> 
+                <!--EndSezItemNoImgNoLink-->
+            <!--EndSezItemNoImg-->
+            <!--BeginSezItemDescription-->
+                <div class="desc">{description}</div>
+            <!--EndSezItemDescription-->
+        </li>
+    <!--EndSezItem-->
+	</ul>
+<!--EndSezMenu-->
+<!--BeginSezError-->
+    <p class="error">{strError}</p>
+<!--EndSezError-->

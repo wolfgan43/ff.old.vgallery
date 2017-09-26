@@ -1,0 +1,153 @@
+/* global */
+#cluetip {
+	background:#222;
+	padding:5px;
+	opacity:0.9;
+	border:0;
+	border-radius:6px;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+}
+#cluetip-title { overflow: hidden; }
+
+#cluetip-title #cluetip-close { float: right; position: relative; }
+#cluetip-waitimage {
+	width: 16px;
+	height: 11px;
+	position: absolute;
+	background-image: url(../../../images/ajax-ori.gif);
+}
+#cluetip-extra { display: none; }
+
+
+.cluetip-jtip #cluetip-outer {
+	margin:0;
+}
+
+.cluetip-arrows {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: -11px;
+  height: 22px;
+  width: 11px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
+/* default arrows */
+
+.clue-right-default .cluetip-arrows {
+  background-image: url(images/darrowleft.gif);
+}
+.clue-left-default .cluetip-arrows {
+  background-image: url(images/darrowright.gif);
+  left: 100%;
+  margin-right: -11px;
+}
+.clue-top-default .cluetip-arrows {
+  background-image: url(images/darrowdown.gif);
+  top: 100%;
+  left: 50%;
+  margin-left: -11px;
+  height: 11px;
+  width: 22px;  
+}  
+.clue-bottom-default .cluetip-arrows {
+  background-image: url(images/darrowup.gif);
+  top: -11px;
+  left: 50%;
+  margin-left: -11px;
+  height: 11px;
+  width: 22px;
+}
+
+/***************************************
+   =cluetipClass: 'jtip'
+-------------------------------------- */
+/*.cluetip-jtip {
+  background-color: transparent;
+}
+.cluetip-jtip #cluetip-outer {
+  border: 2px solid #ccc;
+  position: relative;
+  background-color: #fff;
+}
+
+.cluetip-jtip h3#cluetip-title {
+  margin: 0 0 5px;
+  padding: 2px 5px;
+  font-size: 16px;
+  font-weight: normal;
+  background-color: #ccc;
+  color: #333;
+}
+
+.cluetip-jtip #cluetip-inner {
+  padding: 0 5px 5px;
+  display: inline-block;
+}
+.cluetip-jtip div#cluetip-close { 
+  text-align: right;
+  margin: 0 5px 5px;
+  color: #900;
+}*/
+
+
+/* jtip arrows */
+
+.clue-right-jtip .cluetip-arrows {
+  background-image: url(images/arrowleft.gif);
+}
+.clue-left-jtip .cluetip-arrows {
+  background-image: url(images/arrowright.gif);
+  left: 100%;
+  margin-right: -11px;
+}
+.clue-top-jtip .cluetip-arrows {
+  background-image: url(images/arrowdown.gif);
+  top: 100%;
+  left: 50%;
+  margin-left: -11px;
+  height: 11px;
+  width: 22px;  
+}  
+.clue-bottom-jtip .cluetip-arrows {
+  background-image: url(images/arrowup.gif);
+  top: -11px;
+  left: 50%;
+  margin-left: -11px;
+  height: 11px;
+  width: 22px;
+}
+
+
+
+.popup {
+	color:#eee;
+}
+.popup .admin-link {
+	clear:both;
+	overflow:hidden;
+	border-bottom:1px solid #555;
+	font-size:12px;
+	padding:0;
+}
+.popup .admin-link A {
+	float:left;
+	display:block;
+	margin:2px 3px;
+	width:16px;
+	height:16px;
+}
+.popup .admin-link A.layout_edit {background:url(../../../images/admin-menu.png) -225px -33px no-repeat;}
+.popup .admin-link A.layout_delete {background:url(../../../images/admin-menu.png) -257px -33px no-repeat;}
+.popup .admin-link A.section_edit {background:url(../../../images/admin-menu.png) -32px -36px no-repeat;}
+.popup .admin-link A.section_delete {background:url(../../../images/admin-menu.png) -178px -49px no-repeat;}
+.popup .admin-link A.section_properties {background:url(../../../images/admin-menu.png) -128px -34px no-repeat;}
+.popup .admin-link A.section_settings {background:url(../../../images/admin-menu.png) -193px -34px no-repeat;}
+.popup .admin-link A.section_adddir {background:url(../../../images/admin-menu.png) -15px -49px no-repeat;}
+.popup .admin-link A.section_addnew {background:url(../../../images/admin-menu.png) -2px -34px no-repeat;}
+.popup .admin-link A.section_ecommerce {background:url(../../../images/admin-menu.png) -97px -34px no-repeat;}
+.popup .admin-link A.module_edit {background:url(../../../images/admin-menu.png) -225px -33px no-repeat;}
+.popup .admin-link A.module_delete {background:url(../../../images/admin-menu.png) -257px -33px no-repeat;}

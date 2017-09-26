@@ -1,0 +1,399 @@
+<div class="navadmin toolbaradmin top" id="adminPanel">
+	<ul class="first">
+	    <!--BeginSezAdmin-->
+	    <li class="admin-application" title="{_admin}">
+			<a href="{site_path}{path}">{admin_icon}</a>
+	    </li>
+	    <!--EndSezAdmin-->    
+	    <!--BeginSezRestricted-->
+	    <li class="restricted-application" title="{_restricted}">
+			<a href="{site_path}{path}">{restricted_icon}</a>
+	    </li>
+	    <!--EndSezRestricted-->
+	    <!--BeginSezManage-->
+	    <li class="ecommerce-application" title="{_manage}">
+			<a href="{site_path}{path}">{manage_icon}</a>
+	    </li>
+	    <!--EndSezManage-->
+	    <!--BeginSezSections-->
+	    <li class="vg-sep"></li>
+	    <li class="section-addnew" title="{_section_add}">
+	        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{section_add_path}');" {section_addnew_class}>{section_addnew_icon}</a>
+	    </li>
+	    <!--BeginSezSection-->
+	    <!--BeginSezSectionSep-->
+	    <li class="vg-sep"></li>
+	    <!--EndSezSectionSep-->
+	    <li class="thumb-section" rel="{section_id}">
+			<a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{layout_add_path}');" class="{layout_addnew_class}">{layout_addnew_icon}</a>
+	        <!--BeginSezLayouts-->
+	        <ul class="submenu">
+	            <li class="section-detail hide-layout ui-state-disabled">
+					<div>
+	                <h3><a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{section_edit_path}');">{section_name}</a> in <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{layer_edit_path}');">{layer_name}</a></h3>
+	                <div class="iconright">
+					<a class="display-layout stay-open {more_class}" href="javascript:void(0);" rel="{more_reverse_class}"></a>
+	                <a class="{section_delete_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{section_delete_path}');" title="{_section_delete}"></a>
+					</div>
+					</div>
+	            </li>
+	            <!--BeginSezLayout-->
+	            <li class="layout {layout_visible}" rel="{layout_id}">
+				<div>
+	                <a class="title" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{layout_edit_path}');" title="{_layout_modify}">
+                		{layout_icon}{layout_name}
+	                </a>
+					<div class="iconright">
+	                <a class="block-info stay-open {more_class}" href="javascript:void(0);" rel="{more_reverse_class}"></a>                 
+		            <a class="{layout_delete_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{layout_delete_path}');" title="{_layout_delete}"></a>
+					
+	                <!--BeginSezModule-->
+	                    <a class="{module_edit_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{module_edit_path}');" title="{_module_modify}"></a>
+	                    <a class="{module_delete_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{module_delete_path}');" title="{_module_delete}"></a>
+	                <!--EndSezModule-->
+					</div>
+					</div>
+	                <!--BeginSezLayoutAdmin-->
+	                {admin_menu}
+	                <!--EndSezLayoutAdmin-->
+	                <table class="info-hide ui-state-highlight" width="100%">
+                		<tbody>
+                			<tr>
+                				<td colspan="2">#{block_layout_id}{block_layout_class}</td>
+                			</tr>
+							<!--BeginSezBlockPosDim-->
+							<tr>
+                				<td>
+									<label>{_block_left}:</label> 
+									<span class="block-left"></span> px<br/>
+									<label>{_block_top}:</label> 
+									<span class="block-top"></span> px<br/>
+								</td>
+								<td>
+									<label>{_block_width}:</label> 
+									<span class="block-width"></span> px<br/>
+									<label>{_block_height}:</label> 
+									<span class="block-height"></span> px<br/>
+								</td>
+                			</tr>
+							<!--EndSezBlockPosDim-->
+                			<tr>
+								<td colspan="2">
+									<label>{_block_ajax}:</label> 
+									<span>{block_layout_ajax}</span><br/>
+									<label>{_block_on_document_ready}:</label> 
+									<a href="javascript:void(0)"><span>{block_layout_ajax_on_document_ready}</span></a><br/>
+									<label>{_block_on_load_event}:</label> 
+									<a href="javascript:void(0)"><span>{block_layout_ajax_on_load_event}</span></a><br/>
+								</td>
+                			</tr>
+                			<tr>
+								<td colspan="2">
+									<label>{_block_tplvar}:</label> 
+									<span>{block_layout_name}</span><br/>
+									<label>{_block_link_ajax}:</label> 
+									<span>#{block_layout_id}</span><br/>
+									<label>{_block_type}:</label> 
+									<span>{block_layout_type}</span>
+								</td>
+                			</tr>
+							<tr>
+                				<td>
+									<a class="{layout_js_class}" href="javascript:void(0)"></a>
+								</td>
+								<td>
+									<a class="{layout_css_class}" href="javascript:void(0)"></a>
+								</td>
+                			</tr>
+                		</tbody>
+	                </table>
+	             </li>
+	            <!--EndSezLayout-->
+	            <!--BeginSezNoLayout-->
+	            <li class="ui-state-disabled">
+	                <!--BeginSezNoLayoutSettings-->
+	                <a class="{setting_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{layout_settings_path}');" title="{_layout_settings}">{layout_name}</a>
+	                <!--EndSezNoLayoutSettings-->
+	                <!--BeginSezNoLayoutFF-->
+	                    <a class="{setting_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{ff_settings_path}');" title="{_ff_settings}">{layout_name}</a>
+	                <!--EndSezNoLayoutFF-->
+	                <!--BeginSezNoLayoutVGS-->
+	                    <a class="{setting_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{vgs_settings_path}');" title="{_vgs_settings}">{layout_name}</a>
+	                <!--EndSezNoLayoutVGS-->
+	                
+	                    <!--BeginSezNoLayoutAdmin-->
+	                    {admin_menu}
+	                    <!--EndSezNoLayoutAdmin-->
+	            </li>
+	            <!--EndSezNoLayout-->
+	            <li class="layout-addnew ui-state-disabled">
+            		<a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{layout_add_path}');" class="{layout_addnew_bottom_class}"></a>
+	            </li>
+	        </ul>
+	        <!--EndSezLayouts-->
+	    </li>
+	    <!--EndSezSection-->
+	    <!--EndSezSections-->
+	    <!--BeginSezAdminPanelTools-->
+	    <li class="vg-sep"></li>
+	    <li class="utility">
+	        <a href="javascript:void(0);" class="{tools_class}">{tools_icon}</a>
+	        <ul class="submenu">
+	              <!--BeginSezAdminPanelToolsAjaxplorer-->
+	              <li>
+	                  <a class="{fs_class}" href="javascript:void(0);" title="{_file_system}" onClick="MyWindow=window.open('{file_system_path}','{_file_system}','toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600'); return false;">
+	                      {fs_icon}{_filesystem}
+	                  </a>
+	              </li>
+	              <!--EndSezAdminPanelToolsAjaxplorer-->
+				  <!--BeginSezAdminPanelToolsCache-->
+	              <li>
+	                  <a class="{cache_class}" href="javascript:void(0);" title="{_clear_cache}" onclick="
+                  		var url = window.location.href;
+						if(url.indexOf('__nocache__') < 0) {
+                  			if(url.indexOf('?') >= 0) {
+								url = url + '&';
+                  			} else {
+                  				url = url + '?';
+                  			}
+                  			url = url + '__nocache__';
+						}
+
+						window.location.href = url;
+	                  ">
+						{cache_icon}{_clear_cache}
+	                  </a>
+	              </li>
+	              <!--EndSezAdminPanelToolsCache-->
+	        </ul>
+	    </li>
+	    <!--EndSezAdminPanelTools-->
+	    <!--BeginSezAdminPanelTheme-->
+	    <li class="vg-sep"></li>
+	    <li>
+    		<a class="{tpl_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{layout_manage_path}');" title="{_layout_manage}">{tpl_icon}</a>
+		</li>
+	    <li class="vg-sep"></li>
+	    <li>
+	        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{css_add_path}');" class="{css_class}">{css_icon}</a>
+	        <ul class="submenu">
+	            <!--<li class="css_detail">
+	                {_css_title}
+	                <a class="css_addnew" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{css_add_path}');" title="{_css_addnew}"></a>
+	            </li>-->
+        		<!--BeginSezAdminPanelCss-->
+	            <li class="css-manage visible {check-class}">
+			<a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{css_default_path}');" class="title">{css_check_icon}  {css_name}</a>
+				<div class="iconright">
+            		<!--BeginSezAdminPanelCssAdd-->
+	                <a class="{css_addnew_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{css_add_path}');" title="{_css_addnew}"></a>
+	                <!--EndSezAdminPanelCssAdd-->
+            		<!--BeginSezAdminPanelCssView-->
+	                <a class="{css_preview_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{css_view_path}');" title="{_css_view}"></a>
+	                <!--EndSezAdminPanelCssView-->
+            		<!--BeginSezAdminPanelCssModify-->
+	                <a class="{css_edit_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{css_edit_path}');" title="{_css_modify}"></a>
+	                <!--EndSezAdminPanelCssModify-->
+            		<!--BeginSezAdminPanelCssDelete-->
+	                <a class="{css_delete_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{css_delete_path}');" title="{_css_delete}"></a>
+	                <!--EndSezAdminPanelCssDelete-->
+	                </div>
+	            </li>
+	            <!--EndSezAdminPanelCss-->
+	        </ul>
+	    </li>
+	    <li>
+	        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{js_add_path}');" class="{js_class}">{js_icon}</a>
+	        <ul class="submenu">
+	            <!--<li class="js_detail">
+	                {_js_title}
+	                <a class="js_addnew" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{js_add_path}');" title="{_js_addnew}"></a>
+	            </li>-->		
+        		<!--BeginSezAdminPanelJs-->
+	            <li class="js-manage visible {check-class}">
+			<a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{js_default_path}');"  class="title">{js_check_icon}  {js_name}</a>
+				<div class="iconright">
+            		<!--BeginSezAdminPanelJsAdd-->
+	                <a class="{js_addnew_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{js_add_path}');" title="{_js_addnew}"></a>
+	                <!--EndSezAdminPanelJsAdd-->
+            		<!--BeginSezAdminPanelJsView-->
+	                <a class="{js_preview_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{js_view_path}');" title="{_js_view}"></a>
+	                <!--EndSezAdminPanelJsView-->
+            		<!--BeginSezAdminPanelJsModify-->
+	                <a class="{js_edit_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{js_edit_path}');" title="{_js_modify}"></a>
+	                <!--EndSezAdminPanelJsModify-->
+	                <!--BeginSezAdminPanelJsDelete-->
+	                <a class="{js_delete_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{js_delete_path}');" title="{_js_delete}"></a>
+	                <!--EndSezAdminPanelJsDelete-->
+					</div>
+	                
+	            </li>
+	            <!--EndSezAdminPanelJs-->
+	        </ul>
+	    </li>
+	    <!--EndSezAdminPanelTheme-->
+		<!--BeginSezAdminPanelInternational-->
+	    <li>
+	        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_add_path}');" class="{lang_class}">{lang_icon}</a>
+	        <ul class="submenu">
+	            <!--<li class="international_detail">
+	                {_international_title}
+	            </li>-->
+        		<!--BeginSezAdminPanelInternationalNoVisible-->
+	            <li class="international-manage {lang-uncheck-class}">
+			<a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_edit_path}');" class="title">{lang_uncheck_icon} {international_name}</a>
+			<div class="iconright">
+            		<!--BeginSezAdminPanelInternationalAdd-->
+	                <a class="{lang_addnew_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_add_path}');" title="{_international_addnew}"></a>
+	                <!--EndSezAdminPanelInternationalAdd-->
+            		<!--BeginSezAdminPanelInternationalModify-->
+	                <a class="{lang_edit_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_edit_path}');" title="{_international_modify}"></a>
+	                <!--EndSezAdminPanelInternationalModify-->
+            		<!--BeginSezAdminPanelInternationalDelete-->
+	                <a class="{lang_delete_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_delete_path}');" title="{_international_delete}"></a>
+	                <!--EndSezAdminPanelInternationalDelete-->
+					</div>
+	                
+	            </li>
+	            <!--EndSezAdminPanelInternationalNoVisible-->
+        		<!--BeginSezAdminPanelInternationalVisible-->
+	            <li class="international-manage {lang-check-class}">
+			<a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_edit_path}');" class="title">{lang_check_icon} {international_name}</a>
+			<div class="iconright">
+            		<!--BeginSezAdminPanelInternationalAdd-->
+	                <a class="{lang_addnew_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_add_path}');" title="{_international_addnew}"></a>
+	                <!--EndSezAdminPanelInternationalAdd-->
+            		<!--BeginSezAdminPanelInternationalModify-->
+	                <a class="{lang_edit_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_edit_path}');" title="{_international_modify}"></a>
+	                <!--EndSezAdminPanelInternationalModify-->
+            		<!--BeginSezAdminPanelInternationalDelete-->
+	                <a class="{lang_delete_class}" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{international_delete_path}');" title="{_international_delete}"></a>
+	                <!--EndSezAdminPanelInternationalDelete-->
+					</div>
+	                
+	            </li>
+	            <!--EndSezAdminPanelInternationalVisible-->
+	        </ul>
+	    </li>
+		<!--EndSezAdminPanelInternational-->
+		<!--BeginSezAdminPanelSeo-->
+	    <li class="seo-li">
+	        <a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{seo_url}');" class="seo-link">{seo_icon}</a>
+	        <!--BeginSezCmsSeo-->
+	        <div class="seo-report hidden">
+	        <span class="seo-left-nav"></span>
+	        
+	        <div class="seo-container">
+	            <!-----------------------------------PRIMO BLOCCO DI INFORMAZIONI----------------------------------->
+	            
+	            <div id="first-block">
+	                <div class="seoleft">
+	                        <a href="javascript:void(0);" class="seo-link-detail refresh">{refresh_icon}</a>
+        			<span class="load-time"><label>{_seo_load_time}</label><span class="seo-count"></span></span>
+        			<span class="cache"><label>{_seo_cache}</label><span class="seo-count"></span></span>
+        			<ul class="seo-detail">
+        					<li class="seo-success">
+        						
+        						<span class="seo-bar"><span class="seo-progress"></span></span>
+	                                                <span class="seo-count">21</span>
+        					</li>
+        					<li class="seo-warning">
+        						
+        						<span class="seo-bar"><span class="seo-progress"></span></span>
+	                                                <span class="seo-count">13</span>
+        					</li>
+        					<li class="seo-error">
+        						
+        						<span class="seo-bar"><span class="seo-progress"></span></span>
+	                                                <span class="seo-count">4</span>
+        					</li>
+        				</ul>
+        		</div>
+        		<div class="seoright">
+
+	                        <div class="seo-cont seo-total pie" data-pct="100">
+	                        <svg width="100" height="100" viewPort="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	                          <circle r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                          <circle class="bar" r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                        </svg>
+	                    </div> 
+	                    
+	                        <a href="javascript:void(0);" class="seo-link-detail">{_seo_more_detail}</a>
+        		</div>
+	             </div>
+	            <!-----------------------------------SECONDO BLOCCO DI INFORMAZIONI----------------------------------->
+	            
+	            <div id="second-block">
+	                <div class="pspeed-desktop report">
+	                    <span class="title">Pagespeed Desktop</span>
+	                    <div class="seo-cont seo-pspeedD pie" data-pct="100">
+	                        <svg width="100" height="100" viewPort="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	                          <circle r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                          <circle class="bar" r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                        </svg>
+	                    </div> 
+        		</div>
+	                    
+	                <div class="pspeed-mobile report">
+	                    <span class="title">Pagespeed Mobile</span>
+	                    <div class="seo-cont seo-pspeedM pie" data-pct="100">
+	                        <svg width="100" height="100" viewPort="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	                          <circle r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                          <circle class="bar" r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                        </svg>
+	                    </div> 
+        		</div>
+	                
+	                <div class="yslow report">
+	                    <span class="title">Yslow</span>
+	                    <div class="seo-cont seo-yslow pie" data-pct="100">
+	                        <svg width="100" height="100" viewPort="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	                          <circle r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                          <circle class="bar" r="45" cx="50" cy="50" fill="transparent" stroke-dasharray="282.74" stroke-dashoffset="0"></circle>
+	                        </svg>
+	                    </div>     
+        		</div>
+	             </div>
+	            <!-----------------------------------TERZO BLOCCO DI INFORMAZIONI----------------------------------->      
+	            <div id="third-block">
+	              <div id="third-block-son">
+	               <div class="seo-pspeedD bar"> 
+	                <div class="barretta"></div>
+	                <span class="legenda">PageSpeed Desktop</span>
+	               </div> 
+	               <div class="seo-pspeedM bar">     
+	                <div class="barretta"></div> 
+	                <span class="legenda">PageSpeed Mobile</span>
+	                
+        		</div>
+	               <div class="seo-yslow bar"> 
+	                <div class="barretta"></div> 
+	                <span class="legenda">Yslow</span>
+
+        		</div>
+	               <div class="seo-total bar">    
+	                <div class="barretta"></div>
+	                <span class="legenda">Total</span>
+
+        		</div>
+	              </div>
+	             </div>
+	        </div>    
+	         <span class="seo-right-nav"></span>	
+	        </div>
+	        <!--EndSezCmsSeo-->
+		</li>	
+		<!--EndSezAdminPanelSeo-->
+	</ul>
+	<div class="right">
+		<!--BeginSezCmsEditorMenu-->
+		<a href="{cms_editor_menu_url}" class="{cms_editor_menu_class}" rel="{cms_editor_menu_rel}">{cms_editor_menu_icon}</a>
+		<!--EndSezCmsEditorMenu-->
+		<a href="javascript:void(0);">{info_icon}</a>
+		<a href="{site_path}/login?frmAction=logout&ret_url={ret_url}">{logout_icon}</a>
+		<a href="javascript:void(0);" class="hide-toggle pressed">{hide_icon}</a> 
+	</div> 
+</div>
+<!--BeginSezCmsEditor-->
+<div id="cms-editor-container" style="display: none;"></div>
+<!--EndSezCmsEditor-->

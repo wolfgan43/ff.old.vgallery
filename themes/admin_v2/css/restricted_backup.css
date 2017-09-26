@@ -1,0 +1,762 @@
+/* forms input */
+/* Buttons */
+
+.ffRecord .actions,
+.ffGrid .actions {
+    margin:5px 0;
+    clear:both;
+    height:60px;
+}
+.ffRecord .actions .cancel,
+.ffGrid .actions .cancel {
+    margin:0;
+}
+.ffRecord .actions INPUT,
+.ffGrid .actions INPUT {
+    margin:0 5px;
+}
+
+/* Input */
+.ffRecord input::-moz-focus-inner,
+.ffGrid input::-moz-focus-inner,
+.ffDetails input::-moz-focus-inner,
+.ffRecord button::-moz-focus-inner,
+.ffGrid button::-moz-focus-inner,
+.ffDetails button::-moz-focus-inner {
+	border:0;
+}
+
+.ffRecord .textarea,
+.ffGrid .textarea,
+.ffDetails .textarea {
+    width:98%;
+    height:150px;
+	resize:none;
+}
+
+
+
+
+.ffGrid TD .text,
+.ffDetails TD .text {
+    width:98%;
+}
+
+
+.ffRecord span.activecomboex,
+.ffGrid span.activecomboex,
+.ffDetails span.activecomboex {
+    display:inline-block;
+    min-width:350px;
+}
+
+.ffRecord span.activecomboex a.add,
+.ffGrid span.activecomboex a.add,
+.ffDetails span.activecomboex a.add {
+    display:block;
+    float:right;
+    padding:3px;
+}
+
+.ffRecord span.activecomboex a.qta-meno,
+.ffGrid span.activecomboex a.qta-meno,
+.ffDetails span.activecomboex a.qta-meno,
+.ffRecord span.activecomboex a.qta-piu,
+.ffGrid span.activecomboex a.qta-piu,
+.ffDetails span.activecomboex a.qta-piu {
+    display:block;
+    width: 24px;
+    float:right;
+    text-align: center;
+    background: #327eff;
+    color: #fff;
+    font-size: 20px;
+    line-height: 24px;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius: 4px;
+    margin: 0 0 0 4px;
+}
+
+.ffRecord span.activecomboex SELECT,
+.ffGrid span.activecomboex SELECT,
+.ffDetails span.activecomboex SELECT,
+.ffRecord TD .combo,
+.ffGrid TD .combo, 
+.ffDetails TD .combo {
+    width:90%;
+}
+
+.ffRecord span.jquery-checkbox,
+.ffGrid span.jquery-checkbox,
+.ffDetails span.jquery-checkbox {
+    display:block;
+    float:right;
+}
+
+.ffRecord .ffWidget_checkgroup,
+.ffGrid .ffWidget_checkgroup,
+.ffDetails .ffWidget_checkgroup {
+    border-bottom:1px solid #eee;
+    margin:3px 0;
+    overflow:hidden;
+}
+
+/* Fieldset */
+
+.ffRecord FIELDSET.default,
+.ffDetails FIELDSET.default,
+.ffRecord FIELDSET,
+.ffDetails FIELDSET {
+    padding:3px;
+    color:#666;
+    clear:both;
+}
+
+.ffRecord FIELDSET.default,
+.ffDetails FIELDSET.default  {
+	clear:both;
+}
+
+/*
+DIV#tabs_rel {
+	padding:0 0 100px 0;
+}
+
+lo sostituisco con */
+.ffPage-tabs {
+	padding:0 0 100px 0;
+}
+
+.ffRecord DIV.row,
+.ffGrid DIV.row,
+.ffDetails DIV.row {
+    clear:both;
+    /*overflow:auto;*/
+    margin:2px 0;
+    padding:2px;
+    border-bottom:1px dotted #eee;
+}
+
+.ffGrid DIV.row:hover {
+	background: #feefc1;
+    border-bottom:1px solid #e2bb46;    
+}
+
+.ffRecord DIV.row LABEL,
+.ffGrid DIV.row LABEL,
+.ffDetails DIV.row LABEL {
+    float:left;
+    display:block;
+    min-width:200px;
+    text-align:right;
+    margin:0 5px;   
+}
+
+.ffRecord DIV.row .label,
+.ffRecord DIV.row LABEL,
+.ffGrid DIV.row .label,
+.ffGrid DIV.row LABEL,
+.ffDetails DIV.row .label,
+.ffDetails DIV.row LABEL {
+	display: inline-block;
+    padding:8px 3px 5px;
+}
+
+
+.ffRecord .description,
+.ffDetail .description {
+	font-size:0.5em;
+}
+
+.ffRecord DIV.row LABEL .required,
+.ffGrid DIV.row LABEL .required,
+.ffDetails DIV.row LABEL .required {
+    color:#5bcdf7;
+}
+
+.ffRecord FIELDSET.default DIV.row DIV.preview SPAN.fileName,
+.ffDetails FIELDSET.default DIV.row DIV.preview SPAN.fileName {
+    margin:0 0 0 167px;
+}
+
+.ffRecord .cke_wrapper,
+.ffGrid .cke_wrapper,
+.ffDetails .cke_wrapper {
+    display:block;
+    clear:both;    
+}
+.ffRecord .ffWidget_ckeditor,
+.ffGrid .ffWidget_ckeditor,
+.ffDetails .ffWidget_ckeditor {
+    width: 872px;
+    height: 537px;
+}
+
+/*
+sovrascive la UI? non va bene
+#content #window .ui-tabs-panel {
+    padding:5px 0;
+}*/
+
+
+/* sorting stuff */
+.ffGrid .heading .sort-block {
+	margin: 0 5px;
+	float: left;
+	position: relative;
+}
+.ffGrid .heading .sort-block LABEL {
+	line-height: 32px;
+	color: #888;
+	margin: 0 4px 0 0;
+}
+.ffGrid .heading .sort-block a.dropdown-sort {
+	border: 1px solid #d9d9d9;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	border-radius:2px;
+	padding: 8px 24px 8px 16px;
+	line-height:32px;
+	background: url(../images/admin-ico.png) 142px -56px no-repeat;
+}
+.ffGrid .heading .dropdown-sort-data UL {
+	position: absolute;
+	z-index: 100;
+	top: 32px;
+	left: 64px;
+	width:160px !important;
+	padding:0;
+	background:#fff;
+	border:1px solid #cbcbcb;
+	-moz-box-shadow: 1px 1px 3px #ddd;
+	-webkit-box-shadow: 1px 1px 3px #ddd;
+	box-shadow: 1px 1px 3px #ddd;
+}
+.ffGrid .heading .dropdown-sort-data UL LI {
+	clear: both;
+}
+.ffGrid .heading .dropdown-sort-data UL LI A {
+	padding:5px !important;
+	display: block;
+	width: 150px !important;
+	font-size: 12px !important;	
+	border-bottom: 1px solid #f8f8f8;	
+}
+.ffGrid .heading .dropdown-sort-data UL LI A:hover {
+	background: #fff0be;
+	border-bottom: 1px solid #f1dd9f;
+}
+.ffGrid .heading .dropdown-sort-div {
+	float: right;
+}
+/* fine sort */
+
+
+/* tabelle */
+
+.ffGrid span.data{
+    font-size: 12px;
+    line-height:14px;
+}
+
+.ffGrid A.add{
+    float:none;
+    padding:0;
+    margin:0;
+}
+
+table.ffGrid {
+	width:100%;
+}
+table.ffGrid TR TH {
+	padding: 6px;
+	font-weight: normal;
+	color: #52627e;
+	background-image: linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -o-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -moz-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -webkit-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -ms-linear-gradient(bottom, rgb(247,247,247) 9%, rgb(255,255,255) 71%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.09, rgb(247,247,247)), color-stop(0.71, rgb(255,255,255)) );
+	border-bottom: 1px solid #e5e5e5;
+	border-top: 1px solid #f7f7f7;
+	text-align: left;
+}
+table.ffGrid TR TH.ffButton {
+	padding: 6px 0;
+}
+table.ffGrid TR TH A {
+	color: #52627e;
+}
+table.ffGrid TR.negative {
+	background:#f5f5f5;
+}
+table.ffGrid TBODY TR:hover {
+	background: #fce8ac;
+}
+
+table.ffGrid TD {
+	vertical-align: middle;
+	padding:6px 2px;
+	color: #333;
+}
+table.ffGrid TD.ffButton {
+	padding: 6px 0;
+}
+table.ffGrid TD A {
+	color: #333;
+}
+table.ffGrid .ffField {
+	border-right:1px solid #e9ecf2;
+}
+table.ffGrid TBODY TR:hover .ffField {
+	border-right:1px solid #e9cf7f;
+}
+.ffGrid IMG.avatar {
+	width:50px;
+	height:50px;
+	background: url(../images/empty-avatar.png) no-repeat;
+} 
+
+.ffGrid SPAN.ascending, .ffGrid SPAN.descending {
+	display:inline-block;
+	width:18px;
+	height:15px;
+	background:url(../images/FormsGrid/ascending.png) 0 4px no-repeat;
+}
+
+.ffGrid SPAN.descending { background:url(../images/FormsGrid/descending.png) 0 4px no-repeat; }
+
+/* page navigator */
+
+.ffGrid .FormsGridCommands {
+	clear: both;
+}
+
+.ffGrid .FormsGridCommands.cleared.top {
+	width:100%;
+	overflow:hidden;
+	
+}
+.pageNavigator .perPage, .pageNavigator .pages, .pageNavigator .choice, .pageNavigator .totelem {
+	float: right;
+	width:auto;
+	padding: 4px 6px;
+	line-height: 18px;
+	color: #6e6e6e;
+	margin: 4px;
+	border: 1px solid #d9d9d9;
+	border-radius:3px;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	background-image: linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -o-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -moz-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -webkit-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -ms-linear-gradient(bottom, rgb(241,241,241) 1%, rgb(245,245,245) 51%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.01, rgb(241,241,241)), color-stop(0.51, rgb(245,245,245)) );
+}
+.pageNavigator .perPage:hover, .pageNavigator .pages:hover, .pageNavigator .choice:hover, .pageNavigator .totelem:hover {
+	border: 1px solid #c6c6c6;
+	-moz-box-shadow: 0 0 3px #ddd;
+	-webkit-box-shadow: 0 0 3px #ddd;
+	box-shadow: 0 0 3px #ddd;
+}
+.pageNavigator .pages A { color: #666; letter-spacing: 1px; float: left; height: 18px; margin:0 5px 0 0; }
+.pageNavigator .pages A.current { color: #db4a37; }
+.pageNavigator .pages A.first:hover { background:url(../images/admin-ico.png) -96px -28px no-repeat; }
+.pageNavigator .pages A.prev:hover { background:url(../images/admin-ico.png) -72px -28px no-repeat; }
+.pageNavigator .pages A.prev-frame:hover { background:url(../images/admin-ico.png) -122px -28px no-repeat; }
+.pageNavigator .pages A.next:hover { background:url(../images/admin-ico.png) -196px -28px no-repeat; }
+.pageNavigator .pages A.next-frame:hover { background:url(../images/admin-ico.png) -145px -28px no-repeat; }
+.pageNavigator .pages A.last:hover { background:url(../images/admin-ico.png) -172px -28px no-repeat; }
+
+.pageNavigator .pages A.first { background:url(../images/admin-ico.png) -96px -60px no-repeat; }
+.pageNavigator .pages A.prev { background:url(../images/admin-ico.png) -72px -60px no-repeat; }
+.pageNavigator .pages A.prev-frame { background:url(../images/admin-ico.png) -122px -60px no-repeat; }
+.pageNavigator .pages A.next { background:url(../images/admin-ico.png) -196px -60px no-repeat; }
+.pageNavigator .pages A.next-frame { background:url(../images/admin-ico.png) -145px -60px no-repeat; }
+.pageNavigator .pages A.last { background:url(../images/admin-ico.png) -172px -60px no-repeat; }
+
+.pageNavigator .pages A.first.disabled { background:url(../images/admin-ico.png) -96px -43px no-repeat; }
+.pageNavigator .pages A.prev.disabled { background:url(../images/admin-ico.png) -72px -43px no-repeat; }
+.pageNavigator .pages A.prev-frame.disabled { background:url(../images/admin-ico.png) -122px -43px no-repeat; }
+.pageNavigator .pages A.next.disabled { background:url(../images/admin-ico.png) -196px -43px no-repeat; }
+.pageNavigator .pages A.next-frame.disabled { background:url(../images/admin-ico.png) -145px -43px no-repeat; }
+.pageNavigator .pages A.last.disabled { background:url(../images/admin-ico.png) -172px -43px no-repeat; }
+.pageNavigator .choice INPUT.currentpage {
+	height: 14px;
+	border: 1px solid #ddd;
+}
+.pageNavigator .perPage a {
+	background: #e5e5e5;
+	color: #666;
+	height: 18px;
+	line-height: 18px;
+	padding: 2px 4px;
+	border: 1px solid #dbdbdb;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	border-radius:2px;
+}
+.pageNavigator .perPage a:hover {
+	background: #f4f4f4;
+}
+.pageNavigator .perPage .current {
+	background: #3f84fb;
+	border:1px solid #1d73f7;
+	color: #fff;
+}
+
+
+/* icone */
+.ffDetails .ffButton {
+	width: 24px;
+    padding:0;
+    margin:0;
+}
+.ffDetails .ffButton A {
+    display:inline-block;
+    width:24px;
+    height:24px;
+    padding:0;
+}
+
+
+/* sovrascrive uno stile specifico della UI? indagare */
+.ui-tabs .ui-tabs-nav .ffGrid li A.ico-delete { padding:0; margin:5px 0 0 0; }
+
+/* Contenuti */
+.ffGrid .heading A, 
+TABLE.ffGrid TR TD A, 
+TABLE.ffGrid TR TD A:link, 
+TABLE.ffGrid TR TD A:active, 
+TABLE.ffGrid TR TD A:visited {
+    color:#666;
+}
+
+.ffGrid .heading {
+	height: 80px;
+    margin:5px 0;
+}
+
+
+.ffGrid div.norec_cont {width:700px;}
+
+.ffGrid  div.norec_cont label {display:block;}
+
+.ffGrid input.activebuttons { margin:-2px 0 0 0; }
+
+/* bottoni */
+
+.ffGrid .heading .actions {
+	float:right;
+	margin:0 10px;
+	clear:none;
+}
+
+A.cancel,
+A.addNew,
+.detailSubmit,
+.activebuttons,
+.noactivebuttons,
+.heading .actions A {
+	background: #d84b31;
+	background-image: linear-gradient(bottom, rgb(216,74,49) 18%, rgb(216,78,43) 64%, rgb(224,80,44) 80%);
+	background-image: -o-linear-gradient(bottom, rgb(216,74,49) 18%, rgb(216,78,43) 64%, rgb(224,80,44) 80%);
+	background-image: -moz-linear-gradient(bottom, rgb(216,74,49) 18%, rgb(216,78,43) 64%, rgb(224,80,44) 80%);
+	background-image: -webkit-linear-gradient(bottom, rgb(216,74,49) 18%, rgb(216,78,43) 64%, rgb(224,80,44) 80%);
+	background-image: -ms-linear-gradient(bottom, rgb(216,74,49) 18%, rgb(216,78,43) 64%, rgb(224,80,44) 80%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.18, rgb(216,74,49)), color-stop(0.64, rgb(216,78,43)), color-stop(0.8, rgb(224,80,44)));	
+	color: #fff;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius:4px;
+	padding: 8px 6px;
+	cursor: pointer;
+}
+
+A.cancel:hover,
+A.addNew:hover,
+.detailSubmit:hover,
+.activebuttons:hover,
+.noactivebuttons:hover,
+.heading .actions A:hover {
+	background-image: linear-gradient(bottom, rgb(198,57,32) 44%, rgb(223,77,51) 72%);
+	background-image: -o-linear-gradient(bottom, rgb(198,57,32) 44%, rgb(223,77,51) 72%);
+	background-image: -moz-linear-gradient(bottom, rgb(198,57,32) 44%, rgb(223,77,51) 72%);
+	background-image: -webkit-linear-gradient(bottom, rgb(198,57,32) 44%, rgb(223,77,51) 72%);
+	background-image: -ms-linear-gradient(bottom, rgb(198,57,32) 44%, rgb(223,77,51) 72%);
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.44, rgb(198,57,32)), color-stop(0.72, rgb(223,77,51)) );
+}
+
+.detailSubmit,
+.activebuttons,
+.noactivebuttons {
+	border: 0;
+	padding: 7px 6px 9px;
+}
+
+A.addNew, A.addNew:link, A.addNew:visited, A.addNew:active, .heading .actions A  {
+	color: #fff;
+	float: right;
+	padding: 8px 6px 9px;
+}
+
+#UpdaterDomain .heading .link {
+	margin: 0 4px;
+}
+
+/* input */
+.input,
+.combo,
+.password,
+.ffWidget_timepicker,
+.ffWidget_activecomboex,
+.ffWidget_datepicker_text,
+.detailQTA,
+.ricerca-semplice .input {
+	-webkit-appearance: none;
+	border: 1px solid #d9d9d9;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	border-radius:2px;
+	padding: 6px 6px 3px;
+}
+
+.combo {-webkit-appearance: menu;}
+
+.input:focus,
+.textarea:focus,
+.combo:focus,
+.password:focus,
+.ffWidget_activecomboex:focus,
+.ffWidget_datepicker_text:focus,
+.ffWidget_timepicker:focus,
+.detailQTA:focus{
+	border: 1px solid #2775f1;	
+}
+
+/* search */
+.ffGrid .heading .search { position: relative; }
+
+.ffGrid .ricerca-semplice {
+	float: left;
+	width: 460px;
+	position: relative;
+}
+
+.ffGrid .ricerca-semplice .input {
+	padding: 8px 4px;
+	width: 368px;
+}
+
+.ffGrid .ricerca-semplice .noactivebuttons {
+	float: right;
+	background: #3f84fb;
+	padding: 6px 14px 8px;
+	border: 1px solid #1d72f7;
+}
+
+.ffGrid .ricerca-semplice .noactivebuttons:hover {
+	background: #2876f4;
+	border: 1px solid #2655bf;
+}
+
+.ffGrid .ricerca-semplice .simple {
+	width: 16px;
+	position: absolute;
+	top: 12px;
+	left: 360px;
+}
+
+.ffGrid .search_more {
+	display: block;
+	width: 16px;
+	height: 16px;
+	line-height: 0;
+	font-size: 0;
+	text-indent: -10000px;
+	background: url(../images/admin-ico.png) -4px -50px no-repeat;
+}
+
+.ffGrid .search_more:hover {
+	background: url(../images/admin-ico.png) -4px -66px no-repeat;
+}
+
+.ffGrid .search .set {
+	width: 432px;
+	padding: 10px;
+	background: #fff;
+	position: absolute;
+	z-index: 100;
+	top: 32px;
+	left: 0;
+	border: 1px solid #cccccc;
+	-moz-box-shadow: 2px 3px 5px #AAA;
+	-webkit-box-shadow: 2px 3px 5px #AAA;
+	box-shadow: 2px 3px 5px #AAA;
+}
+
+.ffGrid .search .set LABEL {
+	display: block;
+	font-size: 14px;
+	color: #666;
+	line-height: 28px;
+}
+
+.ffGrid .search .set .ffWidget_activecomboex,
+.ffGrid .search .set .hasDatepicker,
+.ffGrid .search .set .combo {
+	border-top: 1px solid #c0c0c0;
+	width: 426px;
+}
+
+.ffGrid .search .set .hasDatepicker { width: 390px; }
+
+.ffGrid .ui-datepicker-trigger { margin: 0 4px;	}
+
+
+/* checkgroup */
+.ffWidget div.checkgroup { float:left; }
+
+.ffWidget div.checkgroup LABEL {
+	text-align:left !important;
+	width:220px !important;
+}
+.ffWidget_checkgroup { clear:both; }
+
+.ffWidget div.checkgroup LABEL {
+	text-align:left;
+	width:220px !important;
+}
+
+/* errori */
+.ffDetails .warning,
+.ffGrid .warning,
+.ffRecord .warning {
+	position: fixed;
+	z-index:20;
+	top: 90px;
+	left: 50%;
+	margin-left: -250px;
+	display: block;
+	width: 500px;
+	padding: 5px 0;
+	text-align: center;
+	background: #dd4b39;
+	color: #fff;
+	text-shadow: 0px 1px 1px rgba(126, 44, 34, 0.8);
+	border-radius:8px;
+	-moz-border-radius:8px;
+	-webkit-border-radius:8px;
+}
+
+/* loader */
+.ffDetails .block-loader {
+    background:url(../images/please-wait.gif) center no-repeat #ffffff;
+    display:block;
+    margin:0;
+    width:48px;
+    height:48px;
+    border:1px solid #bbbbbb;
+    -moz-border-radius: 5px; /* Firefox */
+    -webkit-border-radius: 5px; /* Safari, Chrome */
+    border-radius: 5px; /* CSS3 */
+    -moz-box-shadow:0 0 5px #999999;
+    -webkit-box-shadow:0 0 5px #999999;
+    box-shadow:0 0 5px #999999;
+}
+
+/* generic shit */
+
+#DetailModify_discl_sect {
+	margin-bottom:20px;
+}
+
+.ffRecord div.row {
+	display:table;
+	width:100%;
+	position:relative;
+}
+
+.ffRecord DIV.row>LABEL {
+	width:100px;
+	vertical-align:top;
+}
+
+/* per non mandare a capo gli asterischi */
+.ffRecord TH DIV.toplabel_details{ display:inline; }
+
+
+.ffRecord DIV.row>SPAN.activecomboex-icon {
+	width:45px;
+	padding:0 0 0 5px;
+}
+
+.ffRecord DIV.row>IMG.ui-datepicker-trigger {
+	position:absolute;
+	top:8px;
+	right:5px;
+}
+
+.ffRecord DIV.row>SPAN INPUT,
+.ffRecord DIV.row>SPAN SELECT {
+	width:100%;
+}
+
+.ffRecord DIV.row>INPUT,
+.ffRecord DIV.row .hasDatepicker {
+	width:100%;
+}
+
+.ffRecord DIV.row .hasDatepicker { padding-right:0; }
+
+.ffRecord DIV.row>LABEL,
+.ffRecord DIV.row>SELECT,
+.ffRecord DIV.row>INPUT,
+.ffRecord DIV.row>SPAN  {
+	display:table-cell;
+	float:none;
+}
+
+/*#content {
+	max-width:1200px;
+	box-shadow:0 0 10px #EEE;
+	padding:10px;
+}
+
+.ffRecord div.row {
+	display:table;
+	width:100%;
+}
+
+.ffRecord .row LABEL,
+.ffRecord .row SELECT,
+.ffRecord .row INPUT {
+	display:table-cell;
+	float:none;
+	width:100%;
+}
+
+.ffRecord .row SELECT.ffWidget_timepicker {
+	width:auto;
+}
+
+.ffRecord .row LABEL { width:10%; padding:0 5px 0 0; }
+
+TH DIV.toplabel_details { display:inline; }
+
+.ffRecord .row .detailActions INPUT {
+	width:auto;
+}
+
+select {
+	width:auto;
+	min-width:0;
+	max-width:100%;
+	float:none;
+} 
+
+select OPTION { width:100%; }*/

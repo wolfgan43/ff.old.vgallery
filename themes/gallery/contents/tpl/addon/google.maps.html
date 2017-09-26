@@ -1,0 +1,43 @@
+<script type="text/javascript">
+	if(window["google"] === undefined) {
+		jQuery(document).ready(function() {
+			var script = document.createElement("script");
+			script.type = "text/javascript";
+			var url_data = window.location.href.parseUri();
+			script.src = url_data.protocol + "://maps.google.com/maps?file=api&v=2&key={gmap_key}{gmap_region}{gmap_lang}&callback=initialize{real_name}";
+			document.body.appendChild(script);
+		});
+	} else {
+		jQuery(document).ready(function() {
+			initialize{real_name}();
+		});	
+	}
+
+  var map{real_name} = "";
+  var marker{real_name} = ff.hash();  
+  function initialize{real_name}() {
+	if(!jQuery("#map{real_name}").height()) {
+		jQuery("#map{real_name}").height("300");
+	}
+
+    map{real_name} = new GMap2(document.getElementById("map{real_name}"));
+
+    //map{real_name}.setMapType({MapType});
+    
+    map{real_name}.setCenter(new GLatLng({latitude}, {longitude}), {zoom});    
+    
+
+	marker{real_name}Options = {};
+    <!--BeginSezMarker-->
+	marker{real_name}.set("{id_marker}", new GMarker(new GLatLng({marker_latitude}, {marker_longitude}), marker{real_name}Options));
+	<!--BeginSezMarkerDescription-->
+	GEvent.addListener(marker{real_name}.get("{id_marker}"), "click", function() {
+		marker{real_name}.get("{id_marker}").openInfoWindowHtml('{marker_description}');
+	  });
+	<!--EndSezMarkerDescription-->
+	map{real_name}.addOverlay(marker{real_name}.get("{id_marker}"));
+    <!--EndSezMarker-->
+  }
+ </script>
+<div id="map{real_name}" style="width: 100%; height:100%;">
+</div>

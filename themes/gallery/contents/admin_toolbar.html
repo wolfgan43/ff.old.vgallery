@@ -1,0 +1,50 @@
+<div class="vg-toolbar">
+    <!--BeginSezLayout-->
+     <div class="vg-layout vg-{block_type_class}">
+        <a class="vg-layout-title" href="{item_modify_path}?keys[ID]={item_id}&amp;location={item_location}&amp;path={item_path}&amp;ret_url={ret_url}" title="{_layout_modify}: {item_name}">{layout_icon}{item_name}</a>
+        <div class="vg-layout-icons">
+            <a href="{item_modify_path}?keys[ID]={item_id}&amp;location={item_location}&amp;path={item_path}&amp;ret_url={ret_url}" class="{class_name} hidden" title="{_layout_modify}">{_layout_modify}</a>
+            <!--BeginSezLayoutDelete-->
+            <a href="{item_delete_path}" class="{class_name} {block_delete_class}" title="{_layout_delete}"></a>
+            <!--EndSezLayoutDelete-->
+        </div>
+    </div>
+    <!--EndSezLayout-->     
+
+    <div class="vg-layout-actions">
+        <!--BeginSezMenuAdminAddDir-->
+        <a href="{item_path}" class="{class_name} {layout_adddir_class}" title="{_adddir}"><span class="{layout_adddir_class}">{layout_adddir_icon}</span>{_adddir}</a>
+        <!--EndSezMenuAdminAddDir-->
+        <!--BeginSezMenuAdminAddNew-->
+        <a href="{item_path}" class="{class_name} {layout_addnew_class}" title="{_addnew}"><span class="{layout_addnew_class}">{layout_addnew_icon}</span>{_addnew}</a>
+        <!--EndSezMenuAdminAddNew-->
+        <!--BeginSezMenuAdminModify-->
+        <a href="{item_path}" class="{class_name} {layout_edit_class}" title="{_modify}">{_modify}</a>
+        <!--EndSezMenuAdminModify-->
+        <!--BeginSezMenuAdminDelete-->
+        <a href="{item_path}" class="{class_name} {layout_delete_class}" title="{_delete}">{_delete}</a>
+        <!--EndSezMenuAdminDelete-->
+        <!--BeginSezModuleModify-->
+        <a href="{item_modify_path}" class="{class_name} {layout_edit_class}" title="{_module_modify}">{_module_modify}</a>
+        <!--EndSezModuleModify-->
+        <!--BeginSezModuleDelete-->
+        <a href="{item_delete_path}" class="{class_name} {layout_delete_class}" title="{_module_delete}">{_module_delete}</a>
+        <!--EndSezModuleDelete-->
+	    <!--BeginSezModuleExtra-->
+	    <a href="{item_path}" class="{class_name} {layout_property_class}" title="{_module_property}">{_module_property}</a>
+	    <!--EndSezModuleExtra-->
+
+        <!--BeginSezMenuAdminExtra-->
+        <a href="{item_path}" class="{class_name} {layout_property_class}" title="{_property}">{_property}</a>
+        <!--EndSezMenuAdminExtra-->
+        <!--BeginSezMenuAdminFields-->
+        <a href="{item_path}" class="{class_name} {layout_fields_class}" title="{_fields}">{_fields}</a>
+        <!--EndSezMenuAdminFields-->
+        <!--BeginSezMenuAdminEcommerce-->
+        <a href="{item_path}"  class="{class_name} {layout_ecommerce_class}" title="{_ecommerce}">{_ecommerce}</a>
+        <!--EndSezMenuAdminEcommerce-->
+        <!--BeginSezMenuAdminSetting-->
+        <a href="{item_path}?area={item_type}"  class="{class_name} {layout_setting_class}" title="{_setting}">{_setting}</a>
+        <!--EndSezMenuAdminSetting-->
+    </div>
+</div>

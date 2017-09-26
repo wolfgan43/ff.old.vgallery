@@ -1,0 +1,62 @@
+{fixed_pre_content}
+{name_title}
+{description_title}
+<!--BeginSezVGallerys-->
+    <!--BeginSezSort-->
+    <div class="vg-sort{max_col_class}">
+        <h4>{sort_title}</h4>
+        {sort_fields}
+    </div>
+    <!--EndSezSort-->
+    <!--BeginSezPageNavigatorTop-->
+    <div class="pagenavigator top{max_col_class}"> {PageNavigator} </div>
+    <!--EndSezPageNavigatorTop-->
+    <ul>
+        <!--BeginSezVGalleryRow-->
+        <!--BeginSezVGallery-->
+        <li{item_properties}>
+				<!--BeginSezVGalleryImageTop-->
+                <!--BeginSezVGalleryImageTopNode--> 
+                {content}
+                <!--EndSezVGalleryImageTopNode-->
+                <!--EndSezVGalleryImageTop-->
+
+                <!--BeginSezVGalleryDescriptionStart-->
+                <div class="vg-desc{desc_class}">
+                <!--EndSezVGalleryDescriptionStart-->
+                                
+                <!--BeginSezVGalleryGroup-->
+		            <!--BeginSezVGalleryGroupContainerStart-->
+			        <div class="vg-grp{group_class}"> 
+		            <!--EndSezVGalleryGroupContainerStart-->                
+                
+                <!--BeginSezVGalleryDescriptionNode-->
+                {content}
+                <!--EndSezVGalleryDescriptionNode-->
+
+                <!--BeginSezVGalleryGroupContainerEnd-->
+                </div>
+                <!--EndSezVGalleryGroupContainerEnd-->
+                <!--EndSezVGalleryGroup-->
+                
+                <!--BeginSezVGalleryDescriptionEnd-->
+                </div>
+                <!--EndSezVGalleryDescriptionEnd-->  
+
+				<!--BeginSezVGalleryImageBottom-->
+                <!--BeginSezVGalleryImageBottomNode--> 
+                {content}
+                <!--EndSezVGalleryImageBottomNode--> 
+                <!--EndSezVGalleryImageBottom-->
+        </li>
+        <!--EndSezVGallery-->
+        <!--EndSezVGalleryRow-->
+    </ul>
+<!--BeginSezPageNavigatorBottom-->
+<div class="pagenavigator bottom{max_col_class}"> {PageNavigator} </div>
+<!--EndSezPageNavigatorBottom-->
+<!--EndSezVGallerys-->
+<!--BeginSezError-->
+<p class="{error_class}{max_col_class}">{strError}</p>
+<!--EndSezError-->
+{fixed_post_content}

@@ -1,0 +1,46 @@
+<div class="hidden">
+    <input name="search_inset" type="hidden" value="{s_inset}" />
+    <!--BeginSezSearchParam-->
+    <input name="search_param" type="hidden" value="{s_param}" />
+    <!--EndSezSearchParam-->
+    <!--BeginSezSearchAdvParam-->
+    <input name="sap[{sap_name}]" type="hidden" value="{sap_value}" />
+    <!--EndSezSearchAdvParam-->
+</div>
+<!--BeginSezTitle-->
+<h2>{_search_title}</h2>
+<!--EndSezTitle-->
+
+<!--BeginSezSearchMenu-->
+<p class="search_description">{_search_description}</p>
+<p class="search_param">
+    {_search_param_description}
+    <strong>{search_param}</strong>
+</p>
+<!--BeginSezSearchInset-->
+<p class="search_inset">
+    {_search_inset_description}
+    <strong>{search_inset}</strong>
+</p>
+<!--EndSezSearchInset-->
+<ul class="search_items">
+<!--BeginSezItems-->
+    <!--BeginSezItemLink-->
+    <li class="link{items_class}">
+        <a href="{user_path}">{items}</a> 
+        <label>{count_items}</label>
+    </li>
+    <!--EndSezItemLink-->
+    <!--BeginSezItemNoLink-->
+    <li class="nolink{items_class}">
+        {items} 
+        <label>{count_items}</label>
+    </li>
+    <!--EndSezItemNoLink-->
+<!--EndSezItems-->
+</ul>
+<!--EndSezSearchMenu-->
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->
+{content}

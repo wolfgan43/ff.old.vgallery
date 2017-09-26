@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+	<rule id="cloudocs">
+		<priority>NORMAL</priority>
+		<source>^/restricted/cloudocs(.*)</source>
+		<destination>
+			<module>cloudocs</module>
+			<url>/restricted/cloudocs$1</url>
+		</destination>
+        <reverse>/restricted/cloudocs</reverse> 
+		<accept_path_info />
+	</rule>
+    <rule id="user_cloudocs">
+        <priority>NORMAL</priority>
+        <source>^/user/cloudocs(.*)</source>
+        <destination>
+            <module>cloudocs</module>
+            <url>/restricted/cloudocs/docs$1</url>
+        </destination>
+        <reverse>/restricted/cloudocs/docs</reverse> 
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/cloudocs/anagraph(.*)</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/anagraph$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/cloudocs/anagraph(.*)/modify$</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/anagraph/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/cloudocs/anagraph(.*)/preview$</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/anagraph/preview$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+</configdata>
+

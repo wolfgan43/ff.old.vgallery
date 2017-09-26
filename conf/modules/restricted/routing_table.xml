@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+    <rule id="mod_restricted_settings">
+        <priority>NORMAL</priority>
+        <source>^/admin/settings(.*)</source>
+        <destination>
+            <module>restricted</module>
+            <url>/settings$1</url>
+        </destination>
+        <reverse>/admin/settings</reverse>
+    </rule>
+</configdata>

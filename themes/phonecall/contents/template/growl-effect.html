@@ -1,0 +1,27 @@
+<div class="testogrowl">
+<h2>Growl</h2>
+<p>Questo plugin simula il sistema di notifica Growl utilizzato dagli OS apple e dalle ultime distribuzioni linux. <br />
+Grazie a questo metodo di visualizzazione è possibile implementare all' interno del proprio sito / applicativo web delle informazioni pubblicitarie o di sistema, un esempio potrebbe essere una notifica di un nuovo messaggio nell' area di un utente registrato<br /> le notifiche sono personalizzabili e distinguibili in base al tipo "allarme" oppure "errore"</p>
+
+<div class="buttons">
+<div onclick="jQuery.pnotify({
+						pnotify_title: 'Notifica',
+						pnotify_text: 'Un messaggio di notifica come un altro...'
+					});">
+	<div class="notify-icon"></div> <span class="notify-span">Mostra notifica</span>
+</div>
+					
+<div onclick="jQuery.pnotify({
+						pnotify_title: 'Critical Error!',
+						pnotify_text: 'Questo è un messaggio di errore!',
+						pnotify_type: 'error',
+						pnotify_animation: 'show'
+
+
+					});">
+	<div class="error-icon"></div> <span>Mostra errore</span>
+</div>
+</div>
+
+					
+</div>

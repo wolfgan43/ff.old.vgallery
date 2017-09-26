@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+<rule>
+        <source>^/</source>
+		<useragent>
+			<browser>iPhone</browser>
+			<version></version>
+		</useragent>
+        <query></query>
+        <destination>
+            <header>301</header>
+            <location>/asdadasd?ww=1</location>
+        </destination>
+    </rule>
+    <rule>
+        <source>^/asd</source>
+		
+        <query>pippo=1</query>
+        <destination>
+            <header>301</header>
+            <location>/asdadasd?ww=1</location>
+        </destination>
+    </rule>
+    
+</configdata>

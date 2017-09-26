@@ -1,0 +1,312 @@
+<div class="import">
+	<h2 class="title">{import_title}</h2>
+	<div class="import_menu">
+		<ul>
+			<li><a href="{import_path}/anagraph">{_import_anagraph}</a></li>
+			<li><a href="{import_path}/vgallery">{_import_vgallery}</a></li>
+			<li><a href="{import_path}/ecommerce">{_import_ecommerce}</a></li>
+			<li><a href="{import_path}/orders">{_import_order}</a></li>
+			<li><a href="{import_path}/orders_detail">{_import_order_detail}</a></li>
+			<li><a href="{import_path}/orders_payments">{_import_billing}</a></li>
+			<li><a href="{import_path}/bill">{_import_bill}</a></li>
+			<li><a href="{import_path}/bill_detail">{_import_bill_detail}</a></li>
+			<li><a href="{import_path}/bill_payments">{_import_billing}</a></li>
+		</ul>   
+	</div>
+    <!--BeginSezError-->
+    <div class="error">
+        {strError}
+    </div>
+    <!--EndSezError-->
+    <!--BeginSezWait-->
+        <h2>Waiting.... Part: {parts}/{tot_parts}</h2>
+        <input type="hidden" name="fs" value="{fs}" />
+        <input type="hidden" name="ct" value="{ct}" />
+        <input type="hidden" name="en" value="{en}" />
+        
+        <input type="hidden" name="tot_parts" value="{tot_parts}" />
+        <input type="hidden" name="nrec" value="{nrec}" />
+        
+        <input type="hidden" name="destination_type" value="{destination_type}" />
+        <input type="hidden" name="field_type" value="{field_type}" />
+        <!--BeginSezLang-->
+        <input type="hidden" name="lang" value="{lang}" />
+        <!--EndSezLang-->
+        <!--BeginSezCat-->
+        <input type="hidden" name="fprecat" value="{fprecat}" />
+        <input type="hidden" name="fpostcat" value="{fpostcat}" />
+        <!--EndSezCat-->
+        
+        <input type="hidden" name="parts" value="{parts}" />
+        <input type="hidden" name="cri" value="{cri}" />
+        <input type="hidden" name="cru" value="{cru}" />
+        <input type="hidden" name="cci" value="{cci}" />
+        <input type="hidden" name="limit_by" value="{limit_by}" />
+        <input type="hidden" name="limit_field" value="{limit_field}" />
+        
+        <input type="hidden" name="visible" value="{visible}" />
+        <input type="hidden" name="visible_operation" value="{visible_operation}" />
+        
+        <!--BeginSezData-->
+        <input type="hidden" name="data[{data_id}][{data_sub_id}]" value="{data_sub_value}" />
+        <!--EndSezData-->
+        <fieldset>
+            <legend>{_import_summary}</legend>
+
+            <div class="table_data">
+                <label>{_import_inserted_records}</label>
+                {count_rec_insert}
+            </div>
+            <div class="table_data">
+                <label>{_import_updated_records}</label>
+                {count_rec_update}
+            </div>
+            <div class="table_data">
+                <label>{_import_processed_records}</label>
+                {count_rec_tot}
+            </div>
+            <!--BeginSezCatCount-->
+            <div class="table_data">
+                <label>{_import_inserted_categories}</label>
+                {count_cat_insert}
+            </div>
+            <!--EndSezCatCount-->
+        </fieldset>
+        <script defer="defer" type="text/javascript">
+            document.frmMain.method = 'post'; 
+            document.frmMain.frmAction.value = 'import';
+            document.frmMain.submit();
+        </script>
+    <!--EndSezWait-->
+    <!--BeginSezDelete-->
+    <fieldset>
+    <legend>{_import_delete}</legend>
+    	<!--BeginSezAnagraphDel-->
+        <label>{_import_delete_anagraph_data}</label>   
+        {del_anagraph}
+        <!--EndSezAnagraphDel-->
+        <!--BeginSezVgalleryDel-->
+        <label>{_import_delete_vgallery_data}</label>
+        {del_item}
+        <!--EndSezVgalleryDel-->
+    	<!--BeginSezOrderDel-->
+        <label>{_import_delete_order_data}</label>   
+        {del_order}
+        <!--EndSezOrderDel-->
+        <input class="button" type="submit" value="Delete" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'del';document.frmMain.submit();" />
+    </fieldset>
+	<!--EndSezDelete-->
+	<!--BeginSezFieldData-->
+    <fieldset>
+    <legend>{_import_source_data}</legend>
+    <div class="fs">
+	    <label>{_import_source_data}</label>
+	    <select class="FormsControl_combo" name="fs">
+	        <!--BeginSezDataSource-->
+	        <option value="{source_path}" {selected}>{data_source}</option>
+	        <!--EndSezDataSource-->
+	    </select>
+    </div>
+    <div class="ct">
+        <label>{_import_closed_by}</label>
+        <input class="FormsControl_text" type="text" name="ct" value="{ct}" />
+    </div>
+    <div class="lt">
+        <label>{_import_composed_by}</label>
+        <input class="FormsControl_text" type="text" name="en" value="{en}" />
+    </div>
+    </fieldset>
+    <fieldset>
+        <legend>{_import_destination}</legend>
+        <div class="table_data">
+            <label>{_import_select_table}</label>
+            {destination_type}
+        </div>
+        <div class="table_data">
+            <label>{_import_select_type}</label>
+            {field_type}
+        </div>
+        <!--BeginSezLangData-->
+        <div class="table_data">
+            <label>{_import_select_language}</label>
+            {lang}
+        </div>
+        <!--EndSezLangData-->
+        <!--BeginSezCatData-->
+        <div class="table_data">
+            <label>{_import_pre_fixed_categories}</label>
+            <input class="FormsControl_text" type="text" name="fprecat" value="{fprecat}" />
+        </div>
+        <div class="table_data">
+            <label>{_import_post_fixed_categories}</label>
+            <input class="FormsControl_text" type="text" name="fpostcat" value="{fpostcat}" />
+        </div>
+        <!--EndSezCatData-->
+        <div class="table_data">
+            <label>{_import_elaboration_number}</label>
+            <input type="hidden" name="tot_parts" value="{tot_parts}" />
+            <input class="FormsControl_text" type="text" name="nrec" value="{nrec}" />
+        </div>
+    </fieldset>
+    <input class="button" type="submit" value="Scan" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'scan';document.frmMain.submit();" />
+	<!--EndSezFieldData-->
+	
+    <!--BeginSezRelationship-->
+    <h3>Parti totali: {tot_parts}</h3>
+    <h3>Numero di Record: {count_rec}</h3>
+    <fieldset>
+        <legend>{_import_fields_association}</legend>
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <label>{_import_limit_importation}</label>
+                        <input class="FormsControl_text" type="text" name="limit_by" value="{limit_by}" />
+                    </td>
+                    <td>
+                        <select class="FormsControl_combo" name="limit_field">
+                            <option value="">{_import_nothing}</option>
+                            <!--BeginSezFieldLimit-->
+                            <option value="{field_source_id}" {selected} >{field_source}</option>
+                            <!--EndSezFieldLimit-->
+                        </select>
+                    </td>
+                </tr>
+                <!--BeginSezVisible-->
+                <tr>
+                    <td>
+                        {_import_visible}
+                    </td>
+                    <td>
+                        <select class="FormsControl_combo" name="visible_operation">
+                            <option value="normal" {selected_normal}>{_import_normal}</option>
+                            <option value="not" {selected_not}>{_import_not}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="FormsControl_combo" name="visible">
+                            <option value="yes" {selected_yes}>{_import_yes}</option>
+                            <option value="no" {selected_no}>{_import_no}</option>
+                            <!--BeginSezFieldVisible-->
+                            <option value="{field_visible_id}" {selected} >{field_visible_value}</option>
+                            <!--EndSezFieldVisible-->
+                        </select>
+                    </td>
+                </tr>
+                <!--EndSezVisible-->
+                <!--BeginSezFields-->
+                <tr>
+                    <td>
+                        {field_name}
+                    </td>
+
+                    <td>
+                        <select class="FormsControl_combo" id="data_ns[{field_id}]" name="data_ns[{field_id}]" multiple="multiple" size="3">
+                            <!--BeginSezFieldSource-->
+                            <option value="{field_source_id}" {selected}>{field_source}</option>
+                            <!--EndSezFieldSource-->
+                        </select>                    
+                    </td>
+                    <td align="center" valign="middle">
+                        <input type="button" value="--&gt;"
+                         onclick="moveOptions(document.getElementById('data_ns[{field_id}]'), document.getElementById('data[{field_id}]'));" /><br />
+                        <input type="button" value="&lt;--"
+                         onclick="moveOptions(document.getElementById('data[{field_id}]'), document.getElementById('data_ns[{field_id}]'));" />
+                    </td>
+                    <td>
+                        <select class="FormsControl_combo" id="data[{field_id}]" name="data[{field_id}][]" size="3" multiple="multiple">
+                            <!--BeginSezFieldDestiny-->
+                            <option value="{field_destiny_id}" selected="selected">{field_destiny}</option>
+                            <!--EndSezFieldDestiny-->
+                        </select>
+                    </td>
+                </tr>
+                <!--EndSezFields-->
+            </tbody>
+        </table>
+    
+    </fieldset>
+    <input class="button" type="submit" value="Import" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'import';document.frmMain.submit();" />
+    <script defer="defer">
+var NS4 = (navigator.appName == "Netscape" && parseInt(navigator.appVersion) < 5);
+
+function addOption(theSel, theText, theValue)
+{
+  var newOpt = new Option(theText, theValue);
+  var selLength = theSel.length;
+  theSel.options[selLength] = newOpt;
+  theSel.options[selLength].selected = true;
+}
+
+function deleteOption(theSel, theIndex)
+{ 
+  var selLength = theSel.length;
+  if(selLength>0)
+  {
+    theSel.options[theIndex] = null;
+  }
+}
+
+function moveOptions(theSelFrom, theSelTo)
+{
+  
+  var selLength = theSelFrom.length;
+  var selectedText = new Array();
+  var selectedValues = new Array();
+  var selectedCount = 0;
+  
+  var i;
+  
+  // Find the selected Options in reverse order
+  // and delete them from the 'from' Select.
+  for(i=selLength-1; i>=0; i--)
+  {
+    if(theSelFrom.options[i].selected)
+    {
+      selectedText[selectedCount] = theSelFrom.options[i].text;
+      selectedValues[selectedCount] = theSelFrom.options[i].value;
+      deleteOption(theSelFrom, i);
+      selectedCount++;
+    }
+  }
+  
+  // Add the selected text/values in reverse order.
+  // This will add the Options to the 'to' Select
+  // in the same order as they were in the 'from' Select.
+  for(i=selectedCount-1; i>=0; i--)
+  {
+    addOption(theSelTo, selectedText[i], selectedValues[i]);
+  }
+  
+  if(NS4) history.go(0);
+}
+
+    </script>
+    <!--EndSezRelationship-->
+    
+    <!--BeginSezReport-->
+    <fieldset>
+        <legend>Riepilogo importazione</legend>
+
+        <div class="table_data">
+            <label>Record inseriti</label>
+            {count_rec_insert}
+        </div>
+        <div class="table_data">
+            <label>Record aggiornati</label>
+            {count_rec_update}
+        </div>
+        <div class="table_data">
+            <label>Record elaborati</label>
+            {count_rec_tot}
+        </div>
+        <!--BeginSezCatCount-->
+        <div class="table_data">
+            <label>Categorie inserite</label>
+            {count_cat_insert}
+        </div>
+        <!--EndSezCatCount-->
+    </fieldset>
+    <!--EndSezReport-->
+    
+</div>

@@ -1,0 +1,28 @@
+<!--<div class="hidden">
+	<input type="hidden" name="ret_url" value="{ret_url}" />
+</div>
+-->
+<div class="loginBox">
+<!--BeginSectError-->
+	<div class="warning"> {sError} </div>
+<!--EndSectError-->
+<!--BeginSectLogin-->
+	<!--BeginSectDomain-->
+	<p>{_login_domain}<br /><input type="text" id="domain" name="domain" value="{domain}"/></p>
+	<!--EndSectDomain-->
+	<div class="login-field"><label>{_login_username}</label><input type="text" id="username" name="username" value="{username}"/></div>
+	<div class="login-field"><label>{_login_password}</label><input onkeydown="return ff.submitProcessKey(event, 'btLogin')" type="password" id="password" name="password" value="{password}"/></div>
+	<p><input id="btLogin" type="submit" value="{_login_confirm}" onclick="document.getElementById('frmAction').value = 'login';"/></p>
+	<p><a href="/">{_back_to_site}</a></p> 
+	<script type="text/javascript">document.getElementById('{focus_target}').focus();</script>
+<!--EndSectLogin-->
+<!--BeginSectLogout-->
+	<p>{_logout_title}</p>
+	<div class="logout-field">
+		<p>
+			<input type="submit" value="{_logout_confirm}" onclick="this.form.frmAction.value = 'logout'"/><br />
+			<input type="button" value="{_logout_cancel}" onclick="window.location.href = '{ret_url}';"/>
+		</p>
+	</div>
+<!--EndSectLogout-->
+</div>

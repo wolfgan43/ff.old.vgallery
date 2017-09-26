@@ -1,0 +1,14 @@
+<?php
+switch(basename($_SERVER["PATH_INFO"])) {
+	case "OneSignalSDKUpdaterWorker.js":
+	case "OneSignalSDKWorker.js":
+		header("Service-Worker-Allowed: /");
+		header("Content-Type: application/javascript");
+		header("X-Robots-Tag: none");
+		
+		
+		echo "importScripts('https://cdn.onesignal.com/sdks/OneSignalSDK.js');";
+		break;
+	default:
+}
+die();

@@ -1,0 +1,198 @@
+/* anagrafica */
+
+#Anagraph_GridData,
+#Anagraph {
+	overflow: hidden;
+	min-height: 300px;
+}
+#Anagraph_GridData {
+    clear:both;
+    padding: 10px 0;
+}
+
+#Anagraph_GridData .row {
+    background:#f6f6f6;
+    background-image: linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -o-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -moz-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -webkit-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -ms-linear-gradient(bottom, rgb(244,244,244) 43%, rgb(255,255,255) 72%);
+    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.43, rgb(244,244,244)), color-stop(0.72, rgb(255,255,255)) );
+    border:1px solid #dddddd;
+    width:350px;
+    height:60px;
+    clear:none;
+    overflow: inherit;
+    float:left;
+    margin:0 10px 10px 0;
+    position: relative;
+}
+
+#Anagraph_GridData .row:hover {
+    border:1px solid #bbbbbb;
+    -moz-box-shadow: 0 0 5px #888;
+    -webkit-box-shadow: 0 0 5px #888;
+    box-shadow: 0 0 5px #888;
+}
+#Anagraph_GridData .anagraph-head,
+#Anagraph_GridData .qrcode,
+#Anagraph_GridData .address,
+#Anagraph_GridData .province,
+#Anagraph_GridData .town,
+#Anagraph_GridData .state,
+#Anagraph_GridData .piva,
+#Anagraph_GridData .email,
+#Anagraph_GridData .cf,
+#Anagraph_GridData .cap,
+#Anagraph_GridData .cognome,
+#Anagraph_GridData .ragionesociale,
+#Anagraph_GridData .qrcode {
+	display: none;
+}
+#Anagraph_GridData SPAN.avatar {
+	display: block;
+	width: 50px;
+	height: 50px;
+	float: left;
+	margin: 4px;
+}
+#Anagraph_GridData IMG.avatar {
+	width: 50px;
+	height: 50px;
+	border: 1px solid #ccc;
+}
+#Anagraph_GridData SPAN.reference,
+#Anagraph_GridData SPAN.categories {
+	display: block;
+	margin: 4px 0 0;
+	float: left;
+	width: 280px;
+}
+#Anagraph_GridData SPAN.reference {
+	font: 16px !important;
+	font-weight: normal;
+	color: #df522e;
+	
+}
+#Anagraph_GridData .actions {
+	display: none;
+	position: absolute;
+	top: 4px;
+	right: 4px;
+}
+#Anagraph_GridData .actions .ffButton {
+	float: left;
+}
+/*
+#Anagraph .anagraph-head {
+	display: none;
+}
+#Anagraph SPAN.avatar {
+	display: block;
+	float: left;
+	width: 50px;
+	height: 50px;
+	padding: 4px;
+}
+#Anagraph IMG.avatar {
+	width: 50px;
+	height: 50px;	
+}
+#Anagraph .actions {
+	display: none;
+	position: absolute;
+	top: 4px;
+	right: 4px;
+}
+#Anagraph .actions .ffButton {
+	float: left;
+}
+#Anagraph .row .central-content .reference {
+	display: block;
+	font-size: 20px !important;
+	line-height: 18px;
+}
+/*
+#Anagraph .row .GridActions {
+    width:50px;
+    padding:24px 4px;
+    background:#ddd;
+    text-align:center;
+    display:block;
+    float:right;
+    -webkit-border-top-right-radius: 6px;
+    -webkit-border-bottom-right-radius: 6px;
+    -moz-border-radius-topright: 6px;
+    -moz-border-radius-bottomright: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    margin:0;
+}
+
+#Anagraph .row .ffButton {
+    width:30px;
+    height:60px;
+    float:right;
+}
+
+#Anagraph .row .anagraph-head {
+    padding:5px 10px 0 5px;
+    height:95px;
+    background:#ddd;
+    text-align:center;
+    display:block;
+    float:left;
+    -webkit-border-top-left-radius: 6px;
+    -webkit-border-bottom-left-radius: 6px;
+    -moz-border-radius-topleft: 6px;
+    -moz-border-radius-bottomleft: 6px;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    margin:0 10px 0 0;
+}
+
+#Anagraph .row:hover .anagraph-head {
+    background:#ccc;
+}
+
+#Anagraph .anagraph-head .anagraph-id {
+    display:block;
+    margin:24px 0 0 0;
+    min-width:28px;
+    text-align:right;
+    float:left;
+    font-size:20px;
+    color:#585858;
+}
+
+#Anagraph .row .avatar {
+    display:block;
+    float:right;
+    background:#fdfdfd;
+    padding:5px;
+    border:1px solid #ccc;
+    width:50px;
+    height:50px;
+}
+
+.central-content {
+    float:left;
+    margin:5px;
+    width:360px;
+    overflow:hidden;
+}
+
+#Anagraph .row .central-content .email {
+    clear:both;
+    display:block;
+}
+
+#Anagraph .row .text {
+    margin:2px 0;
+}
+
+#Anagraph .row .text A {
+    color:#3f3f3f;
+    font-size:12px;
+}
+*/

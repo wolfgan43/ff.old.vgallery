@@ -1,0 +1,70 @@
+<script type="text/javascript" defer="defer">
+    if(window["google"] === undefined) {
+        document.addEventListener("DOMContentLoaded", function(event) {
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            script.src = window.location.protocol + "//maps.googleapis.com/maps/api/js?v=3.exp&key={gmap_key}{gmap_region}{gmap_lang}&callback=initialize{real_name}";
+            document.body.appendChild(script);
+        });
+    } else {
+        document.addEventListener("DOMContentLoaded", function(event) {
+            initialize{real_name}();
+        });
+    }
+
+    var map{real_name} = "";
+    var markers{real_name} = [];
+
+    //var marker{real_name} = ff.hash();
+    function initialize{real_name}() {
+        if(!document.getElementById("map{real_name}").clientHeight) {
+            document.getElementById("map{real_name}").style.height = "300px";
+        }
+
+        map{real_name} = new google.maps.Map(document.getElementById("map{real_name}"), {
+            zoom		: {zoom} ,
+            center		: new google.maps.LatLng({latitude}, {longitude}),
+        {gmap_params}
+    });
+
+        <!--BeginSezMarker-->
+        markers{real_name}.push(new google.maps.Marker({
+            position: new google.maps.LatLng({marker_latitude}, {marker_longitude}),
+            map: map{real_name}
+    }));
+
+        <!--BeginSezMarkerDescription-->
+        markers{real_name}[{count_marker}].info = new google.maps.InfoWindow({
+            content : document.getElementById("map{real_name}marker{count_marker}").innerHTML
+        });
+
+        google.maps.event.addListener(markers{real_name}[{count_marker}], 'click', function() {
+            markers{real_name}[{count_marker}].info.open(map{real_name}, markers{real_name}[{count_marker}]);
+
+
+            jQuery(".street-view").click(function() {
+                panorama = map{real_name}.getStreetView();
+                panorama.setPosition(markers{real_name}[{count_marker}].getPosition());
+                panorama.setVisible(true);
+            });
+        });
+        <!--EndSezMarkerDescription-->
+        <!--EndSezMarker-->
+
+        if(markers{real_name}.length > 1) {
+            var bounds = new google.maps.LatLngBounds();
+            for (var i = 0; i < markers{real_name}.length; i++) {
+                bounds.extend(markers{real_name}[i].getPosition());
+            }
+            map{real_name}.fitBounds(bounds);
+        }
+    }
+</script>
+
+
+<div id="map{real_name}" style="width: 100%; height:100%;"></div>
+<div id="map{real_name}desc" class="hidden">
+    <!--BeginSezMarkerDesc-->
+    <div id="map{real_name}marker{count_marker}">{marker_description}</div>
+    <!--EndSezMarkerDesc-->
+</div>

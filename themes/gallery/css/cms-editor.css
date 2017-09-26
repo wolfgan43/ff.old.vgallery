@@ -1,0 +1,34 @@
+#cms-editor-menu A.selected {
+	background-color : #171717;
+}
+	
+#cms-editor-container {
+	position: fixed;
+	width: 30%;
+	height: 100%;
+	top: 32px;
+	right: 0;
+	background-color : #171717;
+
+}
+
+#cms-editor-container .vg-panel {
+	width: 100%;
+	height: 100%;
+	border: 1px solid #000000;
+	border-right: 0;
+
+}
+
+#cms-editor-container .vg-panel .sheet {
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+}
+
+#cms-editor-container .vg-panel .actions {
+	bottom: 0;
+	position: fixed;
+	background: #222;
+	width: 100%;
+}

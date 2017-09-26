@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" {rss_type}>
+  <channel><!--BeginSezAtom-->
+    <atom:link href="{http_protocol}://{domain}{self}" rel="self" type="application/rss+xml" /><!--EndSezAtom-->
+    <title>{channel_title}</title>
+    <description><![CDATA[{channel_description}]]></description>
+    <link>{http_protocol}://{domain}{target}</link><!--BeginSezCategory-->
+    <category domain="{category_url}">{category_name}</category><!--EndSezCategory-->
+    <language>{locale}</language><!--BeginSezPublishedAt--> 
+    <pubDate>{published_at}</pubDate><!--EndSezPublishedAt--><!--BeginSezLastUpdate-->
+    <lastBuildDate>{last_update}</lastBuildDate><!--EndSezLastUpdate-->
+    <webMaster>{webmaster}</webMaster><!--BeginSezImage-->
+    <image>
+    	<!--BeginSezImageProperties-->{image_properties}<!--EndSezImageProperties-->
+    </image><!--EndSezImage--><!--BeginSezCopyright-->
+    <copyright>{copyright}</copyright><!--EndSezCopyright--><!--BeginSezDoc-->
+    <docs>{doc_url}</docs><!--EndSezDoc--><!--BeginSezGenerator-->
+    <generator>FeedForAll (1.0.0.1)</generator><!--EndSezGenerator-->
+    <!--BeginSezPage-->
+    <item>
+      <link>{http_protocol}://{domain}{url}</link>
+      <guid>{http_protocol}://{domain}{url}</guid>
+      <pubDate>{last_update}</pubDate><!--BeginSezTitle-->
+      <title>{title}</title><!--EndSezTitle--><!--BeginSezDescription-->
+      <description><![CDATA[{cover_tag}{description}]]></description><!--EndSezDescription--><!--BeginSezCover-->
+      <media:content url="{cover_url}" type="{cover_mime}"></media:content><!--EndSezCover--><!--BeginSezAuthor-->
+      <author>{author_email}</author><!--EndSezAuthor--><!--BeginSezSource-->
+      <source url="{source_url}">{source_name}</source><!--EndSezSource-->
+    </item><!--EndSezPage-->
+  </channel>
+</rss>

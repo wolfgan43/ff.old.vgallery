@@ -1,0 +1,365 @@
+<!--BeginSezHeader-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>Gallery Installation</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js" type="text/javascript"></script> 
+	<script type="text/javascript">{script}</script>
+	<style type="text/css">{style}</style>
+</head>
+<body>
+    <div class="wrapper">
+    <form id="frmMain" name="frmMain" action="" method="post" >
+        <input type="hidden" name="frmAction" id="frmAction" value="" />
+<!--EndSezHeader-->
+    <!--BeginSezError-->
+        <div class="error">{strError}</div>
+    <!--EndSezError-->
+    <div class="install-db" style="display:none;">
+        <h1 style="text-align:center;">Installation in Progress. Please Wait...</h1>
+		 <div class="sk-cube-grid">
+		  <div class="sk-cube sk-cube1"></div>
+		  <div class="sk-cube sk-cube2"></div>
+		  <div class="sk-cube sk-cube3"></div>
+		  <div class="sk-cube sk-cube4"></div>
+		  <div class="sk-cube sk-cube5"></div>
+		  <div class="sk-cube sk-cube6"></div>
+		  <div class="sk-cube sk-cube7"></div>
+		  <div class="sk-cube sk-cube8"></div>
+		  <div class="sk-cube sk-cube9"></div>
+		</div>   
+    </div>
+    <div class="menu">
+        <ul>
+            <li class="site-conf selected"><a href="javascript:void(0);" rel="site">1 &bull; Site configuration</a></li>
+            <li class="server-conf"><a href="javascript:void(0);" rel="server">2 &bull; Server configuration</a></li>
+            <li class="db-conf"><a href="javascript:void(0);" rel="db">3 &bull; Database configuration</a></li>
+            <li class="smtp-conf"><a href="javascript:void(0);" rel="smtp">4 &bull; Smtp configuration</a></li>
+            <li class="sadmin-conf"><a href="javascript:void(0);" rel="sadmin">5 &bull; Superadmin configuration</a></li>
+            <li class="ftp-conf"><a href="javascript:void(0);" rel="ftp">6 &bull; Ftp configuration</a></li>
+            <li class="path-conf adv hidden"><a href="javascript:void(0);" rel="path">7 &bull; Path configuration</a></li>
+            <li class="session-conf adv hidden"><a href="javascript:void(0);" rel="session">8 &bull; Session configuration</a></li>
+            <li class="email-conf adv hidden"><a href="javascript:void(0);" rel="email">9 &bull; Email configuration</a></li>
+            <li class="auth-conf adv hidden"><a href="javascript:void(0);" rel="auth">10 &bull; Auth base configuration locale</a></li>
+        </ul>
+        <a href="javascript:void(0);" class="{button_class}install-advanced-settings">advanced settings</a>
+    </div>
+    
+    
+    <div class="ffRecord install-container">
+        <div id="install-window" class="installer">
+	     <fieldset title="site" class="default site" id="fieldset_site_conf">
+                    <legend class="subtitle">1  Site configuration<a href="javascript:void(0)" class="helpB" number="one"></a></legend>
+                        <div class="{row_class}" id="field_site_title">
+                            <label class="spanlabel">Site title</label>
+                            <input class="input required" type="text" name="SITE_TITLE" value="{site_title}" />
+                            <span class="check"></span>
+
+                        </div>
+                        <div class="{row_class}" id="field_default_lang">
+                            <label class="spanlabel">Default language</label>
+                            <select class="combo required" name="LANGUAGE_DEFAULT"> 
+                                    <option {language_default_eng} value="ENG">English</option>
+                                    <option {language_default_ita} value="ITA">Italiano</option>
+                                    <option {language_default_esp} value="ESP">Spanish</option>
+                                    <option {language_default_fra} value="FRA">French</option>
+                                    <option {language_default_deu} value="DEU">Deutch</option>
+                            </select>
+                            <span class="check"></span>
+                        </div>
+                        <div class="{row_class}" id="field_site_logo_mail">
+                            <label class="spanlabel">Logo mail</label>
+                            <input class="file" type="file" name="SITE_LOGO" />
+                        </div>
+                        <div class="{row_class}" id="field_site_logo_boffice">
+                            <label class="spanlabel">Logo area backoffice</label>
+                            <input class="file" type="file" name="SITE_LOGO" />
+                        </div>
+                        <div class="{row_class}" id="field_site_logo_fav">
+                            <label class="spanlabel">Favicon</label>
+                            <input class="file" type="file" name="SITE_LOGO" />
+                        </div>
+                        <div class="{row_class}" id="field_site_logo_doc">
+                            <label class="spanlabel">Logo documenti</label>
+                            <input class="file" type="file" name="SITE_LOGO" />
+                        </div>
+                        
+                        <div class="{row_class}" id="field_debug_mode">
+                            <label class="spanlabel">Enable Debug</label>
+                            <input type="checkbox" name="DEBUG_MODE" value="1" {debug_mode} />
+                        </div>
+                        <div class="{row_class}" id="field_debug_profiling">
+                            <label class="spanlabel">Enable Profiling</label>
+                            <input type="checkbox" name="DEBUG_PROFILING" value="1" {debug_profiling} />
+                        </div>
+                        <div class="{row_class}" id="field_debug_log">
+                            <label class="spanlabel">Enable Log</label>
+                            <input type="checkbox" name="DEBUG_LOG" value="1" {debug_log} />
+                        </div>
+                        <div class="{row_class}" id="field_trace_visitor">
+                            <label class="spanlabel">Enable Trace Visitor</label>
+                            <input type="checkbox" name="TRACE_VISITOR" value="1" {trace_visitor} />
+                        </div>
+                                            
+                    <div class="helpP" number="one">
+                            <div>SITE TITLE: imposta il brand nel title</div>
+                            <span class="screenshot sitetitle"></span>
+                            <div>DEFAULT LANGUAGE: imposta la lingua di default del CMS</div>
+                            <div>LOGO: Imposta il logo nelle mail di sistema, nei documenti, nelle aree di backoffice e imposta la favicon</div>
+                    </div>
+            </fieldset>
+	    
+            <fieldset title="Server" class="default server hidden" id="fieldset_serv_conf">
+            <legend class="subtitle">2  Server configuration<a href="javascript:void(0)" class="helpB" number="two"></a></legend>
+		 	    <div class="{row_class}" id="field_master_site">
+                    <label class="spanlabel">Master site</label>
+                    <input class="input required" type="text" name="MASTER_SITE" value="{master_site}" />
+                    <span class="check"></span>
+                </div>
+
+		 	    <div class="{row_class}" id="field_production_site">
+                    <label class="spanlabel">Production site</label>
+                    <input class="input" type="text" name="PRODUCTION_SITE" value="{production_site}" />
+                </div>
+		 	    <div class="{row_class}" id="field_development_site">
+                    <label class="spanlabel">Development site</label>
+                    <input class="input" type="text" name="DEVELOPMENT_SITE" value="{development_site}" />
+                </div>
+
+                <div class="{row_class}" id="field_memory_limit">
+                    <label class="spanlabel">Memory limit</label>
+                    <input class="input required" type="text" name="MEMORY_LIMIT" value="{memory_limit}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_cdn_static">
+                    <label class="spanlabel">CDN Static</label>
+                    <input type="checkbox" name="CDN_STATIC" value="1" {cdn_static} />
+                </div>
+                <div class="helpP" number="two">
+                      <div>MASTER SITE: sorgente aggiornamenti</div>
+                      <div>PRODUCTION SITE: sito ufficiale (produzione)</div>
+                      <div>DEVELOPMENT SITE: sito in sviluppo</div>
+                      <div>MEMORY LIMIT: limite memoria allocata</div>
+                      <div>CDN STATIC: abilita il sottodominio static.yuorsite.com</div>
+                </div>
+            </fieldset>
+            <fieldset title="Database" class="default db hidden" id="fieldset_db_conf">
+            <legend class="subtitle">3  Database configuration<a href="javascript:void(0)" class="helpB" number="three"></a></legend>
+                <div class="{row_class}" id="field_db_name">
+                    <label class="spanlabel">Database name</label>
+                    <input class="input required" type="text" name="FF_DATABASE_NAME" maxlength="64" value="{database_name}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_db_host">
+                    <label class="spanlabel">Database host</label>
+                    <input class="input required" type="text" name="FF_DATABASE_HOST" value="{database_host}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_db_user">
+                    <label class="spanlabel">Database username</label>
+                    <input class="input required" type="text" name="FF_DATABASE_USER" maxlength="16" value="{database_user}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_db_pwd">
+                    <label class="spanlabel">Database password</label>
+                    <input class="password required" type="password" name="FF_DATABASE_PASSWORD" value="{database_password}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_db_conf_pwd">
+                    <label class="spanlabel">Confirm db password</label>
+                    <input class="password required" type="password" name="FF_DATABASE_CONF_PASSWORD" value="{database_password}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_db_reset">
+                    <label class="spanlabel">Reset</label>
+                    <input type="checkbox" name="RESET_DATABASE" value="1" {reset_database_check} />
+                </div>
+                <div class="{row_class}" id="field_charset">
+                    <label class="spanlabel">Charset</label>
+                    <input class="input required" type="text" name="CHARACTER_SET" value="{character_set}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_collation">
+                    <label class="spanlabel">Collation</label>
+                    <input class="input required" type="text" name="COLLATION" value="{collation}" />
+                    <span class="check"></span>
+                </div>
+            <div class="helpP" number="three">
+            </div>
+            </fieldset>
+            <fieldset title="SMTP" class="default smtp hidden" id="fieldset_smtp_conf">
+            <legend class="subtitle">4  Smtp configuration<a href="javascript:void(0)" class="helpB" number="four"></a></legend>
+            	<select id="provider_email" class="selection"> 
+            		<option value="">Local</option>
+            		<option value="sparkpost">SparkPost</option>
+            		<option value="custom">Custom</option>
+            	</select>
+                <div class="{row_class}" id="field_smtp_host">
+                    <label class="spanlabel">SMTP host</label>
+                    <input class="input required" type="text" name="A_SMTP_HOST" value="{smtp_host}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_smtp_auth">
+                    <label class="spanlabel">SMTP auth</label>
+                    <input type="checkbox" name="SMTP_AUTH" value="1" {smtp_auth_check} />
+                </div>
+                <div class="{row_class}" id="field_smtp_user">
+                    <label class="spanlabel">SMTP user</label>
+                    <input class="input" type="text" name="A_SMTP_USER" value="{smtp_username}" />
+                </div>
+                <div class="{row_class}" id="field_smtp_pwd">
+                    <label class="spanlabel">SMTP password</label>
+                    <input class="password" type="password" name="A_SMTP_PASSWORD" value="{smtp_password}" />
+                </div>
+                <div class="{row_class}" id="field_smtp_conf_pwd">
+                    <label class="spanlabel">Confirm password</label>
+                    <input class="password" type="password" name="A_SMTP_CONF_PASSWORD" value="{smtp_password}" />
+                </div>
+                <div class="{row_class}" id="field_smtp_port">
+                    <label class="spanlabel">SMTP port</label>
+                    <input class="input required" type="text" name="A_SMTP_PORT" value="{smtp_port}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_smtp_secure">
+                    <label class="spanlabel">SMTP secure</label>
+                    <select class="selection" name="A_SMTP_SECURE">
+                    	<option value="">None</option>
+                    	<option value="tls">TLS</option>
+                    	<option value="ssl">SSL</option>
+                    </select>
+                    <span class="check"></span>
+                </div>
+            <div class="helpP" number="four">
+            </div>
+            </fieldset>
+         
+            
+            <fieldset title="Root Autentication" class="default sadmin hidden" id="fieldset_su_conf">
+            <legend class="subtitle">5  Superadmin configuration<a href="javascript:void(0)" class="helpB" number="five"></a></legend>
+                <div class="{row_class}" id="field_su_user">
+                    <label class="spanlabel">Username</label>
+                    <input class="input required" type="text" name="Username" value="{username}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_su_pwd">
+                    <label class="spanlabel">Password</label>
+                    <input class="password required" type="password" name="Password" value="{password}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_su_conf_pwd">
+                    <label class="spanlabel">Confirm password</label>
+                    <input class="password required" type="password" name="Conf_Password" value="{password}" />
+                    <span class="check"></span>
+                </div>
+            <div class="helpP" number="five">
+            </div>
+            </fieldset>
+            <fieldset title="FTP" class="default ftp hidden" id="fieldset_ftp_conf">
+            <legend class="subtitle">6  FTP configuration locale<a href="javascript:void(0)" class="helpB" number="six"></a></legend>
+                <div class="{row_class}" id="field_ftp_user">
+                    <label class="spanlabel">FTP username</label>
+                    <input class="input required" type="text" name="FTP_USERNAME" value="{ftp_username}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_ftp_pwd">
+                    <label class="spanlabel">FTP password</label>
+                    <input class="password required" type="password" name="FTP_PASSWORD" value="{ftp_password}" />
+                    <span class="check"></span>
+                </div>
+                <div class="{row_class}" id="field_ftp_conf_pwd">
+                    <label class="spanlabel">Confirm password</label>
+                    <input class="password required" type="password" name="FTP_CONFIRM_PASSWORD" value="{ftp_password}" />
+                    <span class="check"></span>
+                </div>
+                <div class="helpP" number="six">
+                </div>
+            </fieldset>
+            <fieldset title="Path" class="default path hidden" id="fieldset_path_conf">
+            <legend class="subtitle">Path configuration</legend>
+                <div class="{row_class}" id="field_disk_path">
+                    <label class="spanlabel">Disk path</label>
+                    <input class="input" type="text" name="FF_DISK_PATH" value="{disk_path}" />
+                </div>
+                <div class="{row_class}" id="field_site_path">
+                    <label class="spanlabel">Site path</label>
+                    <input class="input" type="text" name="FF_SITE_PATH" value="{site_path}" />
+                </div>
+                <div class="{row_class}" id="field_disk_updir">
+                    <label class="spanlabel">Disk updir</label>
+                    <input class="input" type="text" name="DISK_UPDIR" value="{disk_updir}" />
+                </div>
+                <div class="{row_class}" id="field_site_updir">
+                    <label class="spanlabel">Site updir</label>
+                    <input class="input" type="text" name="SITE_UPDIR" value="{site_updir}" />
+                </div>
+            </fieldset>
+            <fieldset title="Session" class="default session hidden" id="fieldset_session_conf">
+            <legend class="subtitle">Session configuration</legend>
+                <div class="{row_class}" id="field_save_path">
+                    <label class="spanlabel">Session save path</label>
+                    <input class="input" type="text" name="SESSION_SAVE_PATH" value="{session_save_path}" />
+                </div>
+                <div class="{row_class}" id="field_session_name">
+                    <label class="spanlabel">Session name</label>
+                    <input class="input" type="text" name="SESSION_NAME" value="{session_name}" />
+                </div>
+                <div class="{row_class}" id="field_app_id">
+                    <label class="spanlabel">App ID</label>
+                    <input class="input" type="text" name="APPID" value="{appid}" />
+                </div>
+            </fieldset>
+            <fieldset title="Email" class="default email hidden" id="fieldset_email_conf">
+            <legend class="subtitle">Email configuration</legend>
+                <div class="{row_class}" id="field_from_email">
+                    <label class="spanlabel">A from email</label>
+                    <input class="input" type="text" name="A_FROM_EMAIL" value="{email_address}" />
+                </div>
+                <div class="{row_class}" id="field_from_name">
+                    <label class="spanlabel">A from name</label>
+                    <input class="input" type="text" name="A_FROM_NAME" value="{email_name}" />
+                </div>
+                <div class="{row_class}" id="field_cc_email">
+                    <label class="spanlabel">CC from email</label>
+                    <input class="input" type="text" name="CC_FROM_EMAIL" value="{cc_address}" />
+                </div>
+                <div class="{row_class}" id="field_cc_name">
+                    <label class="spanlabel">CC from name</label>
+                    <input class="input" type="text" name="CC_FROM_NAME" value="{cc_name}" />
+                </div>
+                <div class="{row_class}" id="field_bcc_email">
+                    <label class="spanlabel">BCC from email</label>
+                    <input class="input" type="text" name="BCC_FROM_EMAIL" value="{bcc_address}" />
+                </div>
+                <div class="{row_class}" id="field_bcc_name">
+                    <label class="spanlabel">BCC From name</label>
+                    <input class="input" type="text" name="BCC_FROM_NAME" value="{bcc_name}" />
+                </div>
+            </fieldset>
+            <fieldset title="Http Autentication" class="default auth hidden" id="fieldset_auth_conf">
+            <legend class="subtitle">Auth Base configuration locale</legend>
+                <div class="{row_class}" id="field_auth_user">
+                    <label class="spanlabel">AUTH username</label>
+                    <input class="input" type="text" name="AUTH_USERNAME" value="{auth_username}" />
+                </div>
+                <div class="{row_class}" id="field_auth_pwd">
+                    <label class="spanlabel">AUTH password</label>
+                    <input class="password" type="password" name="AUTH_PASSWORD" value="{auth_password}" />
+                </div>
+                <div class="{row_class}" id="field_auth_conf_pwd">
+                    <label class="spanlabel">AUTH Confirm password</label>
+                    <input class="password" type="password" name="AUTH_CONFIRM_PASSWORD" value="{auth_password}" />
+                </div>
+            </fieldset>
+        </div> 
+	    	
+    </div>
+    <div class="actions">
+        
+        <a href="" class="{button_class} basic-install">Install</a>
+    </div>
+<!--BeginSezFooter-->
+    </form>
+</body>
+</html>
+<!--EndSezFooter-->

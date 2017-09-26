@@ -1,0 +1,24 @@
+<div class="{container_class}">
+    <div class="uploaded-thumb">
+        <div class="icons-abs"> 
+            <a download="{media_name_normalized}" href="{view_path}{media_path}?v={media_time}" alt="download" class="{download_class}"></a>
+            <a href="javascript:void(0);" alt="modify" class="{modify_class}" onclick="
+                ff.load('ff.ffField.aviary', function() {  
+                    ff.ffField.aviary.launch('{media_name_normalized}', '{media_path}');
+                });"></a>
+        </div>    
+        <a class="fancybox" href="{view_path}{media_path}?v={media_time}"><img id="{media_name_normalized}" src="{preview_path}{media_path}?v={media_time}" /></a>
+    </div>
+
+    <div class="{info_class}">
+        <label>{_media_name_label}</label>
+        <strong title="{media_name}">{media_name}</strong>
+		<br />
+        <label>{_media_size_label}</label>
+        <strong>{media_size}</strong>
+    </div>
+    <div class="{row_class}">
+        {media_tree_path}
+    </div>
+
+</div>

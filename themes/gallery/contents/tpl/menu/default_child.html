@@ -1,0 +1,32 @@
+<ul class="{dropdown}">
+    <!--BeginSezItem-->
+        <li {item_properties}>
+            <!--BeginSezItemImg-->
+                <!--BeginSezItemImgHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{submenu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" /></a>
+                <!--EndSezItemImgHere-->
+                <!--BeginSezItemImgNoHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{submenu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" /></a>
+                <!--EndSezItemImgNoHere-->
+                <!--BeginSezItemImgNoLink-->
+                    <img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" />
+                <!--EndSezItemImgNoLink-->
+            <!--EndSezItemImg-->
+            <!--BeginSezItemNoImg-->
+                <!--BeginSezItemNoImgHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{submenu_properties}>{item}</a>
+                <!--EndSezItemNoImgHere-->
+                <!--BeginSezItemNoImgNoHere-->
+                    <a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{submenu_properties}>{item}</a>
+                <!--EndSezItemNoImgNoHere-->
+                <!--BeginSezItemNoImgNoLink-->
+                    <span class="no-link">{item}</span> 
+                <!--EndSezItemNoImgNoLink-->
+            <!--EndSezItemNoImg-->
+            <!--BeginSezItemDescription-->
+                <div class="desc">{description}</div>
+            <!--EndSezItemDescription-->
+            {child}
+        </li>
+    <!--EndSezItem-->
+</ul>

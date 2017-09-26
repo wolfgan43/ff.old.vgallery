@@ -1,0 +1,61 @@
+<div class="swf_element">
+    <!--BeginSezTitle-->
+    <h2 class="toptitle">
+        {title}
+    </h2>
+    <!--EndSezTitle-->
+    <div id="{real_name}">
+        <h1>Alternative content</h1>
+        <p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
+    </div>
+    
+    <script type="text/javascript">
+        swfobject.embedSWF(
+            "{swf_url}"
+            , "{real_name}"
+            , "{width}"
+            , "{height}"
+            , "{version}"
+            ,"{swf_url}"
+            , 
+                {
+                    site_path           : "{site_path}"
+                    , domain            : "{domain_inset}"
+                    , theme             : "{theme_inset}"                        
+                    , lang              : "{language_inset}"
+                    , path              : "{settings_path}"
+                    , page_title        : "{title}"
+                    <!--BeginSezXml-->
+                    , {xml_varname}        : "{xml_url}"
+                    <!--EndSezXml-->
+                    <!--BeginSezFlashVars-->
+                    , {flashvars_name}       : "{flashvars_value}"
+                    <!--EndSezFlashVars-->
+                }
+            , 
+                {
+                    play                : {play}
+                    , loop              : {loop}
+                    , menu              : {menu}
+                    , quality           : "{quality}"
+                    , scale             : "{scale}"
+                    , salign            : "{salign}"
+                    , wmode             : "{wmode}"
+                    , bgcolor           : "#{bgcolor}"
+                    , base              : "{base}"
+                    , swliveconnect     : {swliveconnect}
+                    , devicefont        : "{devicefont}"
+                    , allowscriptaccess : "{allowscriptaccess}"
+                    , seamlesstabbing   : "{seamlesstabbing}"
+                    , allowfullscreen   : {allowfullscreen}
+                    , allownetworking   : {allownetworking}
+                } 
+            , 
+                {
+                    id : "{real_name}"
+                    , name : "{real_name}"
+                    , align : "{align}"
+                }
+        );
+    </script>
+</div>

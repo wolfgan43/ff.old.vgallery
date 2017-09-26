@@ -1,0 +1,227 @@
+<script type="text/javascript">
+    if(window["google"] === undefined) {
+        jQuery(document).ready(function() {
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            var url_data = window.location.href.parseUri();
+            script.src = url_data.protocol + "://maps.googleapis.com/maps/api/js?v=3.exp&key={gmap_key}{gmap_region}{gmap_lang}&signed_in=true&callback=initialize{real_name}";
+            document.body.appendChild(script);
+        });
+    } else {
+        jQuery(document).ready(function() {
+            initialize{real_name}();
+        });	
+    }
+
+    var map{real_name} = "";
+    var marker{real_name} = ff.hash();
+    var markers = {};	
+    var markersVgallery = [];
+    var infowindow;
+
+    function initialize{real_name}() {
+
+        <!--BeginSezPersonalColorDef-->
+        var MY_MAPTYPE_ID = 'custom_style';
+        <!--EndSezPersonalColorDef-->
+		
+        if(!jQuery("#map{real_name}").height()) {
+                jQuery("#map{real_name}").height("300");
+        }
+
+        map{real_name} = new google.maps.Map(document.getElementById("map{real_name}"),
+                            { 
+				zoom		: {zoom} ,
+                                
+                                mapTypeId	: google.maps.MapTypeId.ROADMAP ,
+                                scrollwheel     : {scroll_decision} ,
+                                draggable       : {drag_decision} ,
+                                zoomControl	: {zoom_control} , 
+                                <!--BeginSezZoomControlOptions--> 
+                                zoomControlOptions: 
+                                {
+                                        style: google.maps.ZoomControlStyle.{ZoomControlStyle},
+                                        position: google.maps.ControlPosition.{ZoomControlPosition} 
+                                } ,
+                                <!--EndSezZoomControlOptions-->
+
+                                mapTypeControl: {map_type_control} ,
+                                <!--BeginSezMapTypeControlOptions-->
+                                mapTypeControlOptions:  
+                                {
+                                    <!--BeginSezMapTypeControlOptionsColor-->
+                                     mapTypeIds: [google.maps.MapTypeId.ROADMAP,MY_MAPTYPE_ID],
+                                     <!--EndSezMapTypeControlOptionsColor-->
+                                    style: google.maps.MapTypeControlStyle.{MapTypeControlStyle}
+                                },	 
+                                <!--EndSezMapTypeControlOptions-->
+
+                                panControl: {pan_control} ,
+                                <!--BeginSezPanControlOptions-->
+                                panControlOptions: 
+                                {
+                                        position: google.maps.ControlPosition.{PanControlPosition}
+                                },
+                                <!--EndSezPanControlOptions-->
+
+                                scaleControl: {scale_control} ,
+                                <!--BeginSezScaleControlOptions-->
+                                scaleControlOptions: {
+                                        position: google.maps.ControlPosition.{ScaleControlPosition}//[googleData[i]["data"]["scale_control_options"]["position"]]
+                                },
+                                <!--EndSezScaleControlOptions-->
+
+                                streetViewControl: {street_view_control} ,
+                                <!--BeginSezStreetViewControlOptions-->
+                                streetViewControlOptions: 
+                                {
+                                        position: google.maps.ControlPosition.{StreetViewControlPosition}
+                                },
+                                <!--EndSezStreetViewControlOptions-->
+
+                                <!--BeginSezPersonalColor-->
+                                mapTypeId: MY_MAPTYPE_ID,
+                                <!--EndSezPersonalColor-->
+                                center		: new google.maps.LatLng({latitude}, {longitude})
+                            });
+                    
+                            <!--BeginSezPersonalColorInfo-->
+
+                            var styledMapOptions = {
+                                name: 'Custom Style'
+                            };
+                            var customMapType = new google.maps.StyledMapType({PersonalColor}, styledMapOptions);
+                            map{real_name}.mapTypes.set(MY_MAPTYPE_ID, customMapType);
+                            <!--EndSezPersonalColorInfo-->
+				
+				
+                            <!--BeginSezAllMarkers-->
+				<!--BeginSezMarker-->
+				var marker{id_marker} = new google.maps.Marker({
+					position: new google.maps.LatLng({marker_latitude}, {marker_longitude}),
+					map: map{real_name},
+                                        idMarker: "mrk-" + {id_marker},
+                                        mapName: "map{real_name}",
+                                        zoom: 14
+				});
+                                
+                                <!--EndSezMarker-->
+				<!--BeginSezMarkerIcon-->
+				var icon = new google.maps.MarkerImage("{icon}", null, null, null, new google.maps.Size({icon_width}, {icon_height}));
+				var marker{id_marker} = new google.maps.Marker({
+					position: new google.maps.LatLng({marker_latitude}, {marker_longitude}),
+					map: map{real_name},
+					icon: icon,
+                                        idMarker: "mrk-" + {id_marker},
+                                        mapName: "map{real_name}",
+                                        zoom: 14
+				});
+                                <!--EndSezMarkerIcon-->
+                                
+                                <!--BeginSezMarkersVgallery-->
+                                    marker{id_marker}.vgalleryName = "{vgalleryName}";
+                                <!--EndSezMarkersVgallery-->
+                                
+				
+                                
+                                <!--BeginSezMarkerDescriptionAjax-->
+                                
+                                google.maps.event.addListener(marker{id_marker}, 'click', function() {
+                                    if (infowindow) {
+                                        infowindow.close();
+                                    }
+                                    jQuery.get("{marker_detail_link}", function(data) {
+                                        infowindow = new google.maps.InfoWindow({
+                                            content: "<div class='info-gmap'><h3>{marker_title_link}</h3>" + data + "</div>"
+                                        });
+                                        
+                                        if(jQuery(data).find("img").length > 0) {
+                                            jQuery(data).find("img:last").load(function() {
+                                                infowindow.open(map{real_name}, marker{id_marker});
+                                                });
+                                        } else { 
+                                            infowindow.open(map{real_name}, marker{id_marker});
+                                        }
+                                        
+                                        
+                                        
+                                    });
+
+                                });
+                                <!--EndSezMarkerDescriptionAjax-->
+                                <!--BeginSezMarkerDescription-->
+                                var infowindow{id_marker} = new google.maps.InfoWindow({
+					content: "{marker_description}"
+				});
+                                marker{id_marker}.addListener('click', function() {
+                                    infowindow{id_marker}.open(map{real_name}, marker{id_marker});
+                                }); 
+				<!--EndSezMarkerDescription-->
+                                markers["{id_marker}"] = marker{id_marker};
+                            <!--EndSezAllMarkers-->    
+                            <!--BeginSezMarkerCluster-->
+                            if(window["MarkerClusterer"] === undefined) {
+                                ff.pluginAddInit("google.maps.markerclusterer", function() {
+ 									initCluster{real_name}();                  
+                                });
+                            } else {
+                            	initCluster{real_name}();
+                            }
+                            
+							function initCluster{real_name}() {
+								jQuery(document).ready(function() {
+ 									var mcOptions = {
+	                                        gridSize: {MarkerClusterDim},
+	                                        maxZoom: {MarkerClusterMaxZoom}
+	                                };
+	                                var mc = new MarkerClusterer(map{real_name}, [], mcOptions);
+	                                mc.addMarkers(markers , true);
+								});
+							}
+                            <!--EndSezMarkerCluster-->
+	} 
+        function centermap{real_name}(point_id) {
+            map{real_name}.setCenter(markers[point_id].getPosition());
+            map{real_name}.setZoom(markers[point_id].zoom);
+            google.maps.event.trigger(markers[point_id], 'click');
+
+        }
+        
+        function selectedMarker(map, marker)
+        {
+            jQuery("#" + marker.mapName+ "grid_GridData").find('div[class^="mrk-"], div[class*=" mrk-"]').removeClass("selected");
+            jQuery("." + marker.idMarker).addClass("selected");
+        }
+        
+        function hideMarker(name) {
+            for(var key in markers) {
+                if(markers[key].vgalleryName == name)
+                    markers[key].setVisible(false);
+                
+            }
+        }
+        
+        function hideAllMarker() {
+            for(var keyValue in markers) {
+                markers[keyValue].setVisible(false);
+            }
+        }
+        
+        function showMarker(name) {
+            for(var key in markers) {
+                if(markers[key].vgalleryName == name) {
+                    markers[key].setVisible(true); 
+                }
+            }
+        }
+        
+        function showAllMarker() {
+            for(var key in markers) {
+                markers[key].setVisible(true);
+            }
+        }
+
+</script>
+
+
+<div id="map{real_name}" style="width: 100%; height:100%;"></div>

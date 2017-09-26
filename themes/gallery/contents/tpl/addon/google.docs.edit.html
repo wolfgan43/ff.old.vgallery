@@ -1,0 +1,66 @@
+
+<input name="reload" type="button" value="{_load}" class="button noactivebuttons gdocsReload" />
+<input name="edit" type="button" value="{_edit}" class="button noactivebuttons gdocsEdit" disabled="disabled" />
+<iframe class="gDocsPreview" width="100%" height="300" frameborder="0" scrolling="auto" src="#"></iframe>
+
+
+<script type="text/javascript">
+jQuery(function() {
+	var gUrl = '';
+	
+	jQuery(".gdocsReload").each(function() {
+		if(jQuery(this).prev().val().length) {
+			gUrl_preview = 'https://{service}/pub?key=' + jQuery(this).prev().val() + '&h1={lang}&token={token}';
+			
+			jQuery(this).next().next().attr('src', gUrl_preview);
+			jQuery(this).next().next().reload;
+			
+			jQuery(this).next().removeAttr("disabled");
+		} else {
+			jQuery(this).next().attr("disabled", "disabled");
+		}
+	
+	});
+	
+	
+	jQuery(".gdocsReload").click(function() {
+		if(jQuery(this).prev().val().length) {
+			gUrl_preview = 'https://{service}/pub?key=' + jQuery(this).prev().val() + '&h1={lang}&token={token}';
+
+			jQuery(this).next().next().attr('src', gUrl_preview);
+			jQuery(this).next().next().reload;
+			jQuery(this).next().removeAttr("disabled");
+		} else {
+			jQuery(this).next().attr("disabled", "disabled");
+		}
+	
+	});
+
+ 
+	jQuery(".gdocsEdit").click(function() {
+		if(jQuery(this).prev().prev().val().length) {
+			gUrl_edit = 'https://{service}/ccc?key=' + jQuery(this).prev().prev().val() + '&h1={lang}&token={token}';
+			var pippo = jQuery(this).next().clone();
+			
+			pippo.attr('src', gUrl_edit);
+			
+
+			
+			pippo.dialog({
+				autoOpen: true
+				, show: 'blind'
+				, hide: 'explode'
+				, width: (jQuery(window).width() * 92 /100)
+				, height: (jQuery(window).height() * 90 / 100)
+				, modal: true 
+				, resizable: false
+				, draggable : false 
+				, title: '{title}'
+				, open: function(event, ui) {pippo.width(jQuery(window).width() * 90 /100); pippo.reload; }
+			});
+			
+		}
+	
+	});
+});
+</script>

@@ -1,0 +1,60 @@
+<div class="end-game">
+	<!--BeginSezAchievement-->
+	<div class="achievement">
+		<h2>{_trivia_new_achievement}</h2>
+		<!--BeginSezAchievementItem-->
+			<div class="new-achievement {trivia_new_achievement_number}">
+				<div class="new-achievement-description">
+					<div class="lightray"></div>
+					<img src="{trivia_achievement_file}" />
+
+					<h3>{trivia_achievement_title}</h3>
+					<label>{trivia_achievement_description}</label>
+				</div>
+			</div>
+		<!--EndSezAchievementItem--> 
+		<a class="ffButton continue" href="javascript:void(0);" onclick="">{_continue}</a> 
+	</div>
+	<!--EndSezAchievement-->
+	<div class="report-match">
+		<h1>{_trivia_report_title}</h1>
+		<div class="score">{score}</div>
+		<!--BeginSezNewRecord-->
+			<h3>{_trivia_new_record}</h3>
+		<!--EndSezNewRecord-->
+		<a class="ffButton return-gioca" href="javascript:void(0);" onclick="{trivia_gioca_url}">{_return_to_game_index}</a> 
+	</div>
+	
+	<!-- AddThis Button BEGIN -->
+	<div class="addthis_toolbox">
+		<div class="custom_images">
+			<a class="addthis_button_facebook" rel ="{trivia_social_facebook}" addthis:url="http://{domain_inset}/{trivia_path}"><img src="/themes/gallery/images/spacer.gif" width="32" height="32" />{_trivia_share_facebook}</a>
+			<a class="addthis_button_twitter" rel ="{trivia_social_twitter}" addthis:url="http://{domain_inset}/{trivia_path}"><img src="/themes/gallery/images/spacer.gif" width="32" height="32" />{_trivia_share_twitter}</a> 
+		</div>
+	</div>
+	<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=xa-520372ca7a4e1a03"></script>
+	<script type="text/javascript">
+		jQuery(function(){
+			jQuery(".addthis_toolbox a").click(function(){
+				jQuery.getJSON(jQuery(this).attr("rel"), function(data){
+					if(data["is_new"]) {
+						location.reload();
+						jQuery(".end-game .achievement h2").after(    
+								'<div class="new-achievement 1">'
+									+ '<div class="new-achievement-description">'
+										+ '<div class="lightray"></div>'
+										+ '<img src="' + "/cm/showfiles.php" +data["image"] + '" />'
+										+ '<h3>' + data["title"] + '</h3>'
+										+ '<label>' + data["description"] + '</label>'
+									+ '</div>'
+								+ '</div>'
+						);
+
+						showAchievement();
+					}
+				});
+			});
+		});
+	</script>
+	<!-- AddThis Button END -->	
+</div>

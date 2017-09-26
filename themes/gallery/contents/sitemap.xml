@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<urlset 
+	xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!--BeginSezPage-->
+  <url>
+    <loc>{http_protocol}://{domain}{url}</loc>
+    <lastmod>{last_update}</lastmod>
+    <priority>{priority}</priority><!--BeginSezFrequency-->
+    <changefreq>{frequency}</changefreq><!--EndSezFrequency-->
+  </url><!--EndSezPage-->
+</urlset>

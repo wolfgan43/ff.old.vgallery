@@ -1,0 +1,186 @@
+<script type="text/javascript">
+	if(window["google"] === undefined) {
+		jQuery(document).ready(function() {
+			var script = document.createElement("script");
+			script.type = "text/javascript";
+			var url_data = window.location.href.parseUri();
+			script.src = url_data.protocol + "://maps.google.com/maps?file=api&v=2&key={gmap_key}{gmap_region}{gmap_lang}&callback=initialize{real_name}";
+			document.body.appendChild(script);
+		});
+	} else {
+		jQuery(document).ready(function() {
+			initialize{real_name}();
+		});	
+	}
+
+  var map{real_name} = "";
+  var marker{real_name} = ff.hash();  
+  function initialize{real_name}() {
+	if(!jQuery("#map{real_name}").height()) {
+		jQuery("#map{real_name}").height("300");
+	}
+
+    map{real_name} = new GMap2(document.getElementById("map{real_name}"));
+    <!--BeginSezGLargeMapControl3D-->
+    map{real_name}.addControl(new GLargeMapControl3D());
+    <!--EndSezGLargeMapControl3D-->
+    <!--BeginSezGMapTypeControl-->
+    map{real_name}.addControl(new GMapTypeControl());
+    <!--EndSezGMapTypeControl-->
+    <!--BeginSezGScaleControl-->
+    map{real_name}.addControl(new GScaleControl());
+    <!--EndSezGScaleControl-->
+    <!--BeginSezGOverviewMapControl-->
+    map{real_name}.addControl(new GOverviewMapControl());
+    <!--EndSezGOverviewMapControl-->
+
+    <!--BeginSezEnableGooglePhysical-->
+    map{real_name}.addMapType(G_PHYSICAL_MAP); 
+    <!--EndSezEnableGooglePhysical-->
+
+    <!--BeginSezEnableGoogleEarth-->
+    map{real_name}.addMapType(G_SATELLITE_3D_MAP); // Servizio google Earth
+    map{real_name}.addControl(new GMapTypeControl());
+    <!--EndSezEnableGoogleEarth-->
+    
+    <!--BeginSezEnableGoogleBar-->
+    map{real_name}.enableGoogleBar(); //Servizio google search
+    <!--EndSezEnableGoogleBar-->
+
+    map{real_name}.setMapType({MapType});
+    
+    <!--BeginSezLayer-->
+        map{real_name}.addOverlay(new GLayer("{layer}"));
+    <!--EndSezLayer-->
+    map{real_name}.setCenter(new GLatLng({latitude}, {longitude}), {zoom});    
+    
+    <!--BeginSezAsSense-->
+    //da vedere la implemntazione
+    var publisher_id = yourPublisherID;
+
+    var adsManagerOptions = {
+      maxAdsOnMap : 2,
+      style: 'adunit',
+      // The channel field is optional - replace this field with a channel number 
+      // for Google AdSense tracking
+      channel: 'your_channel_id'  
+    };
+
+    adsManager = new GAdsManager(map, publisher_id, adsManagerOptions);
+    adsManager.enable();
+    <!--EndSezAsSense-->
+
+
+    <!--BeginSezEnableStreetView-->
+    var pano{real_name}Opts = {
+      features: {
+        streetView: true,
+        userPhotos: {enable_street_photo}
+      },
+      userPhotoOptions: {
+        photoRepositories: [ 'panoramio', 'picasa']
+      }
+    };
+
+    var pano{real_name} = new GStreetviewPanorama(document.getElementById("pano{real_name}"), pano{real_name}Opts);
+    GEvent.addListener(pano{real_name}, "error", handleNoFlash);
+    <!--BeginSezStreetOverlay-->
+    map{real_name}.addOverlay(new GStreetviewOverlay());
+    <!--EndSezStreetOverlay-->
+    GEvent.addListener(map{real_name},"click", function(overlay,latlng) {
+      pano{real_name}.setLocationAndPOV(latlng);
+    });
+
+    function handleNoFlash(errorCode) {
+      if (errorCode == 603) {
+        alert("Error: Flash doesn't appear to be supported by your browser");
+        return;
+      }
+    }  
+
+    <!--EndSezEnableStreetView-->
+	
+	marker{real_name}Options = {};
+  	<!--BeginSezIcon-->
+		var icon{real_name} = new GIcon();
+		icon{real_name}.image = "{site_path}/cm/showfiles.php/{frontend_theme}/contents/modules/maps/{map_name}/{icon}";
+		icon{real_name}.iconSize = new GSize({icon_width}, {icon_height});
+		icon{real_name}.iconAnchor = new GPoint(({icon_width}/2), ({icon_height}/2));
+		icon{real_name}.infoWindowAnchor = new GPoint(({icon_width}/2), 0);
+			<!--BeginSezShadow-->
+				icon{real_name}.shadow = "{site_path}/cm/showfiles.php/{frontend_theme}/contents/modules/maps/{map_name}/{shadow}";
+				icon{real_name}.shadowSize = new GSize({shadow_width}, {shadow_height});
+			<!--EndSezShadow-->
+
+		marker{real_name}Options = { draggable: false, icon:icon{real_name} };
+  	<!--EndSezIcon-->   
+    <!--BeginSezMarker-->
+	marker{real_name}.set("{id_marker}", new GMarker(new GLatLng({marker_latitude}, {marker_longitude}), marker{real_name}Options));
+
+	<!--BeginSezMarkerDescription-->
+	GEvent.addListener(marker{real_name}.get("{id_marker}"), "click", function() {
+		marker{real_name}.get("{id_marker}").openInfoWindowHtml('{marker_description}');
+	  });
+	<!--EndSezMarkerDescription-->
+	<!--BeginSezMarkerDescriptionAjax-->
+	GEvent.addListener(marker{real_name}.get("{id_marker}"), "click", function() {
+    	var maxContentDiv{real_name} = document.createElement('div');
+	  	
+	  	jQuery.get("{marker_detail_link}", function(data) {
+	  		marker{real_name}.get("{id_marker}").openInfoWindowHtml('{_loading}');
+	  		if(jQuery(data).find("img").length > 0) {
+	  		    jQuery(data).find("img:last").load(function() {
+	  	    		marker{real_name}.get("{id_marker}").openInfoWindowHtml('<div class="info-gmap"><h2>{marker_title_link}</h2>' + data + '</div>');
+				});
+			} else {
+	  	    	marker{real_name}.get("{id_marker}").openInfoWindowHtml('<div class="info-gmap"><h2>{marker_title_link}</h2>' + data + '</div>');
+			}
+		});
+         
+	});
+	<!--EndSezMarkerDescriptionAjax-->
+	map{real_name}.addOverlay(marker{real_name}.get("{id_marker}"));
+    <!--EndSezMarker-->
+  }
+
+
+	<!--BeginSezGrid-->
+        var gridCoord = ff.hash();  
+
+        <!--BeginSezGridCoord-->
+        gridCoord.set("{marker_id}", ff.hash());
+        gridCoord.get("{marker_id}").set("lat", "{marker_lat}");
+        gridCoord.get("{marker_id}").set("lng", "{marker_lng}"); 
+        gridCoord.get("{marker_id}").set("zoom", "{marker_zoom}");
+        <!--EndSezGridCoord-->
+        
+        function clearmap{real_name}() {
+            map{real_name}.setCenter(new GLatLng({latitude}, {longitude}), {zoom});
+            marker{real_name}.each(function(key, val, i) {
+                map{real_name}.removeOverlay(marker{real_name}.get(key)); 
+            });
+        }
+        
+        function centermap{real_name}(point_id) {
+            map{real_name}.setCenter(new GLatLng(gridCoord.get(point_id).get("lat"), gridCoord.get(point_id).get("lng")));
+            map{real_name}.setZoom(parseInt(gridCoord.get(point_id).get("zoom")));
+
+            GEvent.trigger(marker{real_name}.get(point_id), 'click');
+        }
+
+        function loadmarkers{real_name}() {
+            clearmap{real_name}();
+            marker{real_name}.each(function(key, val, i) {
+                if(jQuery("#map{real_name}grid .row").hasClass("mrk-" + key)) {
+                    map{real_name}.addOverlay(marker{real_name}.get(key)); 
+                }
+            });
+        }
+
+	<!--EndSezGrid-->
+ </script>
+<div id="map{real_name}" style="width: 100%; height:100%;">
+</div>
+<!--BeginSezPanoHtml-->
+<div id="pano{real_name}" style="width={street_width}px; height={street_height}px;"></div>
+<!--EndSezPanoHtml-->

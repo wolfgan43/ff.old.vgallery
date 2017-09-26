@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+	<!--BeginSezRssChannel--> 
+	   <title>{page_title}</title>
+	    <link>{page_link}</link>
+	    <description>{page_description}</description>
+	    <language>{language_inset}</language>
+	    <pubDate>{page_date}</pubDate>
+	    <lastBuildDate>{page_last_update}</lastBuildDate>
+	    <docs>{rss_page_path}</docs>
+	    <generator>{system_name}</generator>
+	    <managingEditor>{contentmanagement_email}</managingEditor>
+	    <webMaster>{webmaster_email}</webMaster>
+		<image>
+			<url>http://www.corriere.it/rss/images/logo_small.gif</url>
+			<link>http://www.corriere.it</link>
+
+			<title>MediaCenter Corriere della Sera on line versione rss</title>
+			<height>40</height>
+			<width>140</width>
+		</image>
+		<!--BeginSezRssItems-->
+		    <item>
+		      <title>{item_title}</title>
+		      <link>{item_link}</link>
+		      <description>{item_description}</description>
+		      <pubDate>{item_date}</pubDate>
+		      <guid>{item_path}</guid>
+		    </item>
+		<!--EndSezRssItems-->
+	 <!--EndSezRssChannel-->
+  </channel>
+</rss>

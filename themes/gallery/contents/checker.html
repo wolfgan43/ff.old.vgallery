@@ -1,0 +1,102 @@
+<!--BeginSezError-->
+    <h3>{error}</h3>
+<!--EndSezError-->
+<table class="ffGrid checker">
+    <thead>
+        <tr>
+            <th>{_operation}</th>
+            <th>{_information}</th>
+            <th>{_status}</th>
+            <th>{_action}</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr class="cache">
+        <td>{_cache_folders_files}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'cacheRepair';document.frmMain.submit();" /><input class="button" type="submit" value="{_clear_fs}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'cacheClear';document.frmMain.submit();" /><input class="button" type="submit" value="{_clear_db}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'cacheClearDB';document.frmMain.submit();" /><input class="button" type="submit" value="{_clear_sid}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'cacheClearSID';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="international">
+        <td>{_international_files}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'internationalRepair';document.frmMain.submit();" /><input class="button" type="submit" value="{_reset}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'internationalReset';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="config">
+        <td>{_config_folders_files}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'configRepair';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="uploads">
+        <td>{_uploads_folders_files}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'uploadsRepair';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="system">
+        <td>{_system_folders_files}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'systemRepair';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="thumb">
+        <td>{_thumb_folders_files}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_clear}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'thumbClear';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="trash">
+        <td>{_trash_files}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_remove}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'trashRemove';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="database">
+        <td>{_restore_database}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'databaseRepair';document.frmMain.submit();" /><input class="button" type="submit" value="{_compact}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'databaseCompact';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="bill">
+        <td>{_repair_bill}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'billRepair';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="payments">
+        <td>{_repair_payments}</td>
+        <td class="info">{ajax_loader}</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'paymentsRepair';document.frmMain.submit();" /></td>
+    </tr>
+    <tr class="bill-description">
+        <td>{_reset_bill_description}</td>
+        <td class="info">N/A</td>
+        <td class="status">N/A</td>
+        <td><input class="button" type="submit" value="{_repair}" onClick="document.frmMain.method = 'post'; document.frmMain.frmAction.value = 'resetBillDescription';document.frmMain.submit();" /></td>
+    </tr>
+    </tbody>
+</table>
+<script type="text/javascript">
+    jQuery(function() {
+        jQuery("table.checker tbody tr").each(function() {
+            var selector = jQuery(this).attr("class");
+                         
+            jQuery.get(location.pathname + '/' + selector, function(data) {
+                if(data["info"] !== undefined && data["status"] !== undefined) {
+                    jQuery("table.checker tbody tr." + selector + " td.info").html(data["info"]);
+                    jQuery("table.checker tbody tr." + selector + " td.status").html((data["status"] ? data["status"] : "ok"));
+                } else {
+                    jQuery("table.checker tbody tr." + selector + " td.info").html("");
+                    jQuery("table.checker tbody tr." + selector + " td.status").html("N/A");
+                }
+            });
+        });
+    });
+</script>
+
+
+
+

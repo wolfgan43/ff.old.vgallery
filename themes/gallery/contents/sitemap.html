@@ -1,0 +1,138 @@
+<div class="sitemap_menu">
+    <ul>
+	    <li><a href="?tree=1&info=0&async=1" class="sitemap-btn-url">{_tree_no_meta_description}</a></li>
+	    <li><a href="?tree=1&info=1&async=1" class="sitemap-btn-seo">{_tree_meta_description}</a></li>
+	    <li><a href="?tree=0&item=1&info=0&async=1" class="sitemap-btn-sm">{_no_tree_no_meta_description}</a></li>
+    </ul>
+</div>
+<div class="menu default" id="sitemap">
+<h2>Sitemap</h2> 
+    <ul class="{class_plugin}">
+        <li class="home">
+        <!--BeginSezSiteHomeEdit-->
+			<!--BeginSezAjax-->
+			<input class="{class_plugin}" type="hidden" value="{admin}" />
+			<!--EndSezAjax-->
+			<!--BeginSezNoAjax-->
+			{admin}
+			<!--EndSezNoAjax-->
+		<!--EndSezSiteHomeEdit-->
+            <a href="#">{_home_sitemap}</a>
+            <!--BeginSezNoParentStart-->
+            <ul>
+            <!--EndSezNoParentStart-->
+        <!--BeginSezSiteUrl-->
+        
+    <!--BeginSezNoParent-->
+        <li class="{class_status}" id="{real_name}">
+            <!--BeginSezSiteUrlEdit-->
+                <!--BeginSezAjax-->
+                <input class="{class_plugin}" type="hidden" value="{admin}" />
+                <!--EndSezAjax-->
+                <!--BeginSezNoAjax-->
+                {admin}
+                <!--EndSezNoAjax-->
+            <!--EndSezSiteUrlEdit-->
+            <a href="{url_path}" {ajax_child}>
+	            <!--BeginSezMetaInfo-->
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_title_visible{meta_title_visible}.png" title="Meta title: {meta_title}" />
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_description_visible{meta_description_visible}.png" title="Meta description: {meta_description}" />
+				<img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_keywords_visible{keywords_visible}.png" title="Meta keywords: {keywords}" />
+	            <!--EndSezMetaInfo-->
+            	{url}
+            </a>
+            <!--BeginSezItems-->
+            <ul>
+                <!--BeginSezItem-->
+                <li class="{class_status}">
+                <!--BeginSezSiteItemEdit-->
+                    <!--BeginSezAjax-->
+                    <input class="{class_plugin}" type="hidden" value="{admin}" />
+                    <!--EndSezAjax-->
+                    <!--BeginSezNoAjax-->
+                    {admin}
+                    <!--EndSezNoAjax-->
+                <!--EndSezSiteItemEdit-->
+                {item_name}
+                </li>
+                <!--EndSezItem-->
+            </ul>
+            <!--EndSezItems-->
+        </li>
+    <!--EndSezNoParent-->
+
+    <!--BeginSezParent-->
+        <!--BeginSezSiteUrlSingle-->
+        </li>
+        <li class="{class_status}" id="{real_name}">
+            <!--BeginSezSiteUrlEdit-->
+                <!--BeginSezAjax-->
+                <input class="{class_plugin}" type="hidden" value="{admin}" />
+                <!--EndSezAjax-->
+                <!--BeginSezNoAjax-->
+                {admin}
+                <!--EndSezNoAjax-->
+            <!--EndSezSiteUrlEdit-->
+            <a href="{url_path}" {ajax_child}>
+	            <!--BeginSezMetaInfo-->
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_title_visible{meta_title_visible}.png" title="Meta title: {meta_title}" />
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_description_visible{meta_description_visible}.png" title="Meta description: {meta_description}" />
+				<img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_keywords_visible{keywords_visible}.png" title="Meta keywords: {keywords}" />
+	            <!--EndSezMetaInfo-->
+            	{url}
+            </a>
+        <!--EndSezSiteUrlSingle-->
+        
+        <!--BeginSezSiteUrlChildStart-->
+        <ul>
+        <li class="{class_status}" id="{real_name}">
+            <!--BeginSezSiteUrlEdit-->
+                <!--BeginSezAjax-->
+                <input class="{class_plugin}" type="hidden" value="{admin}" />
+                <!--EndSezAjax-->
+                <!--BeginSezNoAjax-->
+                {admin}
+                <!--EndSezNoAjax-->
+            <!--EndSezSiteUrlEdit-->
+            <a href="{url_path}" {ajax_child}>
+	            <!--BeginSezMetaInfo-->
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_title_visible{meta_title_visible}.png" title="Meta title: {meta_title}" />
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_description_visible{meta_description_visible}.png" title="Meta description: {meta_description}" />
+				<img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_keywords_visible{keywords_visible}.png" title="Meta keywords: {keywords}" />
+	            <!--EndSezMetaInfo-->
+            	{url}
+            </a>
+        <!--EndSezSiteUrlChildStart-->
+
+        <!--BeginSezSiteUrlChildEnd-->
+        </li>
+        </ul>
+        <!--EndSezSiteUrlChildEnd-->
+
+        <!--BeginSezSiteUrlChildEndLast-->
+        <li class="{class_status}" id="{real_name}">
+            <!--BeginSezSiteUrlEdit-->
+                <!--BeginSezAjax-->
+                <input class="{class_plugin}" type="hidden" value="{admin}" />
+                <!--EndSezAjax-->
+                <!--BeginSezNoAjax-->
+                {admin}
+                <!--EndSezNoAjax-->
+            <!--EndSezSiteUrlEdit-->
+            <a href="{url_path}" {ajax_child}>
+            	<!--BeginSezMetaInfo-->
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_title_visible{meta_title_visible}.png" title="Meta title: {meta_title}" />
+		        <img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_description_visible{meta_description_visible}.png" title="Meta description: {meta_description}" />
+				<img class="sitemap_meta" src="{site_path}/themes/{theme_inset}/images/meta_keywords_visible{keywords_visible}.png" title="Meta keywords: {keywords}" />
+				<!--EndSezMetaInfo-->
+	            {url}
+	        </a>
+        <!--EndSezSiteUrlChildEndLast-->
+    <!--EndSezParent-->
+        <!--EndSezSiteUrl-->
+    <!--BeginSezNoParentEnd-->
+        </ul>
+    <!--EndSezNoParentEnd-->
+    </li>
+    </ul>
+</div>

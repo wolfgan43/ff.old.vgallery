@@ -1,0 +1,127 @@
+<div id="{real_father}_header" ></div>
+<div class="gallery listdiv-hf" id="{real_father}_content">
+	<!--BeginSezGalleryTitle-->
+	<h2>{name_title}</h2>
+	<!--EndSezGalleryTitle-->
+   <!--BeginSezGallerys-->
+	<!--BeginSezControls-->
+		<div class="hidden">
+		    <!--BeginSezSearchControl-->
+		    <input name="search_param" type="hidden" value="{search_param}" />
+		    <!--EndSezSearchControl-->
+		    <!--BeginSezPageNavigatorControl-->
+		    <input id="{unic_id_lower}_page" name="{unic_id_lower}_page" type="hidden" value="{page}" />
+		    <input id="{unic_id_lower}_records_per_page" name="{unic_id_lower}_records_per_page" type="hidden" value="{rec_per_page}" />
+		    <!--EndSezPageNavigatorControl-->
+		</div>
+	<!--EndSezControls-->
+	    <!--BeginSezSort-->
+	    <div class="gallery_head">
+	            <div class="gallery_sort">
+	                <input type="hidden" id="frmGallerys{unic_id_lower}_sort" name="frmGallerys{unic_id_lower}_sort" value="{sort_value}" />
+	                <input type="hidden" id="frmGallerys{unic_id_lower}_sort_type" name="frmGallerys{unic_id_lower}_sort_type" value="{sort_type}" />
+	                <!--BeginSezSortTitle-->
+	                    <h3>{sort_type_title}</h3>
+	                <!--EndSezSortTitle-->
+	                <!--BeginSezSortItems-->
+	                    <span class="{sort_name}">
+							<!--BeginSezSortItemsLink-->
+		                    <a href="javascript:vgSort('{unic_id_lower}', '{sort_value_item}');">{sort_name_label}</a>
+		                    <!--EndSezSortItemsLink-->
+		                    <!--BeginSezSortItemsNoLink-->
+		                    {sort_name_label}
+		                    <!--EndSezSortItemsNoLink-->
+	                    </span>
+	                <!--EndSezSortItems-->
+            	</div>
+	    </div>
+	    <!--EndSezSort-->
+	    <!--BeginSezPageNavigatorTop-->
+	    <div class="pagenavigator top"> {PageNavigator} </div>
+	    <!--EndSezPageNavigatorTop-->
+	        <!--BeginSezGalleryRow-->
+		    <div class="gallery_item {g_switch_style} {class_col}"{admin}>
+	        <!--BeginSezGallery-->
+	                <!--BeginSezGalleryEdit-->
+	                    <!--BeginSezAjax-->
+	                    <input class="{class_plugin}" type="hidden" value="{admin}" />
+	                    <!--EndSezAjax-->
+	                    <!--BeginSezNoAjax-->
+	                    {admin}
+	                    <!--EndSezNoAjax-->
+	                <!--EndSezGalleryEdit-->
+	                <!--BeginSezGalleryImage-->
+	                <div class="gallery_image">
+	                    <!--BeginSezGalleryImageViewLink-->
+	                    <a href="{show_file}" class="{class_plugin}" rel="{rel_plugin}" title="{title_thumb}" {target}><img src="{show_thumb}" alt="{alt_name}" /></a>
+	                    <!--EndSezGalleryImageViewLink-->
+	                    <!--BeginSezGalleryImageViewNoLink-->
+	                    <img src="{show_thumb}" class="{class_plugin}" alt="{alt_name}" title="{title_thumb}" />
+	                    <!--EndSezGalleryImageViewNoLink-->
+	                </div>
+	                <!--EndSezGalleryImage-->
+	                <!--BeginSezGalleryWord-->
+	                <div class="gallery_description">
+	                    <!--BeginSezGalleryWordNameLink-->
+	                    <div class="name">
+		                    <label class="gallery_label">{_gallery_name}</label>
+		                    <a href="{show_file}" class="{class_plugin}" rel="{rel_plugin}" {target}>{name}</a>
+	                    </div>
+	                    <!--EndSezGalleryWordNameLink-->
+	                    <!--BeginSezGalleryWordName-->
+	                    <div class="name">
+		                    <label class="gallery_label">{_gallery_name}</label>
+		                    {name}
+	                    </div>
+	                    <!--EndSezGalleryWordName-->
+	                    <!--BeginSezGalleryWordDescription-->
+	                    <div class="description">
+		                    <label class="gallery_label">{_gallery_description}</label>
+		                    {description}
+	                    </div>
+	                    <!--EndSezGalleryWordDescription-->
+	                    <!--BeginSezGalleryWordType-->
+	                    <div class="type">
+		                    <label class="gallery_label">{_gallery_type}</label>
+		                    {type}
+	                    </div>
+	                    <!--EndSezGalleryWordType-->
+	                    <!--BeginSezGalleryWordSize-->
+	                    <div class="size">
+		                    <label class="gallery_label">{_gallery_size}</label>
+		                    {size}
+	                    </div>
+	                    <!--EndSezGalleryWordSize-->
+	                    <!--BeginSezGalleryWordPath-->
+	                    <div class="path">
+		                    <label class="gallery_label">{_gallery_path}</label>
+		                    {path}
+	                    </div>
+	                    <!--EndSezGalleryWordPath-->
+	                    <!--BeginSezGalleryWordDescriptionLanguage-->
+	                    <div class="descriptionlanguage">
+		                    <label class="gallery_label">{_gallery_descriptionlanguage}</label>
+		                    {descriptionlanguage}
+	                    </div>
+	                    <!--EndSezGalleryWordDescriptionLanguage-->
+	                    <!--BeginSezGalleryWordFileTime-->
+	                    <div class="filetime">
+		                    <label class="gallery_label">{_gallery_filetime}</label>
+		                    {filetime}
+	                    </div>
+	                    <!--EndSezGalleryWordFileTime-->
+	                    {ecommerce_cart}
+	                </div>
+	                <!--EndSezGalleryWord-->
+	        <!--EndSezGallery-->
+	    </div>
+	        <!--EndSezGalleryRow-->
+	<!--BeginSezPageNavigatorBottom-->
+	<div class="pagenavigator bottom"> {PageNavigator} </div>
+	<!--EndSezPageNavigatorBottom-->
+	<!--EndSezGallerys-->
+	<!--BeginSezError-->
+	<p class="error">{strError}</p>
+	<!--EndSezError-->
+</div>
+<div id="{real_father}_footer" ></div>

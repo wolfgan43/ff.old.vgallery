@@ -1,0 +1,125 @@
+html, body {
+	font-family:arial, verdana, "sans-serif";
+	font-size:12px;
+	line-height:18px;
+	margin:0;
+	border:0;
+	position:relative;
+	width:auto;
+	height:100%;
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.44, #D6D6D6), color-stop(0.86, #F5F5F5));
+	background-image: -moz-linear-gradient( center bottom, #D6D6D6 44%, #F5F5F5 86%);
+}
+/* login Box */
+.loginBox {
+   	position:absolute;
+	z-index:1000;
+	top:20%;
+	left:35%;
+	right:35%;
+	width:auto;
+	height:auto;
+	background:#fff;
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.31, #E0E0E0), color-stop(0.83, #FAFAFA));
+	background-image: -moz-linear-gradient( center bottom, #E0E0E0 31%, #FAFAFA 83% );
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-radius: 8px;
+	-moz-box-shadow: 1px 1px 15px #888;
+	-webkit-box-shadow: 1px 1px 15px #888;
+	box-shadow:1px 1px 15px #888;
+	padding:15px 10px 10px;
+}
+.loginBox P {
+	text-align:center;
+}
+.loginBox P A {
+	display:block;
+	float:right;
+	font-size:11px;
+	margin:0 5px;
+	color:#666;
+	text-decoration:none;
+}
+.loginBox P A:hover {
+	color:#33C8E6;
+}
+.login-field {
+	clear:both;
+	margin:6px 0;
+}
+.login-field input {
+	-webkit-border-radius:6px;
+	-moz-border-radius:6px;
+	border-radius:6px;	
+	border:1px solid #aaa;
+	padding:3px;
+	color:#666;
+	min-width:65%;
+}
+.login-field input:focus {
+	border:1px solid #5bcdf7;
+}
+.login-field label {
+	display:block;
+	width:20%;
+	float:left;
+	text-align:right;
+	padding:3px 5px 3px 0;
+	color:#666;
+}
+#btLogin {
+	height:30px;
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.15, rgb(247,247,247)), color-stop(0.79, rgb(252,252,252)));
+	background-image: -moz-linear-gradient( center bottom, rgb(247,247,247) 15%, rgb(252,252,252) 79%);
+	border:1px solid #ccc;
+	border-radius:6px;
+	-moz-border-radius: 6px; 
+	-webkit-border-radius: 6px;
+	color:#666;
+	padding:5px 6px;
+	font-size:12px;
+	text-shadow: 1px 1px 2px #fff;
+	margin:2px;
+}
+#btLogin:hover {
+	background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.43, #33C8E6), color-stop(0.72, #85EBFF));
+	background-image: -moz-linear-gradient( center bottom, #33C8E6 23%, #85EBFF 72%);
+	text-shadow: 1px 1px 2px #222;
+	color:#fff;
+}
+.warning {
+	margin:4px 0 6px;
+	padding:3px;
+	border:1px solid #ccc;
+	border-radius:6px;
+	-moz-border-radius: 6px; 
+	-webkit-border-radius: 6px;
+	color:#f00;
+}
+/*  Error pages (forbidden) (not found) */
+.error_page { position:relative; padding:10px; }
+.forbidden_image { float:left; width:250px; height:200px; background:url(/themes/gallery/images/error_pages/403.png); }
+.notfound_image { float:left; width:250px; height:200px; background:url(/themes/gallery/images/error_pages/404.png); }
+.error_h1 { font-size:1.4em; color:#990000; padding-bottom:20px; }
+.error_content { float:left; margin-left:10px; }
+/* Lost password & Activation*/
+.lostpassword, .activation{
+    padding:10px;
+}
+.lostpassword .warnmessage, .activation .error{
+    color:#F00;
+    padding:10px;
+    text-align:center;
+    font-size:12px;
+}
+.lostpassword LABEL, .activation LABEL{
+    padding-right:5px;
+}
+.lostpassword_field, .activation_field{
+    padding:8px;
+    text-align:center;
+}
+.lostpassword_bt, .activation_bt {
+    text-align:center;
+}

@@ -1,0 +1,17 @@
+<div id="language-chooser" class="{flag_dim}"> 
+	<a href="javascript:void(0)" class="language-chooser-button">
+		<span class="{flag_lang_active}"></span>
+	</a>
+	<ul class="choose-lang-list"> 
+		<!--BeginSezActualLang-->
+		<li class="selected" id="lang-{code}"> 
+			{description}<span class="{flag_lang}"></span>
+		</li>
+		<!--EndSezActualLang-->
+		<!--BeginSezLang-->
+		<li id="lang-{code}">
+			<a href="{show_files}">{description}<span class="{flag_lang}"></span></a> 
+		</li>
+		<!--EndSezLang-->
+	</ul>
+</div>

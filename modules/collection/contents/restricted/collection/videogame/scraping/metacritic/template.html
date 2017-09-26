@@ -1,0 +1,316 @@
+<div class="web-scraping">
+    
+	<div class="loader">
+		<div id="floatingCirclesG">
+			<div class="f_circleG" id="frotateG_01">
+			</div>
+			<div class="f_circleG" id="frotateG_02">
+			</div>
+			<div class="f_circleG" id="frotateG_03">
+			</div>
+			<div class="f_circleG" id="frotateG_04">
+			</div>
+			<div class="f_circleG" id="frotateG_05">
+			</div>
+			<div class="f_circleG" id="frotateG_06">
+			</div>
+			<div class="f_circleG" id="frotateG_07">
+			</div>
+			<div class="f_circleG" id="frotateG_08">
+			</div>
+		</div>
+	</div>
+</div>
+<style>
+
+
+#floatingCirclesG{
+	position:relative;
+	width:128px;
+	height:128px;
+	margin: 5% auto;
+	-moz-transform:scale(0.6);
+	-webkit-transform:scale(0.6);
+	-ms-transform:scale(0.6);
+	-o-transform:scale(0.6);
+	transform:scale(0.6);
+}
+
+.f_circleG{
+	position:absolute;
+	background-color:#FFFFFF;
+	height:23px;
+	width:23px;
+	-moz-border-radius:12px;
+	-moz-animation-name:f_fadeG;
+	-moz-animation-duration:1.52s;
+	-moz-animation-iteration-count:infinite;
+	-moz-animation-direction:linear;
+	-webkit-border-radius:12px;
+	-webkit-animation-name:f_fadeG;
+	-webkit-animation-duration:1.52s;
+	-webkit-animation-iteration-count:infinite;
+	-webkit-animation-direction:linear;
+	-ms-border-radius:12px;
+	-ms-animation-name:f_fadeG;
+	-ms-animation-duration:1.52s;
+	-ms-animation-iteration-count:infinite;
+	-ms-animation-direction:linear;
+	-o-border-radius:12px;
+	-o-animation-name:f_fadeG;
+	-o-animation-duration:1.52s;
+	-o-animation-iteration-count:infinite;
+	-o-animation-direction:linear;
+	border-radius:12px;
+	animation-name:f_fadeG;
+	animation-duration:1.52s;
+	animation-iteration-count:infinite;
+	animation-direction:linear;
+}
+
+#frotateG_01{
+	left:0;
+	top:52px;
+	-moz-animation-delay:0.57s;
+	-webkit-animation-delay:0.57s;
+	-ms-animation-delay:0.57s;
+	-o-animation-delay:0.57s;
+	animation-delay:0.57s;
+}
+
+#frotateG_02{
+	left:15px;
+	top:15px;
+	-moz-animation-delay:0.76s;
+	-webkit-animation-delay:0.76s;
+	-ms-animation-delay:0.76s;
+	-o-animation-delay:0.76s;
+	animation-delay:0.76s;
+}
+
+#frotateG_03{
+	left:52px;
+	top:0;
+	-moz-animation-delay:0.95s;
+	-webkit-animation-delay:0.95s;
+	-ms-animation-delay:0.95s;
+	-o-animation-delay:0.95s;
+	animation-delay:0.95s;
+}
+
+#frotateG_04{
+	right:15px;
+	top:15px;
+	-moz-animation-delay:1.14s;
+	-webkit-animation-delay:1.14s;
+	-ms-animation-delay:1.14s;
+	-o-animation-delay:1.14s;
+	animation-delay:1.14s;
+}
+
+#frotateG_05{
+	right:0;
+	top:52px;
+	-moz-animation-delay:1.33s;
+	-webkit-animation-delay:1.33s;
+	-ms-animation-delay:1.33s;
+	-o-animation-delay:1.33s;
+	animation-delay:1.33s;
+}
+
+#frotateG_06{
+	right:15px;
+	bottom:15px;
+	-moz-animation-delay:1.52s;
+	-webkit-animation-delay:1.52s;
+	-ms-animation-delay:1.52s;
+	-o-animation-delay:1.52s;
+	animation-delay:1.52s;
+}
+
+#frotateG_07{
+left:52px;
+bottom:0;
+-moz-animation-delay:1.71s;
+-webkit-animation-delay:1.71s;
+-ms-animation-delay:1.71s;
+-o-animation-delay:1.71s;
+animation-delay:1.71s;
+}
+
+#frotateG_08{
+left:15px;
+bottom:15px;
+-moz-animation-delay:1.9s;
+-webkit-animation-delay:1.9s;
+-ms-animation-delay:1.9s;
+-o-animation-delay:1.9s;
+animation-delay:1.9s;
+}
+
+@-moz-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-webkit-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-ms-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-o-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+}
+
+</style>
+<script type="text/javascript">
+function getDetail() {
+    var params = {};
+    var genre = "";
+    for(var detail in resScraping) {
+        params[detail] = resScraping[detail];
+    }
+    console.log(params);
+    $.post("/restricted/collection/videogame/scraping/metacritic", {
+            exec : true
+            , obj : JSON.stringify(params)	
+    }).done(function( data ) {
+        var res = resScraping[detail]["detail"].push({
+                "cover"					: jQuery('IMG.product_image.large_image', data["tpl"].trim()).first().attr("src")
+                , "genere"				: jQuery('.product_details TH:contains("Genre(s):")', data["tpl"].trim()).parent().find("TD").text()
+                , "publisher"			: jQuery('.summary_detail.publisher A', data["tpl"].trim()).text().trim()
+                , "description"			: jQuery('.summary_detail.product_summary .data', data["tpl"].trim()).text()
+        });
+        resScraping[detail]["loaded"] = true;
+        closeDetail();
+    }); 
+}
+function closeDetail() {
+    $.post("/restricted/collection/videogame/scraping/metacritic", {
+                exec : true
+                , videogame : JSON.stringify(resScraping)	
+    }).done(function( data ) {
+        if(data.url)
+        {
+            window.location.href = data.url;
+        }
+    });
+}
+
+function getChoose() {
+    $.post("/restricted/collection/videogame/scraping/metacritic", {
+                exec : true
+                , choose : JSON.stringify(resScraping)	
+    }).done(function( data ) {
+        if(data["tpl"].length)
+        {
+            jQuery(".web-scraping").prepend(data["tpl"]);
+        }
+            
+    });
+}
+
+
+var resScraping = {};
+var params = {};
+if("{params}".length)
+{
+    params = {
+        "url" : "http://www.metacritic.com{params}"
+    };
+    $.post("/restricted/collection/videogame/scraping/metacritic", {
+        exec : true
+        , params : JSON.stringify(params)	
+}).done(function( data ) {
+
+        var string_url = jQuery("#main .product_title A", data["tpl"].trim()).first().attr("href");
+        var title = jQuery("#main .product_title A", data["tpl"].trim()).first().text().trim();
+        var rating = jQuery("#main .metascore_w", data["tpl"].trim()).first().text().trim();
+        var arrYear = jQuery("#main .release_data .data", data["tpl"].trim()).text().split(", ");
+        
+        resScraping["http://www.metacritic.com" + string_url + "/details"] = {
+            "title"                 : title
+            , "console_smart_url"   : "{console_smart_url}"
+            , "console_ID"          : "{ID_console}"
+            , "url"                 : string_url
+            , "rating"              : rating
+            , "year"                : arrYear[1]
+            , "params"              : string_url + "/details"
+            , "detail"              : []
+        };	
+        console.log(resScraping);
+        getDetail();
+}); 
+} else
+{
+params = {
+        "url" : "http://www.metacritic.com/search/game/{videogame_title}/results?{console_code}&search_type=advanced"
+};
+
+$.post("/restricted/collection/videogame/scraping/metacritic", {
+        exec : true
+        , params : JSON.stringify(params)	
+}).done(function( data ) {
+    if(jQuery(".search_results.module LI.result", data["tpl"]).length)
+    {
+    jQuery(".search_results.module LI.result", data["tpl"].trim()).each(function() {
+        var string_url = jQuery(this).find(".product_title A").attr("href");
+        var title = jQuery(this).find(".product_title A").text().trim();
+        var rating = jQuery(this).find(".metascore_w").text().trim();
+        var arrYear = jQuery(this).find(".release_date .data").text().trim().split(", ");
+        resScraping["http://www.metacritic.com" + string_url + "/details"] = {
+            "title"                 : title
+            , "console_smart_url"   : "{console_smart_url}"
+            , "console_ID"          : "{ID_console}"
+            , "url"                 : string_url
+            , "rating"              : rating
+            , "year"                : arrYear[1]
+            , "params"              : string_url + "/details"
+            , "detail"              : []
+        };	
+    });
+    if(Object.keys(resScraping).length > 1) {
+        getChoose(); 
+    } else {
+        getDetail();
+    }
+     } else {
+        window.location.href = "/restricted/collection/videogame/modify/{console_smart_url}?addnew=manually";
+    }
+    
+});
+}
+</script>

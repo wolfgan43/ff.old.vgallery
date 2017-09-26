@@ -1,0 +1,14 @@
+{pre_body}
+<!--BeginSezOwner-->{owner}<!--EndSezOwner-->
+<!--BeginSezFields--><!--BeginSezGroups-->{group_name}
+		<!--BeginSezField-->{fields_label} {fields_value}<!--EndSezField--><!--EndSezGroups--><!--EndSezFields-->
+{post_body}
+{_mail_thanks_message}
+
+{_mail_footer_privacy_title}
+{_mail_footer_privacy_text}
+
+
+{_mail_footer_site_owner} {_mail_footer_site_address}
+
+{_mail_footer_site_copyright}

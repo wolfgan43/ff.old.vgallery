@@ -1,0 +1,338 @@
+<div class="web-scraping">
+     
+    <div class="loader">
+        <div id="floatingCirclesG">
+            <div class="f_circleG" id="frotateG_01">
+            </div>
+            <div class="f_circleG" id="frotateG_02">
+            </div>
+            <div class="f_circleG" id="frotateG_03">
+            </div>
+            <div class="f_circleG" id="frotateG_04">
+            </div>
+            <div class="f_circleG" id="frotateG_05">
+            </div>
+            <div class="f_circleG" id="frotateG_06">
+            </div>
+            <div class="f_circleG" id="frotateG_07">
+            </div>
+            <div class="f_circleG" id="frotateG_08">
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+
+
+
+
+#floatingCirclesG{
+position:relative;
+width:128px;
+height:128px;
+margin: 5% auto;
+-moz-transform:scale(0.6);
+-webkit-transform:scale(0.6);
+-ms-transform:scale(0.6);
+-o-transform:scale(0.6);
+transform:scale(0.6);
+}
+
+.f_circleG{
+position:absolute;
+background-color:#FFFFFF;
+height:23px;
+width:23px;
+-moz-border-radius:12px;
+-moz-animation-name:f_fadeG;
+-moz-animation-duration:1.52s;
+-moz-animation-iteration-count:infinite;
+-moz-animation-direction:linear;
+-webkit-border-radius:12px;
+-webkit-animation-name:f_fadeG;
+-webkit-animation-duration:1.52s;
+-webkit-animation-iteration-count:infinite;
+-webkit-animation-direction:linear;
+-ms-border-radius:12px;
+-ms-animation-name:f_fadeG;
+-ms-animation-duration:1.52s;
+-ms-animation-iteration-count:infinite;
+-ms-animation-direction:linear;
+-o-border-radius:12px;
+-o-animation-name:f_fadeG;
+-o-animation-duration:1.52s;
+-o-animation-iteration-count:infinite;
+-o-animation-direction:linear;
+border-radius:12px;
+animation-name:f_fadeG;
+animation-duration:1.52s;
+animation-iteration-count:infinite;
+animation-direction:linear;
+}
+
+#frotateG_01{
+left:0;
+top:52px;
+-moz-animation-delay:0.57s;
+-webkit-animation-delay:0.57s;
+-ms-animation-delay:0.57s;
+-o-animation-delay:0.57s;
+animation-delay:0.57s;
+}
+
+#frotateG_02{
+left:15px;
+top:15px;
+-moz-animation-delay:0.76s;
+-webkit-animation-delay:0.76s;
+-ms-animation-delay:0.76s;
+-o-animation-delay:0.76s;
+animation-delay:0.76s;
+}
+
+#frotateG_03{
+left:52px;
+top:0;
+-moz-animation-delay:0.95s;
+-webkit-animation-delay:0.95s;
+-ms-animation-delay:0.95s;
+-o-animation-delay:0.95s;
+animation-delay:0.95s;
+}
+
+#frotateG_04{
+right:15px;
+top:15px;
+-moz-animation-delay:1.14s;
+-webkit-animation-delay:1.14s;
+-ms-animation-delay:1.14s;
+-o-animation-delay:1.14s;
+animation-delay:1.14s;
+}
+
+#frotateG_05{
+right:0;
+top:52px;
+-moz-animation-delay:1.33s;
+-webkit-animation-delay:1.33s;
+-ms-animation-delay:1.33s;
+-o-animation-delay:1.33s;
+animation-delay:1.33s;
+}
+
+#frotateG_06{
+right:15px;
+bottom:15px;
+-moz-animation-delay:1.52s;
+-webkit-animation-delay:1.52s;
+-ms-animation-delay:1.52s;
+-o-animation-delay:1.52s;
+animation-delay:1.52s;
+}
+
+#frotateG_07{
+left:52px;
+bottom:0;
+-moz-animation-delay:1.71s;
+-webkit-animation-delay:1.71s;
+-ms-animation-delay:1.71s;
+-o-animation-delay:1.71s;
+animation-delay:1.71s;
+}
+
+#frotateG_08{
+left:15px;
+bottom:15px;
+-moz-animation-delay:1.9s;
+-webkit-animation-delay:1.9s;
+-ms-animation-delay:1.9s;
+-o-animation-delay:1.9s;
+animation-delay:1.9s;
+}
+
+@-moz-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-webkit-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-ms-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-o-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+</style>
+<script type="text/javascript">
+
+function getDetail() {
+    var params = {};
+    var genre = "";
+    for(var detail in resScraping) {
+        params[detail] = resScraping[detail];
+    }
+    
+    $.post("/restricted/collection/book/scraping/google", {
+            exec : true
+            , obj : JSON.stringify(params)	
+    }).done(function( data ) {
+        
+        var edition = jQuery('.about_content .metadata_label SPAN:contains("Editore")', data["tpl"].trim()).parent().parent().find(".metadata_value").text().trim();
+        var editore;
+		if(edition.length)
+		{
+			if(edition.indexOf(", ") > 0)
+			{
+				var edition_splitted = edition.split(", ");
+				editore = edition_splitted[0];
+				var year = edition_splitted[1];
+				
+			} else {
+                            editore = edition;
+                        }
+                            
+		}
+		var allISBN = jQuery('.about_content .metadata_label SPAN:contains("ISBN")', data["tpl"].trim()).parent().parent().find(".metadata_value").text().trim();
+		if(allISBN.length)
+		{
+			if(allISBN.indexOf(", ") > 0)
+			{
+				var isbn_splitted = allISBN.split(", ");
+				var isbn10 = isbn_splitted[0];
+				var isbn13 = isbn_splitted[1];
+				
+			}
+		}
+                
+        var res = resScraping[detail]["detail"].push({
+                "copertina"		: jQuery(".bookcover", data["tpl"].trim()).first().find("A IMG").attr("src")
+                , "author"		: jQuery('.about_content .metadata_label SPAN:contains("Autor")', data["tpl"].trim()).parent().parent().find(".metadata_value").text().trim()
+                , "edizione"    : editore
+                , "year"        : year
+                , "isbn10"      : isbn10
+                , "isbn13"      : isbn13
+                , "length"      : jQuery('.about_content .metadata_label SPAN:contains("Lunghezza")', data["tpl"].trim()).parent().parent().find(".metadata_value").text().trim()
+				, "description" : jQuery("#synopsistext", data["tpl"].trim()).first().html()
+        });
+	resScraping[detail]["loaded"] = true;
+        closeDetail();
+    }); 
+}
+function closeDetail() {
+    $.post("/restricted/collection/book/scraping/google", {
+                exec : true
+                , book : JSON.stringify(resScraping)	
+    }).done(function( data ) {
+        if(data.url)
+        {
+            window.location.href = data.url;
+        }
+    });
+}
+
+function getChoose() {
+    $.post("/restricted/collection/book/scraping/google", {
+                exec : true
+                , choose : JSON.stringify(resScraping)	
+    }).done(function( data ) {
+        if(data["tpl"].length)
+        {
+            jQuery(data["tpl"]).appendTo(".web-scraping");
+        }
+            
+    });
+}
+
+var resScraping = {};
+if("{params}".length)
+{
+    $.post("/restricted/collection/book/scraping/google", {
+        exec : true
+        , params : JSON.stringify("{params}")	
+}).done(function( data ) {
+        
+        var title = jQuery('.booktitle', data["tpl"].trim()).text().trim();
+        if(title.indexOf("(Google eBook)") > 0)
+            title = title.substr(0,title.indexOf("(Google eBook)"));
+        var author = jQuery('.bookinfo_sectionwrap SPAN', data["tpl"].trim()).first().text().trim();
+        resScraping["{params}"] = {
+            "title"			: title
+            , "url"         : "{params}"
+            , "author"      : author
+            , "detail"		: []
+            , "list_ean"    : "{list_ean}"
+            , "list_title"  : "{list_title}"
+        };
+    getDetail();
+});
+} else
+{
+var params = {
+    "url" : "https://www.google.it/search?q={book_title}&tbm=bks"
+};
+
+$.post("/restricted/collection/book/scraping/google", {
+        exec : true
+        , params : JSON.stringify("{url}")	
+}).done(function( data ) {
+    if(jQuery("#search .g", data["tpl"]).length)
+    {
+    jQuery("#search .g", data["tpl"].trim()).each(function() {
+        var string_url = jQuery(this).find("A").attr("href");
+        if(string_url.indexOf("&"))
+            string_url = string_url.substr(0,string_url.indexOf("&"));
+        var title = jQuery(this).find("A").first().text().trim();
+        resScraping[string_url] = {
+            "title"			: title
+            , "url"         : string_url
+            , "author"      : jQuery(this).find(".fl:first").text().trim()
+            , "detail"		: []
+            , "params"      : string_url.substr(string_url.indexOf("=")+1)
+            , "list_ean"    : "{list_ean}"
+            , "list_title"  : "{list_title}"
+        };	
+    });
+    
+    if(Object.keys(resScraping).length > 1) {
+        getChoose(); 
+    } else {
+        getDetail();
+    }
+    } else {
+        window.location.href = "/restricted/collection/book/modify/manually";
+    }
+});
+}
+</script>

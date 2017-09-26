@@ -1,0 +1,45 @@
+<!--BeginSezGallerys-->
+	<{tag_rel_gallerys} id="gallery_body">
+	        <!--BeginSezGalleryRow-->
+	        <!--BeginSezGallery-->
+	        <{tag_rel_gallery_row}>
+	                <!--BeginSezGalleryImage-->
+	                <{tag_rel_gallery_row_image} class="gallery_image">
+	                <![CDATA[
+	                    <!--BeginSezGalleryImageViewLink-->
+	                    <a href="{show_file}" class="{class_plugin}" rel="{rel_plugin}" title="{title_thumb}"><img src="{show_thumb}" alt="{alt_name}" /></a>
+	                    <!--EndSezGalleryImageViewLink-->
+	                    <!--BeginSezGalleryImageViewNoLink-->
+	                    <img src="{show_thumb}" class="{class_plugin}" alt="{alt_name}" title="{title_thumb}" />
+	                    <!--EndSezGalleryImageViewNoLink-->
+	                ]]>
+	                </{tag_rel_gallery_row_image}>
+	                <!--EndSezGalleryImage-->
+	                <!--BeginSezGalleryWord-->
+	                    <!--BeginSezGalleryWordName-->
+	                    <{tag_rel_gallery_row_field}><![CDATA[{name}]]></{tag_rel_gallery_row_field}>
+	                    <!--EndSezGalleryWordName-->
+	                    <!--BeginSezGalleryWordDescription-->
+	                    <{tag_rel_gallery_row_field}><![CDATA[{description}]]></{tag_rel_gallery_row_field}>
+	                    <!--EndSezGalleryWordDescription-->
+	                    <!--BeginSezGalleryWordType-->
+	                    <{tag_rel_gallery_row_field}><![CDATA[{type}]]></{tag_rel_gallery_row_field}>
+	                    <!--EndSezGalleryWordType-->
+	                    <!--BeginSezGalleryWordSize-->
+	                    <{tag_rel_gallery_row_field}><![CDATA[{size}]]></{tag_rel_gallery_row_field}>
+	                    <!--EndSezGalleryWordSize-->
+	                    <!--BeginSezGalleryWordPath-->
+	                    <{tag_rel_gallery_row_field}><![CDATA[{path}]]></{tag_rel_gallery_row_field}>
+	                    <!--EndSezGalleryWordPath-->
+	                    <!--BeginSezGalleryWordDescriptionLanguage-->
+	                    <{tag_rel_gallery_row_field}><![CDATA[{descriptionlanguage}]]></{tag_rel_gallery_row_field}>
+	                    <!--EndSezGalleryWordDescriptionLanguage-->
+	                    <!--BeginSezGalleryWordFileTime-->
+	                    <{tag_rel_gallery_row_field}><![CDATA[{filetime}]]></{tag_rel_gallery_row_field}>
+	                    <!--EndSezGalleryWordFileTime-->
+	                <!--EndSezGalleryWord-->
+	        </{tag_rel_gallery_row}>
+	        <!--EndSezGallery-->
+	        <!--EndSezGalleryRow-->
+	</{tag_rel_gallerys}>
+<!--EndSezGallerys-->

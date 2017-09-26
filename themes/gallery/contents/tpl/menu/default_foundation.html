@@ -1,0 +1,73 @@
+<!--BeginSezTitle-->
+    <h2 class="title">{title}</h2>
+<!--EndSezTitle-->
+<!--BeginSezMenu-->
+<nav class="top-bar" data-topbar>
+	<ul class="title-area">
+		<li class="name">
+			<!--BeginSezTitle-->
+			<h2 class="title">{title}</h2>
+			<!--EndSezTitle-->
+		</li>
+		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	</ul>
+	
+	<section class="top-bar-section">
+		<ul class="{class_plugin}">
+			<!--BeginSezHomeHeader-->
+			<li {item_properties}>
+				<!--BeginSezHomeImg-->
+				<a{class_elem} href="{show_file}" <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{home}" /></a>
+				<!--EndSezHomeImg-->
+				<!--BeginSezHomeNoImg-->
+				<a{class_elem} href="{show_file}" <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}>{home}</a>
+				<!--EndSezHomeNoImg-->
+				<!--BeginSezHomeHeaderParent-->
+				<ul class="child">
+				<!--EndSezHomeHeaderParent-->
+				<!--BeginSezHomeHeaderNoParent-->
+					{child}
+
+				<!--EndSezHomeHeaderNoParent-->
+				<!--BeginSezHomeFooter-->
+					</ul>
+				<!--EndSezHomeFooter-->
+			</li>
+			<!--EndSezHomeHeader-->
+			<!--BeginSezItem-->
+			<li {item_properties}>
+				<!--BeginSezItemImg-->
+					<!--BeginSezItemImgHere-->
+					<a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" /></a>
+					<!--EndSezItemImgHere-->
+					<!--BeginSezItemImgNoHere-->
+					<a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}><img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" /></a>
+					<!--EndSezItemImgNoHere-->
+					<!--BeginSezItemImgNoLink-->
+					<img src="{site_path}/cm/showfiles.php/responsive/images/spacer.gif" alt="{item}" />
+					<!--EndSezItemImgNoLink-->
+				<!--EndSezItemImg-->
+				<!--BeginSezItemNoImg-->
+					<!--BeginSezItemNoImgHere-->
+					<a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}>{item}</a>
+					<!--EndSezItemNoImgHere-->
+					<!--BeginSezItemNoImgNoHere-->
+					<a{class_elem} href="{show_file}" <!--BeginSezAjaxChild-->rel="{ajax_child}"<!--EndSezAjaxChild--> <!--BeginSezTarget-->target="_blank"<!--EndSezTarget-->{menu_properties}>{item}</a>
+					<!--EndSezItemNoImgNoHere-->
+					<!--BeginSezItemNoImgNoLink-->
+					<span class="no-link">{item}</span> 
+					<!--EndSezItemNoImgNoLink-->
+				<!--EndSezItemNoImg-->
+				<!--BeginSezItemDescription-->
+					<div class="desc">{description}</div>
+				<!--EndSezItemDescription-->
+				{child}
+			</li>
+		<!--EndSezItem-->
+		</ul>
+	</section>
+</nav>
+<!--EndSezMenu-->
+<!--BeginSezError-->
+    <p class="error">{strError}</p>
+<!--EndSezError-->

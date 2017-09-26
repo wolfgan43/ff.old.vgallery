@@ -1,0 +1,64 @@
+<!--BeginSezTimeline-->
+<link rel="stylesheet" type="text/css" href="/themes/site/css/main.css">
+<link rel="stylesheet" type="text/css" href="/themes/site/css/sostieni-un-progetto.css">
+<div class="timeline">
+<h3>{_crowdfund_timeline_begins}</h3>
+	<!--BeginSezTimelineMonth-->
+	<div class="month">
+		<ul> 
+		<h3>{crowdfund_timeline_month} {crowdfund_timeline_year}</h3> 
+		<!--BeginSezTimelineMonthEvent-->
+			<!--BeginSezTimelineEndFunding-->
+				<h3 class="timeline-end-funding">{_crowdfund_timeline_end_funding}</h3>
+			<!--EndSezTimelineEndFunding-->
+			<li class="{type} {is_positive}">
+				<div> 
+					<span>{timeline_date}</span>
+					<!--BeginSezTimelineMonthEventFollow-->
+						<h4>{_timeline_follow_title_general}</h4>
+						<label>{timeline_follow_name}</label>
+							<!--BeginSezTimelineFollowHeader-->
+								<a href="{site_path}{user_profile_path}{timeline_follow_smart_url}">
+							<!--EndSezTimelineFollowHeader-->
+								<img src="{timeline_follower_avatar}"/>
+							<!--BeginSezTimelineFollowFooter-->
+								</a>
+							<!--EndSezTimelineFollowFooter-->
+					<!--EndSezTimelineMonthEventFollow-->
+					<!--BeginSezTimelineMonthEventBacker-->
+						<h4>{_timeline_backer_title_general}</h4>
+						<label>{timeline_backer_name}</label>
+						<span>{timeline_backer_price}</span>
+							<!--BeginSezTimelineBackerHeader-->
+								<a href="{site_path}{user_profile_path}{timeline_backer_smart_url}">
+							<!--EndSezTimelineBackerHeader-->
+								<img src="{timeline_backer_avatar}"/>
+							<!--BeginSezTimelineBackerFooter-->
+								</a>
+							<!--EndSezTimelineBackerFooter-->
+					<!--EndSezTimelineMonthEventBacker-->
+					<!--BeginSezTimelineMonthEventAttach-->
+						<h4>{_timeline_attach_title_general}</h4>
+						<label>{timeline_attach_title}</label>
+						<a href="{idea_timeline_file}" target="_blank">
+							<img src="{timeline_attach_file}">
+						</a>
+					<!--EndSezTimelineMonthEventAttach-->
+					<!--BeginSezTimelineMonthEventPrevision-->
+						<h4>{timeline_prevision_title}</h4>
+						<!--BeginSezTimelineMonthEventPrevisionAttach-->
+							<img src="{timeline_prevision_file}" />
+						<!--EndSezTimelineMonthEventPrevisionAttach-->
+						<!--BeginSezTimelineMonthEventPrevisionDescription-->
+							<label>{timeline_prevision_description}</label>
+						<!--EndSezTimelineMonthEventPrevisionDescription-->
+					<!--EndSezTimelineMonthEventPrevision-->
+				</div>
+			</li>
+		<!--EndSezTimelineMonthEvent-->
+		</ul>
+	</div> 
+	<!--EndSezTimelineMonth-->
+<h3 class="timeline-end">{_crowdfund_timeline_end}</h3>
+</div>
+<!--EndSezTimeline-->  

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+	<rule id="collection">
+		<priority>NORMAL</priority>
+		<source>^/restricted/collection(.*)</source>
+		<destination>
+			<module>collection</module>
+			<url>/restricted/collection$1</url>
+		</destination>
+        <reverse>/restricted/collection</reverse> 
+		<accept_path_info />
+	</rule>
+    
+</configdata>
+

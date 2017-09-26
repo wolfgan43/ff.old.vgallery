@@ -1,0 +1,113 @@
+@page {
+	size: 210mm 297mm; 
+	margin: 10mm;
+	counter-increment: pages;
+	color: #000;
+	
+  	@bottom-center {
+      font-size: 9pt;
+      font-weight: normal;
+  	}
+}
+
+.document { width: 210mm;}
+
+.logo {
+	clear:both;
+	margin:0 0 10mm;
+	width:200mm;
+}
+
+.document  .header {
+	width:210mm;
+	margin:0 0 30mm;
+}
+
+
+
+.document  .customer-bill, .document .customer-shipping {
+	width:100mm;
+}
+
+.document .customer-shipping { float:left; }
+
+.document H3 { font-size:18pt; margin:20mm 0 10mm; } 
+
+.document .customer-shipping { text-align:right; }
+
+.document  .content { clear:both; padding:10mm 0 0 0; }
+
+.document  .content DIV { margin:0 0 10mm; }
+
+.document TABLE { display:table; width:210mm; margin:10mm 0 0 0; border-collapse:collapse; }
+
+.document TABLE TD { padding:2mm; }
+
+.document TABLE.bill_total { clear:both; margin:10mm 0 0 0; border-collapse:collapse; }
+
+
+.document TH {
+	border:1pt solid #b7b7b7;
+	background:#ddd;
+	text-align:center;
+	vertical-align:middle;
+	font-weight:normal;
+	padding:2mm;
+	width:5mm;
+}
+
+.document .bill_total TD,
+.document .payments_method TD { width:160mm; }
+
+.document TABLE TH.firstcell { width:103mm; }
+.document TABLE.discount TH.firstcell { width:89mm; }
+.document TH.punit, .document TH.ptot,
+.document .bill_total TD.right,
+.document .payments_method TD.right { width:20mm;}
+
+TD.right { text-align:right; }
+TD.center { text-align:center; }
+
+.document TABLE TD {
+	border:1pt solid #b7b7b7;
+	vertical-align:middle;
+}
+
+
+
+.document .content DIV.container { margin:22mm 0; }
+
+.document .container.cartasi TABLE TH { 
+	background:#FF6E28; 
+	color:#fff; 
+	border:1pt solid #88553c;
+}
+.document .container.paypal TABLE TH { 
+	background:#0079C1; 
+	color:#fff;
+	border:1pt solid #325062;
+}
+
+.document .ddt-data {
+	border:1pt solid #b7b7b7;
+	margin:10mm 0 0;
+}
+
+.document .ddt-data DIV {
+	padding:10mm 0;
+	float:left;
+	width:33%
+
+}
+
+.document .ddt-data DIV LABEL {
+	margin:0 0 0 5mm;
+	font-weight:bold;
+}
+
+.document .footer {
+	width:100%;
+	clear:both;
+	margin:30mm 0 0;
+	text-align:center;
+}

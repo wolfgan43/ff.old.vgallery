@@ -1,0 +1,306 @@
+body {
+	font-family:Arial,sans-serif;
+	font-size:12px;
+	color:#666;
+    margin:0px;
+    overflow:hidden;
+}
+h2#warning{
+    font-size:20px;
+}
+
+.wrapper{
+    display: block;
+    max-width: 690px;
+    margin: 0 auto;
+}
+.install-container {
+	overflow-x: hidden;
+}
+.installer {
+    background: none repeat scroll 0% 0% #F6F6F6;
+    width: 100%;
+    margin: auto;
+    padding: 0px;
+    height: 100%;
+}
+
+legend {
+	font-size:14px;
+	font-weight:900;
+	padding:10px 0 5px;
+	text-transform:uppercase;
+}
+
+fieldset {
+	border:0;
+    background: #F6F6F6;
+}
+
+fieldset:hover legend {
+	color:#4081F5;
+}
+.formfield {
+	width:320px;
+	text-align:right;
+	padding:4px 0;
+
+}
+label{text-transform:uppercase;}
+        
+input{
+	border: 1px solid #AAA;
+                padding: 4px;
+                display: block;
+                margin-bottom: 10px;
+                width: 66%;
+}
+input[type="checkbox"]{display: inline; width: 30px;}
+        
+input:focus, select:focus {
+	border:1px solid #4081F5;
+	background: none repeat scroll 0% 0% rgba(64, 129, 245, 0.24);
+}
+select {width:160px;}
+A {
+	text-decoration:none;
+	color:#888;
+}
+
+A:hover {
+	color:#5f5f5f;
+}
+
+A.install-advanced-settings {
+	background:#e7e7e7;
+	padding:5px;
+	
+}
+
+.install-advanced-div {
+	text-align:right;
+	display:block;
+}
+.actions {
+            padding-top: 10px;
+            width: 100%;
+            right: 0px;
+            text-align: right;
+            position: relative;
+            top: -43px;
+	}
+        
+.actions a{
+    padding: 10px 10px;
+    border-width: 1px 1px 4px;
+    border-color: #2F68CD;
+    border-style: solid;
+    background: none repeat scroll 0% 0% #4081F5;
+    color: #FFF;
+    text-transform: uppercase;
+    font-size: 1.2em;
+}
+
+A.install-advanced-settings{
+    margin: 0px 10px;
+    overflow: hidden;
+    display: block;
+    text-align: center;
+    border-bottom: 3px solid #cacaca;
+    border: 1px solid #cacaca;
+    border-bottom: 4px solid #cacaca;
+}
+
+.actions input {
+	background:#90e4ff;
+	border:1px solid #119bb0;
+	color:#119bb0;
+	height:30px;
+	width:150px;
+	margin:auto;
+	-webkit-border-radius:4px;
+	-moz-border-radius:4px;
+	border-radius:4px;
+}
+
+.actions input:hover {
+	background:#e7e7e7;
+	border:1px solid #888;
+	color:#888;
+}
+        
+/*miei stili*/
+.line, .row{margin: 15px 0px;} 
+
+ul{padding-left: 0px; padding-right: 0px;}
+li{
+    padding: 0.65em 0.5em;
+    display: block;
+    
+    border-left: 8px solid transparent;
+    transition: all 0.3s ease 0s;
+}
+li a{color: #2F68CD;}
+li a:hover{cursor:pointer;color: rgba(101, 148, 231, 1);}
+div.menu{width:32%; display:block; float: left;}
+div.install-container{width:68%; display:block;}
+
+li.selected{border-color: #2F68CD;}
+
+.hidden{display: none;}
+
+
+/*
+.ui-dialog-content .ui-widget-content{padding: 0px !important; margin-bottom: 0px !important;}
+
+.ui-dialog-content.ui-widget-content{padding:0 !important;}*/
+
+li.adv a{color: rgba(165, 22, 22, 1);}
+li.adv a:hover{color:rgba(192, 113, 113, 1);}
+
+
+
+.install-db{margin-top: 50px;}
+
+/* Loader */
+.sk-cube-grid {
+  width: 9em; 
+  height: 9em;
+  margin: 20% auto;
+}
+
+.sk-cube-grid .sk-cube {
+  width: 33%;
+  height: 33%;
+  background-color: #4169e1;
+  float: left;
+  -webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
+          animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out; 
+}
+.sk-cube-grid .sk-cube1 {
+  -webkit-animation-delay: 0.2s;
+          animation-delay: 0.2s; }
+.sk-cube-grid .sk-cube2 {
+  -webkit-animation-delay: 0.3s;
+          animation-delay: 0.3s; }
+.sk-cube-grid .sk-cube3 {
+  -webkit-animation-delay: 0.4s;
+          animation-delay: 0.4s; }
+.sk-cube-grid .sk-cube4 {
+  -webkit-animation-delay: 0.1s;
+          animation-delay: 0.1s; }
+.sk-cube-grid .sk-cube5 {
+  -webkit-animation-delay: 0.2s;
+          animation-delay: 0.2s; }
+.sk-cube-grid .sk-cube6 {
+  -webkit-animation-delay: 0.3s;
+          animation-delay: 0.3s; }
+.sk-cube-grid .sk-cube7 {
+  -webkit-animation-delay: 0s;
+          animation-delay: 0s; }
+.sk-cube-grid .sk-cube8 {
+  -webkit-animation-delay: 0.1s;
+          animation-delay: 0.1s; }
+.sk-cube-grid .sk-cube9 {
+  -webkit-animation-delay: 0.2s;
+          animation-delay: 0.2s; }
+
+@-webkit-keyframes sk-cubeGridScaleDelay {
+  0%, 70%, 100% {
+    -webkit-transform: scale3D(1, 1, 1);
+            transform: scale3D(1, 1, 1);
+  } 35% {
+    -webkit-transform: scale3D(0, 0, 1);
+            transform: scale3D(0, 0, 1); 
+  }
+}
+
+@keyframes sk-cubeGridScaleDelay {
+  0%, 70%, 100% {
+    -webkit-transform: scale3D(1, 1, 1);
+            transform: scale3D(1, 1, 1);
+  } 35% {
+    -webkit-transform: scale3D(0, 0, 1);
+            transform: scale3D(0, 0, 1);
+  } 
+}
+        
+/* help */   
+label{display:block; margin-top:5px;}
+input{display:inline-block;}
+input:focus{background:#fff;}
+span.check{
+    display:none;
+    color: #fff;
+    width: 20px;
+    height:20px !important;
+    display: inline-block;
+    height: 10px;
+    text-align: center;
+    margin: 0px 0px 0px 4px;
+   position: absolute;
+}
+span.check.missed{
+    display:inline-block;
+    background-image:url(conf/gallery/install/install-sprite.png);
+    background-position: -22px -1px;
+} 
+span.check.done{
+    background-image:url(conf/gallery/install/install-sprite.png);
+    background-position: -1px -1px;
+}
+
+.btn{
+    opacity:1;
+    pointer-events:visible;
+}
+.btn.Off{
+    opacity:0.5;
+    pointer-events:none;
+}
+
+.helpB{
+    background-image: url("conf/gallery/install/install-sprite.png");
+    background-position: -1px -22px;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    text-align: center;
+    color: #fff;
+    margin-left: 10px;
+}
+.helpB.x{
+    background-image: url("conf/gallery/install/install-sprite.png");
+    background-position: -22px -22px;
+}
+
+.helpP{
+    position: absolute;
+    bottom: 0;
+    z-index: 99;
+    background: white;
+    width: 92%;
+    left: 2%;
+    bottom: 0;
+    padding: 0;
+    height: 0px;
+    box-shadow: 0px 0px 65px #8f8f8f; 
+    transition: 1s;
+}
+.helpP.big{
+    height: 300px;
+    padding:2%;
+    bottom:1%;
+}
+.helpP>div{
+    margin:15px 0;
+}
+.screenshot.sitetitle{
+    display:block;
+    width:321px;
+    height:82px;
+    background-image: url("conf/gallery/install/install-sprite.png");
+    background-position: -22px -42px;
+    margin:0 0 15px 0;
+}
+.required:not(.done){border:1px solid red;}

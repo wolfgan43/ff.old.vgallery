@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configdata>
+    <settings>
+        <MOD_INTERACTOR_ENABLE_SHARE extended_type="Number" label="Enable Share" default="1" />
+        
+        <MOD_INTERACTOR_FACEBOOK_SHARE extended_type="Number" label="Facebook Share" default="1" />
+	<MOD_INTERACTOR_FACEBOOK_SHARE_COUNT extended_type="Number" label="Facebook Share count" default="1" />	
+        
+        <MOD_INTERACTOR_TWITTER_SHARE extended_type="Number" label="Twitter Share" default="1" />
+	<MOD_INTERACTOR_TWITTER_SHARE_COUNT extended_type="Number" label="Twitter Share count" default="1" />
+        
+        <MOD_INTERACTOR_LINKEDIN_SHARE extended_type="Number" label="Linkedin Share" default="1" />
+	<MOD_INTERACTOR_LINKEDIN_SHARE_COUNT extended_type="Number" label="Linkedin Share count" default="1" />
+        
+        <MOD_INTERACTOR_GPLUS_SHARE extended_type="Number" label="Gplus Share" default="1" />
+	<MOD_INTERACTOR_GPLUS_SHARE_COUNT extended_type="Number" label="Gplus Share count" default="1" />			
+    </settings>
+</configdata>

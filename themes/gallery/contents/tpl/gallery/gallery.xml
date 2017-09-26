@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<{tag_gallery} id="{real_father}">
+    <!--BeginSezGalleryTitle-->
+	<{tag_title}><![CDATA[{name_title}]]></{tag_title}>
+    <!--EndSezGalleryTitle-->
+   <!--BeginSezGallerys-->
+   <{tag_gallerys} id="gallery_body">
+            <!--BeginSezGalleryRow-->
+            <!--BeginSezGallery-->
+            <{tag_gallery_row}>
+                    <!--BeginSezGalleryImage-->
+                    <{tag_gallery_row_image} class="gallery_image">
+                    <![CDATA[
+                        <!--BeginSezGalleryImageViewLink-->
+                        <a href="{show_file}" class="{class_plugin}" rel="{rel_plugin}" title="{title_thumb}"><img src="{show_thumb}" alt="{alt_name}" /></a>
+                        <!--EndSezGalleryImageViewLink-->
+                        <!--BeginSezGalleryImageViewNoLink-->
+                        <img src="{show_thumb}" class="{class_plugin}" alt="{alt_name}" title="{title_thumb}" />
+                        <!--EndSezGalleryImageViewNoLink-->
+                    ]]>
+                    </{tag_gallery_row_image}>
+                    <!--EndSezGalleryImage-->
+                    <!--BeginSezGalleryWord-->
+                        <!--BeginSezGalleryWordName-->
+                        <{tag_gallery_row_field}><![CDATA[{name}]]></{tag_gallery_row_field}>
+                        <!--EndSezGalleryWordName-->
+                        <!--BeginSezGalleryWordDescription-->
+                        <{tag_gallery_row_field}><![CDATA[{description}]]></{tag_gallery_row_field}>
+                        <!--EndSezGalleryWordDescription-->
+                        <!--BeginSezGalleryWordType-->
+                        <{tag_gallery_row_field}><![CDATA[{type}]]></{tag_gallery_row_field}>
+                        <!--EndSezGalleryWordType-->
+                        <!--BeginSezGalleryWordSize-->
+                        <{tag_gallery_row_field}><![CDATA[{size}]]></{tag_gallery_row_field}>
+                        <!--EndSezGalleryWordSize-->
+                        <!--BeginSezGalleryWordPath-->
+                        <{tag_gallery_row_field}><![CDATA[{path}]]></{tag_gallery_row_field}>
+                        <!--EndSezGalleryWordPath-->
+                        <!--BeginSezGalleryWordDescriptionLanguage-->
+                        <{tag_gallery_row_field}><![CDATA[{descriptionlanguage}]]></{tag_gallery_row_field}>
+                        <!--EndSezGalleryWordDescriptionLanguage-->
+                        <!--BeginSezGalleryWordFileTime-->
+                        <{tag_gallery_row_field}><![CDATA[{filetime}]]></{tag_gallery_row_field}>
+                        <!--EndSezGalleryWordFileTime-->
+                    <!--EndSezGalleryWord-->
+            </{tag_gallery_row}>
+            <!--EndSezGallery-->
+            <!--EndSezGalleryRow-->
+    </{tag_gallerys}>
+    <!--EndSezGallerys-->
+</{tag_gallery}>

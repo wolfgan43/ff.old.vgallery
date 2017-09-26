@@ -1,0 +1,13 @@
+<script src="https://connect.facebook.net/{fb_lang}/all.js"></script>
+<script>
+	window.fbAsyncInit = function() {
+	  FB.init({
+		appId      : '{fb_app_id}', // App ID
+		status: true,
+        cookie: true,
+        xfbml: true
+	  });
+
+	  FB.Canvas.setAutoGrow();
+	}
+</script>

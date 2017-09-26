@@ -1,0 +1,77 @@
+.seo-analysis-link {
+	float:left;
+	background: rgba(114,114,114,.8);
+	width: 30px;
+	padding: 9px 0px 4px 2px;
+}
+	
+.seo-analysis-menu{
+	padding-left: 13px;
+}
+
+.seo-analysis-menu ul{
+	background: rgba(246, 246, 246, 1);
+}
+
+.seo-analysis-navigation:hover{
+    margin-left: -200px;
+    width: 200px;
+    transition: 0.5s;
+}
+
+
+.seo-analysis-navigation{
+    position: absolute;
+    margin-left: -30px;
+    transition: 0.5s;
+    z-index: -1;
+}
+
+
+.seo-analysis-menu li{ background:rgba(226, 226, 226, 0.22); padding: 10px; border-bottom: 1px solid #fff; transition: 0.5s;}
+.seo-analysis-menu li a{color:rgba(56, 56, 56, 1);display: block; width:100%;}
+.seo-analysis-menu li:hover, .seo-analysis-menu li.selected {background: #B2B2B2;}
+
+.seo-analysis{
+    overflow: auto;
+	height:100%;
+    /*padding: 0 2%;*/
+    background: rgba(246, 246, 246, 1);
+}
+
+
+.seo-analysis li{margin: 10px 0; border-bottom: 1px dotted #d0d0d0; padding: 10px 0px;}
+
+.seo-analysis-help {
+    width: 400px;
+    float: left;
+    overflow: auto;
+    padding: 0px 2%;
+    border-top: 2px solid rgba(226, 226, 226, 0.22);
+    position: absolute;
+    height: 60%;
+    top: 36%;
+    right: 100%;
+    background:#aaa;
+}
+
+
+.seo-analysis-help p{padding: 20px 0; color:rgba(56, 56, 56, 1); line-height: 30px; transition: 0.5s; display: block; width: 97%; position: absolute; top: 0; overflow: hidden}
+.seo-analysis-help p.slide{margin-left: 0;}
+
+.seo-analysis h3{padding:5px; color:#fff; text-align: center; display: block; width: 100%; background:#aaa; text-transform: uppercase; font-weight: bolder; font-size: 18px;}
+.seo-analysis h4{width: 60%; float: left; font-size: 13px;}
+
+.seo-analysis .analysis-text{font-size: 12px;}
+
+.fa-check-circle{color: green; font-size: 20px; float: left; margin-right: 20px;}
+.fa-times-circle{color: red; font-size: 20px; float: left; margin-right: 20px;}
+.fa-exclamation-circle{color: orange; font-size: 20px; float: left; margin-right: 20px;}
+
+
+/*.seo-analysis {padding-top: 50px;}*/
+
+.seo-analysis:first-child { position:absolute; top:0; }
+
+
+.desc-title i{margin: 0px 10px; font-size: 18px;}

@@ -1,0 +1,329 @@
+<div class="web-scraping">
+ <div class="loader">
+        <div id="floatingCirclesG">
+            <div class="f_circleG" id="frotateG_01">
+            </div>
+            <div class="f_circleG" id="frotateG_02">
+            </div>
+            <div class="f_circleG" id="frotateG_03">
+            </div>
+            <div class="f_circleG" id="frotateG_04">
+            </div>
+            <div class="f_circleG" id="frotateG_05">
+            </div>
+            <div class="f_circleG" id="frotateG_06">
+            </div>
+            <div class="f_circleG" id="frotateG_07">
+            </div>
+            <div class="f_circleG" id="frotateG_08">
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+
+
+
+
+#floatingCirclesG{
+position:relative;
+width:128px;
+height:128px;
+margin: 5% auto;
+-moz-transform:scale(0.6);
+-webkit-transform:scale(0.6);
+-ms-transform:scale(0.6);
+-o-transform:scale(0.6);
+transform:scale(0.6);
+}
+
+.f_circleG{
+position:absolute;
+background-color:#FFFFFF;
+height:23px;
+width:23px;
+-moz-border-radius:12px;
+-moz-animation-name:f_fadeG;
+-moz-animation-duration:1.52s;
+-moz-animation-iteration-count:infinite;
+-moz-animation-direction:linear;
+-webkit-border-radius:12px;
+-webkit-animation-name:f_fadeG;
+-webkit-animation-duration:1.52s;
+-webkit-animation-iteration-count:infinite;
+-webkit-animation-direction:linear;
+-ms-border-radius:12px;
+-ms-animation-name:f_fadeG;
+-ms-animation-duration:1.52s;
+-ms-animation-iteration-count:infinite;
+-ms-animation-direction:linear;
+-o-border-radius:12px;
+-o-animation-name:f_fadeG;
+-o-animation-duration:1.52s;
+-o-animation-iteration-count:infinite;
+-o-animation-direction:linear;
+border-radius:12px;
+animation-name:f_fadeG;
+animation-duration:1.52s;
+animation-iteration-count:infinite;
+animation-direction:linear;
+}
+
+#frotateG_01{
+left:0;
+top:52px;
+-moz-animation-delay:0.57s;
+-webkit-animation-delay:0.57s;
+-ms-animation-delay:0.57s;
+-o-animation-delay:0.57s;
+animation-delay:0.57s;
+}
+
+#frotateG_02{
+left:15px;
+top:15px;
+-moz-animation-delay:0.76s;
+-webkit-animation-delay:0.76s;
+-ms-animation-delay:0.76s;
+-o-animation-delay:0.76s;
+animation-delay:0.76s;
+}
+
+#frotateG_03{
+left:52px;
+top:0;
+-moz-animation-delay:0.95s;
+-webkit-animation-delay:0.95s;
+-ms-animation-delay:0.95s;
+-o-animation-delay:0.95s;
+animation-delay:0.95s;
+}
+
+#frotateG_04{
+right:15px;
+top:15px;
+-moz-animation-delay:1.14s;
+-webkit-animation-delay:1.14s;
+-ms-animation-delay:1.14s;
+-o-animation-delay:1.14s;
+animation-delay:1.14s;
+}
+
+#frotateG_05{
+right:0;
+top:52px;
+-moz-animation-delay:1.33s;
+-webkit-animation-delay:1.33s;
+-ms-animation-delay:1.33s;
+-o-animation-delay:1.33s;
+animation-delay:1.33s;
+}
+
+#frotateG_06{
+right:15px;
+bottom:15px;
+-moz-animation-delay:1.52s;
+-webkit-animation-delay:1.52s;
+-ms-animation-delay:1.52s;
+-o-animation-delay:1.52s;
+animation-delay:1.52s;
+}
+
+#frotateG_07{
+left:52px;
+bottom:0;
+-moz-animation-delay:1.71s;
+-webkit-animation-delay:1.71s;
+-ms-animation-delay:1.71s;
+-o-animation-delay:1.71s;
+animation-delay:1.71s;
+}
+
+#frotateG_08{
+left:15px;
+bottom:15px;
+-moz-animation-delay:1.9s;
+-webkit-animation-delay:1.9s;
+-ms-animation-delay:1.9s;
+-o-animation-delay:1.9s;
+animation-delay:1.9s;
+}
+
+@-moz-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-webkit-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-ms-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@-o-keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+
+@keyframes f_fadeG{
+0%{
+background-color:#000000}
+
+100%{
+background-color:#FFFFFF}
+
+}
+</style>
+<script type="text/javascript">
+
+function getDetail() {
+    var params = {};
+    var genre = "";
+    for(var detail in resScraping) {
+        params[detail] = resScraping[detail];
+    }
+    $.post("/restricted/collection/film/scraping/imdb", {
+            exec : true
+            , obj : JSON.stringify(params)	
+    }).done(function( data ) {
+        jQuery('.see-more[itemprop="genre"] A', data["tpl"].trim()).each(function(){
+            if(genre.length)
+               genre = genre + ","; 
+            genre = genre + jQuery(this).text();
+        });
+        
+        var cast = [];
+        jQuery('.cast_list TR', data["tpl"].trim()).not(':first').each(function(){
+            var act = cast.push({
+                "name"  : jQuery(this).find('[itemprop="actor"] SPAN').text()
+                , "image" : jQuery(this).find('.primary_photo IMG').attr("loadlate")
+            });
+        });
+        
+        var published_split = jQuery('meta[itemprop="datePublished"]', data["tpl"].trim()).attr("content").split("-");
+        var original_title = jQuery('#overview-top .title-extra[itemprop="name"]', data["tpl"].trim()).text().trim();
+        var lenght_min = jQuery('[itemprop="duration"]', data["tpl"].trim()).first().text().trim();
+        if(lenght_min.length && lenght_min.indexOf(" ") > 0) {
+            lenght = lenght_min.split(" ");
+            lenght_min = lenght[0];
+        }
+        var res = resScraping[detail]["detail"].push({
+                "avatar"		: jQuery(".image IMG", data["tpl"].trim()).first().attr("src")
+                , "title"		: jQuery('#overview-top .itemprop[itemprop="name"]', data["tpl"].trim()).first().text()
+                , "original-title"      : original_title.substring(1, original_title.length - (original_title.length - original_title.indexOf(' ('))) 
+                , "director"            : jQuery('[itemprop="director"] [itemprop="name"]', data["tpl"].trim()).text()
+                , "length"              : lenght_min
+                , "genre"               : genre
+                , "published"           : published_split[0]
+                , "rating"              : jQuery('.titlePageSprite.star-box-giga-star', data["tpl"].trim()).text()
+                , "description"		: jQuery('#overview-top [itemprop="description"]', data["tpl"].trim()).text()
+                , "cast"                : cast
+        });
+        resScraping[detail]["loaded"] = true;
+                
+            
+            closeDetail();
+    }); 
+}
+
+function getChoose() {
+    $.post("/restricted/collection/film/scraping/imdb", {
+                exec : true
+                , choose : JSON.stringify(resScraping)	
+    }).done(function( data ) {
+        if(data["tpl"].length)
+        {
+            jQuery(data["tpl"]).appendTo(".web-scraping");
+        }
+            
+    });
+}
+
+function closeDetail() {
+    $.post("/restricted/collection/film/scraping/imdb", {
+                exec : true
+                , film : JSON.stringify(resScraping)	
+    }).done(function( data ) {
+		if(data.url)
+		{
+			window.location.href = data.url;
+		}
+    });
+}
+
+var resScraping = {};
+if("{params}".length)
+{
+    var params = {
+                "url" : "http://www.imdb.com" + "{params}"
+    };
+    $.post("/restricted/collection/film/scraping/imdb", {
+        exec : true
+        , params : JSON.stringify(params)	
+}).done(function( data ) {
+    resScraping["http://www.imdb.com" + "{params}"] = {
+            "title"			: jQuery('#overview-top .itemprop[itemprop="name"]', data["tpl"].trim()).first().text()
+            , "url"         : "http://www.imdb.com" + "{params}"
+            , "detail"		: []
+            , "list_ean"    : "{list_ean}"
+            , "list_title"  : "{list_title}"
+        };
+    getDetail();
+});
+} else
+{
+        var params = {
+                "url" : "http://www.imdb.com/find?q={film_title}&ttype=ft&s=tt"
+        };
+        
+        $.post("/restricted/collection/film/scraping/imdb", {
+                exec : true
+                , params : JSON.stringify(params)	
+        }).done(function( data ) {
+            if(jQuery("TR.findResult", data["tpl"]).length)
+            {
+            jQuery("TR.findResult", data["tpl"].trim()).each(function() {
+            var string_url = jQuery(this).find(".result_text A").attr("href");
+            if(string_url.indexOf("?"))
+                string_url = string_url.substr(0,string_url.indexOf("?"));
+            var title = jQuery(this).find(".result_text A").text().trim();
+            resScraping["http://www.imdb.com" + string_url] = {
+                    "title"			: title
+                    , "url"                     : "http://www.imdb.com" + string_url
+                    , "params"                  : string_url
+                    , "detail"		: []
+                    , "list_ean"    : "{list_ean}"
+                    , "list_title"  : "{list_title}"
+            };	
+            });
+            if(Object.keys(resScraping).length > 1) {
+                getChoose(); 
+            } else {
+                getDetail();
+            }
+        } else {
+            window.location.href = "/restricted/collection/film/modify/manually";
+        }
+});
+}
+</script>

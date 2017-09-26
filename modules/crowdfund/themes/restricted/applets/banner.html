@@ -1,0 +1,64 @@
+<div class="banner wrap-idea{idea_class}">
+	<!--BeginSezTitle-->
+    <h2>{idea_title}</h2>
+    <!--EndSezTitle-->
+    <div class="container-idea"> <!--aggiungere jcarousel per avere effetto traslazione-->
+		<ul>
+		<!--BeginSezIdea-->
+		<li><div class="idea {smart_url} col{col}">
+			<a class="ideatitle" href="{idea_smart_url}"> <h3> {idea_title} </h3> </a>
+			<div class="constant">
+				<div class="equity-container">
+					<!--BeginSezEquity-->
+					<span class="equity"> {idea_equity}</span>
+					<label>{_crowdfund_label_equity}</label>
+					<!--EndSezEquity-->	      
+					<!--BeginSezPledge-->
+					<span class="pledge">{_crowdfund_label_pledge}</span>
+					<!--EndSezPledge-->	      
+					<!--BeginSezDonation-->
+					<span class="donation">{_crowdfund_label_donation}</span>
+					<!--EndSezDonation-->	      
+				</div>
+		
+				<div class="time-container">
+					<span class="time">{idea_expiration}</span>
+					<label>{_crowdfund_label_expiration_day}</label>
+				</div>
+			</div>
+			
+
+			<div class="idea-info">
+				<div class="essentials">
+					<a class="wrap-image" href="{idea_smart_url}">
+						<img class="ideapic" src="{idea_cover}" />
+					</a>
+					<div class="percentage-container"> 
+						<div class="percentage-data">
+							<label> {_crowdfund_label_percentage}: </label>
+							<span> <span class="percentage-value">{idea_goal_perc}</span>&#37;</span>
+						</div>
+					</div>
+		    
+					<div class="offers"> 
+						<span> {idea_currency_symbol} {idea_goal_current} </span><br/>
+						<label>{_crowdfund_label_offers}</label> 
+					</div>
+
+					<div class="goal"> 
+						<label>{_crowdfund_idea_goal}</label><br />
+						<span> {idea_currency_symbol} {idea_goal} </span><br/>                                    
+					</div>
+					<div class="banner-teaser">
+						<p> {idea_teaser} </p>
+					</div>
+				</div>
+	      
+				
+			</div>
+		</div>
+		</li>
+		<!--EndSezIdea-->
+		</ul>
+	</div>
+</div>

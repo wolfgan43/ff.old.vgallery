@@ -1,0 +1,26 @@
+<div class="vg-toolbar">
+	<!--BeginSezAdminActions-->
+	<ul class="vg-layout-actions">
+		<li class="vg-toggle"><a href="javascript:void(0);"  class="{toggle_class}" ></a>
+			<ul>
+			<!--BeginSezAdminAction-->
+				<li><a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{action_path}');" class="{action_class}" title="{action_name}">{action_icon}{action_name}</a></li>
+			<!--EndSezAdminAction-->
+			</ul>
+		</li>
+	</ul>
+	<!--EndSezAdminActions-->
+	<!--BeginSezBlock-->
+	 <ul class="vg-layout vg-{block_type_class}">
+        <li><a class="vg-layout-title" href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{block_modify_path}');" title="{_layout_modify}: {block_name}">{block_icon}{block_name}</a></li>
+        <li class="vg-bar hidden"><a href="javascript:void(0);" class="{toggle_class}"></a></li>
+	</ul>
+	<!--EndSezBlock-->	 
+	<!--BeginSezRestrictedActions-->
+	<ul class="vg-edit-actions">	
+		<!--BeginSezRestrictedAction-->
+		<li><a href="javascript:ff.ffPage.dialog.doOpen('dialogManage', '{restricted_path}');" class="{restricted_class}" title="{restricted_name}">{restricted_icon}{restricted_name}</a></li>
+		<!--EndSezRestrictedAction-->
+	</ul>
+	<!--EndSezRestrictedActions-->
+</div>
