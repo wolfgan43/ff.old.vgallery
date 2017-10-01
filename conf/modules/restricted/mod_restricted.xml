@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configdata>
+	<sections>
+		<top>
+			<topbar default="true"  />
+			<account />
+			<accountpanel />
+			<admin label="false" />
+			<favorite label="false" />
+			<brand />
+			<breadcrumb />
+		</top>
+		<nav>
+			<rightcol />
+		</nav>
+	</sections>
 	<settings>
 		<general label="General">
             <USE_ADMIN_AJAX extended_type="Boolean" label="Use Admin Ajax" default="1" />

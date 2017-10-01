@@ -1470,7 +1470,13 @@ function system_layer_manage($cm)
 	                        );
 	//Anagraph
 	if ((AREA_ANAGRAPH_SHOW_MODIFY || AREA_ANAGRAPH_SHOW_ADDNEW || AREA_ANAGRAPH_SHOW_DELETE)) {
-	    mod_restricted_add_menu_child("anagraph", VG_WS_ECOMMERCE . "/anagraph", ffTemplate::_get_word_by_code("anagraph"), "", null, "", "", VG_WS_ECOMMERCE . "/anagraph/all");
+        mod_restricted_add_menu_child(array(
+            "key"       => "anagraph"
+            , "path"    => VG_WS_ECOMMERCE . "/anagraph"
+            , "label"   => ffTemplate::_get_word_by_code("anagraph")
+            , "redir"   => VG_WS_ECOMMERCE . "/anagraph/all"
+        ));
+
 	    $db->query("
 	                        SELECT 'all' AS ID, 
 	                            " . $db->toSql("anagraph_all") . " AS name
@@ -1500,7 +1506,13 @@ function system_layer_manage($cm)
 	            }
 
 	            do {
-	                mod_restricted_add_menu_sub_element("anagraph", $db->getField("ID")->getValue(), VG_WS_ECOMMERCE . "/anagraph/" . ffCommon_url_rewrite($db->getField("ID")->getValue()), " (" . $db->getField("count_nodes")->getValue() . ") " . ffTemplate::_get_word_by_code($db->getField("name")->getValue()), "", null, null, "" , null, $hide_anagraph_categories);
+                    mod_restricted_add_menu_sub_element(array(
+                        "key"           => "anagraph"
+                        , "subkey"      => $db->getField("ID")->getValue()
+                        , "path"        => VG_WS_ECOMMERCE . "/anagraph/" . ffCommon_url_rewrite($db->getField("ID")->getValue())
+                        , "label"       => " (" . $db->getField("count_nodes")->getValue() . ") " . ffTemplate::_get_word_by_code($db->getField("name")->getValue())
+                        , "hide"        => $hide_anagraph_categories
+                    ));
 	            } while($db->nextRecord());
 	        }
 	    }
@@ -1531,7 +1543,11 @@ function system_layer_manage($cm)
 	                if(!check_mod($file_permission, 1, false))
 	                    continue;
 
-	                mod_restricted_add_menu_child($vg_data_value["name"], VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"]), ffTemplate::_get_word_by_code("vgallery_" . $vg_data_value["name"]));
+                    mod_restricted_add_menu_child(array(
+                        "key"       => $vg_data_value["name"]
+                        , "path"    => VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])
+                        , "label"   => ffTemplate::_get_word_by_code("vgallery_" . $vg_data_value["name"])
+                    ));
 
 	                if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
 	                    || strpos($cm->path_info, VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])) === 0
@@ -1555,11 +1571,23 @@ function system_layer_manage($cm)
 	                                    if(strpos($structure_key, "_by") !== false && strlen($ecommerce_properties["type"]) && strpos($structure_key, $ecommerce_properties["type"]) === false)
 	                                        continue;
 
-	                                    mod_restricted_add_menu_sub_element($vg_data_value["name"], "ecommerce_" . $structure_key, ffCommon_dirname($cm->path_info) . $structure_value, ffTemplate::_get_word_by_code("ecommerce_" . $structure_key), "", null, "[QUERY_STRING]");
+                                        mod_restricted_add_menu_sub_element(array(
+                                            "key"           => $vg_data_value["name"]
+                                            , "subkey"      => "ecommerce_" . $structure_key
+                                            , "path"        => ffCommon_dirname($cm->path_info) . $structure_value
+                                            , "label"       => ffTemplate::_get_word_by_code("ecommerce_" . $structure_key)
+                                            , "params"      => "[QUERY_STRING]"
+                                        ));
 	                                }
 	                            }
 	                        } elseif(constant("AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY")) {
-	                            mod_restricted_add_menu_sub_element($vg_data_value["name"], "ecommerce_settings", ffCommon_dirname($cm->path_info) . "/settings", ffTemplate::_get_word_by_code("ecommerce_settings"), "", null, "[QUERY_STRING]");
+                                mod_restricted_add_menu_sub_element(array(
+                                    "key"           => $vg_data_value["name"]
+                                    , "subkey"      => "ecommerce_settings"
+                                    , "path"        => ffCommon_dirname($cm->path_info) . "/settings"
+                                    , "label"       => ffTemplate::_get_word_by_code("ecommerce_settings")
+                                    , "params"      => "[QUERY_STRING]"
+                                ));
 	                        } else {
 	                            ffRedirect($_REQUEST["ret_url"]);
 	                        }
@@ -1667,14 +1695,13 @@ function system_layer_manage($cm)
 	                                                        ");
 	                        if($db_manage_detail->nextRecord()) {
 	                            do {
-	                                mod_restricted_add_menu_sub_element($vg_data_value["name"]
-	                                , $db_manage_detail->getField("name")->getValue()
-	                                , VG_WS_ECOMMERCE . "/vgallery" . $db_manage_detail->getField("full_path")->getValue()
-	                                , "(" . $db_manage_detail->getField("count_tot_elem")->getValue() . ") " .  str_replace("-", " ", $db_manage_detail->getField("name")->getValue())
-	                                , ""
-	                                , null
-	                                , "[QUERY_STRING]");
-	                                
+                                    mod_restricted_add_menu_sub_element(array(
+                                        "key"           => $vg_data_value["name"]
+                                        , "subkey"      => $db_manage_detail->getField("name")->getValue()
+                                        , "path"        => VG_WS_ECOMMERCE . "/vgallery" . $db_manage_detail->getField("full_path")->getValue()
+                                        , "label"       => "(" . $db_manage_detail->getField("count_tot_elem")->getValue() . ") " .  str_replace("-", " ", $db_manage_detail->getField("name")->getValue())
+                                        , "params"      => "[QUERY_STRING]"
+                                    ));
 	                            } while($db_manage_detail->nextRecord());
 	                        }
 	                    }
@@ -1685,10 +1712,19 @@ function system_layer_manage($cm)
 	}
 	//Discount
 	if(AREA_ECOMMERCE_USE_COUPON || AREA_ECOMMERCE_USE_PROMOTION) {
-	    mod_restricted_add_menu_child("discount", VG_WS_ECOMMERCE . "/discount", ffTemplate::_get_word_by_code("discount"));
-	        
+        mod_restricted_add_menu_child(array(
+            "key"       => "discount"
+            , "path"    => VG_WS_ECOMMERCE . "/discount"
+            , "label"   => ffTemplate::_get_word_by_code("discount")
+        ));
+
 	    if(AREA_ECOMMERCE_USE_COUPON && AREA_COUPON_SHOW_MODIFY) {
-	        mod_restricted_add_menu_sub_element("discount", "coupon", VG_WS_ECOMMERCE . "/discount/coupon", ffTemplate::_get_word_by_code("discount_coupon"));
+            mod_restricted_add_menu_sub_element(array(
+                "key"           => "discount"
+                , "subkey"      => "coupon"
+                , "path"        => VG_WS_ECOMMERCE . "/discount/coupon"
+                , "label"       => ffTemplate::_get_word_by_code("discount_coupon")
+            ));
 	    }
 	}
 	//Operation
@@ -1697,63 +1733,124 @@ function system_layer_manage($cm)
 	                   FROM ecommerce_order
 	                   ORDER BY ecommerce_order.date DESC");
 	if($db->nextRecord()) {
-	    mod_restricted_add_menu_child("operations", VG_WS_ECOMMERCE . "/operations", ffTemplate::_get_word_by_code("operations"), "", null, "", "", VG_WS_ECOMMERCE . "/operations/" . $db->getField("archive", "Text", true));
+        mod_restricted_add_menu_child(array(
+            "key"       => "operations"
+            , "path"    => VG_WS_ECOMMERCE . "/operations"
+            , "label"   => ffTemplate::_get_word_by_code("operations")
+            , "redir"   => VG_WS_ECOMMERCE . "/operations/" . $db->getField("archive", "Text", true)
+        ));
+
 	    do {
 	        $operation_menu[] = $db->getField("archive")->getValue();
 	    } while($db->nextRecord());
 	} else {
-	    mod_restricted_add_menu_child("operations", VG_WS_ECOMMERCE . "/operations", ffTemplate::_get_word_by_code("operations"), "", null, "", "", VG_WS_ECOMMERCE . "/operations/" . "all");
-	}     
+        mod_restricted_add_menu_child(array(
+            "key"       => "operations"
+            , "path"    => VG_WS_ECOMMERCE . "/operations"
+            , "label"   => ffTemplate::_get_word_by_code("operations")
+            , "redir"   => VG_WS_ECOMMERCE . "/operations/" . "all"
+        ));
+	}
 
 	foreach($operation_menu AS $operation_menu_value) {
-	    mod_restricted_add_menu_sub_element("operations"
-	    , $operation_menu_value
-	    , VG_WS_ECOMMERCE . "/operations/" . ffCommon_url_rewrite($operation_menu_value)
-	    , $operation_menu_value
-	    , ""
-	    , null
-	    , $_SERVER["QUERY_STRING"]);
+        mod_restricted_add_menu_sub_element(array(
+            "key"           => "operations"
+            , "subkey"      => $operation_menu_value
+            , "path"        => VG_WS_ECOMMERCE . "/operations/" . ffCommon_url_rewrite($operation_menu_value)
+            , "label"       => $operation_menu_value
+            , "params"      => "[QUERY_STRING]"
+        ));
 	}
 	//Documents
 	if(AREA_ECOMMERCE_SHOW_DOCUMENT) {
-	    mod_restricted_add_menu_child("documents", VG_WS_ECOMMERCE . "/documents", ffTemplate::_get_word_by_code("documents"));
+        mod_restricted_add_menu_child(array(
+            "key"       => "documents"
+            , "path"    => VG_WS_ECOMMERCE . "/documents"
+            , "label"   => ffTemplate::_get_word_by_code("documents")
+        ));
 
 	    if(AREA_BILL_SHOW_MODIFY) {
 	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
-	            mod_restricted_add_menu_sub_element("documents", "bill_sent", VG_WS_ECOMMERCE . "/documents/bill/sent", ffTemplate::_get_word_by_code("bill_sent"));
+                mod_restricted_add_menu_sub_element(array(
+                    "key"           => "documents"
+                    , "subkey"      => "bill_sent"
+                    , "path"        => VG_WS_ECOMMERCE . "/documents/bill/sent"
+                    , "label"       => ffTemplate::_get_word_by_code("bill_sent")
+                ));
+
 	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
-	            mod_restricted_add_menu_sub_element("documents", "bill_received", VG_WS_ECOMMERCE . "/documents/bill/received", ffTemplate::_get_word_by_code("bill_received"));
+                mod_restricted_add_menu_sub_element(array(
+                    "key"           => "documents"
+                    , "subkey"      => "bill_received"
+                    , "path"        => VG_WS_ECOMMERCE . "/documents/bill/received"
+                    , "label"       => ffTemplate::_get_word_by_code("bill_received")
+                ));
 	    }
 	    if(AREA_PAYMENTS_SHOW_MODIFY) {
 	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
-	            mod_restricted_add_menu_sub_element("documents", "payments_sent", VG_WS_ECOMMERCE . "/documents/payments/sent", ffTemplate::_get_word_by_code("payments_sent"));
+                mod_restricted_add_menu_sub_element(array(
+                    "key"           => "documents"
+                    , "subkey"      => "payments_sent"
+                    , "path"        => VG_WS_ECOMMERCE . "/documents/payments/sent"
+                    , "label"       => ffTemplate::_get_word_by_code("payments_sent")
+                ));
+
 	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
-	        mod_restricted_add_menu_sub_element("documents", "payments_received", VG_WS_ECOMMERCE . "/documents/payments/received", ffTemplate::_get_word_by_code("payments_received"));
+                mod_restricted_add_menu_sub_element(array(
+                    "key"           => "documents"
+                    , "subkey"      => "payments_received"
+                    , "path"        => VG_WS_ECOMMERCE . "/documents/payments/received"
+                    , "label"       => ffTemplate::_get_word_by_code("payments_received")
+                ));
 	    }
 	    if(1) {
 	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
-	            mod_restricted_add_menu_sub_element("documents", "contracts_sent", VG_WS_ECOMMERCE . "/documents/contracts/sent", ffTemplate::_get_word_by_code("contracts_sent"));
+                mod_restricted_add_menu_sub_element(array(
+                    "key"           => "documents"
+                    , "subkey"      => "contracts_sent"
+                    , "path"        => VG_WS_ECOMMERCE . "/documents/contracts/sent"
+                    , "label"       => ffTemplate::_get_word_by_code("contracts_sent")
+                ));
+
 	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
-	            mod_restricted_add_menu_sub_element("documents", "contracts_received", VG_WS_ECOMMERCE . "/documents/contracts/received", ffTemplate::_get_word_by_code("contracts_received"));
+                mod_restricted_add_menu_sub_element(array(
+                    "key"           => "documents"
+                    , "subkey"      => "contracts_received"
+                    , "path"        => VG_WS_ECOMMERCE . "/documents/contracts/received"
+                    , "label"       => ffTemplate::_get_word_by_code("contracts_received")
+                ));
 	    }
 	}
 	//Reports
 	if(AREA_ECOMMERCE_SHOW_REPORT && AREA_REPORT_SHOW_MODIFY) {
-	    mod_restricted_add_menu_child("reports", VG_WS_ECOMMERCE . "/reports", ffTemplate::_get_word_by_code("reports"));
-	    
+        mod_restricted_add_menu_child(array(
+            "key"       => "reports"
+            , "path"    => VG_WS_ECOMMERCE . "/reports"
+            , "label"   => ffTemplate::_get_word_by_code("reports")
+        ));
+
 	    if(is_dir(FF_DISK_PATH . "/conf" . GALLERY_PATH_ECOMMERCE . "/reports")) {
 	        $reports = glob(FF_DISK_PATH . "/conf" . GALLERY_PATH_ECOMMERCE . "/reports/*", GLOB_ONLYDIR);
 	        if(is_array($reports) && count($reports)) {
 	            foreach($reports AS $reports_dir) {
 	                $report_dirname = ffGetFilename($reports_dir);
-	                mod_restricted_add_menu_sub_element("reports", $report_dirname, VG_WS_ECOMMERCE . "/reports/" . $report_dirname, ffTemplate::_get_word_by_code("reports_" . strtolower($report_dirname)));
+                    mod_restricted_add_menu_sub_element(array(
+                        "key"           => "reports"
+                        , "subkey"      => $report_dirname
+                        , "path"        => VG_WS_ECOMMERCE . "/reports/" . $report_dirname
+                        , "label"       => ffTemplate::_get_word_by_code("reports_" . strtolower($report_dirname))
+                    ));
 	            }
 	        }
 	    }
 	}
 	//Shipping
 	if(AREA_ECOMMERCE_USE_SHIPPING && AREA_ECOMMERCE_SHIPPINGPRICE_SHOW_MODIFY) {
-	    mod_restricted_add_menu_child("shipping", VG_WS_ECOMMERCE . "/shipping", ffTemplate::_get_word_by_code("shipping"));
+        mod_restricted_add_menu_child(array(
+            "key"       => "shipping"
+            , "path"    => VG_WS_ECOMMERCE . "/shipping"
+            , "label"   => ffTemplate::_get_word_by_code("shipping")
+        ));
 	}
 
 	//mod_restricted_add_menu_child("back", FF_SITE_PATH . "/", ffTemplate::_get_word_by_code("backtosite"));
