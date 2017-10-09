@@ -252,9 +252,10 @@ function system_layer_gallery($oPage = null)
 //                $serial_admin_menu = json_encode($admin_menu);
  //               $oPage->tpl_layer[0]->set_var("admin", '<input class="ajaxcontent" type="hidden" value="'. FF_SITE_PATH . VG_SITE_FRAME . (strpos($ret_url, "?") ? substr($ret_url, 0, strpos($ret_url, "?")) : $ret_url) . "?sid=" . set_sid($serial_admin_menu) . '" />');
             }
-        } 
+        }
+        if($oPage->tpl_layer)
+            $oPage->tpl_layer[0]->set_var("contents", system_parse_page($template));
 
-        $oPage->tpl_layer[0]->set_var("contents", system_parse_page($template));
     } else {
         check_function("system_set_media");
 

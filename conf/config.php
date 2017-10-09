@@ -107,8 +107,7 @@
 	$ff_global_setting["ffPageNavigator"]["framework_css"]["perPage"]["class"] = "pagenav__perPage";
 	$ff_global_setting["ffPageNavigator"]["framework_css"]["perPage"]["col"] = null;*/
 
-	$ff_global_setting["ffGrid"]["framework_css"]["navigatorTop"] = array( "col" => null, "util" => "clear"); 
-	$ff_global_setting["ffGrid"]["framework_css"]["navigatorBottom"] = array( "col" => null, "util" => "clear"); 
+
 
 	$ff_global_setting["ffPageNavigator"]["with_choice"] = true;
 	$ff_global_setting["ffPageNavigator"]["with_totelem"] = true;
@@ -124,8 +123,7 @@
 
 	$ff_global_setting["ffGrid"]["symbol_valuta"] = "";    
 	$ff_global_setting["ffGrid"]["switch_row_class"]["display"] = true;
-	$ff_global_setting["ffGrid"]["switch_row_class"]["first"] = "odd";
-	$ff_global_setting["ffGrid"]["switch_row_class"]["second"] = "even";
+
 	$ff_global_setting["ffGrid"]["open_adv_search"] = "never";
 	$ff_global_setting["ffGrid"]["buttons_options"]["search"] = array(
 	                                                                  "display"     => true
@@ -143,10 +141,10 @@
 
 	
 	
-	$ff_global_setting["ffWidget_actex"]["innerURL"] 					= null;
+	/*$ff_global_setting["ffWidget_actex"]["innerURL"] 					= null;
 	$ff_global_setting["ffWidget_activecomboex"]["innerURL"] 			= null;
 	$ff_global_setting["ffWidget_autocomplete"]["innerURL"] 			= null;
-	$ff_global_setting["ffWidget_autocompletetoken"]["innerURL"] 		= null;
+	$ff_global_setting["ffWidget_autocompletetoken"]["innerURL"] 		= null;*/
 	//if(is_file(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/conf/admin." . FF_PHP_EXT))
 //		require_once(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/conf/admin." . FF_PHP_EXT);
 

@@ -24,6 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 function get_structure_data($data, $structure, $sep = "-", $db = null) {
+    $res = null;
     if(is_array($structure) && count($structure)) {
         foreach($structure AS $structure_value) {
             if($sep === false) {
@@ -49,6 +50,7 @@ function get_structure_data($data, $structure, $sep = "-", $db = null) {
 }
 
 function normalize_from_db($source, $url = null, $db = null) {
+    $res = null;
 	$convmap = array(0x0, 0xFFFF, 0, 0xFFFF);
 	$source = mb_decode_numericentity($source, $convmap, "UTF-8");
 
@@ -61,7 +63,7 @@ function normalize_from_db($source, $url = null, $db = null) {
 	if($db !== null) {
 		static $char_map;
 		
-		if(!is_array($map) && !count($map))
+		if(!is_array($char_map) && !count($char_map))
 			$char_map = character_set_map_decode($db);
 
 		$source = strtr($source, $char_map["encode"], $char_map["decode"]);

@@ -28,7 +28,8 @@
 
 		if(is_file(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT)) {
 			require(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT);
-			if(is_array($schema))	
+            /** @var include $schema */
+            if(is_array($schema))
 				$res = $schema;
 		}
 		if($load_module) {

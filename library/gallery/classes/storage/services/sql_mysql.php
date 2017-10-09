@@ -41,7 +41,7 @@ class storageMysql
         $this->setData($data);
 
         if (!class_exists("ffDB_Sql"))
-            require_once($this->storage->getAbsPath("/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php"));
+            require_once($this->storage->getAbsPathPHP("/ff/classes/ffDb_Sql/ffDb_Sql_mysqli"));
 
         $this->device = new ffDB_Sql();
         //$this->device->on_error = "ignore";
@@ -69,9 +69,9 @@ class storageMysql
 
         if (!$this->config["name"])
         {
-            if (is_file($this->storage->getAbsPath("/conf/gallery/config/db." . FF_PHP_EXT)))
+            if (is_file($this->storage->getAbsPathPHP("/conf/gallery/config/db")))
             {
-                require_once($this->storage->getAbsPath("/conf/gallery/config/db." . FF_PHP_EXT));
+                require_once($this->storage->getAbsPathPHP("/conf/gallery/config/db"));
 
                 $this->config["host"] = (defined("FF_DATABASE_HOST")
                     ? FF_DATABASE_HOST

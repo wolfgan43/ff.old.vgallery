@@ -25,7 +25,133 @@
  */
 	define("CACHE_DISK_PATH", dirname(dirname(dirname(__DIR__))));
 	define("CACHE_LAST_VERSION", 0);
-	
+
+    if(!function_exists("sys_getloadavg"))
+    {
+        function sys_getloadavg($windows = false){
+            $os=strtolower(PHP_OS);
+            if(strpos($os, 'win') === false){
+                if(file_exists('/proc/loadavg')){
+                    $load = file_get_contents('/proc/loadavg');
+                    $load = explode(' ', $load, 1);
+                    $load = $load[0];
+                }elseif(function_exists('shell_exec')){
+                    $load = explode(' ', `uptime`);
+                    $load = $load[count($load)-1];
+                }else{
+                    return false;
+                }
+
+                if(function_exists('shell_exec'))
+                    $cpu_count = shell_exec('cat /proc/cpuinfo | grep processor | wc -l');
+
+                return array('load'=>$load, 'procs'=>$cpu_count);
+            }elseif($windows){
+                if(class_exists('COM')){
+                    $wmi=new COM('WinMgmts:\\\\.');
+                    $cpus=$wmi->InstancesOf('Win32_Processor');
+                    $load=0;
+                    $cpu_count=0;
+                    if(version_compare('4.50.0', PHP_VERSION) == 1){
+                        while($cpu = $cpus->Next()){
+                            $load += $cpu->LoadPercentage;
+                            $cpu_count++;
+                        }
+                    }else{
+                        foreach($cpus as $cpu){
+                            $load += $cpu->LoadPercentage;
+                            $cpu_count++;
+                        }
+                    }
+                    return array('load'=>$load, 'procs'=>$cpu_count);
+                }
+                return false;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * @param $string
+     * @param string $filename
+     */
+    function cache_writeLog($string, $filename = "log")
+    {
+        clearstatcache();
+
+        $file = dirname(__FILE__) . '/cache/' . $filename . '.txt';
+        if(!is_file($file)) {
+            $set_mod = true;
+        }
+        if($handle = @fopen($file, 'a'))
+        {
+            if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
+            {
+                $i18n_error = true;
+            }
+            @fclose($handle);
+
+            if($set_mod)
+                chmod($file, 0777);
+        }
+    }
+
+
+    /**
+     * @param $destination
+     * @param null $http_response_code
+     * @param null $request_uri
+     */
+    function cache_do_redirect($destination, $http_response_code = null, $request_uri = null)
+    {
+        if($http_response_code === null)
+            $http_response_code = 301;
+        if($request_uri === null)
+            $request_uri = $_SERVER["REQUEST_URI"];
+
+        //system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
+        if(defined("DEBUG_MODE")) {
+            cache_writeLog(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
+        }
+
+        cache_send_header_content(false, false, false, false);
+
+        if(strpos($destination, "/") !== 0)
+            $destination = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $destination;
+
+        header("Location: " . $destination, true, $http_response_code);
+        exit;
+    }
+
+
+    /**
+     * @param $path_info
+     * @param null $query
+     * @param null $hostname
+     */
+    function cache_check_redirect($path_info, $query = null, $hostname = null)
+    {
+        if($hostname === null)
+            $hostname = $_SERVER["HTTP_HOST"];
+
+        if($query === null)
+            $query = $_SERVER["QUERY_STRING"];
+
+        $request_uri = $path_info;
+        if(strlen($query))
+            $request_uri .= "?" . $query;
+
+        if(is_file(__DIR__ . "/cache/redirect/" . $hostname . ".php")) {
+            require(__DIR__ . "/cache/redirect/" . $hostname . ".php");
+
+            /** @var include $r */
+            if($r[$request_uri]) {
+                cache_do_redirect($r[$request_uri]["dst"], $r[$request_uri]["code"]);
+            }
+        }
+    }
+
+
     function cache_get_page_by_id($id) {
     	$page = cache_get_settings("page");
     	
@@ -449,7 +575,7 @@
                     cache_token_set_session_cookie($objToken);
                 }
 
-				do_redirect($_SERVER["HTTP_HOST"] . trim(preg_replace('/([?&])'.$token_user.'=[^&]+(&|$)/','$1',$_SERVER["REQUEST_URI"]), "?"));
+                cache_do_redirect($_SERVER["HTTP_HOST"] . trim(preg_replace('/([?&])'.$token_user.'=[^&]+(&|$)/','$1',$_SERVER["REQUEST_URI"]), "?"));
             }
 			
 			
@@ -755,8 +881,8 @@
                 require_once(CACHE_DISK_PATH . "/library/gallery/process/html_page_error.php");
                 
                 $res = get_international_settings_path($page["user_path"], FF_LOCALE);
-                
-				do_redirect(normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix));
+
+                cache_do_redirect(normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix));
                 //cache_send_header_content(null, false, false, false);
                 //header('Location:' . normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix), true, 301);
                 //exit;        
@@ -1945,7 +2071,7 @@
                         if(strpos($src, "(") !== false && strpos($action, "$") !== false)
                             $redirect = preg_replace("#" . $src . "#i", $action, $path_info);
 
-                        do_redirect($_SERVER["HTTP_HOST"] . $redirect);
+                        cache_do_redirect($_SERVER["HTTP_HOST"] . $redirect);
                     }
                 }
             }
@@ -2074,13 +2200,13 @@
 	        } elseif(isset($request["valid"])) { 
 	            $path_info = $_SERVER["PATH_INFO"];
 	            if($path_info == "/index")
-	                $path_info = "";           
+	                $path_info = "";
 
-	            do_redirect($_SERVER["HTTP_HOST"] . $path_info . $request["valid"]);
+                cache_do_redirect($_SERVER["HTTP_HOST"] . $path_info . $request["valid"]);
 	        }
 			//necessario XHR perche le request a servizi esterni path del domain alias non triggerano piu			
 	        if(!$save_path && $cache_params["redirect"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {// Evita pagine duplicate quando i link vengono gestiti dagli alias o altro
-        		do_redirect($cache_params["redirect"] . $request["valid"]);
+                cache_do_redirect($cache_params["redirect"] . $request["valid"]);
 			}
 		}
 
@@ -2097,7 +2223,7 @@
 				$cache_media["theme"] = "site";
 
 				if(strpos($_SERVER["REQUEST_URI"], $cache_media["url"]) === 0) {
-					do_redirect(str_replace("/media", $_SERVER["HTTP_HOST"] . "/cm/showfiles.php", $_SERVER["REQUEST_URI"]), 307);
+                    cache_do_redirect(str_replace("/media", $_SERVER["HTTP_HOST"] . "/cm/showfiles.php", $_SERVER["REQUEST_URI"]), 307);
 				}
 
                 cache_http_response_code(404);

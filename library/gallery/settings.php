@@ -193,10 +193,8 @@
   	, "api" => false
   	, "type" => "html"
   	, "theme" => "admin"
-  );   
-    
-    
-  
+  );
+
 /**
 *  Frontend Path
 */
@@ -248,10 +246,21 @@
   	, "type" => "html"
   	, "session" => false
   	, "exit" => true 
-  ); 
-  
-  
-  $schema["page"]["/"] = array(
+  );
+
+  $schema["page"]["/dialog"] = array(
+        "name" => "dialog"
+        , "cache" => true
+        , "cache_path" => null
+        , "primary" => true
+        , "restricted" => true
+        , "api" => false
+        , "type" => "html"
+        , "seo" => false
+        , "theme" => "site"
+    );
+
+$schema["page"]["/"] = array(
   	"name" => "public"
   	, "cache" => true 	
   	, "cache_client" => "noxhr"			

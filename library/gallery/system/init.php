@@ -1298,16 +1298,18 @@ function system_init_on_before_routing($cm)
     			, true
     			, true
     		);
-    		$cm->router->addRule(
-    			"^/" . $globals->page["name"]. "(.*)"
-    			, array(
-    				"module" => "restricted"
-    				, "url"=> '/layout$0'
-    			)
-    			, cmRouter::PRIORITY_HIGH
-    			, true
-    			, true
-    		);
+    		if(!$cm->isXHR()) {
+                $cm->router->addRule(
+                    "^/" . $globals->page["name"] . "(.*)"
+                    , array(
+                        "module" => "restricted"
+                    , "url" => '/layout$0'
+                    )
+                    , cmRouter::PRIORITY_HIGH
+                    , true
+                    , true
+                );
+            }
     		if($globals->page["name"] == "ecommerce") {
     		
 			} elseif(strpos($globals->page["user_path"], "/" . $globals->page["name"] . "/addons") === 0) {

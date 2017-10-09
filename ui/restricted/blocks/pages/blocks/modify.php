@@ -1305,7 +1305,8 @@ $oField->actex_on_change = 'function(obj, old_value, action) { if(action == 'cha
                                                     SELECT ID
                                                     FROM layout_settings_rel
                                                     WHERE layout_settings_rel.ID_layout_settings = layout_settings.ID
-                                                    AND layout_settings_rel.ID_layout = [ID_FATHER]
+                                                      AND layout_settings_rel.ID_layout = [ID_FATHER]
+                                                    GROUP BY layout_settings_rel.ID_layout_settings
                                                 ) 
                                                 AS ID
                                                 , [ID_FATHER] AS ID_layout
@@ -1317,7 +1318,8 @@ $oField->actex_on_change = 'function(obj, old_value, action) { if(action == 'cha
                                                         SELECT value
                                                         FROM layout_settings_rel
                                                         WHERE layout_settings_rel.ID_layout_settings = layout_settings.ID
-                                                        AND layout_settings_rel.ID_layout = [ID_FATHER]
+                                                          AND layout_settings_rel.ID_layout = [ID_FATHER]
+                                                        GROUP BY layout_settings_rel.ID_layout_settings
                                                     ) 
                                                 AS value
                                                 , extended_type.name AS extended_type

@@ -23,10 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if(!defined("FF_PHP_EXT"))
-    define("FF_PHP_EXT", "php");
-
-require_once(__DIR__ . "/../vgCommon." . FF_PHP_EXT);
+require_once(__DIR__ . "/../vgCommon.php");
 
 class Notifier extends vgCommon
 {
@@ -567,7 +564,7 @@ class Notifier extends vgCommon
         if($service)
         {
             $controller                                                 = "notifier" . ucfirst($service);
-            require_once($this->getAbsPath("/notifier/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
+            require_once($this->getAbsPathPHP("/notifier/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
@@ -587,7 +584,7 @@ class Notifier extends vgCommon
         if($service)
         {
             $controller                                                 = "notifier" . ucfirst($service);
-            require_once($this->getAbsPath("/notifier/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
+            require_once($this->getAbsPathPHP("/notifier/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
@@ -617,11 +614,11 @@ class Notifier extends vgCommon
     }
     private function loadConfig()
     {
-        require_once($this->getAbsPath("/storage/Storage." . FF_PHP_EXT, true));
-        require_once($this->getAbsPath("/mailer/Mailer." . FF_PHP_EXT, true));
+        require_once($this->getAbsPathPHP("/storage/Storage", true));
+        require_once($this->getAbsPathPHP("/mailer/Mailer", true));
 
-        if(is_file($this->getAbsPath("/conf/gallery/config/notifier.php"))) {
-            require_once($this->getAbsPath("/conf/gallery/config/notifier.php"));    
+        if(is_file($this->getAbsPathPHP("/conf/gallery/config/notifier"))) {
+            require_once($this->getAbsPathPHP("/conf/gallery/config/notifier"));
             
             if(defined("NOTIFY_SQL_NAME") && NOTIFY_SQL_NAME)
             {

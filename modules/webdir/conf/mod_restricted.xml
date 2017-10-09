@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<configdata>
-	<menu>
-		<webdir path="/restricted/webdir" label="_webdir" redir="/restricted/webdir/company">
-            <company path="/restricted/webdir/company" label="_webdir_company" />
-			<category path="/restricted/webdir/macro-category" label="_webdir_category" />
-        </webdir>
-	</menu>
-</configdata>

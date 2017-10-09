@@ -214,46 +214,6 @@
 			<url>/services/janrain_auth</url>
 		</destination>
 	</rule>
-	<!--<rule>
-		<priority>VERY_HIGH</priority>
-		<source>^/admin(.*)</source>
-		<destination>
-			<module>security</module>
-			<url>/auth$0</url>
-		</destination>
-        <accept_path_info />
-        <process_next />
-	</rule>
-    <rule>
-        <priority>VERY_HIGH</priority>
-        <source>^/builder(.*)</source>
-        <destination>
-            <module>security</module>
-            <url>/auth$0</url>
-        </destination>
-        <accept_path_info />
-        <process_next />
-    </rule>
-    <rule>
-        <priority>VERY_HIGH</priority>
-        <source>^/restricted(.*)</source>
-        <destination>
-            <module>security</module>
-            <url>/auth$0</url>
-        </destination>
-        <accept_path_info />
-        <process_next />
-    </rule>    
- 	<rule>
-        <priority>VERY_HIGH</priority>
-        <source>^/ecommerce(.*)</source>
-        <destination>
-            <module>security</module>
-            <url>/auth$0</url>
-        </destination>
-        <accept_path_info />
-        <process_next />
-    </rule>  -->  
     <rule id="mod_sec_oauth2">
 		<priority>NORMAL</priority>
 		<source>^/login/social/oauth2/(.+)</source>

@@ -1,116 +1,77 @@
-<?php 
-    define("DEBUG_MODE", true);
-   // define("TRACE_VISITOR", true);
+<?php
+/**
+ * CONFIG
+ */
 
-    function profiling_stats($start = true) {
-         static $res;
-     
-        $ru = getrusage();
-         if($start) {
-             $res["mem"] = memory_get_usage(true); 
-             $res["mem_peak"]= memory_get_peak_usage(true);
-             $res["cpu"] = $ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec'];
-         } else {
-             $res["mem"] = number_format(memory_get_usage(true) - $res["mem"], 0, ',', '.');
-             $res["mem_peak"] = number_format(memory_get_peak_usage(true) - $res["mem_peak"], 0, ',', '.');
-            $res["cpu"] = number_format(abs(($ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec']) - $res["cpu"]), 0, ',', '.'); 
-            
-            return $res;
-         }
-    }
-    
-    function cache_writeLog($string, $filename = "log") {
-        clearstatcache();
+//require_once(__DIR__ . "/config.php");
 
-        $file = dirname(__FILE__) . '/cache/' . $filename . '.txt';  
-        if(!is_file($file)) {
-            $set_mod = true;
-        }
-        if($handle = @fopen($file, 'a')) 
-        {
-            if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
-            {
-                $i18n_error = true;
-            }
-            @fclose($handle);
 
- 			if($set_mod)
-            	chmod($file, 0777);            
-        }
+/**
+ * PROFILING
+ */
 
-       
-    } 
-     
-    if(defined("DEBUG_MODE") && isset($_REQUEST["__debug__"]))
-        profiling_stats();
-    
-    error_reporting((E_ALL ^ E_NOTICE ^ E_DEPRECATED) | E_STRICT);
-    @ini_set("display_errors", true);
+/**
+ * @param bool $start
+ * @return mixed
+ */
+function profiling_stats($start = true) {
+     static $res;
 
-    function check_redirect($path_info, $query = null, $hostname = null) {
-        if($hostname === null)
-            $hostname = $_SERVER["HTTP_HOST"];
-            
-        if($query === null)
-            $query = $_SERVER["QUERY_STRING"];
-        
-        $request_uri = $path_info;
-        if(strlen($query))
-            $request_uri .= "?" . $query;        
-        
-        if(is_file(__DIR__ . "/cache/redirect/" . $hostname . ".php")) {
-            require(__DIR__ . "/cache/redirect/" . $hostname . ".php");
+    $ru = getrusage();
+     if($start) {
+         $res["mem"] = memory_get_usage(true);
+         $res["mem_peak"]= memory_get_peak_usage(true);
+         $res["cpu"] = $ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec'];
+     } else {
+         $res["mem"] = number_format(memory_get_usage(true) - $res["mem"], 0, ',', '.');
+         $res["mem_peak"] = number_format(memory_get_peak_usage(true) - $res["mem_peak"], 0, ',', '.');
+        $res["cpu"] = number_format(abs(($ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec']) - $res["cpu"]), 0, ',', '.');
 
-            /** @var include $r */
-            if($r[$request_uri]) {
-                do_redirect($r[$request_uri]["dst"], $r[$request_uri]["code"]);
-            }
-        }
-    }
-    function do_redirect($destination, $http_response_code = null, $request_uri = null) {
-        if($http_response_code === null)
-            $http_response_code = 301;
-        if($request_uri === null)
-            $request_uri = $_SERVER["REQUEST_URI"];
+        return $res;
+     }
+}
 
-        //system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
-        if(defined("DEBUG_MODE")) {
-            cache_writeLog(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
-        }
 
-        cache_send_header_content(false, false, false, false); 
+if(defined("DEBUG_MODE") && isset($_REQUEST["__debug__"]))
+    profiling_stats();
 
-		if(strpos($destination, "/") !== 0)
-			$destination = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $destination;
-		
-        header("Location: " . $destination, true, $http_response_code);
-        exit;        
-    }
 
-    //if(!defined("DISABLE_CACHE"))
-    //if(!(DEBUG_MODE && isset($_REQUEST["__nocache1__"])))
-	require_once(__DIR__ . "/library/gallery/system/cache.php");
-    check_static_cache_page(); 
+/**
+ * ERROR
+ */
+error_reporting((E_ALL ^ E_NOTICE ^ E_WARNING ^ E_DEPRECATED) | E_STRICT);
+@ini_set("display_errors", true);
 
-    $path_info = $_SERVER["PATH_INFO"];
-    if($path_info == "/index")
-        $path_info = "";
+/**
+ * TIMEZONE
+ */
+date_default_timezone_set("Europe/Rome");
 
-    if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest")
-        check_redirect($path_info);     
+// ***************
+//  FILE HANDLING
+// ***************
+@umask(0);
 
-   /****
-   * Log File Without Cache
-   */
-   if(defined("DEBUG_MODE")) {
-        cache_writeLog($path_info);             
-   }    
-  // die();    
-   if(!defined("DISABLE_CACHE")) {
-        define("FF_ERROR_HANDLER_HIDE", true);
-        define("FF_ERROR_HANDLER_CUSTOM_TPL", "/themes/gallery/contents/error_handler.html");
-        define("FF_ERROR_HANDLER_MINIMAL", "/themes/gallery/contents/error_handler.html");
-   }
 
-    require_once(__DIR__ . "/cm/main.php");
-?>
+/**
+ * Load cache System
+ */
+require_once(__DIR__ . "/library/gallery/system/cache.php");
+check_static_cache_page();
+
+
+$path_info = $_SERVER["PATH_INFO"];
+if($path_info == "/index")
+    $path_info = "";
+
+if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest")
+    cache_check_redirect($path_info);
+
+/**
+* Log File Without Cache
+*/
+if(defined("DEBUG_MODE"))
+    cache_writeLog($path_info);
+
+
+require_once(__DIR__ . "/cm/main.php");

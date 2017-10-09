@@ -23,10 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if(!defined("FF_PHP_EXT"))
-    define("FF_PHP_EXT", "php");
-
-require_once(__DIR__ . "/../vgCommon." . FF_PHP_EXT);
+require_once(__DIR__ . "/../vgCommon.php");
 
 class Storage extends vgCommon
 {
@@ -265,7 +262,7 @@ class Storage extends vgCommon
         if($service)
         {
             $controller                                                 = "storage" . ucfirst($service);
-            require_once($this->getAbsPath("/storage/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
+            require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
@@ -388,7 +385,7 @@ class Storage extends vgCommon
         if($service)
         {
             $controller                                                 = "storage" . ucfirst($service);
-            require_once($this->getAbsPath("/storage/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
+            require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
@@ -485,7 +482,7 @@ class Storage extends vgCommon
         if($service)
         {
             $controller = "storage" . ucfirst($service);
-            require_once($this->getAbsPath("/storage/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
+            require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
 
             $this->device = new Filemanager();
 

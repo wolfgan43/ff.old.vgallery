@@ -23,11 +23,8 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if(!defined("FF_PHP_EXT"))
-    define("FF_PHP_EXT", "php");
 
-require_once(__DIR__ . "/../vgCommon." . FF_PHP_EXT);
-
+require_once(__DIR__ . "/../vgCommon.php");
 
 class Anagraph extends vgCommon
 {
