@@ -151,7 +151,7 @@
 }
 
 
-.vg-edit-actions { float:right; white-space:nowrap; }
+.vg-edit-actions { float:right;  text-align:right; white-space:nowrap; }
 .vg-edit-actions LI { display:inline-block; max-width:100%}
 
 .vg-edit-actions LI:nth-child(1):nth-last-child(2), 

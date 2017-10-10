@@ -1,0 +1,43 @@
+<div>
+    <h1 class="dialogTitle admin-title content">{addnew_icon}{_addnew_gallery}</h1>
+	<input type="hidden" id="upload_ret_url" name="upload_ret_url" value="{upload_ret_url}" />
+	
+    <!--BeginSezUpload-->
+        <input type="hidden" id="max_upload" name="max_upload" value="{max_upload}" />
+        <input type="hidden" id="file_ext" name="file_ext" value="{file_ext}" />
+        <input type="hidden" id="file_limit" name="file_limit" value="{file_limit}" />
+        <input type="hidden" id="path_upload" name="path_upload" value="{path_upload}" />
+        <input type="hidden" id="type_upload" name="type_upload" value="{type_upload}" />
+    <!--EndSezUpload-->
+   
+    <!--<p>{description}</p>-->
+
+    <!--BeginSezParent-->
+    <div class="uploadfy-field">
+        <label>{parent_label}&nbsp;</label>{parent}
+    </div>
+    <!--EndSezParent-->
+    
+    <!--BeginSezExecute-->
+    <div class="uploadfy-object">
+        <label>{name_label}&nbsp;</label>{name}
+    </div>
+	<!--EndSezExecute-->
+
+    <!--BeginSezError-->
+    <p class="error">{strError}</p>
+    <!--EndSezError-->
+    
+	<div class="actions">
+    {insert}{back}
+	</div>
+	
+</div>
+
+<!--BeginSectFooters-->
+<script type="text/javascript">
+	ff.pluginAddInit("jquery.fn.uploadify", function () {
+		//ff.cms.fn.uploadifyDialogInit();
+	});
+</script>
+<!--EndSectFooters-->

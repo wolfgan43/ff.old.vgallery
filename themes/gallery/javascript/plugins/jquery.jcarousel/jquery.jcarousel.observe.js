@@ -4,8 +4,7 @@ ff.cms.fn.jcarousel = function(targetid) {
 		targetid = targetid + " ";
 
 	jQuery(targetid + '.jcarousel').closest('UL').hide();
-
-	ff.load("jquery.plugins.jcarousel", function() { 
+	ff.pluginLoad("jquery.jcarousel", "/themes/library/plugins/jquery.jcarousel/jquery.jcarousel.js", function() { 
 	    jQuery(targetid + '.jcarousel').closest('UL').show().jcarousel({
 			start: 2,
 			auto: 3,
@@ -25,5 +24,5 @@ ff.cms.fn.jcarousel = function(targetid) {
 				});
 			}
 		});
-	});
+	}, false);
 };

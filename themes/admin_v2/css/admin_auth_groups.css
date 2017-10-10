@@ -1,0 +1,37 @@
+#Groups {
+	
+}
+#Groups .row {
+	padding: 4px 0;
+	border-bottom: 1px solid #e5e5e5;
+	margin: 0;
+}
+#Groups .negative {
+	background: #f7f7f7;
+}
+#Groups .row A {
+	line-height: 24px;
+}
+#Groups .ffButton {
+	float: right;
+}
+#Groups .gid {
+	display: none;
+}
+#Groups .name A {
+	width: 300px;
+	display: block;
+	float: left;
+	padding: 0 0 0 5px;
+	font-size: 14px;
+}
+#Groups .registration A {
+	width: 120px;
+	display: block;
+	float: left;
+}
+#Groups .level A {
+	width: 100px;
+	display: block;
+	float: left;
+}

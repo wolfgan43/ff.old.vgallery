@@ -29,6 +29,36 @@
 	Forms not define any code in this file, only manage it.
 */
 
+function ffDB_Sql_on_factory_done($db) {
+	if(defined("DB_CHARACTER_SET") && strlen(constant("DB_CHARACTER_SET")) 
+		&& defined("DB_COLLATION") && strlen(constant("DB_COLLATION"))) {
+	
+		$db->charset = DB_CHARACTER_SET;
+		$db->charset_names = DB_CHARACTER_SET;
+		$db->charset_collation = DB_COLLATION;
+	}
+}
+
+function ffGrid_export_on_factory_export($page, $disk_path, $theme, $variant) {
+	//ffErrorHandler::raise("ASD", E_USER_ERROR, null, get_defined_vars());
+	$base_path = $disk_path . "/themes/responsive";
+	$class_name = "ffGrid_xls";
+
+	$base_path .= "/ff/ffGrid/" . $class_name . "." . FF_PHP_EXT;
+	
+	return array("class_name" => $class_name
+				, "base_path" => $base_path
+	);
+}
+
+function ffGrid_on_before_process_interface_export($component) {
+	$arrAction = explode("_", $_REQUEST["frmAction"]);
+	if($arrAction[0] != $component->id) {
+		return false;
+	}
+}
+
+
 function cache_set($ID, $tbl = null) {
 	$globals = ffGlobals::getInstance("gallery");
 	
@@ -75,84 +105,90 @@ function set_cache_data($tbl, $ID, $modal = null, $value = null) {
 	}
 }
 
-function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_path = null, $location = "") 
-{
+
+function request_info($cm) {
     $globals = ffGlobals::getInstance("gallery");
     
-    $tmp_path = $path;
-    $real_path = NULL;
-
-    if(strlen($location))
-    	$location = "/" . strtolower($location);
-	
-	if(is_array($tpl_data))
-	{
-		$tpl_prefix 		= $tpl_data["prefix"];
-		$tpl_custom_name 	= $tpl_data["custom"];
-		$tpl_base_name 		= $tpl_data["base"];
+	$request = get_session("request_info");
+	if(!strlen($request))
+		$request = get_session("request_vgallery");
 		
-		if(!$sub_path)
-			$sub_path = $tpl_data["path"];
+	if($request) 
+	{
+        if(strlen($globals->settings_path)) {
+            $actual_path = $globals->settings_path;
+        } else {
+	        $actual_path = get_pathinfo(false);
+        }
 
-        $tpl_type			= "custom";
-	}
-	else {
-		$tpl_custom_name = $tpl_data;
-		$tpl_base_name = $tpl_data;
-	}
+	    if(strpos($actual_path, USER_RESTRICTED_PATH) === false
+	        &&
+	        strpos($actual_path, VG_SITE_MOD_SEC_LOGIN) === false
+	        &&
+	        strpos($actual_path, VG_SITE_UPDATER) === false
+	        &&
+	        strpos($actual_path, VG_SITE_ERROR) === false
+	        &&
+	        strpos($actual_path, VG_SITE_VGALLERY) === false
+	        &&
+	        strpos($actual_path, $request_info) === false
+	    )   
+	    {
+	        ffRedirect(FF_SITE_PATH . $request . "?ret_url=" . urlencode($actual_path));
+	    }
+	}                                    
+}
 
-	if(strlen($tpl_custom_name)) {
-		if($tpl_prefix) {
-			if($globals->html["frontend"]["/" . $tpl_prefix . "_" . $tpl_custom_name]) {
-			//if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents/" . $tpl_prefix . "_" . $tpl_custom_name)) {
-				$real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents";
-				$real_prefix = $tpl_prefix . "_";
-			}
-		}
-		if($real_path === NULL) {
-			do {
-		         if($location && $globals->html["frontend"][stripslash($tmp_path) . $location . "/" . $tpl_custom_name]) {
-		         //if($location && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . $location . "/" . $tpl_custom_name)) {
-		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path) . $location;
-		         } elseif($globals->html["frontend"][stripslash($tmp_path) . "/" . $tpl_custom_name]) {
-		         //} elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . "/" . $tpl_custom_name)) {
-		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path);
-				 }
-		     } while($tmp_path != ffCommon_dirname($tmp_path) && $real_path === NULL && $tmp_path = ffCommon_dirname($tmp_path));
-		}
-	}     
+function ffTemplate_applets_on_loaded_file($tpl) {
+	$cm = cm::getInstance();
 
-    if($real_path === NULL) {
-    	if(strlen($tpl_base_name)) 
-    	{
-			if(strlen($force_base_path)) {
-				$real_path = $force_base_path;
-			} else {
-				$real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
-			}
-    	
-    		/*
-			if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path) . "/" . $tpl_base_name)) {
-			    $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
-			} elseif(strlen($force_base_path) && is_file($force_base_path . "/" . $tpl_base_name)) {
-			    $real_path = $force_base_path;
-			}*/
-
-			$tpl_type = "base";
-		}
-    }
-
-    if(is_array($tpl_data))
-    	return array("path" => $real_path
-    				, "type" => $tpl_type
-    				, "prefix" => $real_prefix
-    			);
-	else 
-    	return $real_path;
+	$cm->preloadApplets($tpl);
+	$cm->parseApplets($tpl);
 }
 
 
-function get_template_cascading_old($path, $tpl_data, $sub_path = "", $force_base_path = null, $location = "") 
+
+
+
+
+function get_actual_cache_time($range = null, $tbl) {
+ 	 $db = ffDB_Sql::factory();
+
+ 	 $sSQL = "SELECT SUM(last_update) AS tot FROM `" . $tbl . "`" 
+ 	 			. ($range === null || !strlen($range) 
+ 	 				? "" 
+ 	 				: " WHERE ID IN ( " . $db->toSql($range, "Text", false) . " )"
+ 	 			);
+ 	 $db->query($sSQL);
+ 	 if($db->nextRecord())
+ 	 	return $db->getField("tot", "Text", true);
+ 	 else 
+ 	 	return false;
+}
+
+
+ 
+function ffGrid_gallery_on_factory_done($oGrid) {
+    $registry = ffGlobals::getInstance("gallery");
+    if (!isset($registry->MD_chk))
+        $registry->MD_chk = array();
+
+    $oGrid->user_vars["MD_chk"] = $registry->MD_chk;
+}
+
+function ffRecord_gallery_on_factory_done($oRecord) {
+    $registry = ffGlobals::getInstance("gallery");
+    if (!isset($registry->MD_chk))
+        $registry->MD_chk = array();
+
+    $oRecord->user_vars["MD_chk"] = $registry->MD_chk;
+
+	$oRecord->label_error_required 	= ffTemplate::_get_word_by_code("label_error_required"); 
+	$oRecord->label_error_nomatch 	= ffTemplate::_get_word_by_code("label_error_nomatch"); 
+	$oRecord->label_delete_record	= ffTemplate::_get_word_by_code("label_delete_record"); 
+}
+
+function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_path = null, $location = "") 
 {
     $cm = cm::getInstance();
     
@@ -249,7 +285,7 @@ function setJsRequest($tag, $type = "request")
 				$globals->js[$type][$js_value] = true;
     	}
     } else if(strlen($tag)) {
-        $js = explode(",", $tag);
+        $js = explode("-", $tag);
         foreach($js as $js_value) {
             if(strlen($js_value)) {
                 $globals->js[$type][$js_value] = true;
@@ -259,7 +295,7 @@ function setJsRequest($tag, $type = "request")
     }
 }
 
-/*
+
 function check_page_alias($settings_path, $host, $return = "settings_path") {
 	$globals = ffGlobals::getInstance("gallery");
 	$cache = get_session("cache");
@@ -312,4 +348,24 @@ function check_page_alias($settings_path, $host, $return = "settings_path") {
 	}
 
 	return $res;
+}
+
+
+/*
+
+function mod_security_on_retrive_params($sError, $frmAction, $logged, $disable_async_service)  {
+	if($frmAction == "login" && $logged)
+	{
+		$logged = false;
+		$disable_async_service = true;	
+	}
+
+	if($logged && isset($_REQUEST["relogin"]) && $frmAction != "login") {
+		//$ret_url = $cm->oPage->site_path . "/";
+		$sError = ffTemplate::_get_word_by_code("insufficient_permission");
+		//mod_security_destroy_session(false);
+		$logged = false;
+	    $disable_async_service = true;
+		//$frmAction = "";
+	}	
 }*/

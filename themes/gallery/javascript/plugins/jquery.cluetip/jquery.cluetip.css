@@ -16,7 +16,7 @@
 	width: 16px;
 	height: 11px;
 	position: absolute;
-	background-image: url(images/wait.gif);
+	background-image: url(../../../images/ajax-ori.gif);
 }
 #cluetip-extra { display: none; }
 
@@ -125,7 +125,6 @@ display:block;
 	
         color: #007FFF;
 }
-/*
 .popup .admin-link i{margin-right: 10px;}
 
 .popup .admin-link A.layout_edit {background:url(../../../images/admin-menu.png) -225px -33px no-repeat;}
@@ -138,4 +137,4 @@ display:block;
 .popup .admin-link A.section_addnew {background:url(../../../images/admin-menu.png) -2px -34px no-repeat;}
 .popup .admin-link A.section_ecommerce {background:url(../../../images/admin-menu.png) -97px -34px no-repeat;}
 .popup .admin-link A.module_edit {background:url(../../../images/admin-menu.png) -225px -33px no-repeat;}
-.popup .admin-link A.module_delete {background:url(../../../images/admin-menu.png) -257px -33px no-repeat;}*/
+.popup .admin-link A.module_delete {background:url(../../../images/admin-menu.png) -257px -33px no-repeat;}

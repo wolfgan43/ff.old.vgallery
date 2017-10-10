@@ -1,0 +1,48 @@
+<!--BeginSezError-->
+<div class="error">{strError}</div>
+<!--EndSezError-->
+<!--BeginSezPreview-->
+     <!--BeginSezGroupFields-->
+    <ul class="shadetabs">
+        <!--BeginSezField-->
+        <li class="{class_name}">
+            <a href="{show_file}">{name}</a>
+        </li>
+        <!--EndSezField-->
+    </ul>
+    <!--EndSezGroupFields-->
+
+    <div class="{class_name}" id="{real_name}">
+        <!--BeginSezVGalleryImage-->
+        <div class="vgallery_detail_image">
+        <!--BeginSezVGalleryImageNode-->
+        {content}
+        <!--EndSezVGalleryImageNode-->
+        </div>
+        <!--EndSezVGalleryImage-->
+        
+        <!--BeginSezGroup--> 
+        <div class="vgallery_detail_description">
+        <!--BeginSezVGalleryDescriptionNode-->
+            <div class="vgallery_detail_item {vg_switch_style} {class_name}">
+                {content}
+            </div>
+        <!--EndSezVGalleryDescriptionNode-->
+        </div>
+        <!--EndSezGroup-->        
+    </div>
+	<!--BeginSezHorizNav-->
+    <div class="horiz-nav">
+		<span class="prev">
+        	<!--BeginSezHorizNavPrev-->
+		    <a href="{vgallery_detail_url_prev}">{vgallery_detail_prev}</a>
+		    <!--EndSezHorizNavPrev-->
+	    </span>
+		<span class="next">
+		    <!--BeginSezHorizNavNext-->
+		    <a href="{vgallery_detail_url_next}">{vgallery_detail_next}</a>
+		    <!--EndSezHorizNavNext-->
+	    </span>
+    </div>
+    <!--EndSezHorizNav-->
+<!--EndSezPreview-->

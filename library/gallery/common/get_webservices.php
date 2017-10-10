@@ -53,6 +53,7 @@
 	  }
   }
   
+  
   function process_webservices($webservices, &$oPage) {
     $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
@@ -68,4 +69,4 @@
   			require_once(FF_DISK_PATH . "/conf" . GALLERY_PATH_SERVICES . "/" . $service_name . "/index." . FF_PHP_EXT);
 		}
   	}
-}
+  }

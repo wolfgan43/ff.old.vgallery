@@ -500,7 +500,6 @@ function set_cache_clear_db() {
 		unset($cache["sid"]);
 		$cache_change++;
 	}
-
 	if($cache_change)    
 		set_session("cache", $cache);
 	

@@ -72,19 +72,8 @@
   	
   	if(is_array($limit))
   	{
-  		if(is_array($limit["request"]) && count($limit["request"])) {
-  			foreach($limit["request"] AS $request_name) {
-  				if(isset($_REQUEST[$request_name]))
-  					$count_req++;
-  			}
-			if($count_req == count($limit["request"])) {
-				require($path . "/modify." . FF_PHP_EXT);
-
-				return false;
-			}
-  		}
-  	
   		$count_slash = substr_count($cm->real_path_info, "/");
+  		
   		if($count_slash >= count($limit)) {
   			if(is_file($path . substr($cm->real_path_info, strpos($cm->real_path_info, "/", count($limit))) . "." . FF_PHP_EXT)) {
 				$file = substr($cm->real_path_info, strpos($cm->real_path_info, "/", count($limit)));
@@ -106,7 +95,6 @@
   			? "modify"
   			: false
   		);
-  		
 	}
 
   	if(basename($cm->real_path_info) == "add")
@@ -169,10 +157,6 @@
 			$file = basename($cm->real_path_info);
 			$cm->real_path_info = ffCommon_dirname($cm->real_path_info);
 			require($path . "/" . $file . "." . FF_PHP_EXT);
-		/*} elseif(basename($cm->real_path_info) && is_file($path . "/" . basename($cm->real_path_info) . "/index." . FF_PHP_EXT)) {
-			$file = basename($cm->real_path_info);
-			$cm->real_path_info = ffCommon_dirname($cm->real_path_info);
-			require($path . "/" . $file . "/index." . FF_PHP_EXT);*/
 		} else
 			return true;
 	}
@@ -206,31 +190,22 @@
 		$key 								= $tbl["key"];
 		$primary 							= $tbl["primary"];	
 		$if_request							= $tbl["if_request"];	
-		$type								= $tbl["type"];
 	} else {
 		$table 								= $tbl;
 		$key 								= "ID";
 		$primary 							= null;
 		$if_request							= null;
-		$type								= false;
 	}
 
   	system_ffcomponent_resolve_by_path($target);
 	if(is_array($_REQUEST["keys"])) {
-		switch($type) {
-			case "custom":
-  				$sSQL = $sWhere; 
-				break;
-			default:
-  				$sSQL = "SELECT ID , name"
-  							. system_ffComponent_get_sql_select_by_fields($fields) . "
-  						FROM " . $table . "
-  						WHERE " . ($_REQUEST["keys"]["ID"] /*&& !$_REQUEST["keys"]["permalink"]*/ //se abilitato in pages modify non si prende bene il record
-					        ? "ID = " . $db->tosql($_REQUEST["keys"]["ID"], "Number")
-					        : "name = " . $db->toSql(basename($_REQUEST["keys"]["permalink"]))
-				        ) . $sWhere;
-
-		}
+  		$sSQL = "SELECT ID , name"
+  					. system_ffComponent_get_sql_select_by_fields($fields) . "
+  				FROM " . $table . "
+  				WHERE " . ($_REQUEST["keys"]["ID"] /*&& !$_REQUEST["keys"]["permalink"]*/ //se abilitato in pages modify non si prende bene il record
+			        ? "ID = " . $db->tosql($_REQUEST["keys"]["ID"], "Number")
+			        : "name = " . $db->toSql(basename($_REQUEST["keys"]["permalink"]))
+		        ) . $sWhere;
 		$db->query($sSQL);
 		if($db->nextRecord()) {
 			$res["ID"] = $db->getField("ID", "Number", true);

@@ -29,6 +29,7 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
     $globals = ffGlobals::getInstance("gallery");
     //$settings_path = $globals->settings_path;
 	check_function("normalize_url");
+	
     $strip_path = array(
     					VG_SITE_SEARCH => true
     					, VG_SITE_USER => true
@@ -54,8 +55,7 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
     					: "default"
     				) . ".html";
     
-    //$tpl_data["custom"] = "breadcrumb.html";
-    $tpl_data["custom"] = $layout["smart_url"] . ".html";
+    $tpl_data["custom"] = "breadcrumb.html";
     $tpl_data["base"] = $template_name;
     $tpl_data["path"] = $layout["tpl_path"];
     
@@ -201,7 +201,7 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
             $parzial_path = "";
             $count_elem = 0;
             $alternative_preview_name = "";
- 
+
             foreach($smart_url as $key_user_path => $part_user_path) {
                 if(strlen($part_user_path)) {
                     $parzial_path =  stripslash($parzial_path) . "/" . str_replace("_", "/", $part_user_path);
@@ -243,7 +243,7 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
 	                    $tpl->set_var("part_actual_name", strlen($alias) 
 	                                                        ? $alias
 	                                                        : $part_user_path);
-	                    $tpl->set_var("part_actual_path",  normalize_url_by_current_lang(strlen($alternative_parzial_path)
+	                    $tpl->set_var("part_actual_path", normalize_url_by_current_lang(strlen($alternative_parzial_path)
 	                    									? $alternative_parzial_path
 	                    									: $parzial_path
 	                    								));
@@ -262,6 +262,7 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
                 }   
             }
         }
+
         if ($show_home) {
             $tpl->set_var("real_name", ffCommon_specialchars(preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . "home")));
             
@@ -311,11 +312,5 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
         $tpl->set_var("SezNavigation", "");
     }
 
-	$buffer = $tpl->rpparse("main", false);
-    return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
-		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-	);
+    return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
 }

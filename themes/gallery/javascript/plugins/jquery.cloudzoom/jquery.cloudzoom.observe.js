@@ -4,7 +4,7 @@ ff.cms.fn.cloudzoom = function(targetid) {
 		targetid = targetid + " ";
 	
 	if(	jQuery(targetid + '.cloudzoom').parent() !== undefined ) { 
-		ff.load("jquery.plugins.cloudzoom", function() {
+		ff.pluginLoad("jquery.fn.CloudZoom", "/themes/library/plugins/jquery.cloudzoom/jquery.cloudzoom.js", function() {
 			jQuery(targetid + '.cloudzoom').each(function() {
 				jQuery(this).attr("class","cloud-zoom-gallery");
 				jQuery(this).attr("rel", "useZoom: '" + jQuery(this).parent().attr("id") + "_zoom', smallImage: '" + jQuery(this).attr("href") + "'");
@@ -16,6 +16,6 @@ ff.cms.fn.cloudzoom = function(targetid) {
 		
 			jQuery('.cloud-zoom, .cloud-zoom-gallery').CloudZoom();
 	    
-		});
+		}, true);
 	}	
 };

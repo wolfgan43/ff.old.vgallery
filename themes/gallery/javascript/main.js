@@ -1,27 +1,3 @@
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 ff.cms = (function () {
 	var debug = (jQuery("#adminPanel").length > 0) || (window.location.search.indexOf("__debug__") >= 0);
 	var countBlock = 0;
@@ -41,8 +17,8 @@ ff.cms = (function () {
           }
 	  } else {
         if(value) {
-	  	    var separator = uri.indexOf(st) !== -1 ? "&" : st;	  	
-	        uri = uri + (uri.substr(uri.length - 1) == separator ? "" : separator) + key + "=" + value;   
+	  	    var separator = uri.indexOf(st) !== -1 ? "&" : st;
+	        uri = uri + (uri.substr(uri.length - 1) == separator ? "" : separator) + key + "=" + value;
         } else {
             uri = uri.trim("&");
         }
@@ -107,12 +83,12 @@ ff.cms = (function () {
 		var res = "";
 		if(targetid !== undefined) {
 			if(eval("typeof ff.cms.fn." + func) != "undefined" && jQuery.isFunction(eval("ff.cms.fn." + func))) {
-				res = eval("ff.cms.fn." + func + "('" + targetid + "')"); 
+				res = eval("ff.cms.fn." + func + "('" + targetid + "')");
 			} else {
 				if(debug)
 					console.error("ff.cms.fn." + func + " is not a plugin" + " (reference: " + (targetid ? targetid : "MainPage") + " )");
 			}
-		} else { 
+		} else {
 			if(debug)
 				console.error("Reference ID undefined in widgetProcess");
 		}
@@ -126,10 +102,10 @@ ff.cms = (function () {
 			case "append":
 				break;
 			case "replace":
-			default:   
+			default:
 		        jQuery(elem).html("Non trovato!");
-		}  
-		/* da arricchire*/  
+		}
+		/* da arricchire*/
     };
 	var parseBlock = function(elem, data, mode, effect) {
 		if(jQuery(elem).length) {
@@ -139,7 +115,7 @@ ff.cms = (function () {
 				data = jQuery("#" + itemID, data);
 
 			itemID = "#" + jQuery(data).attr("id");
-			
+
 			switch(mode) {
 				case "before":
 					jQuery(elem).before(data);
@@ -161,7 +137,7 @@ ff.cms = (function () {
 //			        jQuery(itemElem).remove();
 			        break;
 			    case "replace":
-			    default:   
+			    default:
 	                if(jQuery(data).attr("id") != jQuery(elem).attr("id") && jQuery(data).is(".block"))
 	                    jQuery(elem).html(jQuery(data).outerHTML());
 	                else
@@ -170,7 +146,7 @@ ff.cms = (function () {
 			}
 			jQuery("head").append(jQuery(data).nextAll("LINK"));
 			jQuery("head").append(jQuery(data).nextAll("SCRIPT"));
-			
+
 			//jQuery(itemID).attr("id"			, itemAttr["id"]);
 			jQuery(itemID).attr("data-admin"	, jQuery(data).attr("data-admin"));
 			jQuery(itemID).attr("data-src"		, jQuery(data).attr("data-src"));
@@ -183,7 +159,7 @@ ff.cms = (function () {
 				userCallback(undefined, itemID.replace("#", ""));
 
 			effect = ff.cms.widgetInit(itemID, effect);
-            
+
 			switch (effect) {
 				case false:
 					jQuery(itemID).fadeIn();
@@ -214,18 +190,18 @@ ff.cms = (function () {
 					jQuery(itemID).hide();
 					jQuery(itemID).fadeIn();
 			}
-            
+
             ff.lazyImg();
-			
+
 			return itemID;
-		}	
-	
+		}
+
 	};
 	var loadAjax = function(link, elem, effect, mode, onClickCallback, blockUI, jumpUI) {
 		var itemID = elem.attr("id");
         if(blockUI === undefined)
             blockUI = jQuery(elem).hasClass("blockui");
-            
+
         if(blockUI) {
             if(mode != "append" && mode != "prepend")
                 ff.cms.blockUI(elem, (jumpUI ? elem : false));
@@ -256,24 +232,24 @@ ff.cms = (function () {
                 if(pathname == window.location.pathname) {
                 	query = (query ? query + "&" : "") +  new Date().getTime();
                 }
-               
+
 				jQuery.ajax({
-			        async: true,    
+			        async: true,
 			        type: "GET",
-			        url: pathname, 
+			        url: pathname,
 			        data: query,
 			        cache: true
 				}).done(function(data) {
 					if(data) {
-						var item = (typeof data == "object" 
+						var item = (typeof data == "object"
 							? data["html"] || ""
 							: data
 						);
-						
+
 						item = item.trim();
-						
+
 						cacheBlock[link] = item;
-						
+
 						itemID = parseBlock(elem, item, mode, effect);
 					} else {
                         parseError(elem, mode, effect);
@@ -285,8 +261,8 @@ ff.cms = (function () {
 	                    itemID = parseBlock(elem, item, mode, effect);
 			        }*/
 
-                        
-                        
+
+
 
 				}).fail(function(data) {
 			        switch(data.status) {
@@ -297,17 +273,17 @@ ff.cms = (function () {
 			        }
 			    }).always(function() {
                     if(blockUI)
-					    ff.cms.unblockUI(elem); 
+					    ff.cms.unblockUI(elem);
 
                     if(onClickCallback)
-                        onClickCallback(itemID);  
+                        onClickCallback(itemID);
 				});
 			}
 		}
-	};	
+	};
 	var loadAjaxLink = function(elem, linkDefault, linkContainer, ajaxOnEvent, eventName) {
 		var arrAjaxOnEvent = ["load", "fadeIn"];
-			
+
 	    var callback = jQuery(elem).attr("data-callback");
 	    var effect = jQuery(elem).attr("data-effect");
 		var link = jQuery(elem).attr("data-src") || jQuery(elem).attr("href") || linkDefault;
@@ -315,7 +291,7 @@ ff.cms = (function () {
 		var targetID = "ajaxcontent";
 		if(!jQuery("#" + targetID).length) {
 			targetID = jQuery(container).attr("id") + targetID;
-			jQuery(container).after('<div id="' + targetID + '"></div>');		
+			jQuery(container).after('<div id="' + targetID + '"></div>');
 		}
 		if(linkContainer === undefined)
 			linkContainer = ".block";
@@ -325,7 +301,7 @@ ff.cms = (function () {
 	    }
 	    if(effect)
 	        arrAjaxOnEvent[1] = effect;
-	        
+
 	    if(callback) {
 	        try {
 	            eval("ff.cms.e." + id.replace(/[^a-zA-Z 0-9]+/g, "") + " = function() { " + callback + " }");
@@ -346,7 +322,7 @@ ff.cms = (function () {
 		                relContent = jQuery(this).attr("href");
 		            }
 		            if(relContent && jQuery(relContent).length && jQuery(relContent).hasClass("block")) {
-		                jQuery(relContent).hide(); 
+		                jQuery(relContent).hide();
 		            }
 
 		            jQuery(this).removeClass(ff.cms["class"]["current"]);
@@ -354,8 +330,8 @@ ff.cms = (function () {
 		        //jQuery(elem).closest("div").find("a").removeClass("selected");
 		        jQuery(elem).addClass(ff.cms["class"]["current"]);
 		    }
-		}	    
-	    loadAjax(link, jQuery("#" + targetID), arrAjaxOnEvent[1], "replace", eventName); 
+		}
+	    loadAjax(link, jQuery("#" + targetID), arrAjaxOnEvent[1], "replace", eventName);
 	};
 	var loadContent = function() {
 		var lazyBlock = [];
@@ -364,18 +340,18 @@ ff.cms = (function () {
 		    if (/*jQuery("#" + lazyBlock[i]).is(":visible") &&*/ ff.inView("#" + lazyBlock[i], 0.5) ) {
 				that.getBlock(lazyBlock[i], { "jumpUI" : false, "blockUI" : false});
 				lazyBlock.splice(i, 1);
-				i--;		    
+				i--;
 		    }
 		  }
       	  if(!lazyBlock.length)
-      		jQuery(window).unbind("scroll.lazyBlock");		  
-		};	
-		
+      		jQuery(window).unbind("scroll.lazyBlock");
+		};
+
 		jQuery('INPUT.ajaxcontent[type=hidden]').each(function() {
 		    var link = jQuery(this).val();
 		    var elem = jQuery(this);
 		    var eventName = jQuery(this).attr("data-ename") || undefined;
-		    
+
 		    var id = jQuery(this).attr("id");
 
 		    loadAjax(link, elem, false, "after", eventName);
@@ -383,16 +359,16 @@ ff.cms = (function () {
 
 		jQuery(document).on("click.ajaxcontent", "a.ajaxcontent", function(e) {
 			e.preventDefault();
-			
+
 			loadAjaxLink(this);
-			
+
 			return false;
 		});
-		
+
 		jQuery('.block').each(function() {
 			var arrAjaxOnReady = ["load", "fadeIn"];
 			var arrAjaxOnEvent = ["load", "fadeIn"];
-            
+
             var id = jQuery(this).attr("id");
             var link = jQuery(this).attr("data-src");
             var ajaxOnReady = jQuery(this).attr("data-ready");
@@ -444,7 +420,7 @@ ff.cms = (function () {
                     } else if(jQuery(this).attr("href").indexOf("#") == 0) {
                         targetID = jQuery(this).attr("href");
                     }
-					
+
                     var callback = jQuery(this).attr("data-callback");
                     var effect = jQuery(this).attr("data-effect");
 
@@ -453,7 +429,7 @@ ff.cms = (function () {
                     }
                     if(effect)
                         arrAjaxOnEvent[1] = effect;
-                        
+
                     if(callback) {
                         try {
                             eval("ff.cms.e." + id.replace(/[^a-zA-Z 0-9]+/g, "") + " = function() { " + callback + " }");
@@ -470,10 +446,10 @@ ff.cms = (function () {
                                 relContent = jQuery(this).attr("href");
                             }
                             if(relContent && jQuery(relContent).length && jQuery(relContent).hasClass("block")) {
-                                jQuery(relContent).hide(); 
+                                jQuery(relContent).hide();
                             }
                             jQuery(this).removeClass("selected");
-                                
+
                         });
                         //jQuery(this).closest("div").find("a").removeClass("selected");
                         jQuery(this).addClass("selected");
@@ -490,7 +466,7 @@ ff.cms = (function () {
                                         console.err(arrAjaxOnEvent[1] + " is not a Valid Method(Effect)");
                                     }
                                 } else {
-                                    loadAjax(link, jQuery(targetID), arrAjaxOnEvent[1], "replace", eventName); 
+                                    loadAjax(link, jQuery(targetID), arrAjaxOnEvent[1], "replace", eventName);
                                 }
                             } else {
                                 try{
@@ -502,22 +478,22 @@ ff.cms = (function () {
                         }
                     }*/
                 });
-            }                
+            }
 		});
-		
+
 		if(lazyBlock.length) {
-		    jQuery(window).bind("scroll.lazyBlock", processLazyBlock); 
+		    jQuery(window).bind("scroll.lazyBlock", processLazyBlock);
             processLazyBlock();
 		    //setTimeout("jQuery(window).scroll()", 400); //da trovare una soluzione migliore
 		}
-	};	
+	};
 	var loadReq = function(target) {
 		var deferReq = {};
 		if(service) {
 			jQuery.ajax({
-				async: true,    
+				async: true,
 				type: "POST",
-				url: "/srv/request", 
+				url: "/srv/request",
 				data: "params=" + (target ? JSON.stringify(target) : JSON.stringify(service)),
 				dataType : "json",
 				cache: true
@@ -529,16 +505,16 @@ ff.cms = (function () {
 
 						if(service[name]["callback"])
 							service[name]["callback"](response[name], service[name]["params"]);
-						
-						if(response[name]["result"] !== undefined) 
+
+						if(response[name]["result"] !== undefined)
 							result = response[name]["result"];
 						else
 							result = response[name];
-						
+
 						if(result) { //da gestire i multi valori provenienti dalle chiamate asincrone con il timer
-							service[name]["response"] = result; 
+							service[name]["response"] = result;
 						}
-						
+
 						if(response[name]["timer"]) {
 							if(!service[name]["opt"]) service[name]["opt"] = {};
 							service[name]["opt"]["timer"] = response[name]["timer"];
@@ -546,17 +522,17 @@ ff.cms = (function () {
 						if(service[name]["opt"] && service[name]["opt"]["timer"]) {
 							service[name]["opt"]["timer"] = false;
 							if(!deferReq[response[name]["timer"]]) deferReq[response[name]["timer"]] = {};
-							
+
 							deferReq[response[name]["timer"]][name] = service[name];
 						}
 					}
 
 					for(var time in deferReq) {
-						setTimeout(function() { 
+						setTimeout(function() {
 							ff.cms.loadReq(deferReq[time]);
 						}, time);
 					}
-					
+
 				}
 			}).fail(function(error) {
 			});
@@ -578,8 +554,8 @@ ff.cms = (function () {
                     jQuery("#above-the-fold").remove();
 
                     ff.fn.frame = function (params, data) {
-                        if(params.component !== undefined 
-                            && data.html !== undefined 
+                        if(params.component !== undefined
+                            && data.html !== undefined
                             && jQuery("#" + params.component).attr("id") !== undefined
                         ) {
                             ff.cms.widgetInit("#" + params.component);
@@ -600,15 +576,14 @@ ff.cms = (function () {
                                             tracker.send('event', {'userId':  'u-' + data.modules.security.UserNID});
                                         }
                                     }
-                                    
+
                                 }
                             }
-                        });					
+                        });
                     });
 
                     loadContent();
-                    ff.cms.widgetInit(""); 
-					//console.log("ASD");
+                    ff.cms.widgetInit("");
 					//loadReq();
 					setTimeout(loadReq, 200);
             },
@@ -623,7 +598,7 @@ ff.cms = (function () {
 
                 if(!noAjaxBlock) {
                     if(!countBlock) {
-                        ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {			
+                        ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {
                             ff.ajax.blockUI();
                         });
                     }
@@ -632,13 +607,13 @@ ff.cms = (function () {
                 }
             },
             "unblockUI" : function(blockElem, noAjaxBlock) {
-                if(blockElem) {    
+                if(blockElem) {
                     //jQuery(blockElem).css({"opacity": "", "pointer-events": ""});
                     jQuery(blockElem).removeClass("loading");
                 }
 
                 if(!noAjaxBlock) {
-                    countBlock--; 
+                    countBlock--;
                     if(!countBlock)
                         ff.ajax.unblockUI();
                 }
@@ -704,16 +679,16 @@ ff.cms = (function () {
                         itemSelector: '.vg-item',
                         layoutMode: 'fitRows',
                         filter: function() {
-                            return !term 
+                            return !term
 								|| (objTerm
-									? (objTerm.is("input") 
+									? (objTerm.is("input")
 										? jQuery(this).text().match( term )
-										: term == jQuery(this).attr("data-ffl") 
+										: term == jQuery(this).attr("data-ffl")
 									)
 									: true
 								);
                         }
-                    }); 
+                    });
                 });
             },
             "login" : {
@@ -752,7 +727,7 @@ ff.cms = (function () {
             },
 			"get" : function(name, callback, params, opt) {
 				var res = null;
-				
+
 				if(!name) {
 					res = service;
 				} else {
@@ -771,8 +746,8 @@ ff.cms = (function () {
 						service[name]["params"] = params;
 
 					if(opt)
-						service[name]["opt"] = opt;					
-					
+						service[name]["opt"] = opt;
+
 					if(service[name]["response"])
 						res = service[name]["response"];
 					else
@@ -821,7 +796,7 @@ ff.cms = (function () {
                             }
                         }
 
-                        if(params["page"]) {  
+                        if(params["page"]) {
                             linkParams.push("page=" + params["page"]);
                             linkHistory = ff.cms.updateUriParams("page", (params["page"] > 1 ? params["page"] : ""), linkHistory);
                         }
@@ -853,7 +828,7 @@ ff.cms = (function () {
             	if(!service) service = {};
 				if(!callback) {
 					if(!opt) opt = {};
-					
+
 					opt["async"] = true;
 				}
                 service[name] = {
@@ -869,6 +844,6 @@ ff.cms = (function () {
 	jQuery(function() {
             ff.cms.initCMS();
 	});
-	
+
 	return that;
 })();

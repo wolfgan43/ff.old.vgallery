@@ -1,37 +1,11 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage api
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 /*
   $tpl = ffTemplate::factory(get_template_cascading("/", "api.json", "/doc"));
   $tpl->load_file("api.json", "main");
 
   $res = $tpl->rpparse("main", false);
   */
-  require_once(FF_DISK_PATH . "/conf/gallery/api/index." . FF_PHP_EXT);
-  
-  	if(check_function("get_schema_def"))
+  	if(check_function("service_get_code_by_service") && check_function("get_schema_def"))
 		$schema_def = get_schema_def();
 
 	$service_module = $schema_def["module_available"];
@@ -178,3 +152,4 @@
 
         return $service_params;
     }*/
+?>

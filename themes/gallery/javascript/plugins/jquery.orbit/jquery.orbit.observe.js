@@ -3,7 +3,7 @@ ff.cms.fn.orbit = function(targetid) {
 	if(targetid.length > 0)
 		targetid = targetid + " ";
 
-	ff.load("jquery.plugins.orbit", function() {	
+	ff.pluginLoad("jquery.fn.orbit", "/themes/library/plugins/jquery.orbit/jquery.orbit.js", function() {	
 		jQuery(targetid + ".orbit").closest("DIV").orbit({
 			animation: 'fade',                  /* fade, horizontal-slide, vertical-slide, horizontal-push */
 		    animationSpeed: 800,                /* how fast animtions are */
@@ -21,5 +21,5 @@ ff.cms.fn.orbit = function(targetid) {
 		    bulletThumbLocation: '',		 /* location from this file where thumbs will be */
 		    afterSlideChange: function(){} 	 /* empty function */
 		});
-	});
+	}, true);
 };

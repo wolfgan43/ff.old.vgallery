@@ -174,7 +174,7 @@ function process_landing_tag_content_by_type($user_path, $group, $type = "tag", 
 
 		if($res["content"] && $prefix)
 			$res["content"] = $prefix . $res["content"] . $postfix;
-
+		
 		if(!$res)
 			$res = false;
 	}
@@ -351,9 +351,9 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
         * Init Template
         */
         
-        $cm->oPage->tplAddJs("ff.cms.landingpage");
-        $cm->oPage->tplAddJs("ff.ajax");
-        $cm->oPage->tplAddJs("ff.ffPageNavigator");
+        $cm->oPage->tplAddJs("ff.cms.landingpage", "ff.cms.landingpage.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools");
+        $cm->oPage->tplAddJs("ff.ajax", "ajax.js", FF_THEME_DIR . "/library/ff");
+        $cm->oPage->tplAddJs("ff.ffPageNavigator", "ffPageNavigator.js", FF_THEME_DIR . "/library/ff");
 
         //da potenziare
         $tpl->set_var("landing_type", $type);
@@ -386,7 +386,7 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
             		if(is_array($res["group"]) && array_search($group_key, $res["group"]) === false)
             			continue;
             			
-	                $tpl->set_var("landing_item_url",  FF_SITE_PATH . ($type == "tag" ? "": "/" . $type) . stripslash($arrLandingPage["parent"]) . "/" . $arrLandingPage["smart_url"] . ($arrContent["name"] ? "/" . $arrContent["name"] : ""));
+	                $tpl->set_var("landing_item_url", FF_SITE_PATH . ($type == "tag" ? "": "/" . $type) . stripslash($arrLandingPage["parent"]) . "/" . $arrLandingPage["smart_url"] . ($arrContent["name"] ? "/" . $arrContent["name"] : ""));
 	                $tpl->set_var("landing_item_group", $arrContent["name"]);
 	                $tpl->set_var("landing_item_name", $arrContent["label"]);
 	                $tpl->set_var("landing_item_class", "");
@@ -523,7 +523,6 @@ function parse_landing_page_overview($arrLandingPage, $arrLandingPageGroup, $vg_
 		if($vg_params["settings_type"] == "overview")
 			ksort($arrLandingPageGroup["overview"]);
 
-		$res = "";
 		foreach($arrLandingPageGroup["overview"] AS $overview_data) {
 			$vg_params["settings_path"] = stripslash("/" . $vg_params["settings_type"] . "/" . $overview_data["name"]);
 			
@@ -565,7 +564,7 @@ function parse_landing_page_overview($arrLandingPage, $arrLandingPageGroup, $vg_
 
 function parse_landing_page_content($arrLandingPageTags, $vg_params = array()) {
 	if(isset($arrLandingPageTags["items"])) {
-		if($arrLandingPageTags["items"]["class"])
+		if($overview_data["items"]["class"])
 			$framework_css["items"]["class"] = $arrLandingPageTags["items"]["class"];
 
 		//if($framework_css["items"]["fluid"] == 0 && is_array($arrLandingPageTags["items"]["grid"])) {
@@ -659,7 +658,6 @@ function process_landing_tag_content($arrLandingPageTags, $params = null)
                 break;
             default:
                 if(is_array($arrLandingPageTags["data_source"]) && count($arrLandingPageTags["data_source"])) {
-                    $res = "";
                     foreach($arrLandingPageTags["data_source"] AS $src_type => $src_data) {
                         $arrLayout = get_layout_by_block($src_type, $src_data, "settings");
                         $arrLayoutSettings = null;
@@ -727,11 +725,7 @@ function process_landing_tag_content($arrLandingPageTags, $params = null)
 	                            if(!$params["nocss"]) {
                             		$css_name = str_replace("/", "_", trim($vgallery_path, "/"));
                             		if(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/css/" . $css_name . ".css")) {
-                            			$cm->oPage->tplAddCss($css_name
-                                            , array(
-                                                "file" => $css_name . ".css"
-                                                , "path" => FF_THEME_DIR . "/" . FRONTEND_THEME . "/css"
-                                        ));
+                            			$cm->oPage->tplAddCss($css_name, $css_name . ".css", FF_THEME_DIR . "/" . FRONTEND_THEME . "/css");
                             		}
 								}
 
@@ -964,8 +958,8 @@ function process_landing_tag_group($group = null, $limit = null) {
     if(!is_array($landing_page_group)) {
         $landing_page_group = array();
 		if($limit && $limit != "null")
-			$arrLimit = explode(",", $limit);        
-
+			$arrLimit = explode(",", $limit);
+			
 	    $sSQL = "SELECT search_tags_group.*
 				    , search_tags_group_rel.data_source AS data_source
 				    , search_tags_group_rel.data_limit AS data_limit
@@ -1003,9 +997,9 @@ function process_landing_tag_group($group = null, $limit = null) {
                         $arrVgalleryPath = explode("/", trim($vgallery_path, "/"));
                         $vgallery_name = $arrVgalleryPath[0];
                 }
-
+                
 				if($arrLimit && array_search($vgallery_name, $arrLimit) === false)
-					continue;                
+					continue;
 
 			    $unic_id = $db->getField("smart_url", "Text", true);
 			    $overview_order = $db->getField("overview_order", "Number", true);

@@ -43,19 +43,21 @@ function get_international_settings_path($settings_path, $language = NULL, $bloc
     $arrLangAlt = array();	
 	if(check_function("get_locale"))
 		$arrLang = get_locale("lang");
-
-    if(check_function("system_get_sections"))
-        $block_type = system_get_block_type();	 	
 	
     if(!$arrLayout) {
-        $arrLayout = array();
+    	$arrLayout = array();
 		$sSQL = "SELECT layout.ID
 			        , layout.value
 			        , layout.params
+			        , layout_type.name AS `type`
 			        , layout_path.path AS layout_path
 			    FROM layout 
+			        INNER JOIN layout_type ON layout_type.ID = layout.ID_type
 			        INNER JOIN layout_path ON layout_path.ID_layout = layout.ID
-			    WHERE layout.ID_type IN(" . $db->toSql($block_type["gallery"]["ID"], "Number") . "," . $db->toSql($block_type["virtual-gallery"]["ID"], "Number") . ")
+			    WHERE 1
+			        AND (layout_type.name = " . $db->toSql("GALLERY", "Text") . "
+                        OR layout_type.name = " . $db->toSql("VIRTUAL_GALLERY", "Text") . "
+                    )
 			        AND layout.ID_domain = " . $db->toSql($ID_domain, "Number");
 		 $db->query($sSQL);
          if($db->nextRecord()) {
@@ -65,13 +67,12 @@ function get_international_settings_path($settings_path, $language = NULL, $bloc
 				if(!strlen($layout_path))
 					$layout_path = "/";							 	
 
-				$arrLayout[$layout_path][$ID_layout]["value"] 	= $db->getField("value", "Text", true);
-				$arrLayout[$layout_path][$ID_layout]["params"] 	= $db->getField("params", "Text", true);
-				$arrLayout[$layout_path][$ID_layout]["type"] 	= $block_type["rev"][$db->getField("ID_type", "Number", true)];
+				$arrLayout[$layout_path][$ID_layout]["value"] = $db->getField("value", "Text", true);
+				$arrLayout[$layout_path][$ID_layout]["params"] = $db->getField("params", "Text", true);
+				$arrLayout[$layout_path][$ID_layout]["type"] = $db->getField("type", "Text", true);
 			} while($db->nextRecord());
          }
-	}
-	
+	}	
 	
     if(is_array($arr_settings_path) && count($arr_settings_path) > 1) {
         foreach($arr_settings_path AS $arr_settings_path_key => $arr_settings_path_value) {
@@ -114,16 +115,44 @@ function get_international_settings_path($settings_path, $language = NULL, $bloc
 				}
 
 				if(strlen($part_settings_path)) {
-                    //$arrLayout = array();
+                    $arrLayout = array();
                    
                     $static_part_url .= "/" . $part_settings_path;
                     //$static_part_url .= "/" . $arr_settings_path_value;
                     
 					if(!strlen($tmp_vgallery_part_url) && !strlen($tmp_gallery_part_url)) {
+                      /*  if(!count($arrLayout)) {
+			                $sSQL = "SELECT layout.ID
+			                    		, layout.value
+			                    		, layout.params
+			                    		, layout_type.name AS `type`
+			                    		, layout_path.path AS layout_path
+			                        FROM layout 
+			                            INNER JOIN layout_type ON layout_type.ID = layout.ID_type
+			                            INNER JOIN layout_path ON layout_path.ID_layout = layout.ID
+			                        WHERE 1
+			                        	AND (layout_type.name = " . $db->toSql("GALLERY", "Text") . "
+                        				    OR layout_type.name = " . $db->toSql("VIRTUAL_GALLERY", "Text") . "
+                        			    )
+			                            AND layout.ID_domain = " . $db->toSql($ID_domain, "Number");
+			                 $db->query($sSQL);
+                    	     if($db->nextRecord()) {
+							 	do {
+									$ID_layout = $db->getField("ID", "Number", true);
+							 		$layout_path = $db->getField("layout_path", "Text", true);
+							 		if(!strlen($layout_path))
+							 			$layout_path = "/";							 	
+
+							 		$arrLayout[$layout_path][$ID_layout]["value"] = $db->getField("value", "Text", true);
+							 		$arrLayout[$layout_path][$ID_layout]["params"] = $db->getField("params", "Text", true);
+							 		$arrLayout[$layout_path][$ID_layout]["type"] = $db->getField("type", "Text", true);
+							 	} while($db->nextRecord());
+                             }
+						}*/
 						if(!$layout_found && array_key_exists($static_part_url, $arrLayout)) {
 	                        $next_value = $arr_settings_path[$arr_settings_path_key + 1];
 	                        foreach($arrLayout[$static_part_url] AS $arrLayout_key => $arrLayout_value) {
-	                             if($arrLayout_value["type"] == "virtual-gallery") {
+	                             if($arrLayout_value["type"] == "VIRTUAL_GALLERY") {
 	                                $tmp_vgallery_part_url = "/" . rtrim($arrLayout_value["value"] . rtrim($arrLayout_value["params"], "/"), "/");
 	                                if(count($arrLayout[$static_part_url]) > 1) {
 		                                $sSQL = "SELECT vgallery_nodes.*
@@ -149,7 +178,7 @@ function get_international_settings_path($settings_path, $language = NULL, $bloc
 	                                        break;
 										}
 	                                }
-	                            } elseif($arrLayout_value["type"] == "gallery") {
+	                            } elseif($arrLayout_value["type"] == "GALLERY") {
 	                                $tmp_gallery_part_url = rtrim($arrLayout_value["value"] . rtrim($arrLayout_value["params"], "/"), "/");
 	                                if(count($arrLayout[$static_part_url]) > 1) {
 	                                    $sSQL = "SELECT files.*

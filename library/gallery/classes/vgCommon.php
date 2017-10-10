@@ -27,16 +27,10 @@
 
 abstract class vgCommon 
 {
-    const PHP_EXT                       = "php";
-
     private $error                      = null;
     private $debug                      = array();
     private $disk_path                  = null;
 
-    public function getAbsPathPHP($path, $use_class_path = false)
-    {
-        return $this->getAbsPath($path . "." . $this::PHP_EXT, $use_class_path);
-    }
     public function getAbsPath($path, $use_class_path = false)
     {
         static $this_path = __DIR__;
@@ -104,7 +98,7 @@ abstract class vgCommon
             $services = glob($script_path . "/services/*");
             if(is_array($services) && count($services)) {
                 foreach($services AS $service) {
-                    $arrService = explode("_", basename($service, "." . $this::PHP_EXT), 2);
+                    $arrService = explode("_", basename($service, "." . FF_PHP_EXT), 2);
                     if(isset($this->controllers[$arrService[0]]) && $this->controllers[$arrService[0]]["services"] !== false)
                     {
                         if(!is_array($this->controllers[$arrService[0]]["services"]))

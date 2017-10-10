@@ -1,28 +1,4 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage updater
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 	function get_exclude_by_db($fs_exclude, $include_externals = true) {
 		$db = new ffDB_Sql;
 		
@@ -63,6 +39,7 @@
     $fs_exclude["/cgi-bin"] = true;
     $fs_exclude["/plesk-stat"] = true;
     $fs_exclude["/conf/gallery/config"] = true;
+   // $fs_exclude["/conf/gallery/ajaxplorer/client/themes/oxygen/images/actions/16/player_play copy.png"] = true;
     $fs_exclude["/conf/modules"] = array("notifier" 	=> false
     									, "restricted" 	=> false
     									, "security" 	=> false
@@ -75,11 +52,13 @@
   //  $fs_exclude["/themes/admin/images/logo_login.jpg"] = true;
     
     
+    $fs_exclude["/conf/gallery/ajaxplorer/server/users"] = true;
+    $fs_exclude["/conf/gallery/ajaxplorer/server/logs"] = true;
+
 	$fs_exclude["/cache"] = true;
-	$fs_exclude["/themes/responsive/css/scss"] = true;
 	$fs_exclude["/themes/site/.htaccess"] = true;
+	$fs_exclude["/themes/site/theme_settings.xml"] = true;
 	$fs_exclude["/themes/site/settings.php"] = true;
-	//$fs_exclude["/themes/site/theme_settings.xml"] = true;
 
     if(!($sync 
     	&& (
@@ -104,7 +83,7 @@
 	    $fs_exclude["/themes/site/favicons"] = true;
 	    $fs_exclude["/themes/site/fonts"] = true;
 	    $fs_exclude["/themes/site/images"] = true;
-	   // $fs_exclude["/themes/site/layouts"]["layer_gallery.html"]["update"] = true;
+	    $fs_exclude["/themes/site/layouts"]["layer_gallery.html"]["update"] = true;
 	    $fs_exclude["/themes/site/javascript"] = true;
 	    $fs_exclude["/themes/site/modules"] = true;
 	    $fs_exclude["/themes/site/swf"] = true;
@@ -119,3 +98,4 @@
         
 	if(defined("FF_DATABASE_NAME") && class_exists("ffDB_Sql"))
         $fs_exclude = get_exclude_by_db($fs_exclude, (defined("MASTER_CONTROL") ? false : true));
+?>

@@ -263,7 +263,7 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 								if(isset($real_def_source) && $real_def_source[1] == "nolink") {
 			                        $res = '<span class="found">' . $res . '</span>';
 								} else {
-			                        $res = '<a href="' . cm_showfiles_get_abs_url(CM_SHOWFILES . $data) . '" target="_blank">' . $res . '</a>';    
+			                        $res = '<a href="' . cm_showfiles_get_abs_url($data) . '" target="_blank">' . $res . '</a>';    
 			                    }
 							}
 		                } else {

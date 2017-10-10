@@ -98,7 +98,7 @@ function get_thumb($path, $params = array(), $res = null)
 
 	    if($thumb_settings["thumb"] && !$thumb_settings["thumb"]["name"])
     		$thumb_settings["thumb"]["name"] 																= $thumb_settings["thumb"]["width"] . $operation . $thumb_settings["thumb"]["height"];
-	}	
+	}
     $skip_fs_check = false;
    /* if (defined("CDN_STATIC") && CDN_STATIC
 		&& defined("CDN_STATIC_IMAGE") && strlen(CDN_STATIC_IMAGE) && CDN_STATIC_IMAGE != $params["showfiles_path"]
@@ -112,6 +112,10 @@ function get_thumb($path, $params = array(), $res = null)
     	$skip_fs_check = true;
     
     
+    //if (!$skip_fs_check && !is_file($params["base_path"] . $path) && !is_dir($params["base_path"] . $path)) {
+	//	return array("src" => get_thumb_by_placehold($params["thumb"]["default"]["width"], $params["thumb"]["default"]["height"]));
+    //}
+
 /*
 	if (strlen($mode)) {
 		$fake_mode = $mode;
@@ -124,7 +128,7 @@ function get_thumb($path, $params = array(), $res = null)
 		: "empty"
 	);
 
-    if (strpos($path, "http") === 0) {
+	if (strpos($path, "http") === 0) {
     
 		$loaded_path[$fake_mode][$path]["default"]["src"] = $path;
 		$loaded_path[$fake_mode][$path]["default"]["width"] = ($params["thumb"]["default"]["width"]
@@ -142,11 +146,9 @@ function get_thumb($path, $params = array(), $res = null)
 		$loaded_path[$fake_mode][$path]["default"]["height"] = $params["thumb"]["default"]["height"];
 	}
 	
-	
-	
 	if (!isset($loaded_path[$fake_mode][$path])) {
-	    /*if (strpos($params["showfiles_path"], "http") !== 0)
-			$params["showfiles_path"] = FF_SITE_PATH . $params["showfiles_path"];		*/
+	    //if (strpos($params["showfiles_path"], "http") !== 0)
+			//$params["showfiles_path"] =  $params["showfiles_path"];		
 				
 	    $source["name"] = ffGetFilename($path);
 	    $source["ext"] = ffGetFilename($path, false);
@@ -175,13 +177,13 @@ function get_thumb($path, $params = array(), $res = null)
 
 		//if(CM_CACHE_IMG_LAZY_LOAD)
 		//	$loaded_path[$fake_mode][$path]["default"]["class"] = $params["class"];
-	}
+	}	
 	if(is_array($res)) {
 		$res["src"] 											= $loaded_path[$fake_mode][$path]["default"]["src"];
 		$res["width"] 											= $loaded_path[$fake_mode][$path]["default"]["width"];
 		$res["height"] 											= $loaded_path[$fake_mode][$path]["default"]["height"];
 
-		$res["picture"]											= $loaded_path[$fake_mode][$path];
+		$res["picture"] 										= $loaded_path[$fake_mode][$path];
 	} elseif(strlen($res)) {
 		$res 													= $loaded_path[$fake_mode][$path][$res];
 	} else {
@@ -190,7 +192,7 @@ function get_thumb($path, $params = array(), $res = null)
 	
 	$loaded_path["keys"][$path] 								= $loaded_path[$fake_mode][$path]["default"];
 	$loaded_path["keys"][$path]["placehold"] 					= $params["placehold"];
-	
+
 //print_r($loaded_path);
     return $res;
 }
@@ -200,7 +202,7 @@ function get_thumb_by_grid_system($path, $params, $thumb_params = array(), $sour
 	$src = null;
 	//print_r($params);
 	$size = get_thumb_size($path, $thumb_params["width"], $thumb_params["height"], $params["mime"], $src, $params["base_path"]);
-
+	     
     if (!$size["skip_mode"] && strlen($thumb_params["name"])) {
 		$mode = "/" . ffCommon_url_rewrite($thumb_params["name"]);
 
@@ -217,9 +219,9 @@ function get_thumb_by_grid_system($path, $params, $thumb_params = array(), $sour
 			$ext = "";
 	    }
 
-		/**
+		/** //nn funziona da debuggare bene https://www.paginemediche.it/diabete?__nocache__&__debug__
 		* Add fake name to original name. /realpath/fakename/fakename-realname.ext
-		*/
+		*/ 
 		if (0 && !$params["preserve_orig"] && basename(ffCommon_dirname($path)) != $params["fake_name"] && strpos($source["name"], $params["fake_name"]) === false) {
 			if(strrpos($params["fake_name"], "-" . $source["name"]) == strlen($params["fake_name"]) - strlen("-" . $source["name"]))
 				$fake_name = substr($params["fake_name"], 0, strrpos($params["fake_name"], "-" . $source["name"]));
@@ -246,11 +248,10 @@ function get_thumb_by_grid_system($path, $params, $thumb_params = array(), $sour
 	    }
 */
 
-
 	    $res = array(
 			"src" => (CM_MEDIACACHE_SHOWPATH
 				? CM_MEDIACACHE_SHOWPATH . stripslash(ffCommon_dirname($path)) . "/" . $name_cache_thumb . $ext . "-" . basename($mode) . "." . $extension
-				: CM_SHOWFILES . $mode . $ext /*. $params["showfiles_path"]*/ . stripslash(ffCommon_dirname($path)) . "/" . $name_cache_thumb . "." . $extension
+				: CM_SHOWFILES . $mode . $ext . $params["showfiles_path"] . stripslash(ffCommon_dirname($path)) . "/" . $name_cache_thumb . "." . $extension
 			)
 			, "width" => $size["width"]
 			, "height" => $size["height"]
@@ -259,14 +260,16 @@ function get_thumb_by_grid_system($path, $params, $thumb_params = array(), $sour
 		$res = array(
 			"src" => (CM_MEDIACACHE_SHOWPATH
 				? CM_MEDIACACHE_SHOWPATH . $path
-				: CM_SHOWFILES /*. $params["showfiles_path"]*/ . $path
+				: CM_SHOWFILES . $params["showfiles_path"] . $path
 			)
 			, "width" => $size["width"]
 			, "height" => $size["height"]
 	    );	
 	}
+
 	return $res;
 }
+
 
 function get_thumb_by_media_queries($media, $params, $type = "picture") 
 {
@@ -296,7 +299,7 @@ function get_thumb_by_media_queries($media, $params, $type = "picture")
 		if($fake_img)
 			$res = $fake_img . '<' . $type . '>' . implode("", $arrRes) . '<img ' . (0 ? 'data-src="' . str_replace(" ", "+", $src) . '" class="lazy"' : $media) . ' />' . '</' . $type . '>';
 		else
-			$res = '<' . $type . '>' . implode("", $arrRes) . '<img ' . (0 ? 'src="' . str_replace(" ", "+", $src) . '"' : $media) . ' />' . '</' . $type . '>';
+			$res = '<' . $type . '>' . implode("", $arrRes) . '<img ' . (0 ? 'src="' . str_replace(" ", "+", $src) . '"' : $media) . ' />' . '</' . $type . '>'; 
 
 	} elseif($params["default"]["width"] && $params["default"]["height"]) {
 		$res = $fake_img . '<img ' . $media
@@ -309,7 +312,7 @@ function get_thumb_by_media_queries($media, $params, $type = "picture")
 		. ($params["height"] ? ' height="' . $params["height"] . '"' : '') 
 		. ' />';
 	}
-	
+
 	return $res;
 }
 
@@ -457,7 +460,6 @@ function normalize_code_word($tmp)
 
     return strip_tags($ret);
 }
-
 
 function get_thumb_by_placehold($width, $height, $bgcolor = null, $color = null) 
 {

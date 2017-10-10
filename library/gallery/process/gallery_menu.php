@@ -96,8 +96,7 @@ function process_gallery_menu($user_path, $source_user_path = NULL, &$layout, $a
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"]);
     
-	//$tpl_data["custom"] = "album.html";
-	$tpl_data["custom"] = $layout["smart_url"] . ".html";
+	$tpl_data["custom"] = "album.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
@@ -128,8 +127,7 @@ function process_gallery_menu($user_path, $source_user_path = NULL, &$layout, $a
 	if(check_function("get_grid_system_params"))
 		$grid_params = get_grid_system_params($params_menu, $follow_framework);
 	    
-//    $tpl_data["custom"] = "album.html";
-	$tpl_data["custom"] = $layout["smart_url"] . ".html";
+    $tpl_data["custom"] = "album.html";
     $tpl_data["base"] = $grid_params["tpl_name"];
 
     $tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
@@ -268,13 +266,12 @@ function process_gallery_menu($user_path, $source_user_path = NULL, &$layout, $a
             $popup["sys"]["type"] = "admin_popup";
             $popup["sys"]["is_absolute"] = $is_absolute;
 
-			if(check_function("set_template_var"))
-				$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
-
-//	        $serial_popup = json_encode($popup);
-//	        $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-
-	        $item_class["admin"] = "admin-bar";
+			if(strlen($block["admin"]["popup"])) {
+	            $serial_popup = json_encode($popup);
+	            
+	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+	            $item_class["admin"] = "admin-bar";
+			}          
         }
         
         if($source_user_path && !$is_absolute) {
@@ -569,13 +566,12 @@ function process_gallery_menu($user_path, $source_user_path = NULL, &$layout, $a
                 $popup["sys"]["type"] = "admin_popup";
                 $popup["sys"]["is_absolute"] = $is_absolute;
 
-				if(check_function("set_template_var"))
-					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
-
-	           // $serial_popup = json_encode($popup);
-	            //$item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-
-	            $item_class["admin"] = "admin-bar";
+				if(strlen($block["admin"]["popup"])) {
+	                $serial_popup = json_encode($popup);
+	                
+	                $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+	                $item_class["admin"] = "admin-bar";
+				}  
             }
 
             if(!$layout_settings["AREA_DIRECTORIES_SHOW_AJAX"]) {
@@ -615,18 +611,12 @@ function process_gallery_menu($user_path, $source_user_path = NULL, &$layout, $a
     	
     $tpl->parse("SezMenu", false);
     
-    	
-	$res["pre"] 								= $block["tpl"]["header"];
-	$res["post"] 								= $block["tpl"]["footer"];
     if(is_array($menu_params["template"]) && count($menu_params["template"])) {
     	$res["template"] = $menu_params["template"];
     	$res["template"]["offcanvas"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
-
-		$res["content"] 						= $res["template"]["content"];
-		$res["default"] 						= $res["template"]["content"];
+    	$res["content"] = $res["template"]["content"];
     } else { 
-    	$res["content"] 						= $tpl->rpparse("main", false);
-		$res["default"] 						= $res["pre"] . $res["content"] . $res["post"];
+		$res["content"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
     }
     
 /*    

@@ -5,5 +5,33 @@
     </default_css>
 
     <default_js>
+        <jquery>
+            <path></path>
+            <file>jquery.js</file>
+        </jquery>
+        <jquery.migrate>
+            <path>/themes/library/jquery</path>
+            <file>jquery-migrate.js</file>
+        </jquery.migrate>        
+        <ff>
+            <path>/themes/library/ff</path>
+            <file>ff.js</file>
+        </ff>
+        <ff.ffEvent>
+            <path>/themes/library/ff</path>
+            <file>ffEvent.js</file>
+        </ff.ffEvent>
+        <ff.ffEvents>
+            <path>/themes/library/ff</path>
+            <file>ffEvents.js</file>
+        </ff.ffEvents>
+        <ff.ffPage>
+            <path>/themes/library/ff</path>
+            <file>ffPage.js</file>
+        </ff.ffPage>
+        <mainjs>
+            <path>/themes/gallery/javascript</path> 
+            <file>main.js</file>
+        </mainjs>
     </default_js>
 </configdata>

@@ -56,8 +56,8 @@ function update_vgallery_seo($smart_url, $ID_item, $ID_lang, $meta_description =
                 , "robots"                  => false
                 , "canonical"               => false
                 , "meta"                    => false
-                , "httpstatus"              => false   
-
+                , "httpstatus"              => false
+                
         		, "keywords" => array(
         			"field" => "description"
         			, "where" => "(SELECT vgallery_fields.ID FROM vgallery_fields INNER JOIN vgallery_type ON vgallery_type.ID = vgallery_fields.ID_type WHERE vgallery_fields.name = 'keywords' AND vgallery_type.name = 'System')"
@@ -105,20 +105,19 @@ function update_vgallery_seo($smart_url, $ID_item, $ID_lang, $meta_description =
     if($ID_item > 0) {
     	if($default_params)
     		$params["skip_primary_lang"] = true;
-
+    		
     	if(is_array($smart_url)) 
     	{
     		if(!$smart_url["smart_url"]) {
     			$smart_url["smart_url"] = ffCommon_url_rewrite($smart_url["title"]);
 			}
     	} 
-    		
+
 		if($params["rel_field"]) 
 			$res = update_vgallery_seo_multi($smart_url, $ID_item, $ID_lang, $meta_description, $limit_parent, $meta_keywords, $visible, $stop_words, $params, $limit, $alt_url, $permalink_parent);
 		else
 			$res = update_vgallery_seo_mono($smart_url, $ID_item, $ID_lang, $meta_description, $limit_parent, $meta_keywords, $visible, $stop_words, $params, $limit, $alt_url, $permalink_parent);
 	}
-    
     
     if((!$limit || $limit == "primary") && $ID_lang == LANGUAGE_DEFAULT_ID && is_array($default_params) && is_array($res) && count($res)) {
     	$arrSqlField = array();
@@ -507,7 +506,9 @@ function update_vgallery_seo_multi($primary_meta, $ID_item, $ID_lang, $meta_desc
 		        $arrShortDesc = get_short_description($real_meta_description);
 
 		    $real_meta_description = $arrShortDesc["text"];
-			            
+
+		   	$res["description"] = $real_meta_description;   
+			
 			if(!$limit || $limit == "lang") {
 			    if($update_meta_description) {
 				    $sSQL = "UPDATE 
@@ -786,8 +787,8 @@ function update_vgallery_seo_multi($primary_meta, $ID_item, $ID_lang, $meta_desc
 				|| ($ID_lang != LANGUAGE_DEFAULT_ID
 					&& (!$limit || $limit == "lang")
 				)
-			) {		
-//			if(!($params["skip_primary_lang"] && $ID_lang != LANGUAGE_DEFAULT_ID)) {			
+			) {	
+//			if(!($params["skip_primary_lang"] && $ID_lang != LANGUAGE_DEFAULT_ID)) {
 //				if(!$limit || $limit == "lang") {	    
 				$sSQL = "SELECT `" . $params["table"] . "`.*  
         				FROM `" . $params["table"] . "` 
@@ -849,8 +850,8 @@ function update_vgallery_seo_multi($primary_meta, $ID_item, $ID_lang, $meta_desc
 							)";
 					$db->execute($sSQL);
 				}
-//				}
 			}
+//			}
 			$res["permalink"] = stripslash($res["permalink_parent"]) . "/" . $res["smart_url"];
 		}
 	}	
@@ -883,7 +884,7 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 		: "ID"
 	);
 	
-	$sSQL = "SELECT `" . $params["table"] . "`.ID 
+	$sSQL = "SELECT `" . $params["table"] . "`.ID
 			FROM `" . $params["table"] . "` 
                 " . ($params["skip_primary_lang"] && $params["table"] != $params["primary_table"] 
                 	? " INNER JOIN `" . $params["primary_table"] . "` ON `" . $params["primary_table"] . "`.`" . $primary_key  . "` = `" . $params["table"] . "`.`" . $params["rel_key"] . "`"
@@ -908,7 +909,7 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 	    }*/   
 		if($params["smart_url"] && $arrPrimaryMeta["smart_url"]) { 
 			//Inserisce/Aggiorna lo Smart_url
-			$sSQL = "SELECT `" . $params["table"] . "`.ID 
+			$sSQL = "SELECT `" . $params["table"] . "`.ID
 				    FROM `" . $params["table"] . "` 
                 		" . ($params["skip_primary_lang"] && $params["table"] != $params["primary_table"] 
                 			? " INNER JOIN `" . $params["primary_table"] . "` ON `" . $params["primary_table"] . "`.`" . $primary_key  . "` = `" . $params["table"] . "`.`" . $params["rel_key"] . "`"
@@ -957,7 +958,8 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 			$arrSqlField["insert"]["field"]["meta_title_alt"] = "`" . $params["header"] . "`";
 			$arrSqlField["insert"]["value"]["meta_title_alt"] = $db->toSql($arrPrimaryMeta["header"]);
 		}
-        if($params["robots"] && isset($arrPrimaryMeta["robots"])) {
+        
+	    if($params["robots"] && isset($arrPrimaryMeta["robots"])) {
 	    	$res["robots"] = $arrPrimaryMeta["robots"];
 
 			$arrSqlField["update"]["meta_robots"] = "`" . $params["robots"] . "` = " . $db->toSql($arrPrimaryMeta["robots"]);
@@ -984,7 +986,7 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 			$arrSqlField["update"]["meta_canonical"] = "`" . $params["canonical"] . "` = " . $db->toSql($arrPrimaryMeta["canonical"]);
 			$arrSqlField["insert"]["field"]["meta_canonical"] = "`" . $params["canonical"] . "`";
 			$arrSqlField["insert"]["value"]["meta_canonical"] = $db->toSql($arrPrimaryMeta["canonical"]);
-		} 
+		}        
 	}
 	
 	if($visible !== null && $params["visible"]) {
@@ -994,7 +996,7 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 		$arrSqlField["insert"]["field"]["visible"] = "`" . $params["visible"] . "`";
 		$arrSqlField["insert"]["value"]["visible"] = $db->toSql($visible);
 	}	
-	
+
 	if($meta_description !== null) {
 	    //Check Meta_description se aggiornabile
 		$allow_edit_meta_description = false;
@@ -1025,6 +1027,7 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 		    
 		    $real_meta_description = $meta_description;
 		}
+
 
 		//Inserisce /aggiorna il Meta_description
 		if($allow_edit_meta_description) {
@@ -1093,14 +1096,7 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 		$arrSqlField["insert"]["field"]["alt_url"] = "`" . $params["alt_url"] . "`";
 		$arrSqlField["insert"]["value"]["alt_url"] = $db->toSql($alt_url);
 	}	
-    if($params["smart_url"] && $res["title"] && !$res["smart_url"]) {
-    	$res["smart_url"] = ffCommon_url_rewrite($res["title"]);
 
-    	$arrSqlField["update"]["smart_url"] = "`" . $params["smart_url"] . "` = " . $db->toSql($res["smart_url"]);
-		$arrSqlField["insert"]["field"]["smart_url"] = "`" . $params["smart_url"] . "`";
-		$arrSqlField["insert"]["value"]["smart_url"] = $db->toSql($res["smart_url"]);
-	}
-    		
 	if($permalink_parent !== null && $params["permalink_parent"]) {
 		$res["permalink_parent"] = $permalink_parent;
 
@@ -1116,13 +1112,13 @@ function update_vgallery_seo_mono($primary_meta, $ID_item, $ID_lang, $meta_descr
 			$arrSqlField["insert"]["field"]["permalink"] = "`" . $params["permalink"] . "`";
 			$arrSqlField["insert"]["value"]["permalink"] = $db->toSql($res["permalink"]);
 		}
-	}
-		
+	}	
+
 	if(!$params["skip_primary_lang"]
 		|| ($ID_lang != LANGUAGE_DEFAULT_ID
 			&& (!$limit || $limit == "lang")
 		)
-	) {
+	) {	
 //	if(!($params["skip_primary_lang"] && $ID_lang != LANGUAGE_DEFAULT_ID)) {
 //		if(!$limit || $limit == "lang") {
 		if($ID_node) {

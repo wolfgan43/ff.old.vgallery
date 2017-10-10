@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configdata>
-	<sections>
-		<top>
-			<topbar default="true"  />
-			<account />
-			<accountpanel />
-			<admin label="false" />
-			<favorite label="false" />
-			<brand />
-			<breadcrumb />
-		</top>
-		<nav>
-			<rightcol />
-		</nav>
-	</sections>
 	<settings>
 		<general label="General">
             <USE_ADMIN_AJAX extended_type="Boolean" label="Use Admin Ajax" default="1" />
@@ -220,7 +206,7 @@
             <MOD_SEC_SOCIAL_FF_CLIENT_ID label="FF Single Sign On Client ID" default="" />
             <MOD_SEC_SOCIAL_FF_CLIENT_SECRET label="FF Single Sign On Client Secret" default="" />
             <MOD_SEC_SOCIAL_FF_OAUTH2_URL label="FF Single Sign On oAuth2 Remote Url" default="" />
-                        
+            
             <MOD_SEC_SOCIAL_FACEBOOK extended_type="Boolean" label="Enable Facebook Login" default="0" />
             <MOD_SEC_SOCIAL_FACEBOOK_APPID label="Facebook App ID" default="" />
             <MOD_SEC_SOCIAL_FACEBOOK_SECRET label="Facebook App Secret" default="" />
@@ -414,7 +400,6 @@
 				)
 			" />
             <MOD_SEC_OAUTH2_SERVER extended_type="Boolean" label="Enable oAuth2 Login" default="0" />
-
             <MOD_SEC_SOCIAL_GOOGLE extended_type="Boolean" label="Enable Google Social Login" default="0" />
             <MOD_SEC_SOCIAL_GOOGLE_APP_NAME label="Google App Name" default="" />
             <MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID label="Google Client ID" default="" />

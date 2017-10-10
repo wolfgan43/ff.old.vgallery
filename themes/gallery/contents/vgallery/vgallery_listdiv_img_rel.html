@@ -1,0 +1,42 @@
+<!--BeginSezVGallerys-->
+<!--BeginSezPageNavigatorTop-->
+<div class="pagenavigator top"> {PageNavigator} </div>
+<!--EndSezPageNavigatorTop-->
+        <!--BeginSezVGalleryRow-->
+	    <!--BeginSezVGallery-->
+ 			<div class="vgallery_item_rel {vg_switch_style}" id="{real_name}" >
+                {admin}
+
+                <!--BeginSezGroup-->
+                <!--BeginSezGroupContainerStart-->
+                <div class="{group_class}">
+                <!--EndSezGroupContainerStart-->
+                
+                <!--BeginSezVGalleryImage-->
+                <!--BeginSezVGalleryImageNode-->
+                {content}
+                <!--EndSezVGalleryImageNode-->
+                <!--EndSezVGalleryImage-->
+                <!--BeginSezVGalleryDescription-->
+                <div class="vgallery_description {class_plugin}">
+                <!--BeginSezVGalleryDescriptionNode-->
+                {content}
+                <!--EndSezVGalleryDescriptionNode-->
+                </div>
+                <!--EndSezVGalleryDescription-->
+
+                <!--BeginSezGroupContainerEnd-->
+                </div>
+                <!--EndSezGroupContainerEnd-->
+                <!--EndSezGroup-->
+                
+		</div>
+        <!--EndSezVGallery-->
+        <!--EndSezVGalleryRow-->
+<!--BeginSezPageNavigatorBottom-->
+<div class="pagenavigator bottom"> {PageNavigator} </div>
+<!--EndSezPageNavigatorBottom-->
+<!--EndSezVGallerys-->
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->

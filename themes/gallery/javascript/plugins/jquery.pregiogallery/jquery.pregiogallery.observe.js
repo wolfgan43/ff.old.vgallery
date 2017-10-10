@@ -6,6 +6,7 @@ ff.cms.fn.pregiogallery = function(targetid) {
 	jQuery(targetid + ".pregiogallery").parent().parent().parent().wrap('<div class="gallerycontainer" />');
 	jQuery(targetid + ".pregiogallery").parent().parent().parent().after('<div class="galleryviewer"></div>');
 	jQuery(".galleryviewer").html('<a href="' + jQuery(".gallery_image:first").children("a").attr("href") + '" class="imglink"><img src="' + jQuery(".gallery_image:first").children("a").attr("href") + '"/></a>').hide().fadeIn();
+	
 		jQuery(".gallery_image").children("a").each(function(){
 			jQuery(this).click(function() {
 				var imgsrc = jQuery(this).attr("href");
@@ -21,13 +22,13 @@ ff.cms.fn.pregiogallery = function(targetid) {
 			}, function() {
 				jQuery(this).removeClass("imghover");
 		});
-		ff.load("jquery.plugins.prettyphoto", function() {	
+		ff.pluginLoad("jquery.prettyPhoto", "/themes/library/plugins/jquery.prettyphoto/jquery.prettyphoto.js", function() {	
 			jQuery(".imglink").prettyPhoto({
 				opacity: 0.60, /* Value between 0 and 1 */
 				allow_resize: true, /* Resize the photos bigger than viewport. true/false */
 				default_width: 500,
 				default_height: 344
 			});		
-		});
+		}, true);
 		
 };

@@ -3,59 +3,64 @@
 <div class="cleared"></div>
 <script type="text/javascript">  
     jQuery(function() {
-        ff.load(["ff.ajax", "jquery.plugins.jstree"], function() {
-            ff.ajax.blockUI();
+        ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {
+            ff.pluginLoad("jquery.jstree", "/themes/library/plugins/jquery.jstree/jquery.jstree.min.js", function() {
+                ff.injectCSS("js.tree", "/themes/library/plugins/jquery.jstree/themes/default/style.css", function() { 
+                    ff.ajax.blockUI();
 
-            jQuery("#jqtree").jstree({
-                "core" : {
-                    "animation" : 0
-                },
-                "json_data" : {
-                    "ajax" : {
-                        "url" : "{site_path}{json_path}?json=1",
-                        "aync": false,
-                         "complete" : function() {
-                            jQuery('#jqtree li.checked').each(function() {
-                                jQuery.jstree._reference('#jqtree').check_node(this);
-                            });         
-                            ff.ajax.unblockUI();
-                        }
-                    }
-                },
-                "ui" : {
-                    "select_limit" : 1
-                    
-                },
-                "themes" : {
-                    "theme" : "default",
-                    "dots" : true,
-                    "icons" : true
-                },
-                "types" : {
-                    "types" : {
-                        "folder" : {
-                            "icon" : { 
-                                "image" : ff.base_path + "/themes/library/plugins/jquery.jstree/themes/gallery/home.png"
+                    jQuery("#jqtree").jstree({
+                        "core" : {
+                            "animation" : 0
+                        },
+                        "json_data" : {
+                            "ajax" : {
+                                "url" : "{site_path}{json_path}?json=1",
+                                "aync": false,
+                                 "complete" : function() {
+                                    jQuery('#jqtree li.checked').each(function() {
+                                        jQuery.jstree._reference('#jqtree').check_node(this);
+                                    });         
+                                    ff.ajax.unblockUI();
+                                }
                             }
                         },
-                        "file" : {
-                            "icon" : { 
-                                "image" : ff.base_path + "/themes/library/plugins/jquery.jstree/themes/gallery/file.png"
+                        "ui" : {
+                            "select_limit" : 1
+                            
+                        },
+                        "themes" : {
+                            "theme" : "default",
+                            "dots" : true,
+                            "icons" : true
+                        },
+                        "types" : {
+                            "types" : {
+                                "folder" : {
+                                    "icon" : { 
+                                        "image" : ff.site_path + "/themes/library/plugins/jquery.jstree/themes/gallery/home.png" 
+                                    }
+                                },
+                                "file" : {
+                                    "icon" : { 
+                                        "image" : ff.site_path + "/themes/library/plugins/jquery.jstree/themes/gallery/file.png" 
+                                    }
+                                },
+                                "default" : {
+                                    "icon" : { 
+                                        "image" : ff.site_path + "/themes/library/plugins/jquery.jstree/themes/gallery/folder.png" 
+                                    }
+                                }
                             }
                         },
-                        "default" : {
-                            "icon" : { 
-                                "image" : ff.base_path + "/themes/library/plugins/jquery.jstree/themes/gallery/folder.png"
-                            }
-                        }
-                    }
-                },
-                "checkbox" : {
-                    
-                },
-                "plugins" : ["themes", "json_data", "ui", "checkbox", "types"]
+                        "checkbox" : {
+                            
+                        },
+                        "plugins" : ["themes", "json_data", "ui", "checkbox", "types"]
+                    });
+                });
             });
         });
+        
     });
     function updateManifesto(id) {
         var params = "";

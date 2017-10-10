@@ -12,7 +12,7 @@
     </rule>
 	<rule id="mod_sec_login">
         <priority>NORMAL</priority>
-        <source>^/login(.*)|^/admin/login(.*)|^/restricted/login(.*)|^/builder/login(.*)|^/ecommerce/login(.*)</source>
+        <source>^/login(.*)|^/.*/login(.*)</source>
         <destination>
             <module>security</module>
             <url>/login$1</url>
@@ -95,6 +95,14 @@
         <source>^/register(.*)</source>
         <reverse>/register</reverse>
     </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/users/settings(.*)</source>
+        <destination>
+            <module>restricted</module>
+            <url>/settings$1</url>
+        </destination>
+    </rule>
     <rule id="mod_sec_social">
         <priority>VERY_HIGH</priority>
 		<source>/login/social(/[^/]*)?(/[^/]*)?$</source>
@@ -103,8 +111,8 @@
             <url>/social$1$2</url>
         </destination>
         <reverse>/login/social</reverse>
-    </rule> 
-    <!--
+    </rule>     
+	<!--
     <rule id="mod_sec_check_session">
         <priority>HIGH</priority>
         <source>/services/mod_security/check_session</source>
@@ -148,48 +156,38 @@
     </rule>-->  	
 	<rule id="mod_sec_profile">
 		<priority>NORMAL</priority>
-		<source>^/restricted/dashboard(.*)</source>
+		<source>^/restricted/profile(.*)</source>
 		<destination>
 			<module>security</module>
 			<url>/profile$1</url>
 		</destination>
-		<reverse>/restricted/dashboard</reverse>
+		<reverse>/restricted/profile</reverse>
 	</rule>
-	<rule id="mod_sec_domains">
+	<!--	<rule id="mod_sec_register">
+		<priority>NORMAL</priority>
+		<source>^/registrati(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/register$1</url>
+		</destination>
+		<reverse>/registrati</reverse>
+	</rule>-->
+	<rule id="mod_sec_users">
+        <priority>NORMAL</priority>
+        <source>^/admin/users(.*)</source>
+        <destination>
+            <module>security</module>
+            <url>/users$1</url>
+        </destination>
+	</rule>
+	<!--<rule>
 		<priority>NORMAL</priority>
 		<source>^/admin/domains(.*)</source>
 		<destination>
-			<url>/conf/gallery/mc$1</url>
-		</destination>
-		 <reverse>/admin/domains</reverse>
-		 <accept_path_info />
-	</rule>
-    <rule id="mod_sec_profiling">
-		<priority>NORMAL</priority>
-		<source>^/admin/profiling(.*)</source>
-		<destination>
 			<module>security</module>
-			<url>/profiling$1</url>
+			<url>/domains$1</url>
 		</destination>
-		<reverse>/admin/profiling</reverse>
-	</rule>
-	<rule id="mod_sec_users">
-        <priority>NORMAL</priority>
-        <source>^/admin/auth/users(.*)</source>
-        <destination> 
-            <url>/ui/restricted/auth/users$1</url>
-        </destination>
-	    <reverse>/admin/auth/users</reverse>
-    </rule>
-	<rule id="mod_sec_setparams">
-		<priority>NORMAL</priority>
-		<source>^/restricted/security/setparams(.*)</source>
-		<destination>
-			<module>security</module>
-			<url>/services/set_params</url>
-		</destination>
-		<reverse>/restricted/security/setparams</reverse>
-	</rule>	
+	</rule>-->
 	<rule>
 		<priority>NORMAL</priority>
 		<source>^/services/resources-json/mod-security-packages(.*)</source>
@@ -214,14 +212,43 @@
 			<url>/services/janrain_auth</url>
 		</destination>
 	</rule>
-    <rule id="mod_sec_oauth2">
+	<rule>
+		<priority>VERY_HIGH</priority>
+		<source>^/admin(.*)</source>
+		<destination>
+			<module>security</module>
+			<url>/auth$0</url>
+		</destination>
+        <accept_path_info />
+        <process_next />
+	</rule>
+    <rule>
+        <priority>VERY_HIGH</priority>
+        <source>^/restricted(.*)</source>
+        <destination>
+            <module>security</module>
+            <url>/auth$0</url>
+        </destination>
+        <accept_path_info />
+        <process_next />
+    </rule>
+    <rule>
+        <priority>VERY_HIGH</priority>
+        <source>^/manage(.*)</source>
+        <destination>
+            <module>security</module>
+            <url>/auth$0</url>
+        </destination>
+        <accept_path_info />
+        <process_next />
+    </rule>
+	<rule>
 		<priority>NORMAL</priority>
 		<source>^/login/social/oauth2/(.+)</source>
 		<destination>
 			<module>security</module>
 			<url>/oauth2/$1</url>
 		</destination>
-		<reverse>/login/social/oauth2</reverse>
 	</rule>
 	<rule>
 		<priority>NORMAL</priority>
@@ -239,5 +266,5 @@
 			<url>/services/oauth2/$1</url>
 		</destination>
 		<reverse>/services/oauth2</reverse>
-	</rule>
+	</rule>    
 </configdata>

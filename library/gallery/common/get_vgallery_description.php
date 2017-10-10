@@ -189,12 +189,12 @@ function get_vgallery_description($full_path, $return_string = null, $reference 
                             ON (
                                 vgallery_rel_nodes_fields.ID_nodes = vgallery_nodes.ID
                                 AND vgallery_rel_nodes_fields.ID_fields = ( SELECT ID FROM vgallery_fields WHERE vgallery_fields.name = 'meta_title' )
-                                AND vgallery_rel_nodes_fields.ID_lang = ( SELECT ID FROM " . FF_PREFIX . "languages WHERE " . FF_PREFIX . "languages.status = '1' AND " . FF_PREFIX . "languages.code = " . $db_additional_info->toSql(LANGUAGE_INSET, "Text") . ")
+                                AND vgallery_rel_nodes_fields.ID_lang = " . $db_additional_info->tosql(($arrFormField_value["disable_multilang"] ? LANGUAGE_DEFAULT_ID : LANGUAGE_INSET_ID), "Number") . "
                             )"
                         : (LANGUAGE_INSET_ID == LANGUAGE_DEFAULT_ID
                             ? ""
                             : " INNER JOIN vgallery_nodes_rel_languages ON vgallery_nodes_rel_languages.ID_nodes = vgallery_nodes.ID
-                                    AND vgallery_nodes_rel_languages.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number")
+                                    AND vgallery_nodes_rel_languages.ID_lang = " . $db_additional_info->tosql(($arrFormField_value["disable_multilang"] ? LANGUAGE_DEFAULT_ID : LANGUAGE_INSET_ID), "Number")
                         )
                     ) . "
 				WHERE 

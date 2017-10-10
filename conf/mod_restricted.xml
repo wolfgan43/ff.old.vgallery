@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+<menu>
+	<default path="/" hide="true" />
+</menu>
+<sections>
+	<top>
+		<topbar default="true" />
+		<account />
+		<admin />
+	</top>
+	<nav>
+		<rightcol />
+	</nav>
+</sections>
+</configdata>

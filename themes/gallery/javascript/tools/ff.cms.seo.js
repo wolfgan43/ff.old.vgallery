@@ -1,27 +1,3 @@
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 ff.cms.seo = {
 	__init : false,
 	$container : {},
@@ -59,7 +35,7 @@ ff.cms.seo = {
 	init:function(container) {
 		var that = this; 
 		if(!that.__init) {
-			that.$container = jQuery(".adminbar .seo-link").parent();
+			that.$container = jQuery(".toolbaradmin .seo-link").parent();
 
 			that.$container.hover(function() {
 				jQuery(this).addClass("selected");
@@ -162,7 +138,7 @@ ff.cms.seo = {
 			$bar.height(2*perc + "px");		
 		}
 		jQuery(".seo-report", this.$container).removeClass("hidden");
-		jQuery(".adminbar").mouseover();
+		jQuery(".toolbaradmin").mouseover();
 
 		jQuery(".seo-success .seo-count", this.$container).text(this.total.success);
 		jQuery(".seo-warning .seo-count", this.$container).text(this.total.warning);
@@ -247,21 +223,20 @@ ff.cms.seo = {
 
 			if(!grab)
 				grab = 3;
-
+				 
 			//var reOne = /\b(\w+?)\b/gi;
 			var reOne = /[\w\u0430-\u044f]+/gi;
 			var stopWords = ff.cms.seo.stopWords() || "";
 
 			var result = {
-				"No StopWords" : []
+				"StopWords" : []
 				, "All" : []
 			};
 			var rawWords = textPlain.match(reOne);
-
 			if(rawWords) {
 				for(var i=1; i<=grab; i++) {
 					if(stopWords) {
-						result["No StopWords"].push(countWords(grabKeywords(stripStopWords(rawWords, stopWords),i), limit)[0]); //Without StopWords
+						result["StopWords"].push(countWords(grabKeywords(stripStopWords(rawWords, stopWords),i), limit)[0]); //Without StopWords
 					}
 					result["All"].push(countWords(grabKeywords(rawWords,i), limit)[0]); //With StopWords
 				}
@@ -302,11 +277,11 @@ ff.cms.seo = {
 		function sortByNumericValue(A, limit, stopWords) {//using objects
 			var B=[];
 			var C=[];
-
+			
 			var reOmit = (stopWords
 					? new RegExp('\\b('+stopWords+')\\b',"gi")
 					: null
-				);
+				);	
 
 			for (i in A) {
 				if(reOmit && !i.match(reOmit))
@@ -367,7 +342,7 @@ ff.cms.seo = {
 			var elem = jQuery(selector).clone();
 
 			if(elem.length > 0) {
-				jQuery(".adminbar", elem).remove();
+				jQuery(".toolbaradmin", elem).remove();
 				jQuery("#cms-editor-container", elem).remove();
 				jQuery(".toolbar", elem).remove();
 				jQuery("SCRIPT", elem).remove();
@@ -407,24 +382,26 @@ ff.cms.seo = {
 
 			description = '<table><thead><tr><th>Count</th><th>Min</th><th>Max</th></tr></thead><tbody><tr><td>' + countChar + '</td><td>' + min + '</td><td>' + max + '</td><tr></tbody></table>';
 
-			
-
 			return {
 				"score" : score
 				, "description" : description
 			};
 		};
+
 		function description(content) {
 			var score = 0;
 			var description = '';
 			var min = 70;
 			var max = 160;
+			var countChar = undefined;
 
 			if(!content) {
-				content = jQuery("META[name='description']", document.head).attr("content");
+				(content = jQuery("META[name='description']", document.head).attr("content")) || (countChar = ('NA'));
 			}
 
-			var countChar = content.length;
+			if (!countChar) { 
+				countChar = content.length; 
+
 			if(countChar >= min) {
 				if(countChar <= max) {
 					score = 2;
@@ -432,7 +409,7 @@ ff.cms.seo = {
 			} else {
 				score = 1;
 			}
-
+		}
 			description = '<table><thead><tr><th>Count</th><th>Min</th><th>Max</th></tr></thead><tbody><tr><td>' + countChar + '</td><td>' + min + '</td><td>' + max + '</td><tr></tbody></table>';
 
 			return {
@@ -440,43 +417,88 @@ ff.cms.seo = {
 				, "description" : description
 			};
 		};
+
+
 		function headings(content) {
 			var score = 0;
 			var description = '';
 			var otherH = false;
 			var min = 10;
 			var max = 70;
+			var headingS = {
+				"h1" : {
+					"obj" : undefined,
+					"countChar" : undefined,
+					"reps" : undefined
+				},
+				"h2" : {
+					"obj" : undefined,
+					"countChar" : 0,
+					"reps" : undefined
+				},
+				"h3" : {
+					"obj" : undefined,
+					"countChar" : 0,
+					"reps" : undefined
+				}
+			};
+			description = '<table><thead><tr><th>Header</th><th>Reps</th><th>Count</th><th>Min</th><th>Max</th></tr></thead><tbody>';
 
-			if(!content) {
-				content = jQuery("h1, h2, h3", ".container, .container-fluid", document.body);
+			if(!content) { 
+				headingS.h1.obj = jQuery("h1", document.body);
+				headingS.h2.obj = jQuery("h2", document.body);
+				headingS.h3.obj = jQuery("h3", document.body);
 			}
+
+			headingS.h1.reps = headingS.h1.obj.length || 0;
+			if(headingS.h1.obj.length == 1) { 
+				headingS.h1.countChar = jQuery(headingS.h1[0]).text().length;
+				if(headingS.h1.countChar >= min) {
+					if(headingS.h1.countChar <= max) {
+						score = 2;
+					}
+				} 
+				else {
+					score = 1;
+				}
+			}
+
+			headingS.h2.reps = headingS.h2.obj.length || 0;
+			headingS.h3.reps = headingS.h3.obj.length || 0;
+
 			
-			description = '<table><thead><tr><th>Header</th><th>Count</th><th>Min</th><th>Max</th></tr></thead><tbody>';
+
+		/*
+	headingS.h2.countChar = jQuery(headingS.h2).text().length;
+			headingS.h3.countChar = jQuery(headingS.h3).text().length;
+
 			jQuery(content).each(function() {
-				var countChar = jQuery(this).text().length;
-				if(jQuery(this).hasClass("h1")) {
-					if(countChar >= min) {
-						if(countChar <= max) {
-							score = 2;
+				if (!countChar) { 
+					var countChar = jQuery(this).text().length;
+					if(jQuery(this).is("h1")) {
+						if(countChar >= min) {
+							if(countChar <= max) {
+								score = 2;
+							}
+						} else {
+							score = 1;
 						}
 					} else {
-						score = 1;
+						otherH = true;
+						
 					}
-				} else {
-					otherH = true;
-				}
-				description += '<tr><td>' + jQuery(this).prop("tagName") + '</td><td>' + countChar + '</td><td>' + min + '</td><td>' + max + '</td><tr>';
-			});
+				}*/
+			description += '<tr><td>H1</td><td>' + 	headingS.h1.reps + '</td><td>' + 	headingS.h1.countChar + '</td><td>' + min + '</td><td>' + max + '</td><tr>';
+			description += '<tr><td>H2</td><td>' + 	headingS.h2.reps + '</td><td>' + 	headingS.h2.countChar + '</td><td>' + min + '</td><td>' + max + '</td><tr>';
+			description += '<tr><td>H3</td><td>' + 	headingS.h3.reps + '</td><td>' + 	headingS.h3.countChar + '</td><td>' + min + '</td><td>' + max + '</td><tr>';
 			description += '</tbody></table>';
 			
-			if(status == 2 && !otherH)
-				 status = 1;
-
 			return {
 				"score" : score
 				, "description" : description
 			};
-		};
+		}
+
 		function keyWordsCloud(content, limit, grab) {
 			var score = 0;
 			var description = '';
@@ -494,8 +516,7 @@ ff.cms.seo = {
 				};
 				for(var keyCompare in keyCompareFrom) {
 					content.append(" " + keyCompareFrom[keyCompare]);
-				}	
-							
+				}			
 			}
 
 			var keywordsStats = ff.cms.seo.wordStats(content, limit, grab) || [];
@@ -513,6 +534,7 @@ ff.cms.seo = {
 			function compareKeyWord(keyWord, pool) {
 				var res = '';
 				var countFailed = 0;
+
 				keyWord = keyWord.replace(/ /g, ".*");
 				if(pool) {
 					for(elemKey in pool) {
@@ -522,13 +544,10 @@ ff.cms.seo = {
 								res += '<td><i class="fa ' + "fa-check-circle vg-success" + '"></i></td>';	
 							} else {
 								res += '<td><i class="fa ' + "fa-times-circle vg-danger" + '"></i></td>';
-								
 								countFailed++;
-							}
-						
-							
+							}	
 						}
-					}			
+					}
 				}
 				return { "content" : res, "bold" : (countFailed ? false : true)};
 			}
@@ -546,10 +565,12 @@ ff.cms.seo = {
 						, "H3" : (jQuery("body > H3", document).length ? jQuery("body > H3", document).text() : "")
 					};
 				}
+
 				for(var keyCompare in keyCompareFrom) {
 					content.append(" " + keyCompareFrom[keyCompare]);
 				}
 			}
+
 			var keywordsStats = ff.cms.seo.wordStats(content, limit, grab) || [];
 
 			if(keyCompareFrom) {
@@ -597,32 +618,120 @@ ff.cms.seo = {
 				, "description" : keyConsistencyHtml
 			};
 		};		
-		function images(content) {
+		
+		function images(content) { 
 			var score = 0;
+			var max = 100;
 			var description = '';
 
-			if(!content) {
-				content = document.body;		
+			if(!content) { 
+				content = jQuery("img", document.body);		
 			}
-			
+
+			var countChar = content.length;
+			if(countChar <= max){
+				score = 2;
+			} else{
+				score = 1;
+			}
+			description = '<table><thead><tr><th>Count</th><th>Max</th></tr></thead><tbody><tr><td>' + countChar + '</td><td>' + max + '</td><tr></tbody></table>';
+
+
 			return {
 				"score" : score
 				, "description" : description
 			};
 		};
-		function textHtmlRatio(content) {
-			var score = 0;
+
+
+		function textHtmlRatio(el) {
+			var text = '';
+			var characterH = document.documentElement.innerHTML.length; 
+			var max = 20;
+			var min = 10;
+			var warning = 30;
+			var score = 0; 
 			var description = '';
 
-			if(!content) {
-				content = document.body;		
-			}
-			
+			if(!el) {
+				el = document.getElementById("frmMain");
+			} 
+
+			text = childrenRatio(el).length;
+
+			function childrenRatio(el) { 
+				var texT = '';
+				
+				/*var pippo = el.className;
+				console.log(pippo);
+				if(typeof pippo == "string")
+				console.log(pippo.indexOf("ciao"));*/
+
+		    	// Text node (3) or CDATA node (4) - return its texT
+		    	if ( (el.nodeType === 3) || (el.nodeType === 4) ) { 
+		        texT = el.nodeValue.replace(/\s*/i,''); 
+
+		    	// If node is an element (1) and an img, input[type=image], or area element, return its alt texT
+		    	} else if ( (el.nodeType === 1) && (
+		            (el.tagName.toLowerCase() == 'img') ||
+		            (el.tagName.toLowerCase() == 'area') ||
+		            ((el.tagName.toLowerCase() == 'input') && el.getAttribute('type') && (el.getAttribute('type').toLowerCase() == 'image'))
+		            ) ) { 
+		        	texT = el.getAttribute('alt') || ''; 
+		    	} else if ( (el.nodeType === 1) && (
+		            ((el.tagName.toLowerCase() == 'input') && el.getAttribute('type') && (el.getAttribute('type').toLowerCase() != 'hidden'))
+		            || (el.tagName.toLowerCase() == 'textarea')
+		            || (el.tagName.toLowerCase() == 'selection')
+		            ) ) { 
+		      	texT = el.value; 
+		    	// Traverse children unless this is a script or style element
+		    	} else if  ( (el.nodeType === 1) && !el.tagName.match(/^(script|style)$/i) || ((typeof el.className === "string") && el.className.match(/navadmin|toolbaradmin|top|ui-draggable/i))) {
+  		    	// remove these classes from html --> .navadmin .toolbaradmin .top .ui-draggable
+
+		        var children = el.childNodes;
+		        for (var i = 0, l = children.length; i < l; i++) { 
+		            texT += childrenRatio(children[i]); 
+		         }
+		    	} 
+
+		    	return texT;
+	   	} 
+	    	
+
+	    	value = Math.round(text * 100 / characterH );
+	    	if((value >= min) && (value <= max)) { 
+				score = 2;
+			} else if(value < min){ 
+				score = 0;
+			} else if((value > max) && (value <= warning)){ 
+				score = 1;
+			} 
+
+			description = '<table><thead><tr><th>Count</th><th>Min</th><th>Max</th></tr></thead><tbody><tr><td>' + value + '%' + '</td><td>' + min + '%' + '</td><td>' + max + '%' + '</td><tr></tbody></table>';
+
 			return {
 				"score" : score
 				, "description" : description
 			};
 		};
+/*
+			var score = 0;
+
+			var description = '';
+
+			if(!content) {
+				content = document.body;		
+			}
+			var text = this.getElementText(content);
+
+			console.log(text);
+			return {
+				"score" : score
+				, "description" : description
+			};
+		};
+*/
+
 		function googlePublisher(content) {
 			var score = 0;
 			var description = '';
@@ -637,18 +746,34 @@ ff.cms.seo = {
 			};
 		};
 		function inPageLinks(content) {
+
 			var score = 0;
+			var min = 1;
+			var max = 100;
 			var description = '';
 
 			if(!content) {
-				content = document.body;		
+				content = jQuery("a", document.body);		
 			}
 			
+			var countChar = content.length;
+			if(countChar <= max){
+				score = 2;
+			} else {
+				score = 1;
+			}
+			
+			description = '<table><thead><tr><th>Count</th><th>Max</th></tr></thead><tbody><tr><td>' + countChar + '</td><td>' + max + '</td><tr></tbody></table>';
+
 			return {
 				"score" : score
 				, "description" : description
 			};
 		};
+
+
+
+
 		function brokenLinks(content) {
 			var score = 0;
 			var description = '';
@@ -1175,7 +1300,7 @@ ff.cms.seo = {
 		if(!params)
 			params = {};
 		
-		if(params["external"]) {
+		if(0 && params["external"]) {
 			res = this.getResponseByPageSpeed(params["external"]);
 		} else {
 			switch(type) {
@@ -1195,16 +1320,16 @@ ff.cms.seo = {
 					res = keyWordsConsistency(content, params["keyCompareFrom"], params["limit"], params["grab"]);
 					break;
 				case "images":
-					//res = images(content);
+					res = images(content);
 					break;
 				case "text-html-ratio":
-					//res = textHtmlRatio(content);
+					res = textHtmlRatio(content);
 					break;
 				case "google-publisher":
 					//res = googlePublisher(content);
 					break;
 				case "in-page-links":
-					//res = inPageLinks(content);
+					res = inPageLinks(content);
 					break;
 				case "broken-links":
 					//res = brokenLinks(content);
@@ -1370,7 +1495,7 @@ ff.cms.seo = {
 
 		jQuery(".seo-analysis-status", elem).html(that.statusIcons[status]);
 		jQuery(".seo-analysis-content", elem).html(res["description"]);
-		
+
 		return res["score"];
 	}, 
 	getResponseByPageSpeed : function(type) {

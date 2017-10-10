@@ -29,7 +29,6 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
     $settings_path = $globals->settings_path;
     $user_path = $globals->user_path;
     $selected_lang = $globals->selected_lang;
-
 	//$oPage->layer = "empty";
     
     $db_modules = ffDB_Sql::factory();
@@ -67,9 +66,6 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 			$sSQL_layouts = "";
 		}
 
-		if(check_function("system_get_sections"))
-        	$block_type = system_get_block_type();	 
-		
 	    $sSQL = "
 	            SELECT *
 	            FROM 
@@ -80,6 +76,7 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 	                    , layout.ID_type AS ID_type
 	                    , layout.value AS module_name
 	                    , layout.params AS module_params
+	                    , layout_type.name AS type 
 	                    , layout_location.name AS layout_location
 	                    , layout.`order` AS `order`
 	                    , layout.`use_ajax` AS `use_ajax`
@@ -110,9 +107,14 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 	                        )
 	                    ) AS sort
 	                FROM layout
+	                    INNER JOIN layout_type ON layout_type.ID = layout.ID_type
 	                    INNER JOIN layout_location ON layout_location.ID = layout.ID_location 
 	                    LEFT JOIN layout_path ON layout_path.ID_layout = layout.ID 
-	                WHERE layout.ID_type = " . $db_modules->toSql($block_type["module"]["ID"], "Number") . "
+	                WHERE
+	                    (layout_type.name = 'MODULE'
+	                    	OR
+	                    	layout_type.name = 'COMMENT'
+	                    )
 	                    $sSQL_ajax
 	                    $sSQL_layouts
 	                ORDER BY layout.ID, sort 
@@ -120,14 +122,15 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 	            GROUP BY ID
 	            ORDER BY `order`";
 	   $db_modules->query($sSQL);
+	//OR   layout_type.name = 'ECOMMERCE'
 	   if($db_modules->nextRecord()) {
 	        do {
 				if(!$db_modules->getField("visible")->getValue())
 					continue;
 
 				$layout_location_value = $db_modules->getField("layout_location")->getValue();
-	        	switch($block_type["rev"][$db_modules->getField("ID_type", "Number", true)]) {
-					case "module":	        		
+	        	switch($db_modules->getField("type", "Text", true)) {
+					case "MODULE":	        		
 			           //ffErrorHandler::raise("2222", E_USER_ERROR, null, get_defined_vars());
 			            $res = get_module($layout_location_value
 			            			, $db_modules->getField("module_name")->getValue()
@@ -142,6 +145,21 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 			            		);
 			            
 		       			break;
+		       	   case "COMMENT":
+		       	   		$layout_comment["ajax"] = $db_modules->getField("use_ajax", "Number", true);
+		       	   		
+						$layout_comment["prefix"] = "MD-" . $layout_location_value . "-" . "comment" . "-" . str_replace("/", "", $db_modules->getField("module_name", "Text", true) . "-" . $db_modules->getField("module_params", "Text", true));
+						$layout_comment["ID"] = $db_modules->getField("ID", "Number", true);
+						$layout_comment["title"] = $db_modules->getField("layout_name", "Text", true) . " [" . $db_modules->getField("type", "Text", true) . "]";
+						$layout_comment["type"] = $db_modules->getField("type", "Text", true);
+						$layout_comment["location"] = $layout_location_value;
+						$layout_comment["visible"] = NULL;
+						if(check_function("get_layout_settings"))
+							$layout_comment["settings"] = get_layout_settings($layout_comment["ID"], $layout_comment["type"]);
+
+		       	   		if(check_function("process_addon_comment")) 
+		       	   			process_addon_comment($layout_comment["ID"], $db_modules->getField("module_params")->getValue(), null, $settings_path, $settings_path, "layout", true, $layout_comment);
+		       	   		break;
 		       	   default:
 				}
 	        } while ($db_modules->nextRecord());
@@ -149,15 +167,50 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 	}
 }
 
+function get_path_parts($content_root, $path_info) {
+	$return_values = array();
+	$tmp = $path_info; 
+	do
+	{  
+        if (is_dir($content_root . $tmp)) {
+            $tmp = $tmp . "/index";
+        }
+		if (is_file($content_root . $tmp . "." . FF_PHP_EXT))
+		{   
+			$return_values["path_info"] = ffCommon_dirname($tmp);
+			$return_values["script_name"] = basename($tmp);
+			return $return_values;
+		}
+		if ($tmp == "/index")
+			return NULL;
+		if ($tmp != "/index")
+			$tmp = ffCommon_dirname($tmp);
+		if ($tmp == "/")
+		{
+			$tmp = "/index";
+			$path_info = "/index" . $path_info;
+		}
+	} while (true);	
+}
 
-function get_module($location, $module_name, $module_params) 
+function get_module($location, $module_name, $module_params, $MD_chk = array()) 
 {
     $cm = cm::getInstance();
-    $globals = ffGlobals::getInstance("gallery");
+    $oPage = $cm->oPage;
+    $db_modules = ffDB_Sql::factory(); 
+    
+    $module_vars = array();
+    
+    $registry = ffGlobals::getInstance("gallery");
 
-    $settings_path = $globals->settings_path;
-    $user_path = $globals->user_path;
-    $selected_lang = $globals->selected_lang;
+    $settings_path = $registry->settings_path;
+    $user_path = $registry->user_path;
+    $selected_lang = $registry->selected_lang;
+    $db_gallery = ffDB_Sql::factory();
+ 
+
+    if (!isset($registry->MD_chk))
+        $registry->MD_chk = array();
 
     if(!array_key_exists("ajax", $MD_chk))
     	$MD_chk["ajax"] = true;
@@ -165,23 +218,33 @@ function get_module($location, $module_name, $module_params)
     if(!array_key_exists("own_location", $MD_chk))
     	$MD_chk["own_location"] = false;
     
-    if(is_file(FF_DISK_PATH . VG_ADDONS_PATH . "/" . $module_name . "/widget/index." . FF_PHP_EXT)) {
+    $mod_file = "/" . $module_name;
+
+    $module_vars = get_path_parts(FF_DISK_PATH . "/conf" . GALLERY_PATH_MODULE . $mod_file, "");
+
+    if(is_file(realpath(FF_DISK_PATH . "/conf" . GALLERY_PATH_MODULE . $mod_file . stripslash($module_vars["path_info"]) . "/" . $module_vars["script_name"] . "." . FF_PHP_EXT)) && strpos((FF_DISK_PATH . GALLERY_PATH_MODULE . $mod_file . $module_vars["path_info"] . $module_vars["script_name"] . "." . FF_PHP_EXT), FF_DISK_PATH . GALLERY_PATH_MODULE) !== false) {
         $MD_chk["tag"] = str_replace("/", "", $module_name . "-" . $module_params);
-        $MD_chk["inc"] = FF_DISK_PATH . VG_ADDONS_PATH . "/" . $module_name . "/widget/index." . FF_PHP_EXT;
-       // $MD_chk["con"] = "MODULE_SHOW_CONFIG";
+        $MD_chk["inc"] = FF_DISK_PATH . "/conf" . GALLERY_PATH_MODULE . $mod_file . stripslash($module_vars["path_info"]) . "/" . $module_vars["script_name"] . "." . FF_PHP_EXT;
+        
+        if(strpos($module_vars["path_info"], "/config") !== false)
+            $MD_chk["con"] = "MODULE_SHOW_CONFIG";
+        else
+            $MD_chk["con"] = "";
     } else {
         $strError = ffTemplate::_get_word_by_code("dialog_description_invalidpath");
     }
 
     if(!$strError) {
-        //if(strlen($MD_chk["con"]) && !constant($MD_chk["con"])) {
-         //   ffRedirect(FF_SITE_PATH . "/login?ret_url=" . urlencode($_SERVER["REQUEST_URI"]) . "&relogin");
-        //}
+        if(strlen($MD_chk["con"]) && !constant($MD_chk["con"])) {
+            ffRedirect(FF_SITE_PATH . "/login?ret_url=" . urlencode($_SERVER["REQUEST_URI"]) . "&relogin");
+        }
 
         $MD_chk["id"] = "MD-" . $location . "-" . $MD_chk["tag"];
         $MD_chk["params"] = explode(";", $module_params);
 		$MD_chk["ret_url"] = $registry->user_path;
-		
+
+        $registry->MD_chk = $MD_chk;
+
         include($MD_chk["inc"]);
         
         return "MD-" . $location . "-" . $MD_chk["tag"];

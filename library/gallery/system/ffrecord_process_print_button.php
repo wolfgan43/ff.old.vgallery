@@ -29,7 +29,7 @@ function system_ffrecord_process_print_button($component) {
     if(array_key_exists("print", $component->buttons_options) && $component->buttons_options["print"]["display"]) {
         $real_path_info = $cm->path_info . $cm->real_path_info;
         //ffErrorHandler::raise("ASD2", E_USER_ERROR, get_defined_vars());
-        $cm->oPage->tplAddJs("jquery.plugins.printelement");     
+        $cm->oPage->tplAddJs("jquery.printElement", "jquery.printelement.js", FF_THEME_DIR . "/library/plugins/jquery.printelement");     
 
         $oButton_print = ffButton::factory($cm->oPage);
         $oButton_print->id = "print";
@@ -41,13 +41,17 @@ function system_ffrecord_process_print_button($component) {
 
             if(file_exists(FF_DISK_PATH . "/themes/" . $cm->oPage->getTheme() . "/css/print_" . $css_name . ".css")) {
                 $cm->oPage->tplAddCss(
-                    "print_" . $css_name
-                    , array(
-                        "file"          => "print_" . $css_name . ".css"
-                        , "path"        => "/themes/" . $cm->oPage->getTheme() . "/css"
-                        , "css_media"   => "print"
-                        , "priority"    => "bottom"
-                ));
+                                "print_" . $css_name
+                                , "print_" . $css_name . ".css"
+                                , null
+                                , "stylesheet"
+                                , "text/css"
+                                , "/themes/" . $cm->oPage->getTheme() . "/css"
+                                , false
+                                , "print"
+                                , false
+                                , "bottom"
+                            );
 
                 $print_css = ", overrideElementCSS: ['http://" . DOMAIN_INSET . FF_SITE_PATH . "/themes/" . $cm->oPage->getTheme() . "/css/print_" . $css_name . ".css']";
                 break;
@@ -55,7 +59,7 @@ function system_ffrecord_process_print_button($component) {
         } while($real_path_info != ffCommon_dirname($real_path_info) && $real_path_info = ffCommon_dirname($real_path_info));
         
 
-        $oButton_print->jsaction = "ff.load('jquery.plugins.printelement', function() { jQuery('#" . $component->id . "_data').printElement({ pageTitle : '" . $print_title . "'" . $print_css . " }); });";
+        $oButton_print->jsaction = "ff.pluginLoad('jquery.printElement', '/themes/library/plugins/jquery.printelement/jquery.printelement.js', function() { jQuery('#" . $component->id . "_data').printElement({ pageTitle : '" . $print_title . "'" . $print_css . " }); });";
         $oButton_print->label = ffTemplate::_get_word_by_code("ffRecord_print");
         $component->addActionButton($oButton_print, 0);
     }

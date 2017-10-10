@@ -1,28 +1,5 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
+require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
 if (!AREA_UPDATER_SHOW_MODIFY) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
@@ -92,7 +69,7 @@ if($valid_domain) {
     if($_REQUEST["frmAction"] == "install") {
         $res = force_install($ftp_host, $ftp_user, $ftp_password, $ftp_path, $ftp_ip, "execute");
 
-        //if($_REQUEST["XHR_CTX_ID"])
+        //if($_REQUEST["XHR_DIALOG_ID"])
         if($cm->oPage->isXHR()) {  
             die(ffCommon_jsonenc(array("close" => true, "refresh" => true, "resources" => array("MCDomainModify")), true));
         } else {
@@ -280,9 +257,9 @@ if($valid_domain) {
         }
         $button->url = $cm->oPage->site_path . $cm->oPage->page_path . $cm->real_path_info . "?action=install";
         $button->class = "noactivebuttons";
-        if($_REQUEST["XHR_CTX_ID"]) {
+        if($_REQUEST["XHR_DIALOG_ID"]) {
             $button->action_type = "submit";
-            $button->jsaction = "ff.ajax.doRequest({'action': 'install', 'url' : '" . $button->url . "'});"; 
+            $button->jsaction = "javascript:ff.ajax.doRequest({'action': 'install', 'url' : '" . $button->url . "'});"; 
         } else {
             $button->action_type = "gotourl";
         }
@@ -305,8 +282,8 @@ if($valid_domain) {
     } 
     */   
     if(1) {
-        $cm->oPage->tplAddJs("ff.ajax");
-        $cm->oPage->tplAddJs("jquery.plugins.jstree");
+        $cm->oPage->tplAddJs("ff.ajax", "ajax.js", "/themes/library/ff", false, false, null, true);
+        $cm->oPage->tplAddJs("jquery.fn.tree", "jquery.jstree.min.js", "/themes/library/plugins/jquery.jstree", false, false, null, true);
         
         $tpl = ffTemplate::factory(ffCommon_dirname(__FILE__));
         $tpl->load_file("tree.html", "main");
@@ -324,14 +301,14 @@ if($valid_domain) {
         $oButton_update->id = "ActionButtonUpdate";
         $oButton_update->label = ffTemplate::_get_word_by_code("ffRecord_update");
         $oButton_update->action_type = "submit";
-        $oButton_update->jsaction = "updateManifesto('" . $ID_dialog . "');";
+        $oButton_update->jsaction = "javascript:updateManifesto('" . $ID_dialog . "');";
         $oButton_update->aspect = "link";
         $oButton_update->parent_page = array(&$cm->oPage);
         
         $oButton_cancel = ffButton::factory($cm->oPage);
         $oButton_cancel->id = "ActionButtonCancel";
         $oButton_cancel->label = ffTemplate::_get_word_by_code("ffRecord_close");
-        if($_REQUEST["XHR_CTX_ID"]) {
+        if($_REQUEST["XHR_DIALOG_ID"]) {
             $oButton_cancel->action_type     = "submit";
             $oButton_cancel->frmAction        = "close";
         } else {
@@ -404,7 +381,7 @@ if($valid_domain) {
         $oButton = ffButton::factory($cm->oPage);
         $oButton->id = "ActionButtonCancel";
 		$oButton->label = ffTemplate::_get_word_by_code("ffRecord_close");
-        if($_REQUEST["XHR_CTX_ID"]) {
+        if($_REQUEST["XHR_DIALOG_ID"]) {
             $oButton->action_type     = "submit";
             $oButton->frmAction        = "close";
         } else {
@@ -460,7 +437,7 @@ function domain_settings_on_do_action($component, $action) {
                     }
                 }
             }
-            if($_REQUEST["XHR_CTX_ID"])
+            if($_REQUEST["XHR_DIALOG_ID"])
                 die(ffCommon_jsonenc(array("close" => true, "refresh" => true, "resources" => array("MCDomainModify")), true));
                 
 //            ffRedirect($component->ret_url);
@@ -502,7 +479,7 @@ function force_install($ftp_host, $ftp_user, $ftp_password, $ftp_path, $ftp_ip =
 
 	if(!$ftp_ip)
     	$ftp_ip = gethostbyname($ftp_host);
-    	    
+
     if($ftp_ip === false && strpos($ftp_host, "www.") === false)
         gethostbyname("www." . $ftp_host);
 
@@ -600,7 +577,7 @@ function force_install($ftp_host, $ftp_user, $ftp_password, $ftp_path, $ftp_ip =
     define("FTP_PATH", "' . $ftp_path . '");
     
     $config_check["updater"] = true;
-';
+?>';
                         $tempHandle = @tmpfile();
                         @fwrite($tempHandle, $config_updater_content);
                         @rewind($tempHandle);
@@ -821,3 +798,4 @@ function get_item_data($ID_domain, $manifesto, $key = null) {
             return null;
     }
 }
+?>

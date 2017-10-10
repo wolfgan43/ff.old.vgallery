@@ -1,0 +1,20 @@
+.heading {
+	background: url(../images/info.png) 99% 50% no-repeat;
+	height: 100px;
+	border: 1px solid #e5e5e5;
+	border-radius:2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	padding: 5px;
+}
+.heading P {
+	line-height: 18px;
+}
+.heading P B {
+	font-weight: normal;
+	color: #df4e33;
+}
+.heading P A {
+	color: #4385f4;
+	font-size: 14px;
+}

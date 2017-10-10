@@ -1,0 +1,18 @@
+<!--BeginSezVGallerys-->
+<!--BeginSezVGallery-->
+<{tag_rel_vgallery_item}>
+        <!--BeginSezVGalleryImage-->
+        <![CDATA[
+        <!--BeginSezVGalleryImageNode-->
+        {content}
+        <!--EndSezVGalleryImageNode-->
+        ]]>
+        <!--EndSezVGalleryImage-->
+        <!--BeginSezVGalleryDescription-->
+        <!--BeginSezVGalleryDescriptionNode-->
+        {content}
+        <!--EndSezVGalleryDescriptionNode-->
+        <!--EndSezVGalleryDescription-->
+</{tag_rel_vgallery_item}>
+<!--EndSezVGallery-->
+<!--EndSezVGallerys-->

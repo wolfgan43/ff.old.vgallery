@@ -111,7 +111,9 @@ function system_trace($action, $url = null, $get = null, $action_value = null, $
 
                     if(defined("TRACE_MONGO_DATABASE_NAME")) 
                     {
-            			require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+        				if(!class_exists("ffDB_MongoDB"))
+            				require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+
                         $db = new ffDB_MongoDB();
                         $db->on_error = "ignore";
                         
@@ -479,7 +481,9 @@ function system_trace_notify_via_push($message, $to, $params) {
 
         if(defined("TRACE_MONGO_DATABASE_NAME")) 
         {
-            require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+        	if(!class_exists("ffDB_MongoDB"))
+            	require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+
             $db = new ffDB_MongoDB();
             $db->on_error = "ignore";
 
@@ -583,7 +587,9 @@ function system_trace_notify_via_server($message, $to, $params) {
 
         if(defined("TRACE_MONGO_DATABASE_NAME")) 
         {
-            require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+        	if(!class_exists("ffDB_MongoDB"))
+            	require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+
             $db = new ffDB_MongoDB();
             $db->on_error = "ignore";
 

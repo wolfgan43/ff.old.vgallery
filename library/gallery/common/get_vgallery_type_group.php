@@ -106,7 +106,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					break;
   				case "backoffice":
   				default:
-  					$default_group[LANGUAGE_DEFAULT] = array(
+  					$default_group["general"] = array(
 						"ID" => ""
 				        , "name" => "general"
 				        , "column" => cm_getClassByFrameworkCss(array(12,12,7), "col")

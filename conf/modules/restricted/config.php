@@ -1,3 +1,3 @@
 <?php
-  define("MOD_RES_FULLBAR", true);
+ // define("MOD_RES_FULLBAR", true);
 ?>

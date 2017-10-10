@@ -1,4 +1,4 @@
-<?php
+<?php 
 /**
 *   VGallery: CMS based on FormsFramework
     Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
@@ -70,25 +70,26 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 
 function system_init($cm) {
 	$globals = ffGlobals::getInstance("gallery");
-	
-	$path_info = stripslash($_SERVER["PATH_INFO"]);
+
+	$path_info                          = stripslash($_SERVER["PATH_INFO"]);
 	if($path_info == "/index" || !$path_info)
-	    $path_info = "/";
+	    $path_info                      = "/";
 
-	$globals->user_path 	= $path_info;
-	$globals->page 			= cache_get_page_properties($path_info, null, true);
-	$globals->locale 		= cache_get_locale($globals->page, DOMAIN_NAME); //pulisce il percorso dalla lingua
-    $globals->selected_lang = FF_LOCALE;
+	$globals->user_path 	            = $path_info;
+	$globals->page 			            = cache_get_page_properties($path_info, null, true);
+	$globals->locale 		            = cache_get_locale($globals->page, DOMAIN_NAME); //pulisce il percorso dalla lingua
+    $globals->selected_lang             = FF_LOCALE;
 
-	define ("MOD_SEC_GUEST_USER_ID", "2");
-	define ("MOD_SEC_GUEST_USER_NAME", "guest");
-	define ("MOD_SEC_GUEST_GROUP_ID", "2");
-	define ("MOD_SEC_GUEST_GROUP_NAME", "guests"); 	
+	define ("MOD_SEC_GUEST_USER_ID"     , "2");
+	define ("MOD_SEC_GUEST_USER_NAME"   , "guest");
+	define ("MOD_SEC_GUEST_GROUP_ID"    , "2");
+	define ("MOD_SEC_GUEST_GROUP_NAME"  , "guests");
 
 	define("CM_DONT_RUN_LAYOUT", true);
 
 	$cm_layout_vars = array(
-    	"theme" 						=> ($globals->page["theme"]
+    	"main_theme" 					=> "responsive"
+    	, "theme" 						=> ($globals->page["theme"]
     										? $globals->page["theme"]
     										: ($globals->page["restricted"]
 												? ADMIN_THEME
@@ -114,20 +115,18 @@ function system_init($cm) {
     	, "enable_gzip" 				=> true
     	, "compact_js" 					=> 2
     	, "compact_css"					=> 2
-	);
-	
-    define("FF_THEME_FRAMEWORK_CSS", 	($globals->page["framework_css"] && !$globals->page["restricted"]
+    	, "framework_css" 				=> ($globals->page["framework_css"]
     										? $globals->page["framework_css"]
     										: "bootstrap-fluid"
-    									));	
-    define("FF_THEME_FONT_ICON",  		($globals->page["font_icon"]
+    									)	
+    	, "font_icon" 					=> ($globals->page["font_icon"]
     										? $globals->page["font_icon"]
     										: "fontawesome"
-    									));
-
-	$globals->page["framework_css"] 	= FF_THEME_FRAMEWORK_CSS;
-	$globals->page["font_icon"] 		= FF_THEME_FONT_ICON;
+    									)
+	);
 	
+
+
 	if($globals->page["restricted"]) {
 		$cm_layout_vars["exclude_form"] = false;
 		$cm_layout_vars["compact_js"] = false;
@@ -144,7 +143,7 @@ function system_init($cm) {
 
 	if(defined("SHOWFILES_IS_RUNNING")
         || $globals->page["group"] == "actex"
-        || $globals->page["group"] == "services" // nn lo so
+        || $globals->page["group"] == "service" // nn lo so
         || $globals->page["group"] == "resource"
         //|| strpos($globals->settings_path, "/services") === 0 
         //|| isset($_REQUEST["XHR_COMPONENT"])
@@ -162,26 +161,13 @@ function system_init($cm) {
 					</html>';
     			exit;
     		}    
-		}  
-    	switch($globals->page["name"]) {
-    		case "api":
-    			cm::getInstance()->router->addRule('(?!^/updater/check/file(.*))/api(/[^/]*)(.*)', array("url"=> '/conf/gallery/api$2/index.php$3'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "api"), "/api");
-    			break;
-    		case "service":
-    			cm::getInstance()->router->addRule('^(/srv|/restricted/srv)(.*)', array("url"=> '/conf/gallery/sys/services$2'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "services"), "/srv");
-                break;
-    		case "actex":
-    			break;
-    		default:
-    	}
-    
+		}
 //        define("FF_LOCALE", $globals->selected_lang);
 //       define("LANGUAGE_INSET", $globals->selected_lang);
 		//define("CM_DONT_RUN_LAYOUT", true);					//se tolto da sopra e necessario qui
-
         define("SKIP_CMS", true);
         return false;
-    }    	
+    }      	
 
 	if(!(is_array($globals->settings) && count($globals->settings))) {
 	    $globals->settings = vg_get_settings();
@@ -276,19 +262,10 @@ function system_init($cm) {
     else
     	$area = "FRONTEND";
 
-    global $ff_global_setting;
-
-    $ff_global_setting["ffPage"]["jquery_ui_theme"] = ($cm_layout_vars["framework_css"]
-    	? false
-    	: "base"
-    );
-
-    define("MOD_SEC_SOCIAL_GOOGLE_APP_NAME", $globals->settings["MOD_SEC_SOCIAL_GOOGLE_APP_NAME"]);
-    define("MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID", $globals->settings["MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID"]);
-    define("MOD_SEC_SOCIAL_FACEBOOK_APPID", $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"]);    	
+    $globals->settings["JQUERY_UI_THEME"] = "base";
 	if($globals->page["group"] == "login" || $globals->page["api"] == "login") {
 		define("MOD_SEC_LOGIN_REGISTER_URL", $globals->settings["MOD_SEC_LOGIN_REGISTER_URL"]);
-	        
+	     
 	    if($globals->settings["MOD_SEC_OAUTH2_SERVER"]) {
 	        define("MOD_SEC_OAUTH2_SERVER", true);
 
@@ -301,18 +278,20 @@ function system_init($cm) {
 	        define("MOD_SEC_SOCIAL_FF_CLIENT_ID", $globals->settings["MOD_SEC_SOCIAL_FF_CLIENT_ID"]);
 	        define("MOD_SEC_SOCIAL_FF_CLIENT_SECRET", $globals->settings["MOD_SEC_SOCIAL_FF_CLIENT_SECRET"]);
 	        define("MOD_SEC_SOCIAL_FF_OAUTH2_URL", $globals->settings["MOD_SEC_SOCIAL_FF_OAUTH2_URL"]);
-		}	
-		        
+		}
+			        
 	    if($globals->settings["MOD_SEC_SOCIAL_GOOGLE"] && $globals->settings["MOD_SEC_SOCIAL_GOOGLE_APP_NAME"] && $globals->settings["MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID"] && $globals->settings["MOD_SEC_SOCIAL_GOOGLE_CLIENT_SECRET"]) {
 	        define("MOD_SEC_SOCIAL_GOOGLE", true);
+	        define("MOD_SEC_SOCIAL_GOOGLE_APP_NAME", $globals->settings["MOD_SEC_SOCIAL_GOOGLE_APP_NAME"]);
+	        define("MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID", $globals->settings["MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID"]);
 	        define("MOD_SEC_SOCIAL_GOOGLE_CLIENT_SECRET", $globals->settings["MOD_SEC_SOCIAL_GOOGLE_CLIENT_SECRET"]);
 	        define("MOD_SEC_SOCIAL_GOOGLE_CLIENT_REDIR_URI", "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/login/social/google/response");
 
 	        define("LIB_GOOGLE", true);
 	        set_include_path(get_include_path() . PATH_SEPARATOR . FF_DISK_PATH . "/library/google-api-php-client");
 	        require "Google/Client.php";
-			
-			if(!defined("MOD_SEC_OAUTH2_SERVER")) {
+
+	        if(!defined("MOD_SEC_OAUTH2_SERVER")) {
 		        require FF_DISK_PATH . "/library/OAuth2/Autoloader.php";
 		        OAuth2\Autoloader::register();
 			}
@@ -320,6 +299,7 @@ function system_init($cm) {
 
 	    if($globals->settings["MOD_SEC_SOCIAL_FACEBOOK"] && $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"] && $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_SECRET"]) {
 	        define("MOD_SEC_SOCIAL_FACEBOOK", true);
+	        define("MOD_SEC_SOCIAL_FACEBOOK_APPID", $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"]);
 	        define("MOD_SEC_SOCIAL_FACEBOOK_SECRET", $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_SECRET"]);
 	        define("MOD_SEC_SOCIAL_FACEBOOK_CLIENT_REDIR_URI", "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/login/social/facebook/response");
 	        
@@ -329,14 +309,14 @@ function system_init($cm) {
 	    } else {
 	        define("MOD_SEC_SOCIAL_FACEBOOK_APP", false);
 	    }
-
+	    
 	    if($globals->settings["MOD_SEC_SOCIAL_JANRAIN"] && $globals->settings["MOD_SEC_SOCIAL_JANRAIN_APPID"] && $globals->settings["MOD_SEC_SOCIAL_JANRAIN_APPNAME"]) {
 	        define("MOD_SEC_SOCIAL_JANRAIN", true);
 	        define("MOD_SEC_SOCIAL_JANRAIN_APPID", $globals->settings["MOD_SEC_SOCIAL_JANRAIN_APPID"]);
 	        define("MOD_SEC_SOCIAL_JANRAIN_APPNAME", $globals->settings["MOD_SEC_SOCIAL_JANRAIN_APPNAME"]);
 	        define("MOD_SEC_SOCIAL_JANRAIN_CLIENT_REDIR_URI", "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/login/social/janrain/response");
-	    }    
-
+	    } 
+		
 		if($cm_layout_vars["layer"] !== null)
 			define("MOD_SEC_LOGIN_FORCE_LAYER", false);
 		elseif(array_key_exists("MOD_SEC_FORCE_LAYER_" . $area, $globals->settings))
@@ -356,58 +336,44 @@ function system_init($cm) {
 		if(!defined("MOD_SEC_LOGO_PATH")) {
 		    if($globals->settings["MOD_SEC_LOGO_PATH_" . $area] && is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/" . $globals->settings["MOD_SEC_LOGO_PATH_" . $area]))
 		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . $globals->settings["MOD_SEC_LOGO_PATH_" . $area]);
-		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo/login.svg"))
-		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo/login.svg");
-		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo/login.png"))
-		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo/login.png");
-		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo/login.gif"))
-		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo/login.gif");
+		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo-login.svg"))
+		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-login.svg");
+		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo-login.png"))
+		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-login.png");
+		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo-login.gif"))
+		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-login.gif");
+		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo.svg"))
+		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo.svg");
 		    elseif(is_file(FF_THEME_DISK_PATH . "/" . THEME_INSET . "/images/logo-login.png"))
 		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . THEME_INSET . "/images/logo-login.png");        
-		        
-		    //elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo.svg"))
-		    //    define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo.svg");
-		    if(!defined("MOD_SEC_LOGO_PATH"))  
-		    	define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . THEME_INSET . "/images/logo/login.png");
-		        
+		    elseif(is_file(FF_THEME_DISK_PATH . "/" . THEME_INSET . "/images/logo.svg"))
+		        define("MOD_SEC_LOGO_PATH", FF_THEME_DIR . "/" . THEME_INSET . "/images/logo.svg");        
 		}
-
+	    
 		//condivide la sessione per ai sottodomini
-	    cm::getInstance()->addEvent("mod_security_on_create_session", "cache_session_share_for_subdomains", ffEvent::PRIORITY_DEFAULT);
-		cm::getInstance()->addEvent("mod_security_on_destroy_session", "cache_session_share_for_subdomains", ffEvent::PRIORITY_DEFAULT);
-
+		cm::getInstance()->addEvent("mod_security_on_create_session", "cache_session_share_for_subdomains", ffEvent::PRIORITY_DEFAULT);	    
+		cm::getInstance()->addEvent("mod_security_on_destroy_session", "cache_session_share_for_subdomains", ffEvent::PRIORITY_DEFAULT);		
+		
 	    if(check_function("check_user_request"))
-	         cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_request", ffEvent::PRIORITY_DEFAULT);		
+	         cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_request", ffEvent::PRIORITY_DEFAULT);
 
-/*	    //check required fields on form
-	    if(check_function("check_user_form_request"))
+/*
+	    //check required fields on form
+	    if(check_function("check_user_request"))
 	         cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_form_request", ffEvent::PRIORITY_DEFAULT);
 	    //check required fields on vgallery
-	    if(check_function("check_user_vgallery_request"))
+	    if(check_function("check_user_request"))
 	         cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_vgallery_request", ffEvent::PRIORITY_DEFAULT);
 	    //merge ecommerce cart (guest + user)
 	    if(check_function("ecommerce_cart_merge"))
 	         cm::getInstance()->addEvent("mod_security_on_created_session", "ecommerce_cart_merge", ffEvent::PRIORITY_DEFAULT);
-*/
+*/	    
 	    
 	    if(/*!defined("DISABLE_CACHE") &&*/ check_function("system_set_cache_page")) {
 	         cm::getInstance()->addEvent("mod_security_on_created_session", "system_write_cache_token_session", ffEvent::PRIORITY_DEFAULT);
 	         cm::getInstance()->addEvent("mod_security_on_destroyed_session", "system_destroy_cache_token_session", ffEvent::PRIORITY_DEFAULT);
 		}
 	    
-	} elseif($globals->page["group"] == "console") {
-		if(!defined("MOD_RESTRICTED_LOGO_PATH")) {
-		    if(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo/restricted.svg"))
-		        define("MOD_RESTRICTED_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo/restricted.svg");
-		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo/restricted.png"))
-		        define("MOD_RESTRICTED_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo/restricted.png");
-		    elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images/logo/restricted.gif"))
-		        define("MOD_RESTRICTED_LOGO_PATH", FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo/restricted.gif");
-
-		    if(!defined("MOD_RESTRICTED_LOGO_PATH"))  
-		    	define("MOD_RESTRICTED_LOGO_PATH", FF_THEME_DIR . "/" . THEME_INSET . "/images/logo/restricted.png");
-		        
-		}
 	}
 
     foreach($globals->settings AS $setting_key => $setting_value) {
@@ -495,44 +461,10 @@ function vg_get_settings($res = null, $DomainID = null, $db = null)
     return $res;
 }
 
-function normalize_url_by_current_lang($user_path, $prefix = true, $abs_url = false) {
-	$globals = ffGlobals::getInstance("gallery");
-	$schema = cache_get_settings();
-
-	if($prefix === true) {
-		$prefix = $globals->locale["prefix"];
-	}
-	$res = FF_SITE_PATH . $prefix . $user_path;
-	if ($res != "/" && substr($res,-1) == "/")
-		$res = substr($res,0,-1);
-		
-    $arrSettings_path = explode("/", trim($res, "/"));
-	if(is_array($schema["alias"]) && count($schema["alias"])) {
-		$alias_flip = array_flip($schema["alias"]); 
-		if($alias_flip["/" . $arrSettings_path[0]]) {
-			$res = substr($res, strlen("/" . $arrSettings_path[0]));
-			$prefix_url = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $alias_flip["/" . $arrSettings_path[0]];
-		}
-	}
-
-	if($abs_url && !$prefix_url) {
-		$domain = (defined("DOMAIN_DEFAULT")
-			? DOMAIN_DEFAULT
-			: (substr_count(DOMAIN_NAME, ".") > 1
-				? DOMAIN_NAME
-				: "www." . DOMAIN_NAME
-			)
-		);
-		
-		//substr($domain_name, 0, strpos($domain_name, "."));
-		$prefix_url = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $domain;
-	}
-		
-	return $prefix_url . $res;
-}
-
 function system_get_settings_path_by_user_path($page) {
 	$globals = ffGlobals::getInstance("gallery");
+
+	check_function("normalize_url");
 
 	if($globals->page["primary"] && !$globals->page["restricted"]) {
 		$db = ffDB_Sql::factory();
@@ -786,7 +718,7 @@ function system_get_settings_path_by_user_path($page) {
 													)
 												);													
 		}
-		
+
 		$sql_buffer = array();
 		foreach($seo_priority AS $priority => $data)
 		{	
@@ -798,7 +730,7 @@ function system_get_settings_path_by_user_path($page) {
 				$permalink = $def[$data["schema"]]["seo"]["primary_permalink"];
 				if(!$permalink)
 					$permalink = $def[$data["schema"]]["seo"]["permalink"];
-				
+
 				$data["select"]["lang"] = LANGUAGE_DEFAULT_ID . " AS `ID_lang`";
 				if(count($globals->locale) > 2 && $def[$data["schema"]]["field"]["lang"] &&  $data["table"] && $data["primary_table"] != $data["table"]) 
 				{
@@ -1026,7 +958,6 @@ function system_get_schema_module($return = "schema", $def = null, $type = null)
 				}
 			}		
 		}  		
-  	
   	}
   	
   	if($type)
@@ -1035,18 +966,22 @@ function system_get_schema_module($return = "schema", $def = null, $type = null)
   		return $schema_module[$return];
 }
 
-function system_init_on_before_cm($cm) 
-{
+function system_init_on_before_cm($cm) {
     $globals = ffGlobals::getInstance("gallery");
+    $globals->db_gallery = ffDB_Sql::factory();
 
     if(defined("SKIP_CMS"))
         return false;
 
     if(strpos($globals->page["user_path"], $cm->router->getRuleById("mod_sec_social")->reverse) !== false) {
-		define("SKIP_VG_CONTENT", true);
-
-        if(check_function("set_user_permission_by_settings") && (MOD_SEC_SOCIAL_FACEBOOK || MOD_SEC_SOCIAL_GOOGLE || MOD_SEC_SOCIAL_JANRAIN)) {
-            $cm->modules["security"]["events"]->addEvent("on_social_done_user_create", "set_user_permission_by_settings", ffEvent::PRIORITY_DEFAULT);
+        if(MOD_SEC_SOCIAL_FACEBOOK && check_function("set_user_permission_by_settings")) {
+            $cm->modules["security"]["events"]->addEvent("facebook_done_user_create", "set_user_permission_by_settings", ffEvent::PRIORITY_DEFAULT);
+        }
+        if(MOD_SEC_SOCIAL_GOOGLE && check_function("set_user_permission_by_settings")) {
+            $cm->modules["security"]["events"]->addEvent("google_done_user_create", "set_user_permission_by_settings", ffEvent::PRIORITY_DEFAULT);
+        }
+        if(MOD_SEC_SOCIAL_JANRAIN && check_function("set_user_permission_by_settings")) {
+            $cm->modules["security"]["events"]->addEvent("janrain_done_user_create", "set_user_permission_by_settings", ffEvent::PRIORITY_DEFAULT);
         }
         
         return false;
@@ -1057,21 +992,53 @@ function system_init_on_before_cm($cm)
     if($globals->page["group"] == "error" && check_function("system_gallery_error_document")) {
 		system_gallery_error_document($globals->page["user_path"]);
     }
+	
+	
+
+			
+
 
     if(check_function("check_chron_job_by_file"))
         check_chron_job_by_file();
-  
+
+
+/*
+    if($globals->page["primary"]) {
+	  
+		if(!defined("DISABLE_CACHE") && !$globals->page["restricted"]) {
+	    }
+
+		if(!$globals->page["restricted"]
+	        && count($globals->locale["lang"]) > 2 //1 is current other is lang
+	    ) {
+		    if(check_function("get_international_settings_path")) {
+    			$res_settings  = get_international_settings_path($settings_path, $globals->selected_lang, false);
+    			if($res_settings["url"])
+    				$settings_path = $res_settings["url"];
+
+			}
+		}
+	}
+
+
+    $globals->settings_path = $settings_path;
+*/
+   // $globals->user_path = ffCommon_specialchars($settings_path);
+	//$globals->selected_lang = constant("LANGUAGE_INSET");
+    //inizializzazione di tutti i permessi in base all'utenza
+    //recupero della lingua dalle impostazione dei gruppi
+
+    
     if(check_function("system_init_permission"))
     	system_init_permission();
 
+    //system_init_permission($settings_path, $selected_lang);
 
     /**
     * Process And Define Constant by Routing rules
     */
     if(is_array($cm->router->named_rules) && count($cm->router->named_rules)) {
         //print_r($cm->router->named_rules);
-       // define("STAGE_ADMIN", $cm->router->named_rules["admin"]->reverse);
-        
         foreach ($cm->router->named_rules as $rule_key => $rule_value) {
             if(strpos($rule_key, "user_") === 0 && strlen($rule_key) > 5) {
                 $globals->custom_data["user"][(string) $rule_value->reverse] = substr($rule_key, 5);
@@ -1109,6 +1076,11 @@ function system_init_on_before_cm($cm)
         }
     }
 
+    
+    //if(defined("CM_MULTIDOMAIN_ROUTING") && CM_MULTIDOMAIN_ROUTING)
+    //	check_page_alias($settings_path, $_SERVER["HTTP_HOST"], false);
+
+   
     if(!AREA_INTERNATIONAL_SHOW_MODIFY) {
         ffTemplate::$_MultiLang_Hide_code = true;
     } else {
@@ -1126,17 +1098,8 @@ function system_init_on_before_cm($cm)
 
 	$res = null;
 	if($globals->page["primary"]) {
-//		if(strpos($globals->page["user_path"], $cm->router->getRuleById("mod_sec_social")->reverse) !== false)
-//			define("SKIP_VG_CONTENT", true);	
-
-	     cm::getInstance()->addEvent("on_before_page_process", function(cm $cm) {
-			$glob_libs = ffGlobals::getInstance("__ffTheme_libs__");
-
-			cm_loadlibs($glob_libs->libs, FF_DISK_PATH . "/library/gallery", "cms", "", false, false);
-			if(AREA_SHOW_ECOMMERCE)
-				cm_loadlibs($glob_libs->libs, FF_DISK_PATH . "/library/gallery/ecommerce", "cms", "", false, false);
-
-	     }, ffEvent::PRIORITY_HIGH);	
+		if(strpos($globals->page["user_path"], $cm->router->getRuleById("mod_sec_social")->reverse) !== false)
+			define("SKIP_VG_CONTENT", true);	
 
         if(!$globals->page["restricted"]) {
 		    if(strlen($globals->strip_user_path))
@@ -1145,79 +1108,16 @@ function system_init_on_before_cm($cm)
 			    $res["ID_domain"] = $globals->ID_domain;
 
             if(is_dir(FF_DISK_PATH . "/applets") && count(glob(FF_DISK_PATH . "/applets", GLOB_ONLYDIR )) > 0)
-                 ffTemplate::addEvent ("on_loaded_data", function($tpl) {
-					$cm = cm::getInstance();
-
-					$cm->preloadApplets($tpl);
-					$cm->parseApplets($tpl);
-				} , ffEvent::PRIORITY_DEFAULT);
+                 ffTemplate::addEvent ("on_loaded_data", "ffTemplate_applets_on_loaded_file" , ffEvent::PRIORITY_DEFAULT);
         } else {
-        	cm::getInstance()->addEvent("mod_security_on_check_session", function($cm) { //da rifare prob con i cookie. con la cache questo non funziona piu
-			    $globals = ffGlobals::getInstance("gallery");
-			    
-				$request = get_session("request_info");
-				if(!strlen($request))
-					$request = get_session("request_vgallery");
-					
-				if($request) 
-				{
-				    if(strpos($globals->page["user_path"], USER_RESTRICTED_PATH) === false
-				        &&
-				        strpos($globals->page["user_path"], VG_SITE_MOD_SEC_LOGIN) === false
-				        &&
-				        strpos($globals->page["user_path"], VG_SITE_UPDATER) === false
-				        &&
-				        strpos($globals->page["user_path"], VG_SITE_ERROR) === false
-				        &&
-				        strpos($globals->page["user_path"], VG_SITE_VGALLERY) === false
-				        &&
-				        strpos($globals->page["user_path"], $request) === false
-				    )   
-				    {
-				        ffRedirect(FF_SITE_PATH . $request . "?ret_url=" . urlencode($globals->user_path));
-				    }
-				}                                    
-			}, ffEvent::PRIORITY_DEFAULT);
-			
-            /*$cm->modules["security"]["events"]->addEvent("on_retrive_params", function($sError, $frmAction, $logged, $disable_async_service)  {
-				if($frmAction == "login" && $logged)
-				{
-					$logged = false;
-					$disable_async_service = true;	
-				}
+          //  $cm->modules["security"]["events"]->addEvent("on_retrive_params", "mod_security_on_retrive_params", ffEvent::PRIORITY_DEFAULT);
 
-				if($logged && isset($_REQUEST["relogin"]) && $frmAction != "login") {
-					$sError = ffTemplate::_get_word_by_code("insufficient_permission");
-
-					$logged = false;
-				    $disable_async_service = true;
-				}	
-			}, ffEvent::PRIORITY_DEFAULT);*/
-
-            if(strpos($_REQUEST["frmAction"], "_export") !== false) {
-                 ffGrid::addEvent("on_factory", function($page, $disk_path, $theme, $variant) {
-						$base_path = $disk_path . "/themes/responsive";
-						$class_name = "ffGrid_xls";
-
-						$base_path .= "/ff/ffGrid/" . $class_name . "." . FF_PHP_EXT;
-						
-						return array("class_name" => $class_name
-									, "base_path" => $base_path
-						);
-					}, ffEvent::PRIORITY_DEFAULT);
-
-                 ffGrid::addEvent("on_before_process_interface", function($component) {
-					$arrAction = explode("_", $_REQUEST["frmAction"]);
-					if($arrAction[0] != $component->id) {
-						return false;
-					}
-				}, ffEvent::PRIORITY_DEFAULT);
+            if($globals->page["restricted"] && strpos($_REQUEST["frmAction"], "_export") !== false) {
+                 ffGrid::addEvent("on_factory", "ffGrid_export_on_factory_export" , ffEvent::PRIORITY_DEFAULT);
+                 ffGrid::addEvent("on_before_process_interface", "ffGrid_on_before_process_interface_export" , ffEvent::PRIORITY_DEFAULT);
             }            
         }
         
-
-
-
 
 	    //facebook init
 		if($globals->page["primary"] 
@@ -1230,7 +1130,7 @@ function system_init_on_before_cm($cm)
 			//$cm->addEvent("mod_security_on_create_session", "system_lib_facebook", ffEvent::PRIORITY_DEFAULT);
 			$user_error = system_lib_facebook(LANGUAGE_INSET);
 			if($user_error && check_function("write_notification")) {
-				write_notification("_facebook_app", $user_error, "warning", "", $globals->page["user_path"]);
+				write_notification("_facebook_app", $user_error, "warning", "", $globals->user_path);
 			}
 		}
 
@@ -1265,153 +1165,22 @@ function system_init_on_before_routing($cm)
 {           
     $globals = ffGlobals::getInstance("gallery");
 
+
     if(is_dir(FF_DISK_PATH . "/conf" .  GALLERY_PATH . "/mc")) {
         define("MASTER_CONTROL", true);
     } else {
         define("MASTER_CONTROL", false);
     }
 
-  /*  if($globals->page["seo"]) {
-    	if(!is_bool($globals->page["seo"]) && $globals->user_path != $globals->page["seo"])
-			$title = substr($globals->user_path, strlen($globals->page["seo"]));
-		else
-    		$title = basename($globals->user_path);
-    	
-    	$title = ucwords(str_replace(array("-", "/"), " ", trim($title, "/")));
-    	
-    	$globals->seo["page"]["title"] = ffTemplate::_get_word_by_code($title);
-    	$globals->seo["page"]["title_header"] = $globals->seo["page"]["title"];
+    if($globals->locale["default"] && check_function("get_locale"))
+    	$globals->locale = get_locale();
 
-    	$globals->seo["page"]["meta"]["description"][] = ffTemplate::_get_word_by_code($title);
-    	
-    	$globals->seo["current"] = "page";
-    }*/
+    $globals->settings_path = system_get_settings_path_by_user_path($globals->page);
+
     switch($globals->page["group"]) {
     	case "console":
-    		$cm->router->addRule(
-    			"^/" . $globals->page["name"]. "(.*)"
-    			, array(
-    				"module" => "security"
-    				, "url"=> '/auth$0'
-    			)
-    			, cmRouter::PRIORITY_HIGH
-    			, true
-    			, true
-    		);
-    		if(!$cm->isXHR()) {
-                $cm->router->addRule(
-                    "^/" . $globals->page["name"] . "(.*)"
-                    , array(
-                        "module" => "restricted"
-                    , "url" => '/layout$0'
-                    )
-                    , cmRouter::PRIORITY_HIGH
-                    , true
-                    , true
-                );
-            }
-    		if($globals->page["name"] == "ecommerce") {
-    		
-			} elseif(strpos($globals->page["user_path"], "/" . $globals->page["name"] . "/addons") === 0) {
-    			$cm->router->addRule("^/" . $globals->page["name"]. "/addons(.*)", array("url"=> VG_UI_PATH . '/addons$1'), cmRouter::PRIORITY_LOW, true);
-    		} else {
-    			$cm->router->addRule("^/" . $globals->page["name"]. "(.*)", array("url"=> VG_UI_PATH . '/restricted/blocks$1'), cmRouter::PRIORITY_LOW, true);
-    			if(is_dir(FF_DISK_PATH . "/" . VG_UI_PATH . "/restricted/" . $globals->page["name"])) {
-    				$cm->router->addRule("^/" . $globals->page["name"] . "(.*)", array("url"=> VG_UI_PATH . "/restricted/" . $globals->page["name"] . '$1'), cmRouter::PRIORITY_NORMAL, true);
-    			}
-			}
-			
-    		$cm->router->getRuleById("mod_sec_login")->reverse = "/" . $globals->page["name"] . "/login"; //da mettere la rule qui
-    		//$cm->router->addRule("^/login(.*)|^/admin/login(.*)|^/restricted/login(.*)|^/builder/login(.*)|^/ecommerce/login(.*)", array("module"=> "security", "url" => '/login$1'), cmRouter::PRIORITY_NORMAL, true, false, 10, array("id" => "mod_sec_login"), "/" . $globals->page["name"] . "/login");
-
-			if(is_array($_ENV["VG_RULE"]) && count($_ENV["VG_RULE"])) {
-				foreach($_ENV["VG_RULE"] AS $key => $value) {
-					$base_rule = VG_SYS_PATH;
-					$real_key = strtolower($key);
-
-					if(strpos($value, "/") === 0) {
-						$src = $value;
-    					$dest = "/" . basename($value);
-					} else {
-						$src = "/" . $globals->page["name"] . "/" . $value;
-    					$dest = "/" . $value;
-					}
-					//echo $src . "  <===> " . $dest . "<br>";
-    				$cm->router->addRule("^" . $src . "(.*)", array("url"=> $base_rule . $dest . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "mod_sec_" . $real_key), $src);
-				}
-			}
-    		if(is_array($_ENV["VG_RULE_UI"]) && count($_ENV["VG_RULE_UI"])) {
-				foreach($_ENV["VG_RULE_UI"] AS $key => $value) {
-					$base_rule = VG_UI_PATH . "/restricted";
-    				$real_key = strtolower($key);
-
-					if(strpos($value, "/") === 0) {
-						$src = $value;
-    					$dest = "/" . basename($value);
-					} else {
-						$src = "/" . $globals->page["name"] . "/" . $value;
-    					$dest = "/" . $value;
-					}
-					//echo $src . "  <===> " . $dest . "<br>";
-    				$cm->router->addRule("^" . $src . "(.*)", array("url"=> $base_rule . $dest . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "mod_sec_" . $real_key), $src);
-				}
-			}
-			/*
-    		$constant = get_defined_constants(true);
-    		$rules = array_filter($constant["user"], function($k) {
-				return strpos($k, "VG_RULE_") === 0;
-    		}, ARRAY_FILTER_USE_KEY);
-
-    		if(is_array($rules) && count($rules)) {
-    			foreach($rules AS $key => $value) {
-    				if(strpos($key, "VG_RULE_UI_") === 0) { 
-    					$base_rule = VG_UI_PATH . "/restricted";
-    					$real_key = strtolower(str_replace("VG_RULE_UI_", "", $key));
-					} else {
-						$base_rule = VG_SYS_PATH;
-						$real_key = strtolower(str_replace("VG_RULE_", "", $key));
-					}
-					if(strpos($value, "/") === 0) {
-						$src = $value;
-    					$dest = "/" . basename($value);
-					} else {
-						$src = "/" . $globals->page["name"] . "/" . $value;
-    					$dest = "/" . $value;
-					}
-					//echo $src . "  <===> " . $dest . "<br>";
-    				$cm->router->addRule("^" . $src . "(.*)", array("url"=> $base_rule . $dest . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "mod_sec_" . $real_key), $src);
-    			}
-    		}*/
-    		//die();
-    		//ffErrorHandler::raise("ASD", E_USER_ERROR, null, get_defined_vars());
-
-    		if($cm->isXHR()) {
-				if(strpos($globals->user_path, "/admin") === 0 && substr_count($globals->user_path, "/") == 3) {
-					$admin_type = basename(ffCommon_dirname($globals->user_path));
-
-					switch($admin_type) {
-						case "block":
-						case "item":
-						case "bar":
-							check_function("process_admin");
-							$buffer = process_admin($admin_type, basename($globals->user_path));
-							if($buffer)
-								if($buffer === true) { //da vedere bene
-									http_response_code(204);
-								} else {
-									echo $buffer;
-								}
-							else
-								http_response_code(500);
-
-							exit;	
-						default:
-					}
-				}
-    		} else {
-				if(check_function("system_layer_restricted"))
-					call_user_func_array("system_layer_restricted", array(&$cm, $globals->page["name"]));
-			}
+			if(check_function("system_layer_restricted"))
+				call_user_func_array("system_layer_" . $globals->page["name"], array(&$cm));
     		break;
     	case "frame":
 			$cm->oPage->theme = FRONTEND_THEME;
@@ -1419,8 +1188,8 @@ function system_init_on_before_routing($cm)
 			rewrite_request($globals->page["strip_path"]); //imposta user_path e settings_path togliendo eventuali parametri
 
 	        //$globals->settings_path = $settings_path;
-	       // ffGrid::addEvent ("on_factory_done", "ffGrid_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
-	       // ffRecord::addEvent ("on_factory_done", "ffRecord_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
+	        ffGrid::addEvent ("on_factory_done", "ffGrid_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
+	        ffRecord::addEvent ("on_factory_done", "ffRecord_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
 
 	        if(array_key_exists("sid", $_REQUEST) && strlen($_REQUEST["sid"])) {
 	            $source_sid = str_replace("\\\"", "\"", $_REQUEST["sid"]);
@@ -1446,11 +1215,7 @@ function system_init_on_before_routing($cm)
 			            }
 			        }
 				}
-			}   
-			
-			//$globals->tpl = system_pre_process_page($params);
-//da rivedere tutto
-			 	    
+			}    	    
     		break;
     	case "shard":
     		$cm->oPage->theme = FRONTEND_THEME;
@@ -1459,11 +1224,7 @@ function system_init_on_before_routing($cm)
 			if(check_function("system_layer_shard")) {
 				$shard = system_layer_shard($globals->settings_path);
 				if($shard)
-					if($shard === true) { //da vedere bene
-						http_response_code(204);
-					} else {
-						echo $shard;
-					}
+					echo $shard;
 				else
 				{
 					if($cm->isXHR()) {
@@ -1473,63 +1234,35 @@ function system_init_on_before_routing($cm)
 				}
 			}
 	        exit;
+		case "service":
     	case "updater":
-			ffRedirect($cm->oPage->site_path . "/admin/system" . $globals->page["user_path"]);
-    		break;
-		case "services":
     	case "actex":
     		//non dovrebbe mai entrare qui
     		ffErrorHandler::raise("Catrina: Percorso Riservato. Verificare perche entra qui", E_USER_ERROR, null, get_defined_vars());
     		break;
 		case "search":
-			$cm->router->addRule("^" . $globals->user_path . '(.*)', array("url"=> "/conf/gallery/search" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "search"), "/search");
-
 			rewrite_request($globals->page["strip_path"]); //imposta user_path e settings_path togliendo eventuali parametri
 			if(!$cm->oPage->isXHR() && check_function("system_layer_gallery")) {
                 if(check_function("get_webservices")) 
                    $services_params = get_webservices(null, $cm->oPage);
-
-				$cm->oPage->addEvent("on_after_process_components", "system_layer_gallery" /*, ffEvent::PRIORITY_HIGH*/);
+                
+				$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_gallery" , ffEvent::PRIORITY_HIGH);
             }
-
-			$cm->oPage->addEvent("on_tpl_parse", "system_cache_on_tpl_parse", ffEvent::PRIORITY_DEFAULT);
+            
+            $cm->oPage->addEvent("on_tpl_parse", "system_cache_on_tpl_parse", ffEvent::PRIORITY_DEFAULT);
 			break;
     	case "login":
     		if($globals->settings_path == "/login" && MOD_SEC_LOGIN_FORCE_LAYER == "empty")
     			break;
-    	case "user":
-    		if(strpos($globals->page["user_path"], "/user/account") === 0) {
-    			$cm->router->addRule("^" . $globals->user_path . '(.*)', array("url"=> VG_UI_PATH . "/restricted/auth/profile/account" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "account"), "/user/account");
-    		} elseif(strpos($globals->page["user_path"], "/user/vgallery") === 0) {
-    			$cm->router->addRule("^" . $globals->user_path . '(.*)', array("url"=> VG_UI_PATH . "/restricted/blocks/contents" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "vgallery"), "/user/vgallery");
-    			$cm->router->addRule("^" . $globals->user_path . '(/[^/]+)*/modify$', array("url"=> VG_UI_PATH . "/restricted/blocks/contents/modify" . '$1'), cmRouter::PRIORITY_NORMAL, true);
-    		} elseif(strpos($globals->page["user_path"], "/user/resources") === 0) {
-    			$cm->router->addRule("^" . $globals->user_path . "(.*)", array("url"=> VG_UI_PATH . "/restricted/albums/resources" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "gallery"), "/user/resources");
-    		} elseif(strpos($globals->page["user_path"], "/user/draft") === 0) {
-    			$cm->router->addRule("^" . $globals->user_path . "(.*)", array("url"=> VG_UI_PATH . "/restricted/wysiwyg" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "draft"), "/user/draft");
-    		} elseif(strpos($globals->page["user_path"], "/user/menu") === 0) {
-    			$cm->router->addRule("^" . $globals->user_path . "(.*)", array("url"=> VG_UI_PATH . "/restricted/pages" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "menu"), "/user/menu");
-    		} elseif(strpos($globals->page["user_path"], "/user/ecommerce") === 0) {
-    			$cm->router->addRule("^" . $globals->user_path . "(.*)", array("url"=> "/conf/gallery/ecommerce/manage" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "ecommerce"), "/user/ecommerce");
-    			$cm->router->addRule("^" . $globals->user_path . '/preview(.*)', array("url"=> "/conf/gallery/ecommerce/documents/bill/preview" . '$1'), cmRouter::PRIORITY_NORMAL, true);
-    			$cm->router->addRule("^" . $globals->user_path . '/form(.*)', array("url"=> VG_UI_PATH . "/addons/form/contents" . '$1'), cmRouter::PRIORITY_NORMAL, true);
-    		} elseif(strpos($globals->page["user_path"], "/user/wishlist") === 0) {
-				$cm->router->addRule("^" . $globals->user_path . "(.*)", array("url"=> "/conf/gallery/ecommerce/cart/wishlist" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "wishlist"), "/user/wishlist");
-    		} elseif(strpos($globals->page["user_path"], "/user/cart") === 0) {
-				$cm->router->addRule("^" . $globals->user_path . "(.*)", array("url"=> "/conf/gallery/ecommerce/cart" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "cart"), "/user/cart");
-    		} elseif(strpos($globals->page["user_path"], "/user/mpay") === 0) {
-    			$cm->router->addRule("^" . $globals->user_path . "(.*)", array("url"=> "/conf/gallery/ecommerce/mpay" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "mpay"), "/user/mpay");
-			} else {
-				$cm->router->addRule("^" . $globals->user_path . '(.*)', array("url"=> VG_UI_PATH . "/restricted/auth/profile" . '$1'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "profile"), "/user");
-			}
     	case "public":
     		//if(check_function("system_gallery_redirect")) TODO: da grossi problemi redirect in home e infiniti 
     			//system_gallery_redirect($globals->settings_path);
 
+    	case "user":
     	default:
 			rewrite_request($globals->page["strip_path"]); //imposta user_path e settings_path togliendo eventuali parametri
-	        $cm->oPage->page_path = $globals->user_path;
-			
+            $cm->oPage->page_path = $globals->user_path;
+
             if(!$cm->oPage->isXHR() && check_function("get_webservices")) 
                 $services_params = get_webservices(null, $cm->oPage);
 
@@ -1539,106 +1272,60 @@ function system_init_on_before_routing($cm)
                 && strpos(basename($globals->settings_path), "manifest.") === false
                 && check_function("system_layer_gallery")
             ) {
-                system_load_resources();
+                //$globals->settings_path = $settings_path;
+	        //if(check_function("system_layer_gallery")) {
+	            if($cm->oPage->isXHR() 
+	                && (
+	                    strpos($cm->path_info, VG_SITE_USER) !== 0
+	                    && strpos($cm->path_info, VG_SITE_CART) !== 0 
+	                    && strpos($cm->path_info, VG_SITE_NOTIFY) !== 0
+	                    && strpos($cm->path_info, "/user") !== 0
+	                    && strpos($cm->path_info, "/services") !== 0
+	                    && !isset($_REQUEST["XHR_DIALOG_ID"])
+	                    && !isset($_REQUEST["XHR_COMPONENT"]) //Server per i form e la registrazione ad esempio
+	                    //&& strpos($cm->path_info, VG_SITE_SERVICES) !== 0
+	                )
+	            ) {
+            		//da cachare il contenuto generato via ajax e applicare tutte le compressioni del caso
+	                $buffer = system_layer_gallery($cm->oPage, null, true);
+	                if(strlen($buffer)) {
+	                    if(check_function("system_get_js_layout")) {
+	                        $arrJs = system_get_js_layout($cm->oPage, $globals->js["request"], $globals->settings_path, true); 
+	                        //$strBuffer = '<div id="' . $arrJs["key"] . '">' . preg_replace("/\n\s*/", "\n", $buffer) . $arrJs["data"] . '</div>'; 
+	                        $strBuffer = preg_replace("/\n\s*/", "\n", $buffer) . $arrJs["data"];
+	                    }
 
-                if($_REQUEST["XHR_COMPONENT"]) {
-                    $globals->tpl = system_pre_process_page();
-                } else {
-                    if(ENABLE_ADV_PERMISSION && check_function("system_adv_permission")) {
-                        system_adv_permission($globals->settings_path);
-                    }
+				        if(check_function("system_set_cache_page"))
+				            system_set_cache_page($strBuffer);
 
-                    if($cm->oPage->isXHR() 
-                        && (
-                            strpos($cm->path_info, VG_SITE_USER) !== 0
-                            && strpos($cm->path_info, VG_SITE_CART) !== 0 
-                            && strpos($cm->path_info, VG_SITE_NOTIFY) !== 0
-                            && strpos($cm->path_info, "/user") !== 0
-                            && strpos($cm->path_info, "/services") !== 0
-                            && !isset($_REQUEST["XHR_CTX_ID"])
-                            && !isset($_REQUEST["XHR_COMPONENT"]) //Server per i form e la registrazione ad esempio
-                        )
-                    ) {
-                        $globals->tpl = system_pre_process_page(array(
-                            "limit_section" => true
-                        ));
-                        $cm->oPage->process(false);
+	                    //cache_send_header_content(false, false, false, false, strlen($strBuffer), false);
 
-                        //da cachare il contenuto generato via ajax e applicare tutte le compressioni del caso
-                        $buffer = system_layer_gallery($cm->oPage);
-                        if($buffer["content"] && check_function("system_set_cache_page")) {
-	                        $frame_buffer = $buffer["content"] . $buffer["media"];
-                            system_set_cache_page($frame_buffer);  
+	                    echo $strBuffer;
+	                    exit;
+	                }
+	            } else {
+	                $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_gallery" , ffEvent::PRIORITY_HIGH);
+	            }
+	        //}
+				$cm->oPage->addEvent("on_tpl_parse", "system_cache_on_tpl_parse", ffEvent::PRIORITY_DEFAULT);
+				
+                ffGrid::addEvent ("on_factory_done", "ffGrid_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
+                ffRecord::addEvent ("on_factory_done", "ffRecord_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
 
-                            echo $frame_buffer;
-                            exit;
-                        }
-                    } else {
-                        $globals->tpl = system_pre_process_page();
-                        $cm->oPage->addEvent("on_after_process_components", "system_layer_gallery" /*, ffEvent::PRIORITY_HIGH*/);
-                        $cm->oPage->addEvent("on_tpl_parsed", "system_set_cache_page" , ffEvent::PRIORITY_FINAL);	                
-                    }
-                }
-            }
-			
-			$cm->oPage->addEvent("on_tpl_parse", "system_cache_on_tpl_parse", ffEvent::PRIORITY_DEFAULT);
-	      //  ffGrid::addEvent ("on_factory_done", "ffGrid_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
-	       // ffRecord::addEvent ("on_factory_done", "ffRecord_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
-		    
-
+                if(check_function("process_init_modules"))
+                    process_init_modules($cm->oPage, ($_SERVER['REQUEST_METHOD'] == "POST" ? null : $cm->oPage->isXHR()));    	
+            }   	
     
     }
-   
+    
+    
    
 }
-
-/**
-* Load resources
-*/
-function system_load_resources() {
-	$globals = ffGlobals::getInstance("gallery");
-	$base_path = FF_THEME_DISK_PATH . "/" . FRONTEND_THEME;
-	
-	$directory = new RecursiveDirectoryIterator(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME);
-	$flattened = new RecursiveIteratorIterator($directory);
-	//da aggiungere la favico
-	/*
-	if(file_exists(FF_DISK_PATH . "/favicon.ico")) {
-	    $cm->oPage->tplAddCss("favicon", "favicon.ico", "/", "icon", "image/ico");
-	} elseif(file_exists(FF_DISK_PATH . "/favicon.png")) {
-	    $cm->oPage->tplAddCss("favicon", "favicon.png", "/", "icon", "image/png");
-	} elseif(file_exists(FF_DISK_PATH . "/favicon.gif")) {
-	    $cm->oPage->tplAddCss("favicon", "favicon.gif", "/", "icon", "image/x-icon");
-	}*/
-	
-	// Make sure the path does not contain "/.Trash*" folders and ends eith a .php or .html file
-	$files = new RegexIterator($flattened, '#^(?:[A-Z]:)?(?:/(?!\.Trash)[^/]+)+/[^/]+\.(?:js|css|html)$#Di');
-
-	foreach($files as $file) {
-		if(strpos($file, $base_path . "/css") === 0) {
-			$globals->css["frontend"][substr($file, strlen($base_path . "/css"))] = true;
-		} elseif(strpos($file, $base_path . "/javascript") === 0) {
-			$globals->js["frontend"][substr($file, strlen($base_path . "/javascript"))] = true;
-		} elseif(strpos($file, $base_path . "/contents") === 0) {
-			$globals->html["frontend"][substr($file, strlen($base_path . "/contents"))] = true;
-		} elseif(strpos($file, $base_path . "/pages") === 0) {
-			$globals->html["pages"][substr($file, strlen($base_path . "/pages"))] = true;
-		} elseif(strpos($file, $base_path . "/favicon") === 0) {
-			$globals->favicon["icon"][substr($file, strlen($base_path . "/favicon"))] = true;
-		}
-	}
-}
-
 
 function rewrite_request($strip_path = null) {
 	$cm = cm::getInstance();
 	$globals = ffGlobals::getInstance("gallery");
-    if($globals->locale["default"] && check_function("get_locale"))
-    	$globals->locale = get_locale();
-
-	if(!$globals->settings_path)
-    	$globals->settings_path = system_get_settings_path_by_user_path($globals->page);
-    	
+	
 	$arrEncodedParams = array();
 	
 	$user_path = $globals->user_path;
@@ -1680,7 +1367,7 @@ function rewrite_request($strip_path = null) {
      		$globals->sort = $request["get"]["sort"];
 		if($request["get"]["filter"])
 			$globals->filter = $request["get"]["filter"];
-
+			
      	$arrEncodedParams = $request["get"]["query"];
      }
 	/**

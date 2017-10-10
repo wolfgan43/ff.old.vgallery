@@ -1,0 +1,146 @@
+
+.explanation {
+	font-size:18px;
+	margin:20px;
+	line-height:1.3;
+}
+
+.mail-header {
+        width:auto;
+        margin-left:30%;
+}
+
+#content>.mail-header DIV {
+	padding:10px 0;
+        
+}
+
+#content>.mail-header DIV H3 { text-transform:uppercase; font-size:10px;  }
+
+#content>.mail-header DIV>DIV {
+	padding:0;
+	margin:0;
+}
+
+#content>.mail-header DIV LABEL { padding:4px 0;}
+
+#content>.mail-header DIV { 
+    margin:4px 0;
+}
+
+span.example {float: right;}
+
+
+#content>.mail-body-wrapper>.mail-tag {width: 28%;}
+#content>.mail-body-wrapper>.mail-tag>DIV {
+    background-color: #ACEEFF; padding: 2%;}
+#content>.mail-body-wrapper>.mail-tag>DIV:hover {
+    background-color: #7EEEFF;}
+
+#content>.mail-body-wrapper>.mail-tag div label {font-weight: bold;}
+
+/*qui iniziano i div dell'header'*/
+/*caratteristiche comuni*/
+.mail-header>.mail-tag>DIV {
+    background-color: #e5e5e5;
+    padding: 1% !important;
+}
+.mail-header>.mail-tag>DIV:hover {
+    background-color: #cccccc;
+}
+/*fine caratteristiche comuni*/
+
+/*caratteristiche singole*/
+.email-previewfrom {
+    height: 80px;
+    width: 48%;
+    float: left;
+}
+
+.email-previewto {
+    height: 32px;
+    width: 48%;
+    float: left;
+}
+
+.email-previewbcc {
+    height: 31px;
+    width: 48%;
+    float: left;
+}
+
+.email-previewsubject {clear: both;}
+
+
+
+/*fine caratteristiche singole*/
+
+/*qui finiscono i div dell'header'*/
+
+
+#content>.mail-header DIV.email-from,
+#content>.mail-header DIV.email-to,
+#content>.mail-header DIV.email-cc,
+#content>.mail-header DIV.email-bcc {
+	width:50%;
+	float:left;
+	background:#fff;
+	clear:none;
+}
+
+#content>.mail-header DIV.email-to { height:94px; }
+
+#content>.mail-header .email-theme, 
+#content>.mail-header .email-template {
+	background:#2D2D2D;
+	color:#fff;
+}
+
+
+#content>.mail-header DIV DIV LABEL {display:inline;}
+
+
+
+.accountactivatedpreviewfrom DIV LABEL {display: block !important;}
+
+
+
+#content>.mail-header .email-theme,
+#content>.mail-header .email-template { padding:10px; }
+
+#content>.mail-header DIV SPAN.example {
+	font-style:italic;
+	color:#226b7e;
+}
+
+#content>.mail-header .email-theme SPAN.example,
+#content>.mail-header .email-template SPAN.example,
+#content>.mail-header DIV.email-from SPAN.example,
+#content>.mail-header DIV.email-to SPAN.example,
+#content>.mail-header DIV.email-cc SPAN.example,
+#content>.mail-header DIV.email-bcc SPAN.example {
+	color:#9c9c9c;
+}
+
+
+
+
+.mail-body-container {
+	background:url(../images/transparent.gif) repeat;
+	width:70%;
+	overflow:hidden;
+	padding:40px 0;
+        float:right;
+}
+
+
+#content DIV.mail-body {
+	width:680px;
+	margin:0 auto;
+}
+
+.prev_bottom {
+	float:none;
+	clear:both;
+}
+

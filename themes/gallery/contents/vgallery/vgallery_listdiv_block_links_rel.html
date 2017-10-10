@@ -1,0 +1,48 @@
+<!--BeginSezVGalleryTitle-->
+<h2>{name_title}</h2>
+<!--EndSezVGalleryTitle-->
+<!--BeginSezVGallerys-->
+<!--BeginSezPageNavigatorTop-->
+<div class="pagenavigator top"> {PageNavigator} </div>
+<!--EndSezPageNavigatorTop-->
+         <!--BeginSezVGalleryRow-->
+	    <!--BeginSezVGallery-->
+ 			<div class="vgallery_item_rel {vg_switch_style}" id="{real_name}" >
+                {admin}
+
+                <!--BeginSezGroup-->
+                <!--BeginSezGroupContainerStart-->
+                <div class="{group_class}">
+                <!--EndSezGroupContainerStart-->
+                
+                <!--BeginSezVGalleryImage-->
+                <div class="vgallery_image">
+                <!--BeginSezVGalleryImageNode-->
+                {content}
+                <!--EndSezVGalleryImageNode-->
+                </div>
+                <!--EndSezVGalleryImage-->
+                <!--BeginSezVGalleryDescription-->
+                <div class="vgallery_description {class_plugin}">
+                <!--BeginSezVGalleryDescriptionNode-->
+                {content}
+                <!--EndSezVGalleryDescriptionNode-->
+                </div>
+                <!--EndSezVGalleryDescription-->
+
+                <!--BeginSezGroupContainerEnd-->
+                </div>
+                <!--EndSezGroupContainerEnd-->
+                <!--EndSezGroup-->
+                
+                <a href="{show_file}" class="read-more">{_readmore}</a>
+		</div>
+        <!--EndSezVGallery-->
+        <!--EndSezVGalleryRow-->
+<!--BeginSezPageNavigatorBottom-->
+<div class="pagenavigator bottom"> {PageNavigator} </div>
+<!--EndSezPageNavigatorBottom-->
+<!--EndSezVGallerys-->
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->

@@ -28,9 +28,6 @@
   	$db = ffDB_Sql::factory();
 
   	$globals = ffGlobals::getInstance("gallery");
-	if($globals->page["xhr"] && !$cm->isXHR()) {
-		return false;
-	}
 
 	$layout = null;
 	
@@ -47,8 +44,6 @@
 		$settings_path = "/" . implode("/", $arrSettingsPath); 
 	}*/
 
-	system_load_resources();
-	
     switch($globals->page["name"]) {
         case "anagraph": 
         	$check_vgallery_dir = get_vgallery_is_dir(basename($settings_path), "/anagraph" . ffCommon_dirname($settings_path));    			
@@ -156,7 +151,7 @@
                     $sSQL = "SELECT module_maps.description_limit
                                     , module_maps.contest
                                 FROM module_maps
-                                WHERE name = " . $db->toSql($arrMap[0], "Text");
+                                WHERE name = " . $db->toSql($arrMap[0]);
                     $db->query($sSQL);
                     if($db->nextRecord()) {
                         $data_limit = $db->getField("description_limit", "Text", true);
@@ -244,7 +239,7 @@
         case "block":
 		default:     
 			$arrSettingsPath = explode("/", trim($settings_path, "/")); 
-     
+
 			if(0) {
     			//da fare gestione schema per i moduli
     		} elseif(count($arrSettingsPath) > 1) {
@@ -292,44 +287,34 @@
 					}
 				}
 			} else {      
-			
 				if(check_function("query_layout"))
 					$sSQL = query_layout_by_smart_url(basename($settings_path));
+					
+				$db->query($sSQL);
+				if($db->nextRecord() && check_function("system_layer_gallery")) {
+					if(check_function("get_layout_settings"))
+						$layout_settings_popup = get_layout_settings(NULL, "ADMIN"); 
 
-				if(strlen($sSQL))					
-				{
-					$db->query($sSQL);
-					if($db->nextRecord() && check_function("system_layer_gallery")) {
-						$ID_layout 		= $db->getField("ID", "Number", true);
-						$type 			= $db->getField("type", "Text", true);
-						$layout["ID"] 													= $ID_layout;
-						$layout["ID_type"] 												= $db->getField("ID_type", "Number", true);
-						$layout["ID_section"] 											= null;
-						$layout["prefix"] 												= "L";
-						$layout["smart_url"] 											= $db->getField("smart_url", "Text", true);
-						$layout["title"] 												= $db->getField("name", "Text", true);
-						$layout["type_class"] 											= $db->getField("type_class", "Text", true);
-						$layout["type_group"] 											= $db->getField("type_group", "Text", true);
-						$layout["multi_id"] 											= $db->getField("multi_id", "Text", true);
-						$layout["type"] 												= $type;
-						$layout["location"] 											= $db->getField("location", "Text", true);
-						$layout["template"] 											= $db->getField("template", "Text", true);
-						$layout["template_detail"] 										= $db->getField("template_detail", "Text", true);
-						$layout["tpl_path"] 											= $db->getField("tpl_path", "Text", true);
-						$layout["value"] 												= $db->getField("value", "Text", true);
-						$layout["params"] 												= $db->getField("params", "Text", true);
-						$layout["last_update"] 											= $db->getField("last_update", "Text", true);
-						$layout["frequency"] 											= $db->getField("frequency", "Text", true);
-						$layout["use_in_content"] 										= $db->getField("use_in_content", "Number", true);
-						$layout["ajax"] 												= $db->getField("use_ajax", "Number", true);
-						$layout["ajax_on_ready"] 										= $db->getField("ajax_on_ready", "Text", true);
-						$layout["ajax_on_event"] 										= $db->getField("ajax_on_event", "Text", true);
-						$layout["content"] 												= "";
-						$layout["settings"] 											= null;
-						$layout["plugins"] 												= $db->getField("js_lib", "Text", true);
-						$layout["js"] 													= $db->getField("js", "Text", true);
-						$layout["css"] 													= $db->getField("css", "Text", true);
-						$layout["visible"] 												= $db->getField("visible", "Text", true);
+					//do {
+						$ID_layout = $db->getField("ID", "Number", true);
+						$type = $db->getField("type", "Text", true);
+						$layout["prefix"] = "L";
+						$layout["ID"] = $ID_layout;
+						$layout["title"] = $db->getField("name", "Text", true);
+						$layout["class"] = $db->getField("class", "Text", true);
+						$layout["type_class"] = $db->getField("type_class", "Text", true);
+						$layout["type_group"] = $db->getField("type_group", "Text", true);
+						$layout["type_description"] = $db->getField("type_description", "Text", true);
+						$layout["type"] = $type;
+						$layout["ID_type"] = $db->getField("ID_type", "Number", true);
+						$layout["location"] = $db->getField("location", "Text", true);
+						$layout["template"] = $db->getField("template", "Text", true);
+						$layout["tpl_path"] = $db->getField("tpl_path", "Text", true);
+						$layout["visible"] = $db->getField("visible", "Text", true);
+						$layout["value"] = $db->getField("value", "Text", true);
+						$layout["params"] = $db->getField("params", "Text", true);
+						$layout["last_update"] = $db->getField("last_update", "Text", true);
+						$layout["frequency"] = $db->getField("frequency", "Text", true);
 						if($layout["visible"]) {
 							if(check_function("get_layout_settings"))
 								$layout["settings"] = get_layout_settings($ID_layout, $type);
@@ -338,6 +323,8 @@
 							$layout["db"]["params"] = $layout["params"];
 							$layout["db"]["real_path"] = $db->getField("real_path", "Text", true);
 						}
+
+						$main_section_params["js_custom_is_set"] = true;
 						
 						$main_section_params["search"] = $globals->search;
 						$main_section_params["navigation"] = $globals->navigation;
@@ -345,30 +332,70 @@
 						$main_section_params["user_path"] = $layout["db"]["real_path"];
 						$main_section_params["settings_path"] = $layout["db"]["real_path"];						
 						
-						$buffer = system_block_process($layout, $main_section_params);
+						$buffer = system_block_process($layout, $main_section_params, $layout_settings_popup);
 
 						$main_section_params = $buffer["params"];
 						$main_section_params["count_block"]++;
-						$frame_buffer = $buffer["default"];
-					}
+						
+						$frame_buffer = $buffer["content"];
+					//} while($db->nextRecord());
 				}
 			}
     }  
 
-	if(check_function("system_set_media")) {
-	    $media = system_set_media_cascading(true);
+	if($frame_buffer) {
+		$res_media_buffer = "";
+		if (is_array($cm->oPage->page_css) && count($cm->oPage->page_css))
+        {
+        	foreach($cm->oPage->page_css AS $key => $value) {
+        		if($value["async"] != $cm->isXHR())
+        			continue;
 
-	    $frame_buffer = preg_replace("/\n\s*/", "\n", $frame_buffer) . $media;
+        		$css_path = "";
+        		if($value["path"] === null) 
+        			$value["path"] = $cm->oPage->getThemePath();
+        		
+        		$css_path = $value["path"];
+        		
+        		if($value["file"])
+        			$css_path .= "/" . $value["file"];
+        			
+        		if($css_path)
+        			$res_media_buffer .= 'ff.injectCSS("' . $key . '", "' . $css_path . '");';
+        		if($value["embed"])
+        			$frame_buffer .= '<style type="' . $value["type"] . '">' . $value["embed"] . "</style>";
+        	}
+		}
+ 		if (is_array($cm->oPage->page_js) && count($cm->oPage->page_js))
+        {
+        	foreach($cm->oPage->page_js AS $key => $value) {
+        		if($value["async"] != $cm->isXHR())
+        			continue;
+
+        		$js_path = "";
+        		if($value["path"] === null) 
+        			$value["path"] = $cm->oPage->getThemePath();
+        		
+        		$js_path = $value["path"];
+        		
+        		if($value["file"])
+        			$js_path .= "/" . $value["file"];
+
+        		if($js_path)
+        			$res_media_buffer .= 'ff.pluginLoad("' . $key . '", "' . $js_path . '");';
+        			
+        		if($value["embed"])
+        			$res_media_buffer .= $value["embed"];
+        	}
+		}
+		if($res_media_buffer)
+			$frame_buffer .= '<script type="text/javascript">' . $res_media_buffer . '</script>';    
 	}
- 
 	if(!defined("DISABLE_CACHE") && $frame_buffer && check_function("system_set_cache_page")) {
-		//system_write_cache_page($globals->page["user_path"], $main_section_params["count_block"]);
-		system_set_cache_page($frame_buffer, $main_section_params["count_block"]);  
+		system_write_cache_page($globals->page["user_path"], $main_section_params["count_block"]);
+		system_set_cache_page($frame_buffer);  
 	}
   	
   	
-  	return ($frame_buffer 
-  		? $frame_buffer
-  		: true
-  	);
+  	return $frame_buffer;
   }

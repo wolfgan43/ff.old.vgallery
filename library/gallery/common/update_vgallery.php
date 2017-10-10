@@ -67,7 +67,8 @@
 	    check_function("get_short_description");
 
 		$arrMetaDescription = array();
-	    foreach($component->form_fields AS $field_key => $field_value) {
+	    foreach($component->form_fields AS $field_key => $field_value) 
+	    {
 	        $enable_smart_url = $field_value->user_vars["smart_url"];
 	        $arrValue = null;
 
@@ -793,7 +794,7 @@
 				$tpl_meta = ffTemplate::factory(null);
 				$tpl_meta->load_content($component->user_vars["rule_meta_title"], "main");
 
-				foreach ($tpl_meta->DVars AS $tpl_var => $tpl_ignore) {
+				foreach ($tpl_meta->DVars["main"] AS $tpl_var) {
 					$tpl_meta->set_var($tpl_var, $arrFields["field_" . $lang_code . "_" . ffCommon_url_rewrite($tpl_var)]["new"]);
 				}
 				$meta_title = $tpl_meta->rpparse("main", false);
@@ -806,7 +807,7 @@
 				$tpl_meta = ffTemplate::factory(null);
 				$tpl_meta->load_content($component->user_vars["rule_meta_description"], "main");
 
-				foreach ($tpl_meta->DVars AS $tpl_var => $tpl_ignore) { 
+				foreach ($tpl_meta->DVars["main"] AS $tpl_var) { 
 					$tpl_meta->set_var($tpl_var, $arrFields["field_" . $lang_code . "_" . ffCommon_url_rewrite($tpl_var)]["new"]);
 				}
 				$meta_description = strip_tags($tpl_meta->rpparse("main", false));
@@ -854,7 +855,7 @@
 								)
 							);
 
-			if($lang["ID"] == LANGUAGE_DEFAULT_ID) {
+			if($lang_code == LANGUAGE_DEFAULT) {
 				if(!strlen($smart_url)) {
 					if(!DISABLE_SMARTURL_CONTROL) {
 						$component->tplDisplayError(ffTemplate::_get_word_by_code("smart_url_empty"));
@@ -913,8 +914,8 @@
 								}
 							}
 						}
-					}				
-					if($str_compare_tag) {
+					}
+					if($str_compare_tag) {				
 						$sSQL = "SELECT search_tags.name
 								FROM search_tags
 								WHERE search_tags.code IN(" . $db->toSql($str_compare_tag, "Text", false). ")
@@ -943,8 +944,8 @@
 								}
 							}
 						}
-					}
-					if($str_compare_tag) {
+					}			
+					if($str_compare_tag) {				
 						$sSQL = "SELECT search_tags.name
 								FROM search_tags
 								WHERE search_tags.code IN(" . $db->toSql($str_compare_tag, "Text", false). ")
@@ -967,22 +968,10 @@
 			if(isset($component->form_fields["system_" . $lang_code . "_visible"]))
 				$visible = $component->form_fields["system_" . $lang_code . "_visible"]->getValue();
 
-			$seo_update = update_vgallery_seo(
-				$primary_meta
-				, $ID_node
-				, $lang["ID"]
-				, $meta_description
-				, $vgallery_parent
-				, $meta_keywords
-				, $visible
-				, $stop_words
-				, $component->user_vars["src"]["seo"]
-				, $component->user_vars["src"]["field"]
-			);
+			$seo_update = update_vgallery_seo($primary_meta, $ID_node, $lang["ID"], $meta_description, $vgallery_parent, $meta_keywords, $visible, $stop_words, $component->user_vars["src"]["seo"], $component->user_vars["src"]["field"]);
 	    }
 	}
   
-
   	return $default_smart_url;
   }
   

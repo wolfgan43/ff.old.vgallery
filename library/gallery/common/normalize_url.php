@@ -23,6 +23,63 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
+function normalize_url_by_current_lang_old($url, $prefix = true) {
+	$globals = ffGlobals::getInstance("gallery");
+	
+	if($globals->page["alias"]) {
+		if(strpos($url, $globals->page["alias"]) === 0) {
+			$url = substr($url, strlen($globals->page["alias"]));
+		} else {
+			$prefix_url = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://www." . substr(DOMAIN_INSET, strpos(DOMAIN_INSET, ".") + 1);
+		}
+	}
+	
+	if($prefix === true) {
+		$prefix = $globals->locale["prefix"];
+	}
+	$res = FF_SITE_PATH . $prefix . $url;
+	if ($res != "/" && substr($res,-1) == "/")
+		$res = substr($res,0,-1);
+
+	return $prefix_url . $res;
+}
+
+function normalize_url_by_current_lang($user_path, $prefix = true, $abs_url = false) {
+	$globals = ffGlobals::getInstance("gallery");
+	$schema = cache_get_settings();
+
+	if($prefix === true) {
+		$prefix = $globals->locale["prefix"];
+	}
+	$res = FF_SITE_PATH . $prefix . $user_path;
+	if ($res != "/" && substr($res,-1) == "/")
+		$res = substr($res,0,-1);
+		
+    $arrSettings_path = explode("/", trim($res, "/"));
+	if(is_array($schema["alias"]) && count($schema["alias"])) {
+		$alias_flip = array_flip($schema["alias"]); 
+		if($alias_flip["/" . $arrSettings_path[0]]) {
+			$res = substr($res, strlen("/" . $arrSettings_path[0]));
+			$prefix_url = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $alias_flip["/" . $arrSettings_path[0]];
+		}
+	}
+
+	if($abs_url && !$prefix_url) {
+		$domain = (defined("DOMAIN_DEFAULT")
+			? DOMAIN_DEFAULT
+			: (substr_count(DOMAIN_NAME, ".") > 1
+				? DOMAIN_NAME
+				: "www." . DOMAIN_NAME
+			)
+		);
+		
+		
+		substr($domain_name, 0, strpos($domain_name, "."));
+		$prefix_url = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $domain;
+	}
+		
+	return $prefix_url . $res;
+}
 
 function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $international = false, $url_by_lang = true, $concat_field = "smart_url", $basename = false, $sep = null, $force_vgallery_group = null) {
 	$globals = ffGlobals::getInstance("gallery");
@@ -36,9 +93,7 @@ function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $internat
     //$url = url_rewrite($url);
 
 	$part_url["path"] = rtrim($part_url["path"], "/");
-    if(check_function("system_get_sections"))
-        $block_type = system_get_block_type();	
-
+	
     if($sep === null) {
         if($concat_field == "smart_url") {
             $sep = "/";
@@ -70,15 +125,20 @@ function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $internat
 	                    . $url
                     );
 
-		if(!$arrLayout) {
-			$arrLayout = array();
+        if(!$arrLayout) {
+        	$arrLayout = array();
 			$sSQL = "SELECT layout.ID
 			            , layout.value
 			            , layout.params
+			            , layout_type.name AS `type`
 			            , layout_path.path AS layout_path
 			        FROM layout 
+			            INNER JOIN layout_type ON layout_type.ID = layout.ID_type
 			            INNER JOIN layout_path ON layout_path.ID_layout = layout.ID
-			        WHERE layout.ID_type IN(" . $db->toSql($block_type["gallery"]["ID"], "Number") . "," . $db->toSql($block_type["virtual-gallery"]["ID"], "Number") . ")
+			        WHERE 1
+						AND (layout_type.name = " . $db->toSql("GALLERY", "Text") . "
+                        	OR layout_type.name = " . $db->toSql("VIRTUAL_GALLERY", "Text") . "
+                        )
 			            AND layout.ID_domain = " . $db->toSql($globals->ID_domain, "Number");
 			 $db->query($sSQL);
              if($db->nextRecord()) {
@@ -88,9 +148,9 @@ function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $internat
 					if(!strlen($layout_path))
 						$layout_path = "/";
 						
-					$arrLayout[$layout_path][$ID_layout]["value"] 	= $db->getField("value", "Text", true);
-					$arrLayout[$layout_path][$ID_layout]["params"] 	= $db->getField("params", "Text", true);
-					$arrLayout[$layout_path][$ID_layout]["type"] 	= $block_type["rev"][$db->getField("ID_type", "Number", true)];
+					$arrLayout[$layout_path][$ID_layout]["value"] = $db->getField("value", "Text", true);
+					$arrLayout[$layout_path][$ID_layout]["params"] = $db->getField("params", "Text", true);
+					$arrLayout[$layout_path][$ID_layout]["type"] = $db->getField("type", "Text", true);
 				} while($db->nextRecord());
              }
         }		
@@ -152,6 +212,7 @@ function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $internat
 	                        $static_part_url .= "/" . $arr_part_url_value;
 						}
 
+                        
 						if(strlen($static_part_url))
 							$tmp_static_part_url = $static_part_url;
 						else
@@ -163,7 +224,7 @@ function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $internat
 
 							$next_value = $arr_part_url[$arr_part_url_key + 1];
 							foreach($arrLayout[$tmp_static_part_url] AS $arrLayout_key => $arrLayout_value) {
-						 		if($arrLayout_value["type"] == "virtual-gallery") {
+						 		if($arrLayout_value["type"] == "VIRTUAL_GALLERY") {
 									$tmp_vgallery_part_url = "/" . rtrim($arrLayout_value["value"] . rtrim($arrLayout_value["params"], "/"), "/");
 									if(count($arrLayout[$tmp_static_part_url]) > 1) {
 						                $sSQL = "SELECT vgallery_nodes.*
@@ -180,7 +241,7 @@ function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $internat
 											break;
 										}
 									}
-								} elseif($arrLayout_value["type"] == "gallery") {
+								} elseif($arrLayout_value["type"] == "GALLERY") {
 									$tmp_gallery_part_url = rtrim($arrLayout_value["value"] . rtrim($arrLayout_value["params"], "/"), "/");
 									if(count($arrLayout[$tmp_static_part_url]) > 1) {
 						                $sSQL = "SELECT files.*
@@ -546,4 +607,4 @@ function normalize_url($url, $hide_ext = HIDE_EXT, $encode_url = true, $internat
 	}
 
     return $url_normalizzed;
-}
+}   

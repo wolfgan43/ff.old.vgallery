@@ -1,28 +1,5 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
+require(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
 use_cache(false);
 $framework_css = mod_sec_get_framework_css();
@@ -42,15 +19,11 @@ if(MOD_SEC_CSS_PATH !== false && isset($cm->router->matched_rules["mod_sec_login
     if(MOD_SEC_CSS_PATH)
         $filename = MOD_SEC_CSS_PATH;
     else
-        $filename = cm_cascadeFindTemplate("/css/" . $css_name, "security");
-        //$filename = cm_moduleCascadeFindTemplateByPath("security", "/css/" . $css_name, $cm->oPage->theme);
+        $filename = cm_moduleCascadeFindTemplateByPath("security", "/css/" . $css_name, $cm->oPage->theme);
 
     $ret = cm_moduleGetCascadeAttrs($filename);
-    $cm->oPage->tplAddCSS($css_name
-        , array(
-            "file" => $filename
-            , "path" => $ret["path"]
-    ));
+    $cm->oPage->tplAddCSS($css_name, $filename, $ret["path"]);
+    //$cm->oPage->tplAddCSS("modules.security", "", cm_getModulesExternalPath() . "/security/restricted/css/ff.modules.security.css"); // useful for caching purpose
 }
     
 $tpl = ffTemplate::factory(get_template_cascading($user_path, "activation.html", "/login"));
@@ -117,13 +90,13 @@ if(MOD_SEC_LOGIN_LABEL) {
 /*
 if ($cm->oPage->getXHRDialog())
 {
-    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.ajax.ctxDoRequest('" . $_REQUEST["XHR_CTX_ID"] . "', {
+    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.ffPage.dialog.doRequest('" . $_REQUEST["XHR_DIALOG_ID"] . "', {
                 'action' : 'request'
         });");
 }
 else
 {
-    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.load('ff.ajax', function(){ ff.ajax.doRequest({
+    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.pluginLoad('ff.ajax', '/themes/library/ff/ajax.js', function(){ ff.ajax.doRequest({
                 'action' : 'request'
                 , 'formName'    : 'ffActivation'
 				, 'injectid'    : 'ffActivation'
@@ -255,7 +228,7 @@ switch($frmAction) {
 
                             $fields_activation["activation"]["username"] = $username;
                             $fields_activation["activation"]["email"] = $email;
-                            $fields_activation["activation"]["link"] = "http://" . DOMAIN_INSET . FF_SITE_PATH . $mod_sec_activation->reverse  . "?frmAction=activation&sid=" . urlencode($rnd_active);
+                            $fields_activation["activation"]["link"] = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH . $mod_sec_activation->reverse  . "?frmAction=activation&sid=" . urlencode($rnd_active);
 
                             if(check_function("process_mail")) {
                                 //$rc_from_activation = process_mail(email_system("account activation"), $to_active, NULL, NULL, $fields_activation, null, null, null, false, null, true);
@@ -310,7 +283,7 @@ switch($frmAction) {
                 $fields["account"]["email"] = $db->getField("email", "Text", true);
                 $fields["account"]["name"] = $db->getField("name", "Text", true);
                 $fields["account"]["surname"] = $db->getField("surname", "Text", true);
-                $fields["activationlogin"]["link"] = "http://" . DOMAIN_INSET . FF_SITE_PATH . $mod_sec_login->reverse . "?username=" . urlencode($fields["account"]["username"]);
+                $fields["activationlogin"]["link"] = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH . $mod_sec_login->reverse . "?username=" . urlencode($fields["account"]["username"]);
 
                 if(check_function("process_mail")) {
 					$ID_email = $db->getField("ID_email", "Number", true);
@@ -339,9 +312,9 @@ switch($frmAction) {
 
                 if(check_function("analytics"))
                     analytics_set_event('/registrazione/confirm-registration', "Confirm registration");
-
+				
 				$cm->doEvent("on_done_activation", array($ID));
-
+				
                 ffRedirect(FF_SITE_PATH . $mod_sec_activation->reverse . "?frmAction=active&desc=success&ret_url=" . urlencode(FF_SITE_PATH . "/"));
             }
         }
@@ -406,12 +379,10 @@ if(MOD_SEC_LOGO) {
     } else {
         if(is_file(FF_DISK_PATH . MOD_SEC_LOGO_PATH))
             $logo_url = MOD_SEC_LOGO_PATH;
-        elseif(is_file(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/images/logo/login.svg")) 
-            $logo_url = FF_SITE_PATH . FF_THEME_DIR . "/" . $cm->oPage->getTheme() . "/images/logo/login.svg";
-        elseif(is_file(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/images/logo/login.png")) 
-            $logo_url = FF_SITE_PATH . FF_THEME_DIR . "/" . $cm->oPage->getTheme() . "/images/logo/login.png";
-        elseif(is_file(FF_THEME_DISK_PATH . "/" . cm_getMainTheme() . "/images/logo/login.gif"))
-            $logo_url = FF_SITE_PATH . FF_THEME_DIR . "/" . cm_getMainTheme() . "/images/logo/login.gif";
+        elseif(is_file(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/images/logo-login.png")) 
+            $logo_url = FF_THEME_DIR . "/" . $cm->oPage->getTheme() . "/images/logo-login.png";
+        elseif(is_file(FF_THEME_DISK_PATH . "/" . cm_getMainTheme() . "/images/logo-login.gif"))
+            $logo_url = FF_THEME_DIR . "/" . cm_getMainTheme() . "/images/logo-login.gif";
 
         $tpl->set_var("logo_login", $logo_url);
         $tpl->parse("SectLogoImg" . MOD_SEC_LOGO, false);

@@ -367,12 +367,6 @@
     {
         $disk_path              = $_REQUEST["FF_DISK_PATH"];
         $site_path              = $_REQUEST["FF_SITE_PATH"];
-
-		if(strlen($site_path))
-        	$site_path_rev 		= ltrim($site_path, "/") . "/";
-		else
-			$site_path_rev		= "";       
-
         $disk_updir             = $_REQUEST["DISK_UPDIR"];
         $site_updir             = $_REQUEST["SITE_UPDIR"];
 
@@ -435,16 +429,15 @@
 
         if($cdn_static) {
 			if(strlen($production_site)) {
-				$arrDomain 					= explode(".", $production_site);
+				$arrDomain = explode(".", $production_site);
+				
+				$str_static_cdn_domain_name = 'define("CDN_STATIC_IMAGE", \'' . addslashes('http://static.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
 			} else {
-				$arrDomain 					= explode(".", $st_host_name);
+				$arrDomain = explode(".", $st_host_name);
+				
+				$str_static_cdn_domain_name = 'define("CM_SHOWFILES", \'' . addslashes('http://static.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
+				$str_media_cdn_domain_name = 'define("CM_MEDIACACHE_SHOWPATH", \'' . addslashes('http://media.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
 			}
-
-			$str_static_cdn_domain_name 	= 'define("CM_SHOWFILES", \'' . addslashes('http://static.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
-			$str_media_cdn_domain_name 		= 'define("CM_MEDIACACHE_SHOWPATH", \'' . addslashes('http://media.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
-		} else {
-			$str_static_cdn_domain_name 	= 'define("CM_SHOWFILES", \'' . addslashes('/cm/showfiles.php') . '\');';
-			$str_media_cdn_domain_name 		= 'define("CM_MEDIACACHE_SHOWPATH", \'' . addslashes('/' . $site_path_rev . 'media') . '\');';
 		}
 
         if(!strlen($disk_path))
@@ -775,7 +768,7 @@
     define("CM_LOCAL_APP_NAME", \'' . addslashes($site_title) . '\');
     define("LANGUAGE_DEFAULT", \'' . addslashes($language_default) . '\');
     define("LANGUAGE_DEFAULT_ID", \'' . addslashes($language_default_id) . '\');
-    define("LANGUAGE_RESTRICTED_DEFAULT", \'' . addslashes($language_default) . '\');
+    define("LANGUAGE_RESTRICTED_DEFAULT", \'' . addslashes($language_default) . '\'); 
 
     ' . ($debug_mode ? ' define("DEBUG_MODE", true);' : '') . '
     ' . ($debug_profiling ? ' define("DEBUG_PROFILING", true);' : '') . '
@@ -1109,6 +1102,11 @@
 /****
 * htaccess				
 */
+					if(strlen($site_path))
+        				$site_path_rev = ltrim($site_path, "/") . "/";
+					else
+						$site_path_rev = "";
+
 					$htaccess_path = "/.htaccess";
 					$htaccess_content = 'RewriteEngine on
 
@@ -1120,7 +1118,8 @@ Options -Indexes
 AddDefaultCharset UTF-8
 
 # Apache mimetype configuration
-    AddType text/cache-manifest .manifest
+AddType text/cache-manifest .manifest
+
 ';
 
                     if($PHP_fastCGI || $total_php_value_need == $allow_rewite_php_value_on_htaccess) {
@@ -1162,8 +1161,8 @@ php_value upload_max_filesize 100M
     
                     }
                     $htaccess_content .=' 
-ErrorDocument 404 /' . $site_path_rev . 'error-document
-ErrorDocument 403 /' . $site_path_rev . 'error-document
+ErrorDocument 404 /error-document
+ErrorDocument 403 /error-document
 ';
 
 					if(substr_count($st_domain_name, ".") > 1) {
@@ -1175,12 +1174,12 @@ RewriteCond %{HTTP_HOST} ^' . str_replace('.', '\\.', $st_domain_name) . '$
 RewriteRule (.*)$ http://www.' . $st_domain_name . '/$1 [R=301,L,QSA]';
 					}
 
-					if($cdn_static) {
+					if($str_static_cdn_domain_name && $str_media_cdn_domain_name) {
 						$htaccess_content .='
 
 RewriteCond   %{HTTP_HOST}      ^media\.' . str_replace('.', '\\.', $st_domain_name) . '$
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'cache/_thumb
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'error-document
+RewriteCond   %{REQUEST_URI}  	!^' . $site_path . '/cache/_thumb
+RewriteCond   %{REQUEST_URI}  	!^' . $site_path . '/error-document
 RewriteRule   ^(.*)    /cache/_thumb/$0 [L,QSA]
 
 RewriteCond %{HTTP_HOST}      ^media\.' . str_replace('.', '\\.', $st_domain_name) . '$
@@ -1188,25 +1187,25 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^cache/_thumb/(.*) http://static.' . $st_domain_name . '/$1 [L,R=301]
 
 RewriteCond   %{HTTP_HOST}      ^static\.' . str_replace('.', '\\.', $st_domain_name) . '$
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'cm/showfiles\.php
+RewriteCond   %{REQUEST_URI}  	!^' . $site_path . '/cm/showfiles\.php
 RewriteRule   ^(.*)    /cm/showfiles\.php/$0 [L,QSA]
 ';
 					} else {
 						$htaccess_content .='
 RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
-RewriteCond   %{REQUEST_URI}  	^/' . $site_path_rev . 'media 
-RewriteRule   ^media/(.*)    /' . $site_path_rev . 'cache/_thumb/$1 [L]';
+RewriteCond   %{REQUEST_URI}  	^' . $site_path . '/media 
+RewriteRule   ^media/(.*)    ' . $site_path . '/cache/_thumb/$1 [L]';
 					}
 					
 					$htaccess_content .='
 RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
-RewriteCond   %{REQUEST_URI}  	^/' . $site_path_rev . '/asset
-RewriteRule   ^asset/(.*)    /' . $site_path_rev . 'cache/$1 [L]					
+RewriteCond   %{REQUEST_URI}  	^' . $site_path . '/asset
+RewriteRule   ^asset/(.*)    ' . $site_path . '/cache/$1 [L]					
 
 RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
-RewriteCond   %{REQUEST_URI}	^/' . $site_path_rev . 'modules
-RewriteCond   %{REQUEST_URI}	!^/' . $site_path_rev . 'modules/([^/]+)/themes(.+)
-RewriteRule  ^modules/([^/]+)(.+)  /' . $site_path_rev . 'modules/$1/themes$2 [L,QSA]
+RewriteCond   %{REQUEST_URI}	^' . $site_path . '/modules
+RewriteCond   %{REQUEST_URI}	!^' . $site_path . '/modules/([^/]+)/themes(.+)
+RewriteRule  ^modules/([^/]+)(.+)  ' . $site_path . '/modules/$1/themes$2 [L,QSA]
 					
 RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
 RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'index\.php
@@ -1227,13 +1226,13 @@ RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'conf/gallery/ajaxplorer
 RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'router\.php';
                     if($PHP_fastCGI) {
                         $htaccess_content .=' 
-RewriteRule   ^(.*)    /' . $site_path_rev . 'index\.php?_ffq_=/$0 [L,QSA]';
+RewriteRule   ^(.*)    ' . $site_path . '/index\.php?_ffq_=/$0 [L,QSA]';
                     } else {
                         $htaccess_content .=' 
-RewriteRule   ^(.*)    /' . $site_path_rev . 'index\.php/$0 [L,QSA]';
+RewriteRule   ^(.*)    ' . $site_path . '/index\.php/$0 [L,QSA]';
                     }
 					
-					if($cdn_static) {
+					if($str_static_cdn_domain_name && $str_media_cdn_domain_name) {
 						$htaccess_content .= '
 
 RewriteCond   %{HTTP_HOST}      !^(' . $primary_domain . '|static\.' . str_replace('.', '\\.', $st_domain_name) . '|media\.' . str_replace('.', '\\.', $st_domain_name) . ')$';
@@ -1243,8 +1242,8 @@ RewriteCond   %{HTTP_HOST}      !^(' . $primary_domain . '|static\.' . str_repla
 RewriteCond   %{HTTP_HOST}      !^' . $primary_domain . '$';
 					}
 					$htaccess_content .= '
-RewriteCond   %{REQUEST_URI}      !^/' . $site_path_rev . 'router\.php
-RewriteRule   ^(.*)    /' . $site_path_rev . 'router\.php/$0 [L,QSA]					
+RewriteCond   %{REQUEST_URI}      !^/?router\.php
+RewriteRule   ^(.*)    /router\.php/$0 [L,QSA]					
 
 RewriteCond %{HTTP_USER_AGENT} libwww-perl.* 
 RewriteRule .* – [F,L]
@@ -1961,7 +1960,7 @@ FileETag None';
 			echo '<input type="hidden" id="result" value="0" />';
 			echo '<div style="width:400px; position:absolute; bottom:0; left:50%; margin-left:-200px;" id="update-progress">';
 			echo '	<label id="progress-label"></label>';
-			echo '	<div style="width:400px; height: 32px;" class="pace pace-active"><div style="width:0px; transition:0.5s; height:32px;"  class="progress"></div><div class="pace-activity"></div></div>';
+			echo '	<div style="width:400px; height: 32px;" class="pace pace-active"><div style="width:0px; transition:0.5s; height:32px;"  class="progress"></div><div class="pace-activity"></div</div>';
 			echo '</div>';
 			echo '</body>';
 			echo '</html>';
@@ -2470,15 +2469,9 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
         $cm->oPage->form_method = "POST";
 
 		if(is_file($disk_path . "/conf/gallery/install/install.js"))
-        	$cm->oPage->tplAddJs("install"
-                , array(
-                    "embed" => file_get_contents($disk_path . "/conf/gallery/install/install.js")
-            ));
+        	$cm->oPage->tplAddJs("install", null, null, false, false, file_get_contents($disk_path . "/conf/gallery/install/install.js"));
 		if(is_file($disk_path . "/conf/gallery/install/install.css"))
-        	$cm->oPage->tplAddCss("install"
-                , array(
-                    "embed" => file_get_contents($disk_path . "/conf/gallery/install/install.css")
-            ));
+        	$cm->oPage->tplAddCss("install", null, null, "stylesheet", "text/css", false, false, null, false, "top", file_get_contents($disk_path . "/conf/gallery/install/install.css"));
 
         
         if(1) {

@@ -3,7 +3,7 @@ ff.cms.fn.atooltip = function(targetid) {
 	if(targetid.length > 0)
 		targetid = targetid + " ";
 	/*css*/
-	ff.load("jquery.plugins.atooltip", function() {	
+	ff.pluginLoad("jquery.atooltip", "/themes/library/plugins/jquery.atooltip/jquery.atooltip.js", function() {	
 		jQuery( targetid + ".atooltip").aToolTip({  
 		         clickIt: false,                     /* set to true for click activated tooltip  */
 		         closeTipBtn: 'aToolTipCloseBtn',    /* you can set custom class name for close button on tooltip  */ 
@@ -15,5 +15,5 @@ ff.cms.fn.atooltip = function(targetid) {
 		         xOffset: 5,                         /* x Position    */
 		         yOffset: 5                          /* y position    */
 		     });
-	});
+	}, true);
 };

@@ -1,6 +1,6 @@
 <?php
 /**
- *   VGallery: CMS based on FormsFramework
+*   VGallery: CMS based on FormsFramework
     Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -13,8 +13,8 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  * @package VGallery
  * @subpackage core
@@ -24,32 +24,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @link https://github.com/wolfgan43/vgallery
  */
 
-
     function api_get_service($php_array, $parent_schema, $service_path_info = null, $version = "1.0") {
         $internal_service = true;
         $compact = false;   
         $service_output = "service";
 
-        require(FF_DISK_PATH . "/conf/gallery/api/" . $version . "/index." . FF_PHP_EXT);
-
-        /** @var include $return */
+        require(FF_DISK_PATH . "/conf/gallery/sys/api/" . $version . "/index." . FF_PHP_EXT);
+        
         return $return;
     }
 
-    //old deprecated to check
+    //old
      function api_get_code_by_service($service_path, $service_path_info, $service_schema = array(), $internal_service = false, $parent_schema = null, $php_array = array()) {
-         /** @var used in include $service_name */
-         $service_name = basename(ffCommon_dirname($service_path));
+    	static $service_module = array();
 
+        $service_name = basename(ffCommon_dirname($service_path));
+        
+       /* if(strpos($service_path, "/modules/") === 0) {
+        	$tmp_arrModule = explode("/", substr($service_path, strlen("/modules/")));
+        	if(strlen($tmp_arrModule[0]) && array_search($tmp_arrModule[0], $service_module) === false) {
+				$service_module[] = $tmp_arrModule[0];	
+        	}
+        	unset($tmp_arrModule);
+		}*/
+        
         if(is_file(__DIR__ . "/process_" . basename($service_path) . "." . FF_PHP_EXT)) {
             require __DIR__ . "/process_" . basename($service_path) . "." . FF_PHP_EXT;
 
 			if($internal_service)
-                /** @var include $php_array */
-                return $php_array;
+            	return $php_array;
             else
-                /** @var include $return */
-                return $return;
+            	return $return;
         }
 
         return false;
@@ -80,7 +85,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         if(is_file(__DIR__ . "/process_" . $service["type"] . "." . FF_PHP_EXT)) {
             require __DIR__ . "/process_" . $service["type"] . "." . FF_PHP_EXT;
 
-            /** @var include $return */
             return $return;
         }
 
@@ -180,8 +184,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				$sSQL_add_field_empty = "";
 				if(is_array($service["add_field"]) && count($service["add_field"])) {
 					$arrResFlip = array_keys($res["fields"]);
-					array_walk($arrResFlip, "api_process_tags");
-                    $sSQL_having = "";
+					array_walk($arrResFlip, "api_process_tags");	
 					foreach($service["add_field"] AS $add_field_key => $add_field_value) {
 						$sSQL_add_field .= ", (" . str_ireplace($arrResFlip, $res["fields"], $add_field_value) . ") AS `" . $add_field_key . "`";
 						$sSQL_add_field_empty .= ", '' AS " . $add_field_key;
@@ -287,7 +290,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				$db->query($sSQL);
 				if(is_array($db->fields) && count($db->fields)) {
 					if(is_array($params) && count($params)) {
-                        $sSQL_Where_params = "";
     					foreach($params AS $param_key => $param_value) {
     						if(array_key_exists($param_key, $db->fields)) {
     							$sSQL_Where_params .= " AND `" . $param_key . "` = " . $db->toSql($param_value);
@@ -421,3 +423,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  function api_process_tags(&$element) {
  	$element = "[" . $element . "]";
  }
+    

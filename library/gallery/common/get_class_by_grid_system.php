@@ -25,8 +25,7 @@
  */
 function get_class_by_grid_system($data, $mode, $res = null) {
 	$cm = cm::getInstance();
-	
-	$framework_css = cm_getFrameworkCss();
+
 	switch($mode) {
 		case "wrap":
 			switch ($data) {
@@ -34,10 +33,10 @@ function get_class_by_grid_system($data, $mode, $res = null) {
 					$res = true;
 				break;
 			    case 1:
-					$res = cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : ""));
+					$res = cm_getClassByFrameworkCss("", "wrap" . ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : ""));
 				break;
 			    case 2:
-					$res = cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid"));
+					$res = cm_getClassByFrameworkCss("", "wrap" . ($cm->oPage->framework_css["is_fluid"] ? "" : "-fluid"));
 				break;
 			    default:
 					$res = false;
@@ -61,12 +60,12 @@ function get_class_by_grid_system($data, $mode, $res = null) {
 			if(isset($data["fluid"])) {
 			    switch ($data["fluid"]) {
 					case -1:
-						$fluid = ($framework_css["is_fluid"] ? "-fluid" : "");
+						$fluid = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
 					    $res["grid"] = false;
 					    $res["grid_alt"] = cm_getClassByFrameworkCss("", "row" . $fluid, "col");
 					    break;
 					case -2:
-					    $fluid = ($framework_css["is_fluid"] ? "" : "-fluid");
+					    $fluid = ($cm->oPage->framework_css["is_fluid"] ? "" : "-fluid");
 					    $res = false;
 					    $res["grid_alt"] = cm_getClassByFrameworkCss("", "row" . $fluid, "col");
 					    break;
@@ -75,17 +74,17 @@ function get_class_by_grid_system($data, $mode, $res = null) {
 					    //$res["hide"] = true;
 					    break;
 					case 1:
-					    $fluid = ($framework_css["is_fluid"] ? "-fluid" : "");
+					    $fluid = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
 					    $res["grid"] = false;
 					    $res["grid_alt"] = false;
 					    break;
 					case 2:
-					    $fluid = ($framework_css["is_fluid"] ? "-fluid" : "");
+					    $fluid = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
 					    $res["grid"] = cm_getClassByFrameworkCss($data["grid"], "col", array("skip-prepost" => true));
 					    $res["grid_alt"] = false;
 					    break;
 					default:
-					    $fluid = ($framework_css["is_fluid"] ? "-fluid" : "");
+					    $fluid = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
 					    if($data["grid"])
 							$res["grid"] = cm_getClassByFrameworkCss($data["grid"], "col");
 						else
@@ -157,33 +156,33 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
         $fluid = 1;
     }        
         
-    $framework_css = cm_getFrameworkCss();
-    if(is_array($framework_css)) {
+        
+    if(is_array($cm->oPage->framework_css)) {
         $res["grid_isset"] = true;                    
         $res["fluid_params"] = array();
         switch($fluid) {
             case -1:
-                $res["fluid"] = ($framework_css["is_fluid"] ? "-fluid" : "");
+                $res["fluid"] = ($oPage->framework_css["is_fluid"] ? "-fluid" : "");
                 $res["grid_isset"] = false;
                 break;
             case -2:        
-                $res["fluid"] = ($framework_css["is_fluid"] ? "" : "-fluid");
+                $res["fluid"] = ($oPage->framework_css["is_fluid"] ? "" : "-fluid");
                 $res["grid_isset"] = false;
                 break; 
             case -3:
-                $res["fluid"] = ($framework_css["is_fluid"] ? "" : "-fluid");
+                $res["fluid"] = ($cm->oPage->framework_css["is_fluid"] ? "" : "-fluid");
                 $res["hide"] = true;
                 break;                 
             case 1:
-                $res["fluid"] = ($framework_css["is_fluid"] ? "-fluid" : "");
+                $res["fluid"] = ($oPage->framework_css["is_fluid"] ? "-fluid" : "");
                 $res["grid_isset"] = null;
                 break;
             case 2:
-                $res["fluid"] = ($framework_css["is_fluid"] ? "-fluid" : "");
+                $res["fluid"] = ($oPage->framework_css["is_fluid"] ? "-fluid" : "");
                 $res["fluid_params"]["skip-prepost"] = true;
                 break;
             default:
-                $res["fluid"] = ($framework_css["is_fluid"] ? "-fluid" : "");
+                $res["fluid"] = ($oPage->framework_css["is_fluid"] ? "-fluid" : "");
         }
 
         switch($wrap) {
@@ -201,7 +200,7 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
         }
         //$res["fluid"] = $layer_value["fluid"];
         
-        //if($sections["C" . $section_key]["count_block_visible"] > 1 && $framework_css["is_fluid"] && strlen($layer_fluid))
+        //if($sections["C" . $section_key]["count_block_visible"] > 1 && $oPage->framework_css["is_fluid"] && strlen($layer_fluid))
         //    $res["fluid"] = "";
 
         if($res["grid_isset"]) {
@@ -234,6 +233,82 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
 
             $res["wrap"] = implode(" ", $wrap);    
         }
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    /*
+    
+        $res["grid_isset"] = true;
+
+        //$res["fluid_params"] = array();
+        switch($fluid) {
+            case -1:
+                $res["fluid"] = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
+                $res["grid_isset"] = false;     
+                break;
+            case -2:
+                $res["fluid"] = ($cm->oPage->framework_css["is_fluid"] ? "" : "-fluid");
+                $res["grid_isset"] = false;
+                break; 
+            case -3:
+                $res["fluid"] = ($cm->oPage->framework_css["is_fluid"] ? "" : "-fluid");
+                $res["hide"] = true;
+                break; 
+            case 1:
+                $res["fluid"] = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
+                $res["grid_isset"] = null; 
+                break;
+            case 2:
+                $res["fluid"] = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
+                $res["fluid_params"]["skip-prepost"] = true;
+                break;
+            default:
+                $res["fluid"] = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
+        }        
+        
+        switch($wrap) {
+            case -1:
+                $res["wrap"] = true;
+                break; 
+            case 1:
+                $res["wrap"] = ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
+                break;
+            case 2:
+                $res["wrap"] = ($cm->oPage->framework_css["is_fluid"] ? "" : "-fluid");
+                break;
+            default:
+                $res["wrap"] = false;
+        }
+        
+        if(!is_bool($res["wrap"]))
+            $res["wrap_class"]["grid"] = cm_getClassByFrameworkCss("", "wrap" . $res["wrap"]);
+        
+        if($res["grid_isset"]) {
+            if($col) {
+                $res["class"]["grid"] = cm_getClassByFrameworkCss(
+                            $col
+                            , "col" . $res["fluid"] 
+                            , $res["fluid_params"]
+                        );
+            } else {
+                $res["grid_isset"] = false;
+                $row = cm_getClassByFrameworkCss("", "row" . $res["fluid"]);
+            }
+        } elseif($res["grid_isset"] === false) {
+            $row = cm_getClassByFrameworkCss("", "row" . $res["fluid"]);
+        }                
+
+        if($row)
+            $res["class"]["grid_alt"] = $row;*/
+
     } elseif($width) {
         if(strpos($width, "%") === false) {
             if(strpos($width, "px") === false) {

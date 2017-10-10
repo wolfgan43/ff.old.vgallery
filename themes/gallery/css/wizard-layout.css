@@ -1,0 +1,134 @@
+.canvas-container {
+	background:#dbdbdb;
+	padding:20px 50px 20px 50px;
+	margin:0 auto;
+	width:auto;
+	float:left;
+}
+
+.flip {
+	float:left;
+	padding:10px;
+	margin-bottom:20px;
+}
+
+.flip A.canvas-resolution-flip I {
+	content:"";
+	display:block;
+	width:22px;
+	height:22px;
+	float:left;
+	background:url(../images/orientation.png) no-repeat;
+	transition:all 0.5s;
+	-webkit-transition:all 0.5s;
+	transform-origin:7px 10px;
+	-webkit-transform-origin:7px 10px;
+}
+
+.flip.landscape A.canvas-resolution-flip I {
+	transform:rotate(-90deg);
+	-webkit-transform:rotate(-90deg);
+}
+
+A.canvas-addrow {
+	display:block;
+	float:right;
+	background:#e24f21;
+	color:#fff;
+	padding:10px;
+	border-radius:4px;
+	-webkit-border-radius:4px;
+}
+
+A.canvas-addrow:hover { background:#da4927; }
+
+.canvas-container .canvas {
+	background-color:#fff;
+	margin:0 auto;
+	clear:both;
+}
+
+.layout-container .menu {
+	background:#474747;
+	min-width:100px;
+	min-height:100px;
+	margin:30px 0 0 10px;
+	float:left;
+}
+
+.canvas {
+	/*overflow: hidden;*/
+}
+
+.canvas>div{
+	 height:10%; 
+}
+
+.canvas>div.canvas-row {
+	position: relative;
+	border:1px solid #3b81ff;
+	padding:4px;
+	background:#90b8ff;
+	clear:both;
+}
+.canvas>div.canvas-row.highlight {
+	border:4px solid #3b81ff;
+	padding:1px;
+}
+
+
+.canvas > div.canvas-row > div.canvas-section {	
+	position: absolute;
+	/* border-top:1px solid #3b81ff;
+	border-bottom:1px solid #3b81ff;*/
+	outline:1px solid #90b8ff;
+	opacity: 0.90;
+	background:#fff;
+	width:auto;
+	height:100%;
+	
+}
+
+.canvas > div.canvas-row > div.canvas-section.multi {
+	/*float:left;*/
+}
+
+.canvas > div.canvas-row > div.canvas-section.mono {
+	margin: 0 auto;
+}
+
+/*div.canvas-section .ui-resizable-handle {
+	width:24px;
+	min-height:25px;
+	background:url(../images/resize.png) center 0 no-repeat;
+}*/
+
+.canvas-row.central {
+	height:auto;
+}
+
+.canvas-delrow {
+	position: absolute;
+	right: -80px;
+	border: 1px solid red;
+}
+
+.canvas-fluidrow {
+	position: absolute;
+	left: -20px;
+	border: 1px solid red;
+}
+.canvas-delrow:hover {
+
+}
+
+.ui-resizable-e {
+	background-color: red;
+	margin-right: 5px;
+}
+
+.ui-resizable-w {
+	background-color: yellow;
+	margin-left: 5px;
+
+}

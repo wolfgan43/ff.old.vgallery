@@ -269,26 +269,19 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	    $admin_menu["admin"]["disable_huge"] = true;
 
 	    if (AREA_PUBLISHING_SHOW_DETAIL) {
-		    $admin_menu["admin"]["addnew"] = get_path_by_rule("widgets", "restricted") . "/" . ffCommon_url_rewrite(basename($settings_thumb_path)) . "/contents?keys[ID]=" . $ID_publish;
+		$admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/detail/" . ffCommon_url_rewrite(basename($settings_thumb_path)) . "?keys[ID]=" . $ID_publish . "&extype=publishing";
 	    }
 	    if (AREA_PUBLISHING_SHOW_MODIFY) {
-			$admin_menu["admin"]["modify"] = get_path_by_rule("widgets", "restricted") . "?keys[ID]=" . $ID_publish;
+		$admin_menu["admin"]["modify"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/modify?keys[ID]=" . $ID_publish . "&extype=" . $settings_thumb_type;
 	    }
 	    if (AREA_PUBLISHING_SHOW_DELETE) {
-			$admin_menu["admin"]["delete"] = ffDialog(TRUE
-													, "yesno"
-													, ffTemplate::_get_word_by_code("vgallery_erase_title")
-													, ffTemplate::_get_word_by_code("vgallery_erase_description")
-													, "--returl--"
-													, get_path_by_rule("widgets", "restricted") . "/" . ffCommon_url_rewrite(basename($settings_thumb_path)) . "?keys[ID]=" . $ID_publish . "&PublishingModify_frmAction=confirmdelete"
-													, get_path_by_rule("widgets", "restricted") . "/" . ffCommon_url_rewrite(basename($settings_thumb_path)) . "/dialog"
-												);			
+		$admin_menu["admin"]["delete"] = ffDialog(TRUE, "yesno", ffTemplate::_get_word_by_code("vgallery_erase_title"), ffTemplate::_get_word_by_code("vgallery_erase_description"), "--returl--", FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/modify?keys[ID]=" . $ID_publish . "&extype=publishing&ret_url=" . "--encodereturl--" . "&PublishingModify_frmAction=confirmdelete", FF_SITE_PATH . "/dialog");
 	    }
 	    if (AREA_PROPERTIES_SHOW_MODIFY) {
-	    	$admin_menu["admin"]["extra"] = get_path_by_rule("blocks-appearance") . "?path=" . $settings_thumb_path . "&extype=" . "publishing" . "&layout=" . $layout["ID"];
+		$admin_menu["admin"]["extra"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/properties?path=" . urlencode($settings_thumb_path) . "&extype=publishing" . "&layout=" . $layout["ID"];
 	    }
 	    if (AREA_ECOMMERCE_SHOW_MODIFY) {
-			$admin_menu["admin"]["ecommerce"] = "";
+		$admin_menu["admin"]["ecommerce"] = "";
 	    }
 	    if (AREA_LAYOUT_SHOW_MODIFY) {
 		$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
@@ -381,15 +374,9 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
      * Process Block Header
      */
     if ($file_properties["container_mode"] == "HIDE" && check_function("set_template_var")) {
-		$block = get_template_header($user_path, $admin_menu, $layout);
+	$block = get_template_header($user_path, $admin_menu, $layout);
 
-		$buffer = ($enable_error ? ffTemplate::_get_word_by_code("gallery_is_hidden_by_properties") : "");
-	    return array(
-			"pre" 			=> $block["tpl"]["header"]
-			, "post" 		=> $block["tpl"]["footer"]
-			, "content" 	=> $buffer
-			, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-		);		
+	return array("content" => $block["tpl"]["header"] . ($enable_error ? ffTemplate::_get_word_by_code("gallery_is_hidden_by_properties") : "") . $block["tpl"]["footer"]);
     }
 
     $real_rec_per_page = $file_properties["rec_per_page"];
@@ -667,7 +654,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		    $tpl->set_var("show_thumb", FF_SITE_PATH . constant("CM_SHOWFILES") . $image_path);
 		}
 	    } else {
-			$tpl->set_var("show_thumb", FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . CM_DEFAULT_THEME . "/images/spacer.gif");
+		$tpl->set_var("show_thumb", FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/spacer.gif");
 	    }
 
 	    $tpl->set_var("alt_name", ffCommon_specialchars($name));
@@ -1125,6 +1112,26 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
 		$popup["sys"]["path"] = $globals->user_path;
 		$popup["sys"]["type"] = "admin_popup";
+		/*
+		  if(strlen($block["admin"]["popup"])) {
+		  $serial_popup = json_encode($popup);
+		  $tpl->set_var("class_plugin", preg_replace('/[^a-zA-Z0-9\-]/', '', $block["admin"]["popup"]));
+
+		  $tpl->set_var("admin", FF_SITE_PATH . VG_SITE_FRAME . $globals->user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P"));
+		  $tpl->parse("SezAjax", false);
+		  $tpl->set_var("SezNoAjax", "");
+		  } else {
+		  $tpl->set_var("class_plugin", "admin_popup");
+		  if(check_function("process_admin_menu"))
+		  $tpl->set_var("admin", process_admin_menu($popup["admin"], "popup"));
+		  $tpl->set_var("SezAjax", "");
+		  $tpl->parse("SezNoAjax", false);
+		  }
+
+		  $tpl->parse("SezGalleryEdit", false);
+
+		  } else {
+		  $tpl->set_var("SezGalleryEdit", ""); */
 	    }
 	} elseif (is_array($publishing)) {
 	    if (check_mod($file_permission, 2)) {
@@ -1153,6 +1160,27 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		$popup["sys"]["path"] = $globals->user_path;
 		$popup["sys"]["type"] = "admin_popup";
 
+		/*
+		  if(strlen($block["admin"]["popup"])) {
+		  $serial_popup = json_encode($popup);
+
+
+		  $tpl->set_var("class_plugin", preg_replace('/[^a-zA-Z0-9\-]/', '', $block["admin"]["popup"]));
+
+		  $tpl->set_var("admin", FF_SITE_PATH . VG_SITE_FRAME . $globals->user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P"));
+		  $tpl->parse("SezAjax", false);
+		  $tpl->set_var("SezNoAjax", "");
+		  } else {
+		  $tpl->set_var("class_plugin", "admin_popup");
+		  if(check_function("process_admin_menu"))
+		  $tpl->set_var("admin", process_admin_menu($popup["admin"], "popup"));
+		  $tpl->set_var("SezAjax", "");
+		  $tpl->parse("SezNoAjax", false);
+		  }
+
+		  $tpl->parse("SezGalleryEdit", false);
+		  } else {
+		  $tpl->set_var("SezGalleryEdit", ""); */
 	    }
 	} else {
 	    $tpl->set_var("SezGalleryEdit", "");
@@ -1160,13 +1188,9 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	}
 
 	$item_class = array();
-	if ($popup) {
-		if(check_function("set_template_var"))
-			$tpl->set_var("admin", ' data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $globals->user_path) . '"');
-
-	    //$serial_popup = json_encode($popup);
-	    //$tpl->set_var("admin", ' data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $globals->user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"');
-	    
+	if (strlen($block["admin"]["popup"])) {
+	    $serial_popup = json_encode($popup);
+	    $tpl->set_var("admin", ' data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $globals->user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"');
 	    $item_class["admin"] = "admin-bar";
 	}
 	if (is_array($file_properties["default_grid"]) && count($file_properties["default_grid"]))
@@ -1306,16 +1330,11 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
     }
 
     if (!$count_files && !$enable_error) {
-		$buffer = "";
+	$buffer = "";
     } else {
-		$buffer = $tpl->rpparse("main", false);
+	$buffer = $tpl->rpparse("main", false);
     }
 
-	return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
-		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-	);		
+    return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
 }
 

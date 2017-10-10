@@ -31,7 +31,7 @@ if(!function_exists("stripslash")) {
 		return $temp;
 	}
 }
-
+ 
 function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
     if(strpos($absolute_path, $relative_path) === false)
         return true;

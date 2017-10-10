@@ -25,7 +25,7 @@
  */
  
 //da fare l'autenticazione
-require_once(FF_DISK_PATH . "/conf/gallery/api/index." . FF_PHP_EXT);
+require_once(FF_DISK_PATH . "/conf/gallery/sys/api/index." . FF_PHP_EXT);
 
 if(check_function("get_schema_def")) {
 	$schema_def = get_schema_def();
@@ -75,7 +75,7 @@ if(check_function("get_schema_def")) {
 */
 
 
-	if(0 && isset($_POST["data"])) { //NN SO SE SERVE REALMENTE E NEMMENO SE SERVE ANCORA QUESTO FILE
+	if(0 && isset($_POST["data"])) { //DA SISTEMARE NN SO COME NN SO NEMMENO SE QUESTO FILE SERVE ANCORA
 		$multi_service = json_decode($_POST["data"], true);
 		unset($_POST["data"]);
 		if($multi_service !== false) {

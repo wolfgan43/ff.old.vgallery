@@ -3,9 +3,8 @@
 	<auth>
 		<noauth path="/login" />
 		<noauth path="/admin/login" />
-		<noauth path="/builder/login" />
 		<noauth path="/restricted/login" />
-		<noauth path="/ecommerce/login" />
+		<noauth path="/manage/login" />
 		<noauth path="/oauth2" />
 	</auth>   
 <!--	

@@ -27,60 +27,57 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 {
 	$cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
+    $block = array();
+
     $settings_path = $globals->settings_path;
     $theme = $cm->oPage->getTheme();
+    
     $unic_id = $layout["prefix"] . $layout["ID"];
     $layout_settings = $layout["settings"];
-	$block = array();    
-	
+    
     if(strlen($layout_settings["AREA_STATIC_PLUGIN"]))
 	    setJsRequest($layout_settings["AREA_STATIC_PLUGIN"]);
 
+
+    
     if($static_type == "STATIC_PAGE_BY_DB") {
         $tpl = ffTemplate::factory(get_template_cascading($user_path, "draft.html"));
         $tpl->load_file("draft.html", "main");
-		if(!$globals->data_storage["STATIC_PAGE_BY_DB"][$static_value])
-		{
-	        $db = ffDB_Sql::factory();
-	        if(is_array($globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"]) && count($globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"])) {
-	        	$draft_value = implode(",", $globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"]);
-	        } else {
-	        	$draft_value = $static_value;
-	        }
-	        $sSQL = "SELECT 
-	                    drafts.ID AS ID
-	                    , drafts.name AS name
-	                    , drafts_rel_languages.title
-	                    , drafts_rel_languages.value
-	                    , drafts.owner AS owner 
-	                FROM drafts_rel_languages
-	                    INNER JOIN drafts ON drafts.ID = drafts_rel_languages.ID_drafts
-	                    INNER JOIN " . FF_PREFIX . "languages ON " . FF_PREFIX . "languages.ID = drafts_rel_languages.ID_languages
-	                WHERE drafts.ID IN(" . $db->toSql($draft_value, "Text", false) . ")
-	                    AND " . FF_PREFIX . "languages.code = " . $db->toSql(LANGUAGE_INSET, "Text") . "
-	                    AND drafts.ID_domain = " . $db->toSql($globals->ID_domain, "Number");
-	        $db->query($sSQL);
-	        if($db->nextRecord()) {
-				do {
-					$globals->data_storage["STATIC_PAGE_BY_DB"][$db->record["ID"]] = $db->record;
-				} while($db->nextRecord());	        
-			}
-		}
-		$draft = $globals->data_storage["STATIC_PAGE_BY_DB"][$static_value];
-		if($draft) {
-        	$block["class"]["default"] = ffCommon_url_rewrite($draft["name"]);
 
-            set_cache_data("D", $draft["ID"]);
-            //$globals->cache["data_blocks"]["DV" . "0" . "-" . $draft["ID"]] = $draft["ID"];
+        $db = ffDB_Sql::factory();
+        
+        $sSQL = "SELECT 
+                    drafts.ID AS ID_draft
+                    , drafts.name AS draft_name
+                    , drafts_rel_languages.title
+                    , drafts_rel_languages.value
+                    , drafts.owner AS owner 
+                FROM drafts_rel_languages
+                    INNER JOIN drafts ON drafts.ID = drafts_rel_languages.ID_drafts
+                    INNER JOIN " . FF_PREFIX . "languages ON " . FF_PREFIX . "languages.ID = drafts_rel_languages.ID_languages
+                WHERE drafts.ID = " . $db->toSql($static_value, "Number") . "
+                    AND " . FF_PREFIX . "languages.code = " . $db->toSql(LANGUAGE_INSET, "Text") . "
+                    AND drafts.ID_domain = " . $db->toSql($globals->ID_domain, "Number");
+        $db->query($sSQL);
+        if($db->nextRecord()) {
+        	$block["class"]["default"] = ffCommon_url_rewrite($db->getField("draft_name", "Text", true));
 
-        	if($draft["owner"] == get_session("UserNID")) {
+        	$ID_draft = $db->getField("ID_draft", "Number", true);
+        	
+            set_cache_data("D", $ID_draft);
+            //$globals->cache["data_blocks"]["DV" . "0" . "-" . $ID_draft] = $ID_draft;
+            $static_name = $db->getField("draft_name", "Text", true);
+        	$static_title = $db->getField("title", "Text", true);
+        	$owner = $db->getField("owner", "Number", true);
+
+        	if($owner == get_session("UserNID")) {
 				$is_owner = true;
         	} else {
 				$is_owner = false;
         	}
 			
     		check_function("set_generic_tags");
-	        $draft_value = set_generic_tags($draft["value"], $settings_path);
+	        $draft_value = set_generic_tags($db->getField("value")->getValue(), $settings_path);
 
 			$tpl_draft = ffTemplate::factory(null);
 			$tpl_draft->load_content($draft_value, "Main");
@@ -128,7 +125,7 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
     } 
     
     
-	if(is_array($globals->request) && count($globals->request)) {
+    if(is_array($globals->request) && count($globals->request)) {
 	    foreach($globals->request AS $request_key => $request_value) {
 			$tpl->set_var($request_key, $_GET[$request_key]);
 			
@@ -139,54 +136,54 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 	    }
    }
 
-/**
-	* Admin Father Bar
-	*/
-	if (
-	    AREA_DRAFT_SHOW_MODIFY 
-	    || AREA_DRAFT_SHOW_DELETE 
-	    || AREA_PROPERTIES_SHOW_MODIFY 
-	    || AREA_ECOMMERCE_SHOW_MODIFY 
-	    || AREA_LAYOUT_SHOW_MODIFY 
-	    || AREA_SETTINGS_SHOW_MODIFY
-	    || $is_owner
-	) {
+    /**
+     * Admin Father Bar
+     */
+    if (
+        AREA_DRAFT_SHOW_MODIFY
+        || AREA_DRAFT_SHOW_DELETE
+        || AREA_PROPERTIES_SHOW_MODIFY
+        || AREA_ECOMMERCE_SHOW_MODIFY
+        || AREA_LAYOUT_SHOW_MODIFY
+        || AREA_SETTINGS_SHOW_MODIFY
+        || $is_owner
+    ) {
         $admin_menu["admin"]["unic_name"] = $unic_id . $static_type. "-" . $is_owner;
 
-		if($is_owner && !AREA_SHOW_NAVBAR_ADMIN)
-        	$admin_menu["admin"]["title"] = ffTemplate::_get_word_by_code("static_pages_owner") . ": " . $draft["title"];
-		else
-	        $admin_menu["admin"]["title"] = $layout["title"];
+        if($is_owner && !AREA_SHOW_NAVBAR_ADMIN)
+            $admin_menu["admin"]["title"] = ffTemplate::_get_word_by_code("static_pages_owner") . ": " . $static_title;
+        else
+            $admin_menu["admin"]["title"] = $layout["title"];
 
-	    $admin_menu["admin"]["class"] = $layout["type_class"];
-	    $admin_menu["admin"]["group"] = $layout["type_group"];
-	    
+        $admin_menu["admin"]["class"] = $layout["type_class"];
+        $admin_menu["admin"]["group"] = $layout["type_group"];
+
         if($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
-	    	$base_path = FF_SITE_PATH . VG_SITE_DRAFT . "/modify/" . ffCommon_url_rewrite($draft["name"]);
-	    	$path_params = "?keys[ID]=" . $static_value;
+            $base_path = FF_SITE_PATH . VG_SITE_DRAFT . "/modify/" . ffCommon_url_rewrite($static_name);
+            $path_params = "?keys[ID]=" . $static_value;
 
-            $admin_menu["admin"]["modify"] = $base_path . $path_params . "&owner=" . $draft["owner"];
-		} elseif(AREA_DRAFT_SHOW_MODIFY) {
-		    if($static_type == "STATIC_PAGE_BY_DB") {
-	    		$base_path = FF_SITE_PATH . "/restricted/draft/modify/" . ffCommon_url_rewrite($draft["name"]);
-	    		$path_params = "?keys[ID]=" . $static_value;
-			} else {
-	    		$base_path = FF_SITE_PATH . "/restricted/draft/html/modify";
-	    		$path_params = "?keys[nameID]=" . ffCommon_url_rewrite(basename($static_value));
-			}
+            $admin_menu["admin"]["modify"] = $base_path . $path_params . "&owner=" . $owner;
+        } elseif(AREA_DRAFT_SHOW_MODIFY) {
+            if($static_type == "STATIC_PAGE_BY_DB") {
+                $base_path = FF_SITE_PATH . "/restricted/draft/modify/" . ffCommon_url_rewrite($static_name);
+                $path_params = "?keys[ID]=" . $static_value;
+            } else {
+                $base_path = FF_SITE_PATH . "/restricted/draft/html/modify";
+                $path_params = "?keys[nameID]=" . ffCommon_url_rewrite(basename($static_value));
+            }
 
             $admin_menu["admin"]["modify"] = $base_path . $path_params;
-		}
+        }
 
-	    if(AREA_DRAFT_SHOW_DELETE) {
-	        $admin_menu["admin"]["delete"] = ffDialog(TRUE,
-	                                            "yesno",
-	                                            ffTemplate::_get_word_by_code("drafts_erase_title"),
-	                                            ffTemplate::_get_word_by_code("drafts_erase_description"),
-	                                            "--returl--",
-	                                            $base_path . $path_params . "&ret_url=" . "--encodereturl--" . "&DraftModify_frmAction=confirmdelete",
-	                                            FF_SITE_PATH . VG_SITE_DRAFT . "/dialog");
-	    }
+        if(AREA_DRAFT_SHOW_DELETE) {
+            $admin_menu["admin"]["delete"] = ffDialog(TRUE,
+                "yesno",
+                ffTemplate::_get_word_by_code("drafts_erase_title"),
+                ffTemplate::_get_word_by_code("drafts_erase_description"),
+                "--returl--",
+                $base_path . $path_params . "&ret_url=" . "--encodereturl--" . "&DraftModify_frmAction=confirmdelete",
+                FF_SITE_PATH . VG_SITE_DRAFT . "/dialog");
+        }
 
         if(AREA_PROPERTIES_SHOW_MODIFY) {
             $admin_menu["admin"]["extra"] = "";
@@ -206,11 +203,10 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
         $admin_menu["sys"]["type"] = "admin_toolbar";
     }
 
-    
 	/**
 	* Process Block Header
-	*/		    
-	$admin_menu = null;
+	*/
+  //  $admin_menu = null;
     if(check_function("set_template_var")) {
         $tpl = set_template_var($tpl);
 		$block = get_template_header($user_path, $admin_menu, $layout, $tpl, $block);
@@ -223,17 +219,11 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
         $tpl->set_var("SezError", "");
     }
 	/*
-	if(is_array($tpl->DVars) && $tpl->dVars["real_father"]) {
+	if(is_array($tpl->DVars) && $tpl->DVars["real_father"]) {
 		return array("content" => '<div class="block' . $block_layout_class . (is_array($layout["class"]) ? " " . implode(" ", $layout["class"]) : "") . $fixed_class . ($static_class ? " " . trim($static_class, "-") : "") . '" id="' . ffCommon_specialchars(preg_replace('/[^a-zA-Z0-9]/', '', $unic_id)) . '"' . $block_properties . '>' . $tpl->rpparse("main", false) . '</div>');
 	} else {
     	return array("content" => $tpl->rpparse("main", false));
 	}*/
 	
-	$buffer = $tpl->rpparse("main", false);
-    return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
-		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-	);
+	return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
 }

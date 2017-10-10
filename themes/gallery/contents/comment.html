@@ -1,0 +1,111 @@
+<!--BeginSezComment-->
+<div class="comment-view">
+    <!--BeginSezPageNavigatorControl-->
+    <input id="{unic_id}_page" name="{unic_id}_page" type="hidden" value="{page}" />
+    <input id="{unic_id}_records_per_page" name="{unic_id}_records_per_page" type="hidden" value="{rec_per_page}" />
+    <!--EndSezPageNavigatorControl-->
+    <!--BeginSezPageNavigatorTop-->
+    <div class="pagenavigator top"> {PageNavigator} </div>
+    <!--EndSezPageNavigatorTop-->
+    <!--BeginSezCommentRow-->
+    <div class="comment_row {switch_style}">
+        {strNotify}
+	    <div class="comment_header">
+		    <!--BeginSezUser-->
+		    <div class="user">
+			    <!--BeginSezAvatar-->
+			    <img class="comment_avatar" src="{show_thumb}" alt="{alt_name}" />
+			    <!--EndSezAvatar-->
+			    <!--BeginSezUsernameLink-->
+			    <h3><a href="{url}">{username}</a></h3>
+			    <!--EndSezUsernameLink-->
+			    <!--BeginSezUsernameNoLink-->
+			    <h3>{username}</h3>
+			    <!--EndSezUsernameNoLink-->
+		    </div>
+		    <!--EndSezUser-->
+		    <!--BeginSezPath-->
+		    <div class="path">
+			    <a href="{path}">{meta_path}</a>
+		    </div>
+		    <!--EndSezPath-->
+		    <div class="date">
+			    <label>{_when}</label><span>{date}</span>
+		    </div>
+	    </div>
+	    <div class="comment_body">
+		    <!--BeginSezCommentField-->
+		    <div class="comment_field">
+			    <!--BeginSezLabel-->
+				    <label>{label}</label>
+			    <!--EndSezLabel-->
+			    <!--BeginSezImage-->
+				    <a href="{view_value}"><img src="{preview_value}" /></a>
+			    <!--EndSezImage-->
+			    <!--BeginSezLink-->
+				    <a href="{value}">{value}</a>
+			    <!--EndSezLink-->
+			    <!--BeginSezText-->
+				    {value}
+			    <!--EndSezText-->
+		    </div>
+		    <!--EndSezCommentField-->
+	    </div>
+    </div>
+	<!--EndSezCommentRow-->
+    <!--BeginSezPageNavigatorBottom-->
+    <div class="pagenavigator bottom"> {PageNavigator} </div>
+    <!--EndSezPageNavigatorBottom-->
+</div>
+<!--EndSezComment-->
+
+<!--BeginSezFBComment-->
+<div class="comment-view-fb">
+    <div id="fb-root"></div>
+    <div class="fb-comments" data-href="http://{domain_inset}{user_path}"></div>
+    <script>
+        var strFBLang = 'en_US';
+        var strAppID = "{fb_app_id}";
+        
+        if(strAppID.length > 0) {
+            strAppID = "&appId=" + strAppID;
+        }
+
+        if(ff.language !== undefined && ff.language.length > 0) {
+            strFBLang = ff.language.substr(0, 2).toLowerCase() + "_" + ff.language.substr(0, 2).toUpperCase();
+        }
+        jQuery(".fb-comments").attr("data-width", jQuery(".fb-comments").parent().width() + "px");
+        (function(d, s, id) {
+          var js, fjs = d.getElementsByTagName(s)[0];
+          if (d.getElementById(id)) return;
+          js = d.createElement(s); js.id = id;
+          js.src = "//connect.facebook.net/" + strFBLang + "/all.js#xfbml=1" + strAppID;
+          fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
+</div>
+<!--EndSezFBComment-->
+
+
+<!--BeginSezGigyaComment-->
+<div id="commentsDiv"></div>
+<script type="text/javascript">
+function onSiteLoginHandler(event) {
+    // Site Login button clicked
+    // open a popup or redirect the user for the site login page}
+    var params =  {
+        categoryID: {gigya_categoryID},
+        streamID: '{gigya_streamID}',
+        version: 2,
+        containerID: 'commentsDiv',
+        useSiteLogin: true,
+        onSiteLoginClicked: onSiteLoginHandler,   // registering to the onSiteLoginClicked event
+        cid:''
+    }
+gigya.comments.showCommentsUI(params);
+</script>
+
+<!--EndSezGigyaComment-->
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->

@@ -4,7 +4,7 @@ ff.cms.fn.featurelist = function(targetid) {
 		targetid = targetid + " ";
 		
 	/*css*/
-	ff.load("jquery.plugins.featurelist", function() {	
+	ff.pluginLoad("jquery.featureList", "/themes/library/plugins/jquery.featurelist/jquery.featurelist.js", function() {	
 		jQuery(targetid + '.featurelist').each(function() {
 			jQuery(targetid + '.featurelist').closest("div,td").append('<div id="' + targetid + 'output"><img src="#" /></div>');
 	       jQuery(this).featureList({
@@ -14,5 +14,5 @@ ff.cms.fn.featurelist = function(targetid) {
 				,transition_interval: 500
 			});
 		});
-	});
+	}, true);
 };

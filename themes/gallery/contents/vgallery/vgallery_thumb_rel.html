@@ -1,0 +1,49 @@
+<!--BeginSezVGallerys-->
+<!--BeginSezPageNavigatorTop-->
+<div class="pagenavigator top"> {PageNavigator} </div>
+<!--EndSezPageNavigatorTop-->
+<table border="0" cellspacing="0" cellpadding="0">
+    <tbody>
+        <!--BeginSezVGalleryRow-->
+        <tr class="{vg_switch_style}" id="{real_name}">
+            <!--BeginSezVGallery-->
+            <td class="vgallery_item_rel {class_col}" id="{real_name}">
+                {admin}
+
+                <!--BeginSezGroup-->
+                <!--BeginSezGroupContainerStart-->
+                <div class="{group_class}">
+                <!--EndSezGroupContainerStart-->
+                
+                <!--BeginSezVGalleryImage-->
+                <div class="vgallery_image">
+                <!--BeginSezVGalleryImageNode-->
+                    {content}
+                <!--EndSezVGalleryImageNode-->
+                </div>
+                <!--EndSezVGalleryImage-->
+                <!--BeginSezVGalleryDescription-->
+                <div class="vgallery_description {class_plugin}">
+                <!--BeginSezVGalleryDescriptionNode-->
+                {content}
+                <!--EndSezVGalleryDescriptionNode-->
+                </div>
+                <!--EndSezVGalleryDescription-->
+
+                <!--BeginSezGroupContainerEnd-->
+                </div>
+                <!--EndSezGroupContainerEnd-->
+                <!--EndSezGroup-->
+            </td>
+            <!--EndSezVGallery-->
+        </tr>
+        <!--EndSezVGalleryRow-->
+    </tbody>
+</table>
+<!--BeginSezPageNavigatorBottom-->
+<div class="pagenavigator bottom"> {PageNavigator} </div>
+<!--EndSezPageNavigatorBottom-->
+<!--EndSezVGallerys-->
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->

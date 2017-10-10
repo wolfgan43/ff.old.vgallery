@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+<menu>
+    <default path="/" hide="true" />
+    <profile path="/restricted/profile" label="_user_profile" />
+</menu>
+<sections>
+	<top>
+		<topbar default="true" />
+		<admin />
+		<account />
+	</top>
+	<nav>
+		<navbar default="true" />
+	</nav>
+</sections>
+<layout>
+    <layer>restricted</layer>
+    <topbar>restricted</topbar>
+    <navbar>restricted</navbar>
+</layout>
+</configdata>

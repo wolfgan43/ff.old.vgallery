@@ -3,7 +3,7 @@ ff.cms.fn.easyslider = function(targetid) {
 	if(targetid.length > 0)
 		targetid = targetid + " ";
 
-	ff.load("jquery.plugins.easyslider", function() {	
+	ff.pluginLoad("jquery.fn.easySlider", "/themes/library/plugins/jquery.easyslider/jquery.easyslider.js", function() {	
         jQuery(targetid + ".easyslider").closest("UL").wrap('<div class="easy-wrap" />');
 		jQuery(targetid + ".easyslider").closest("UL").parent().easySlider({
 			prevId: 		'prevBtn',
@@ -29,5 +29,5 @@ ff.cms.fn.easyslider = function(targetid) {
 			numericId: 		'controls',
 			hoverPause:     false
 		});
-	});
+	}, true);
 };

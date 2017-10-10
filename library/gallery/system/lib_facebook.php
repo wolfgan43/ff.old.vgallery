@@ -121,7 +121,7 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 							);
 							
 			if(check_function("set_user_permission_by_settings")) {
-			    $cm->modules["security"]["events"]->addEvent("on_social_done_user_create", "set_user_permission_by_settings", ffEvent::PRIORITY_DEFAULT);
+			    $cm->modules["security"]["events"]->addEvent("fb_done_user_create", "set_user_permission_by_settings", ffEvent::PRIORITY_DEFAULT);
 			}
 
 			$res = mod_security_set_user_by_social("fb", $arrUserParams, $arrUserField, $arrUserToken, 0, false, true);

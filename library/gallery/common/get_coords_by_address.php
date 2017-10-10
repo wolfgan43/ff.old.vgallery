@@ -42,6 +42,11 @@ function get_coords_by_address($address, $out = "coord", $key = null) {
 	if($key)
 		$params .= "&key=" . $key;
 
+	if(check_function("get_locale")) {
+		$lang = get_locale("lang");
+		$params .= "&language=" . $lang[LANGUAGE_DEFAULT]["tiny_code"];
+	}			
+		
  	$request_url = "https://maps.google.com/maps/api/geocode/json?" . $params;
 
     // get the json response
@@ -157,7 +162,12 @@ function get_coords_by_province($string) {
 
 function get_google_address_info($adress, $use_db = false, $add_info_to_db = false, $keys = null) {
 	//$vowels = array("a", "e", "i", "o", "u", "A", "E", "I", "O", "U", " ");
-
+	if(!$keys && check_function("get_webservices")) {
+		$service = get_webservices("google.maps");
+		if($service["enable"])
+			$keys = ($service["key.server"] ? $service["key.server"] : $service["key"]);
+	}
+	
 	if(is_array($keys)) {
 		foreach($keys AS $key) {
 			$res = get_coords_by_address($adress, null, $key);
@@ -228,8 +238,9 @@ function get_google_address_info($adress, $use_db = false, $add_info_to_db = fal
 	if($res && $use_db)
 		$res = resolve_tbl_loc_by_address_info($res["place"], $add_info_to_db);
 	
-	$res["address"] = $address;	
-		
+	if($address)
+		$res["address"] = $address;	
+				
 	return $res;
 }
 

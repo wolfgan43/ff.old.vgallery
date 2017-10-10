@@ -1,12 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configdata>
-    <rule id="mod_restricted_settings">
+    <rule>
         <priority>NORMAL</priority>
-        <source>^/admin/settings(.*)</source>
+        <source>^/admin/configuration/cm/settings(.*)</source>
         <destination>
             <module>restricted</module>
             <url>/settings$1</url>
         </destination>
-        <reverse>/admin/settings</reverse>
+        <accept_path_info />
+    </rule>
+	<rule id="admin">
+		<priority>HIGH</priority>
+		<source>^/admin(.*)</source>
+        <reverse>/admin</reverse> 
+		<destination>
+			<module>restricted</module>
+			<url>/layout$0</url>
+		</destination>
+        <accept_path_info />
+        <process_next />
+	</rule>
+    <rule id="restricted">
+        <priority>HIGH</priority>
+        <source>^/restricted(.*)</source>
+        <reverse>/restricted</reverse>
+        <destination>
+            <module>restricted</module>
+            <url>/layout$0</url>
+        </destination>
+        <accept_path_info />
+        <process_next />
+    </rule>
+    <rule id="manage">
+        <priority>HIGH</priority>
+        <source>^/manage(.*)</source>
+        <reverse>/manage</reverse>
+        <destination>
+            <module>restricted</module>
+            <url>/layout$0</url>
+        </destination>
+        <accept_path_info />
+        <process_next />
     </rule>
 </configdata>

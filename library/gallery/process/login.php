@@ -27,6 +27,10 @@
 function process_login($user_path, &$layout) {
     $cm = cm::getInstance();
     
+    setJsRequest("ff.cms.blockLogin", "tools");
+    
+    //$cm->oPage->tplAddJs("ff.cms.blockLogin", "ff.cms.blockLogin.js", FF_THEME_DIR .  "/gallery/javascript/tools");
+
     $framework_css = array(
         "block" => array(
             "container" => array(
@@ -83,7 +87,7 @@ function process_login($user_path, &$layout) {
 	$template_name = ($layout["template"] ? $layout["template"]. "_" : "");
     if ($UserID == MOD_SEC_GUEST_USER_NAME) {
         //if (!$cm->isXHR() && ($user_path == "/login" || strpos($user_path , "/login/") !== false)) //non processa il block_login se siamo nella pagina di login
-            //return array("content" => "");
+         //   return array("content" => "");
 
         if (!$layout_settings["AREA_SHOW_LOGIN"])
             return array("content" => "");
@@ -336,9 +340,11 @@ function process_login($user_path, &$layout) {
             if (MOD_SEC_SOCIAL_FACEBOOK) {
                 $tpl->set_var("fb_appid", MOD_SEC_SOCIAL_FACEBOOK_APPID);
 
-                $tpl->set_var("ajax_loader", cm_getClassByFrameworkCss("spinner", "icon-tag", "spin"));
-                $tpl->set_var("logged_message", ffTemplate::_get_word_by_code("fb_wait_loading"));
-                $tpl->parse("SectAjaxLoader", false);
+                if (file_exists(FF_DISK_PATH . FF_THEME_DIR . "/" . CM_DEFAULT_THEME . "/images/plugins/ajax-loader.gif")) {
+                    $tpl->set_var("img_ajax_loader", FF_SITE_PATH . FF_THEME_DIR . "/" . CM_DEFAULT_THEME . "/images/plugins/ajax-loader.gif");
+                    $tpl->set_var("logged_message", ffTemplate::_get_word_by_code("fb_wait_loading"));
+                    $tpl->parse("SectAjaxLoader", false);
+                }
 
                 $tpl->parse("SezLoginExtendedFB", false);
                 $tpl->set_var("SezLoginShortFB", "");
@@ -381,7 +387,8 @@ function process_login($user_path, &$layout) {
         
         $arrLogout = array();
         if (check_function("get_user_avatar")) {
-            $arrLogout["avatar"] = get_user_avatar($user_permission["avatar"], true, $UserEmail, cm_showfiles_get_abs_url("/avatar"), false); 
+        	$path_url = cm_showfiles_get_abs_url("/avatar");
+            $arrLogout["avatar"] = get_user_avatar($user_permission["avatar"], true, $UserEmail, $path_url, false); 
         }
         $arrLogout["username"] = $UserID;
         $user_permission = get_session("user_permission");
@@ -438,11 +445,5 @@ function process_login($user_path, &$layout) {
 
     $cm->doEvent("vg_on_processed_block_login", array(&$tpl, $user_permission));
 
-    $buffer = $tpl->rpparse("main", false);
-    return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
-		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-	);
+    return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
 }

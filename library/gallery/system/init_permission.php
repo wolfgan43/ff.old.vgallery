@@ -681,3 +681,39 @@ function get_configuration_by_path($user_path, $uid = NULL, $gid = NULL, $settin
 
 	return $settings_path;
 }
+
+function system_init_permission_old($settings_path, $selected_lang) {
+    $db_gallery = ffDB_Sql::factory();  
+
+    $user_permission = get_session("user_permission");
+    
+    if (!(check_function("get_configuration_by_user") && get_configuration_by_user($user_permission, $selected_lang, $settings_path))) {
+        ffDialog(false, "OkOnly", ffTemplate::_get_word_by_code("dialog_title_accessdenied"), ffTemplate::_get_word_by_code("dialog_description_invalidpath"), "", FF_SITE_PATH . "/login", FF_SITE_PATH . $settings_path . "/dialog");
+    }
+
+    
+    $globals = ffGlobals::getInstance("gallery");
+    
+    if(AREA_SHOW_ECOMMERCE && !array_key_exists("ecommerce", $user_permission)) {
+    	$user_permission["ecommerce"] = array();
+	    $sSQL = "SELECT anagraph_type.* 
+	    		FROM anagraph_type 
+    				INNER JOIN anagraph ON anagraph.ID_type = anagraph_type.ID
+    			WHERE anagraph.uid = " . $db_gallery->toSql($user_permission["ID"], "Number");
+	    $db_gallery->query($sSQL);
+	    if($db_gallery->nextRecord()) {
+    		$user_permission["ecommerce"]["vat"] = $db_gallery->getField("ecommerce_vat", "Number", true);
+    		$user_permission["ecommerce"]["discount_perc"] = $db_gallery->getField("ecommerce_discount_perc", "Number", true);
+    		$user_permission["ecommerce"]["discount_val"] = $db_gallery->getField("ecommerce_discount_val", "Number", true);
+    		$user_permission["ecommerce"]["fee_perc"] = $db_gallery->getField("ecommerce_fee_perc", "Number", true);
+    		$user_permission["ecommerce"]["fee_val"] = $db_gallery->getField("ecommerce_fee_val", "Number", true);
+	    }
+
+	    set_session("user_permission", $user_permission);
+	}     
+    
+    global $ff_global_setting;
+
+    $ff_global_setting["ffPage"]["jquery_ui_force_theme"] = $globals->settings["JQUERY_UI_THEME"];
+    $ff_global_setting["ffPage_html"]["form_workaround"] = false;
+} 

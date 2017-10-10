@@ -199,7 +199,7 @@ function get_layout_by_block($type, $ctx = null, $out = null) {
 	                    , layout_path.grid_sm 												AS block_grid_sm
 	                    , layout_path.grid_xs 												AS block_grid_xs
 	                    , layout_path.fluid 												AS block_fluid
-	                    , layout_path.wrap 													AS block_wrap
+	                    , layout_path.wrap 													AS block_wrap						
 					FROM layout
 						" . (is_array($arrWhere) && count($arrWhere)
 							? "INNER JOIN anagraph_categories ON anagraph_categories.ID = layout.params"

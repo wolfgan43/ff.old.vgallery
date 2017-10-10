@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ecommerce = true, $user_path = "/", $layout, $short_mode = true, $enable_edit = true) 
+function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ecommerce = true, $user_path = "/", $layout, $short_mode = true, $enable_edit = true, $enable_comment = true) 
 {
 	$cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
@@ -42,8 +42,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
     else
     	$template = "";
     
-	//$tpl_data["custom"] = "menu-user.html";
-	$tpl_data["custom"] = $layout["smart_url"] . ".html";		
+	$tpl_data["custom"] = "menu-user.html";
 	$tpl_data["base"] = "user_menu" . $template . ".html";
 
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
@@ -134,6 +133,15 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
         } else
             $tpl->set_var("SezManageAccount", "");
 
+        if ($layout_settings["AREA_USER_SHOW_COMMENT"] && $enable_comment) {
+            $count_item++;
+
+		    $tpl->set_var("item_path", FF_SITE_PATH . USER_RESTRICTED_PATH . "/comment");
+            $tpl->parse("SezComment", false);
+        } else {
+            $tpl->set_var("SezComment", "");
+        }
+
         if ($layout_settings["AREA_USER_SHOW_ECOMMERCE_MANAGE"] && AREA_SHOW_ECOMMERCE && $enable_ecommerce) {
             $count_item++;
             
@@ -186,9 +194,6 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
             } while($db_user_menu->nextRecord());
         }
         if($UserID !== null) {
-			if(check_function("system_get_sections"))
-        		$block_vgallery = system_get_block_type("virtual-gallery");		        
-        
 			$sSQL = "
     			SELECT 
     				" . CM_TABLE_PREFIX . "mod_security_users.username AS username
@@ -212,7 +217,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
 	        					    INNER JOIN vgallery ON vgallery.ID = vgallery_user.ID_vgallery
                                     INNER JOIN layout 
                                         ON layout.value = vgallery.name 
-                                            AND layout.ID_type = " . $db_user_menu->toSql($block_vgallery["ID"], "Number") . "
+                                            AND layout.ID_type = (SELECT ID FROM layout_type WHERE layout_type.name = " . $db_user_menu->toSql("VIRTUAL_GALLERY", "Text") . " )  
                                             AND vgallery_user.parent LIKE CONCAT('/', layout.value, IF(layout.params = '/', '', layout.params), '%')
                                     INNER JOIN layout_path ON layout_path.ID_layout = layout.ID AND layout_path.visible > 0
 	        				    WHERE vgallery_user.parent LIKE CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name, '%') 
@@ -294,10 +299,5 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
     if($count_item)
         $buffer = $tpl->rpparse("main", false);
     
-    return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
-		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-	);
+    return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
 }

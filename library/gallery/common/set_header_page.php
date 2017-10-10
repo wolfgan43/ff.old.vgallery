@@ -87,6 +87,7 @@
 			else
 				$globals->meta = $seo["meta"];
 
+
 		$owner = null; //da implementare
 		$domain_abs_path = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH;
 /*
@@ -103,53 +104,25 @@
         			);
         					
         //HTML Attr
-		$globals->html["attr"] = array(
-			"lang" => strtolower(substr(LANGUAGE_INSET, 0, 2))
-			/*, "xmlns:fb" => "http://www.facebook.com/2008/fbml"*/
-			, "prefix" => "og: " . "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . "ogp.me/ns# fb: " . "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . "www.facebook.com/2008/fbml"
-		);
+		$globals->html["attr"] = array("lang" => strtolower(substr(LANGUAGE_INSET, 0, 2))
+										/*, "xmlns:fb" => "http://www.facebook.com/2008/fbml"*/
+										, "prefix" => "og: " . "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . "ogp.me/ns# fb: " . "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . "www.facebook.com/2008/fbml");
 
 		//favicon
 		if($globals->favicon) {
 			if(is_array($globals->favicon) && count($globals->favicon)) {
-				foreach($globals->favicon AS $favicon_rel => $favicon) {
-					if(is_array($favicon)) {
-						foreach($favicon AS $favicon_file) {
-							$cm->oPage->tplAddTag("link", array(
-								"href" => $favicon_file
-								, "type" => ffMimeTypeByFilename($favicon_file)
-								, "rel" => $favicon_rel
-							)); 
-						}
-					} else {
-						$cm->oPage->tplAddTag("link", array(
-							"href" => $favicon
-							, "type" => ffMimeTypeByFilename($favicon)
-							, "rel" => $favicon_rel
-						)); 
-					}
+				foreach($globals->favicon AS $favicon_key => $favicon_file) {
+					$cm->oPage->tplAddCss("favicon-" . $favicon_key, basename($favicon_file), ffCommon_dirname($favicon_file), $favicon_key, ffMimeTypeByFilename($favicon_file));
 				}
 			} else {
-				$cm->oPage->tplAddTag("favicon", array(
-					"href" => $globals->favicon
-					, "type" => ffMimeTypeByFilename($globals->favicon)
-				)); 
+				$cm->oPage->tplAddCss("favicon", basename($globals->favicon), ffCommon_dirname($globals->favicon), "icon", ffMimeTypeByFilename($globals->favicon));
 			}
 		} elseif(file_exists(FF_DISK_PATH . "/favicon.ico")) {
-				$cm->oPage->tplAddTag("favicon", array(
-					"href" => "/favicon.ico"
-					, "type" => "image/ico"
-				)); 
+	        $cm->oPage->tplAddCss("favicon", "favicon.ico", "/", "icon", "image/ico");
 	    } elseif(file_exists(FF_DISK_PATH . "/favicon.png")) {
-				$cm->oPage->tplAddTag("favicon", array(
-					"href" => "/favicon.png"
-					, "type" => "image/png"
-				)); 
+	        $cm->oPage->tplAddCss("favicon", "favicon.png", "/", "icon", "image/png");
 	    } elseif(file_exists(FF_DISK_PATH . "/favicon.gif")) {
-			$cm->oPage->tplAddTag("favicon", array(
-				"href" => "/favicon.gif"
-				, "type" => "image/x-icon"
-			));
+	        $cm->oPage->tplAddCss("favicon", "favicon.gif", "/", "icon", "image/x-icon");
 		}
 
 		//Page Title
@@ -184,22 +157,19 @@
 
         if(http_response_code() == 200) {
             //Meta Robots
-            if (!$globals->meta["robots"]) {
+            if(!$globals->meta["robots"])
+            {
                 $globals->meta["robots"] = "index, follow";
-                if ($globals->navigation["page"] > 0 /*&& $globals->navigation["tot_page"] >= $globals->navigation["page"]*/)
+                if($globals->navigation["page"] > 0 /*&& $globals->navigation["tot_page"] >= $globals->navigation["page"]*/)
                     $globals->meta["robots"] = "noindex, follow";
+
             }
 
-            if ($globals->navigation["tot_page"] && $globals->navigation["page"] > 1) {
-                $cm->oPage->tplAddTag("prev", array(
-                    "href" => ffUpdateQueryString("page", ($globals->navigation["page"] > 2 ? $globals->navigation["page"] - 1 : false), $cm->oPage->canonical)
-                ));
-            }
-            if ($globals->navigation["page"] && $globals->navigation["tot_page"] > $globals->navigation["page"]) {
-                $cm->oPage->tplAddTag("next", array(
-                    "href" => ffUpdateQueryString("page", ($globals->navigation["page"] + 1), $cm->oPage->canonical)
-                ));
-            }
+            if ($globals->navigation["tot_page"] && $globals->navigation["page"] > 1)
+                $cm->oPage->tplAddCss("canonical.prev", ffUpdateQueryString("page", ($globals->navigation["page"] > 2 ? $globals->navigation["page"] - 1 : false), basename($cm->oPage->canonical)), ffCommon_dirname($cm->oPage->canonical), "prev", false);
+            if ($globals->navigation["page"] && $globals->navigation["tot_page"] > $globals->navigation["page"])
+                $cm->oPage->tplAddCss("canonical.next", ffUpdateQueryString("page", ($globals->navigation["page"] + 1), basename($cm->oPage->canonical)), ffCommon_dirname($cm->oPage->canonical), "next", false);
+
 
             //canonical Url
             if (strpos($globals->meta["robots"], "noindex") !== false) {
@@ -223,59 +193,73 @@
             //RSS
             if (!$globals->css["atom"]) {
                 if ($globals->seo["current"] == "detail") {
-                    $cm->oPage->tplAddTag("alternate", array(
-                        "href" => "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . ffCommon_dirname($globals->page["strip_path"] . $globals->page["user_path"]) . "/feed/"
-                    , "type" => "application/rss+xml"
-                    ));
+                    $cm->oPage->tplAddCss("atom_cat"
+                        , "feed/"
+                        , "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . ffCommon_dirname($globals->page["strip_path"] . $globals->page["user_path"])
+                        , "alternate"
+                        , "application/rss+xml"
+                    );
                 }
+
                 if ($globals->seo["current"] == "thumb" || $globals->seo["current"] == "detail") {
-                    $cm->oPage->tplAddTag("alternate", array(
-                        "href" => "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $globals->page["strip_path"] . $globals->page["user_path"] . "/feed/"
-                    , "type" => "application/rss+xml"
-                    ));
+                    $cm->oPage->tplAddCss("atom"
+                        , "feed/"
+                        , "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $globals->page["strip_path"] . $globals->page["user_path"]
+                        , "alternate"
+                        , "application/rss+xml"
+                    );
                 }
             }
 
             /*
                     if(!$globals->css["rss"]) {
-                        $cm->oPage->tplAddTag("alternate", array(
-                            "href" => "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . $globals->page["strip_path"] . $globals->page["user_path"] . "/feed.mrss"
-                            , "type" => "application/rss+xml"
-                        ));
+                        $cm->oPage->tplAddCss("rss"
+                                , "feed.mrss"
+                                , "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . $globals->page["strip_path"] . $globals->page["user_path"]
+                                , "alternate"
+                                , "application/rss+xml"
+                        );
                     }
             */
 
             //HrefLang
-            if (is_array($globals->seo["altlang"]) && count($globals->seo["altlang"])) {
-                foreach ($globals->seo["altlang"] AS $tiny_code => $path) {
-                    $cm->oPage->tplAddTag("alternate", array(
-                        "href" => $path
-                    , "hreflang" => $tiny_code
-                    ));
+            if(is_array($globals->seo["altlang"]) && count($globals->seo["altlang"])) {
+                foreach($globals->seo["altlang"] AS $tiny_code => $path) {
+                    $cm->oPage->tplAddCss("altlang-" . $tiny_code
+                            , basename($path)
+                            , ffCommon_dirname($path)
+                            , "alternate"
+                            , null
+                            , false
+                            , false
+                            , array("hreflang" => $tiny_code)
+                    );
                 }
             }
 
             //AMP Page
-            if (!$globals->css["amp"] && 0) {
-                $cm->oPage->tplAddTag("link", array(
-                    "href" => "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $globals->page["strip_path"] . $globals->page["user_path"] . "/amp"
-                , "rel" => "amphtml"
-                ));
+            if(!$globals->css["amp"] && 0) {
+                $cm->oPage->tplAddCss("amp"
+                        , "amp"
+                        , "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . $globals->page["strip_path"] . $globals->page["user_path"]
+                        , "amphtml"
+                );
             }
 
             //Manifest
-            if ($globals->manifest) {
-                $cm->oPage->tplAddTag("link", array(
-                    "href" => "/manifest.json"
-                , "rel" => "manifest"
-                ));
+            if($globals->manifest) {
+                $cm->oPage->tplAddCss("manifest"
+                    , "manifest.json"
+                    , "/"
+                    , "manifest"
+                    , null
+                );
             }
+            //<link rel="amphtml" href="https://www.example.com/url/to/amp/document.html">
         } else {
             $globals->meta["robots"] = "noindex, nofollow";
         }
-		//<link rel="amphtml" href="https://www.example.com/url/to/amp/document.html">
 
-		
 		//Meta Description
 		if(is_array($meta_description)) {
 			if(is_array($globals->meta["description"])) {
@@ -391,9 +375,9 @@
 		
 		//Facebook BASE
 	    if($globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"] && !isset($globals->meta["fb:app_id"]))
-	        $globals->meta["fb:app_id"] = array("content" => $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"], "type" => "property"); 
+	        $globals->meta["fb:app_id"] = array("content" => $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"], "type" => "property");
 
-		//Open Graph BASE
+        //Open Graph BASE
         if(!isset($globals->meta["og:title"]))
             $globals->meta["og:title"] 						= array("content" => $globals->page_title, "type" => "property");
         if(!isset($globals->meta["og:description"]))

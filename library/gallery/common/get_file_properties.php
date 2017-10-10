@@ -204,14 +204,52 @@ function load_settings_thumb()
 				                )
 				            )
 				        ) 															AS items
+						, IF(settings_thumb.thumb_display_view_mode = ''
+				            , (SELECT settings_thumb_mode.name 
+				                FROM settings_thumb_mode 
+				                WHERE settings_thumb_mode.ID = settings_thumb.thumb_container_ID_mode
+				            )
+				            , (IFNULL(
+				                (SELECT 
+				                    IF(ISNULL(js.ID) OR NOT(js.ID_mode_thumb_v > 0)
+				                        , settings_thumb_mode.name
+				                        , IF(settings_thumb.tbl_src = 'vgallery'
+		                        			, (SELECT settings_thumb_mode.name FROM settings_thumb_mode WHERE settings_thumb_mode.ID = js.ID_mode_thumb_v)
+		                        			, (SELECT settings_thumb_mode.name FROM settings_thumb_mode WHERE settings_thumb_mode.ID = js.ID_mode_thumb_g)
+				                        )
+				                    ) AS ID_mode 
+				                FROM js, settings_thumb_mode
+				                WHERE 
+				                    settings_thumb_mode.ID = settings_thumb.thumb_container_ID_mode
+				                    AND js.name = settings_thumb.thumb_display_view_mode
+				                )
+				                , (SELECT settings_thumb_mode.name 
+					                FROM settings_thumb_mode 
+					                WHERE settings_thumb_mode.ID = settings_thumb.thumb_container_ID_mode)
+				                )
+				            )
+				        ) 															AS thumb_container_mode
+				        , IF(settings_thumb.preview_display_view_mode = ''
+				            , (SELECT settings_thumb_mode.name 
+				                FROM settings_thumb_mode 
+				                WHERE settings_thumb_mode.ID = settings_thumb.preview_container_ID_mode
+				            )
+				            , (SELECT 
+				                    IF(ISNULL(js.ID) OR NOT(js.ID_mode_preview > 0)
+				                        , settings_thumb_mode.name
+				                        , (SELECT settings_thumb_mode.name FROM settings_thumb_mode WHERE settings_thumb_mode.ID = js.ID_mode_preview)
+				                    ) AS ID_mode 
+				                FROM js, settings_thumb_mode
+				                WHERE 
+				                    settings_thumb_mode.ID = settings_thumb.preview_container_ID_mode
+				                    AND js.name = settings_thumb.preview_display_view_mode
+				            )
+				        ) 															AS preview_container_mode
 					FROM settings_thumb
 					WHERE 1
 					ORDER BY items";
 			$db->query($sSQL);
 			if($db->nextRecord()) {
-				if(check_function("system_get_js_plugins"))
-					$arrPlugins = system_get_js_plugins(null, "array");
-			
 				do {
 					$tbl_src 																					= $db->getField("tbl_src", "Text", true);
 					$item 																						= $db->getField("items", "Text", true);
@@ -233,9 +271,9 @@ function load_settings_thumb()
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["hide_dir"]                  = $db->getField("hide_dir", "Text", true);
 		            
 					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]								= $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"];
-		            //$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_ID_mode"]        = $db->getField("thumb_container_ID_mode", "Number", true);
+		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_ID_mode"]        = $db->getField("thumb_container_ID_mode", "Number", true);
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["hide"]          			= $db->getField("thumb_hide", "Number", true);
-		            //$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_mode"]           = preg_replace('/[^a-zA-Z0-9\_]/', '', $db->getField("thumb_container_mode", "Text", true));
+		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_mode"]           = preg_replace('/[^a-zA-Z0-9\_]/', '', $db->getField("thumb_container_mode", "Text", true));
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["item_size"]                = (strlen($db->getField("thumb_item", "Text", true)) ? explode(",", $db->getField("thumb_item", "Text", true)) : "");
 					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["wrap"]						= (strlen($db->getField("thumb_wrap", "Text", true)) ? explode(",", $db->getField("thumb_wrap", "Text", true)) : "");
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["fluid"]                    = $db->getField("thumb_fluid", "Number", true);
@@ -257,18 +295,14 @@ function load_settings_thumb()
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["frame_per_page"]           = $db->getField("thumb_frame_per_page", "Text", true);
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["pagenav_location"]         = $db->getField("thumb_pagenav_location", "Text", true);
                     $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["infinite"]                 = $db->getField("thumb_pagenav_infinite", "Number", true);
-                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["alphanum"]         		= $db->getField("thumb_pagenav_alphanum", "Text", true);
+                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["alphanum"]                 = $db->getField("thumb_pagenav_alphanum", "Text", true);
 
 					//Image Thumb Settings
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["fields"]       	= (strlen($db->getField("thumb_image", "Text", true)) ? explode(",", $db->getField("thumb_image", "Text", true)) : "");
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["link_to"]         = $db->getField("thumb_image_detail", "Text", true);
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]        	= $db->getField("thumb_display_view_mode", "Text", true);
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["class"]    		= preg_replace('/[^a-zA-Z0-9\-]/', '', $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]);
-		            if($arrPlugins[$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]])
-		            	$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_mode"]		= $arrPlugins[$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]]["tpl"];
-					else
-						$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_mode"]		= "listdiv";
-
+		            
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["src"] = get_image_properties_by_grid_system(
 		            	$db->getField("thumb_ID_image", "Number", true)
 		            	, $db->getField("thumb_ID_image_md", "Number", true)
@@ -280,9 +314,9 @@ function load_settings_thumb()
 						$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["social"] 				= load_settings_social($ID_thumb_social);
 
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]							= $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"];
-					//$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_ID_mode"]    	= $db->getField("preview_container_ID_mode", "Number", true);
+					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_ID_mode"]    	= $db->getField("preview_container_ID_mode", "Number", true);
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["hide"]          			= $db->getField("preview_hide", "Number", true);
-		           // $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_mode"]         	= preg_replace('/[^a-zA-Z0-9\_]/', '', $db->getField("preview_container_mode", "Text", true));
+		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_mode"]         	= preg_replace('/[^a-zA-Z0-9\_]/', '', $db->getField("preview_container_mode", "Text", true));
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["item_size"]              	= 1;
 					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["wrap"]					= "";
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["fluid"]                  	= $db->getField("preview_fluid", "Number", true);
@@ -311,11 +345,7 @@ function load_settings_thumb()
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["link_to"]       	= $db->getField("preview_image_detail", "Text", true);
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]        	= $db->getField("preview_display_view_mode", "Text", true);
 		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["class"]   = preg_replace('/[^a-zA-Z0-9\-]/', '', $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]);
-		            if($arrPlugins[$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]])
-		            	$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_mode"]		= $arrPlugins[$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]]["tpl"];
-					else
-						$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_mode"]		= "view";
-						
+
 					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["src"] = get_image_properties_by_grid_system(
 		            	$db->getField("preview_ID_image", "Number", true)
 		            	, $db->getField("preview_ID_image_md", "Number", true)
@@ -335,7 +365,7 @@ function load_settings_thumb()
 				$cache->set("__vgallery_settings_thumb__", null, $loaded_properties);
 		}
 	}
-
+	
 	return $loaded_properties;
 }
 
@@ -349,7 +379,7 @@ function get_file_properties_default($table, $mode) {
 	        $default_properties["ID_layout"]                = 0;
 	        $default_properties["sort"]              		= 0;
 	        $default_properties["sort_method"]              = "";
-	        //$default_properties["container_ID_mode"]        = 3;
+	        $default_properties["container_ID_mode"]        = 3;
 	        $default_properties["hide"]       				= false;
 	        $default_properties["container_mode"]           = "View";
 	        $default_properties["item_size"]                = array(1,1,1,1);
@@ -388,7 +418,7 @@ function get_file_properties_default($table, $mode) {
 	        $default_properties["ID_layout"]                = 0;
 	        $default_properties["sort"]              		= 0;
 	        $default_properties["sort_method"]              = "";
-	        //$default_properties["container_ID_mode"]        = 8;
+	        $default_properties["container_ID_mode"]        = 8;
 	        $default_properties["hide"]        				= false;
 	        $default_properties["container_mode"]           = "ListDiv";
 	        $default_properties["item_size"]                = array(1,1,1,1);
@@ -451,7 +481,7 @@ function get_image_default() {
     $default_image["enable_thumb_word_dir"]    		= true;
     $default_image["enable_thumb_word_file"]   		= false;
     $default_image["last_update"]              		= "";
-    $default_image["max_upload"]               		= 1800000;
+    $default_image["max_upload"]               		= 0;
     $default_image["force_icon"]               		= "";
     $default_image["allowed_ext"]              		= "";
     $default_image["max_items"]                		= 0;

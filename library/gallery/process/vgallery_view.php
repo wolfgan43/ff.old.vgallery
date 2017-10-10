@@ -609,6 +609,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
 		}
     }
 
+    //setJsRequest("ff.cms.vgallery", "tools");
     
     //Set JS Plugin
     setJsRequest($arrJsRequest);    
@@ -619,25 +620,16 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
     }
 
     if($params["output"]) {
-        $res = array(
-    		"pre" => $block["tpl"]["header"]
-    		, "post" => $block["tpl"]["footer"]
-    		, "content" => $buffer
-            , "default" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-            , "params" => $vg_father["request_params"]
-            , "js_request" => array_keys($arrJsRequest)
-        );
+        $res = array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+                        , "params" => $vg_father["request_params"]
+                        , "js_request" => array_keys($arrJsRequest)
+                    );
 
         if($params["output"] === true)
             return $res;
         else
             return $res[$params["output"]];
     } else {
-    	return array(
-			"pre" 			=> $block["tpl"]["header"]
-			, "post" 		=> $block["tpl"]["footer"]
-			, "content" 	=> $buffer
-			, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-		);
+        return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
     }
 }

@@ -51,7 +51,6 @@ function get_short_description($description, $limit_char = 160, $type = null, $l
 		$description = html_entity_decode($description, ENT_QUOTES, "UTF-8");
 
 	$description = htmlspecialchars_decode($description);
-	$description = strip_tags($description);
 
     if(mb_strlen($description, 'UTF-8') > $limit_char && $limit_char > 0) {
     	if($type === null) {
@@ -121,4 +120,3 @@ function get_short_description($description, $limit_char = 160, $type = null, $l
 		, "content" => $default
 	);
 }
-

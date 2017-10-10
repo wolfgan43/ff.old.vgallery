@@ -4,7 +4,7 @@ ff.cms.fn.lightbox = function(targetid) {
 		targetid = targetid + " ";
 		
 	/*css*/
-	ff.load("jquery.plugins.lightbox", function() {	
+	ff.pluginLoad("jquery.fn.lightBox", "/themes/library/plugins/jquery.lightbox/jquery.lightbox.js", function() {	
 		jQuery(targetid + "a.lightbox2").lightBox({
 			featBrowser: true, /* set it to true or false to choose to auto-adjust the maximum size to the browser*/
 			breathingSize: 10 /* control the minimum space around the image box	*/

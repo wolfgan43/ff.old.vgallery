@@ -157,6 +157,6 @@ function preposition($tipo, $keyword)
     
     if(!$preposizione)
     	$preposizione = $tipo . " ";
-    
+
 	return $preposizione . $keyword;
 }

@@ -125,14 +125,14 @@ function MD_general_get_schema($addon = null) {
 	static $service_schema = null;
 	
 	if(!$service_schema) {
-		$arrFile = glob(FF_DISK_PATH . VG_ADDONS_PATH . "/*/schema." . FF_PHP_EXT);
+		$arrFile = glob(FF_DISK_PATH . "/" . GALLERY_UI_PATH . "/addons/*/schema." . FF_PHP_EXT);
 		if(is_array($arrFile) && count($arrFile)) {
 			foreach($arrFile AS $real_file) {
 				require($real_file);
 			}
 		}
 	}
-
+			
 	if($addon)
 		return $service_schema[$addon];
 	else

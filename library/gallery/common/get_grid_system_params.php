@@ -29,36 +29,33 @@ function get_grid_system_params() {
 
 function get_grid_system_menu($type, $follow_default_setting = true, $is_child = false) {
 	$cm = cm::getInstance();
-	
-	if($follow_default_setting) {
-		$framework_css = cm_getFrameworkCss();
-		$framework_css_name = $framework_css["name"];
-	}
-	
+	if($follow_default_setting)
+		$template_framework = $cm->oPage->framework_css["name"];
+		
 	switch($type . ($is_child ? "-child" : "")) {
 		case "offcanvas":
-			$res = get_grid_system_menu_side_offcanvas($framework_css_name);
+			$res = get_grid_system_menu_side_offcanvas($template_framework);
 			break;
 		case "offcanvas-right":
-			$res = get_grid_system_menu_side_offcanvas($framework_css_name, "right");
+			$res = get_grid_system_menu_side_offcanvas($template_framework, "right");
 			break;
 		case "offcanvas-child":
-			$res = get_grid_system_menu_side_offcanvas_child($framework_css_name);
+			$res = get_grid_system_menu_side_offcanvas_child($template_framework);
 			break;
 		case "offcanvas-right-child":
-			$res = get_grid_system_menu_side_offcanvas_child($framework_css_name, "right");
+			$res = get_grid_system_menu_side_offcanvas_child($template_framework, "right");
 			break;
 		case "side":
-			$res = get_grid_system_menu_side($framework_css_name);
+			$res = get_grid_system_menu_side($template_framework);
 			break;
 		case "side-child":
-			$res = get_grid_system_menu_side_child($framework_css_name);
+			$res = get_grid_system_menu_side_child($template_framework);
 			break;
 		default:
 			if($is_child)
-				$res = get_grid_system_menu_default_child($framework_css_name);
+				$res = get_grid_system_menu_default_child($template_framework);
 			else 
-				$res = get_grid_system_menu_default($framework_css_name);
+				$res = get_grid_system_menu_default($template_framework);
 	}
 	
 	return $res;
@@ -230,22 +227,23 @@ function get_grid_system_menu_side_offcanvas_child($template_framework, $side = 
 
 function get_grid_system_breadcrumb($follow_default_setting = true) {
 	$cm = cm::getInstance();
-	if($follow_default_setting) {
-		$framework_css 						= cm_getFrameworkCss();	
-		$framework_css_name 				= $framework_css["name"];
+	if($follow_default_setting)
+		$template_framework = $cm->oPage->framework_css["name"];
 
-	    switch ($framework_css_name) {
-	        case "bootstrap":
-	                $class["current"] 		= "active";
-	                break;
-	        case "foundation":
-	                $class["current"] 		= "current";
-	                break;
-	        default:
-	    }		
-	}
+    if(strlen($template_framework))
+    {
+        switch ($template_framework) {
+            case "bootstrap":
+                    $class["current"] 		= "active";
+                    break;
+            case "foundation":
+                    $class["current"] 		= "current";
+                    break;
+            default:
+                    break;
+        }
+    }
 	
-    return array(	
-    	"class" 	=> $class
-	);
+    return array(	"class" 				=> $class
+				);
 }

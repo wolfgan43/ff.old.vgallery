@@ -22,27 +22,28 @@ ff.cms.fn.contentflow = function(targetid) {
 			jQuery(targetid + ".contentflow").addClass("content").removeClass("contentflow");
 		}	
 		
-		jQuery("#" + ContentFlowID + ' .item:not(:has(.content))').prepend('<img src="' + ff.base_path + '/themes/responsive/images/spacer.gif" class="content" />');
+		jQuery("#" + ContentFlowID + ' .item:not(:has(.content))').prepend('<img src="' + ff.site_path + '/themes/gallery/images/spacer.gif" class="content" />');
 
 		jQuery("#" + ContentFlowID + ' .vgallery_description').addClass("caption").removeClass("contentflow");		
 		
 		jQuery("#" + ContentFlowID).prepend('<div class="loadIndicator"><div class="indicator"></div></div>');		
 		jQuery("#" + ContentFlowID).append('<div class="globalCaption"></div><div class="scrollbar"><div class="slider"><div class="position"></div></div></div>');
 
-		ff.load("jquery.plugins.contentflow", function() { 
-			var myNewFlow = new ContentFlow(ContentFlowID
-												, { 
-													useAddOns: 'all'
-													, loadingTimeout: 30000
-													, circularFlow: true
-													, verticalFlow: false
-													, visibleItems: 3 
-													, endOpacity: 1
-													, startItem: 'center'
-													, scrollInFrom: 'pre'
-												}
-												
-											);
-		});
+		ff.pluginLoad("ContentFlow", "/themes/library/plugins/jquery.contentflow/contentflow.js", function() { 
+
+		var myNewFlow = new ContentFlow(ContentFlowID
+											, { 
+												useAddOns: 'all'
+												, loadingTimeout: 30000
+												, circularFlow: true
+												, verticalFlow: false
+												, visibleItems: 3 
+												, endOpacity: 1
+												, startItem: 'center'
+												, scrollInFrom: 'pre'
+											}
+											
+										);
+		}, false);
 	}
 };

@@ -1,29 +1,14 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
  if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
+ 	 ffDB_Sql::addEvent("on_factory_done", "ffDB_Sql_on_factory_done");	 
+
+     cm::getInstance()->addEvent("mod_security_on_check_session", "request_info", ffEvent::PRIORITY_DEFAULT);
+
+	/* if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/routing_table.xml")) {
+		 if(check_function("system_gallery_redirect"))
+		    cm::getInstance()->addEvent("on_before_init", "system_gallery_redirect", ffEvent::PRIORITY_HIGH);
+	 }*/
+	    
      if(check_function("system_init"))     
         cm::getInstance()->addEvent("on_after_init", "system_init", ffEvent::PRIORITY_HIGH);
 
@@ -34,8 +19,8 @@
   	//$globals->is_primary_page           = false;
   	//$globals->is_restricted_page        = false;
 	$globals->user_path                 = null;
-	$globals->request          			= null;
 	$globals->user_path_params          = "";
+	$globals->request          			= null;
 	$globals->user_path_shard           = "";
     //$globals->frame_path                = null;
     //$globals->error_path                = null;
@@ -45,6 +30,7 @@
 	$globals->selected_lang             = null;
 	//$globals->lang_alt                  = null;
 	$globals->locale                  	= null;
+	$globals->db_gallery                = null;
 	$globals->ecommerce                 = array();
 	$globals->permissions               = array();
 	$globals->custom_data               = array();
@@ -69,17 +55,18 @@
 	$globals->html                      = array();  
 	$globals->template                  = array();
 	$globals->manage                    = array();
+	$globals->MD_chk                    = array();
 	$globals->page               		= null;
 	$globals->page_title                = null;
 	$globals->canonical                 = null;
 	$globals->favicon               	= null;
-    $globals->manifest               	= null;
+    $globals->menifest                  = null;  
 	$globals->user						= array(
 											"menu" => null
 											, "pages" => null
 										);
 	$globals->settings                  = array();
-    $globals->fixed_pre                 = array(
+	$globals->fixed_pre                 = array(
                                             "body" => null
                                             , "content" => null
                                         );
@@ -93,9 +80,7 @@
     $globals->sort                      = null;
     $globals->filter                    = null;
 	$globals->services                  = null;    //facebook api mailchimp api ecc
-	$globals->tpl                  		= null;    //array associativo con tutte le info sulla struttura della pagina
-	$globals->data_storage              = array();    //array associativo con tutte le info sulla struttura della pagina
-
+	$globals->data_storage				= array();
 
     $globals->setSeo = function($params = array(), $priority = "user") {
          $globals = ffGlobals::getInstance("gallery");
@@ -107,5 +92,4 @@
          }
          $globals->seo["current"] = $priority;
     };
-
 }

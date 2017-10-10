@@ -1,0 +1,67 @@
+/* adv-skin */
+
+body.skin {
+	background: no-repeat center 205px;
+	overflow-x: hidden;
+}
+
+body.skin .navbar, body.hero .navbar{margin-bottom: 0;}
+
+#boxVideoContainer{
+	position:relative; height:300px; display: flex; display: -webkit-flex;
+	justify-content: center; -webkit-justify-content: center;
+	align-items: center; -webkit-align-items: center;}
+body.hero #div-gpt-ad-box_video{position:relative; top:0; left:0;}
+body.skin #div-gpt-ad-box_video{position:absolute; top:0; left:0;}
+body.skin #div-gpt-ad-leaderboard{position:absolute; top:0; left:0;}
+
+.container {position: relative;}
+
+
+
+/* interstitial */
+body.interstitial{position:relative; overflow:hidden !important;}
+#interstitialCanvas{position: fixed; top:0; left:0; width:100%; height:100%; z-index:99999; background:#FFF;}
+#interstitialWrapper{display: table; width:100%; height:100%;}
+#interstitialContainer{display: table-cell; vertical-align: middle;}
+#interstitial{position:relative; width:1000px; height: 600px; margin: 0 auto;}
+#interstitial a{display:block; font-size:0;}
+#interstitialCloseButton{position:absolute; top:0; right:0;}
+#interstitialTracking{border:0; width:0; height:0; visibility:hidden;}
+.videoControls{position:absolute; width:40px; height:40px; background:url('http://www.elle.it/files/publi/controlsSprite.png'); border:0; cursor: pointer;}
+#videoMuteInterstitial{background-position:-80px 0; bottom:0; right:0;}
+
+/*=== MEDIUM RECTANGLE 2 ====*/
+#div-gpt-ad-medium_rectangle-2 {display: none;}
+
+
+/*===== BOXLINK =====*/
+#div-gpt-ad-box_link-1{width: 300px; float: left; margin:14px 20px 0 190px;}
+#div-gpt-ad-box_link-2{width: 300px; float: left; margin:14px 0 0 0;}   
+    
+.sidebar #div-gpt-ad-box_link-1{width: 300px; float: left;  margin: 0 0 20px 0;}
+.sidebar #div-gpt-ad-box_link-2{width: 300px; float: left;  margin: 0 0 20px 0;}
+
+#div-gpt-ad-box_video .celtra-ad-v3{width:100vw !important;}
+
+
+/*======= * CSS SOLO PER VEDERE COME SI VISUALIZZA ======= */
+
+.header {
+	position:relative; width:58.9%; margin: 35px auto 15px auto; display: flex; display: -webkit-flex;
+	justify-content: center; -webkit-justify-content: center;
+	align-items: center; -webkit-align-items: center; flex-direction: column ; -webkit-flex-direction: column;}
+}
+
+.header .header-middle {padding: 0; margin:35px 0;}
+.col-md-8 {padding-right: 0; }
+.header .header-bottom {width:60vw; position: relative;}
+
+
+@media (max-width: 474px) {
+	
+	.header {width: 100%; margin: 0 auto 15px auto;}
+	.header .header-bottom {width: 95vw;position: relative;}
+}
+
+/*======= * FINE CSS SOLO PER VEDERE COME SI VISUALIZZA ======= */

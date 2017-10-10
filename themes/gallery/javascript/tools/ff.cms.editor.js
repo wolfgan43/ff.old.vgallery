@@ -1,27 +1,3 @@
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 ff.cms.editor = {
 	__init : false,
 	menu : {
@@ -30,9 +6,13 @@ ff.cms.editor = {
     widgets : {
         "spinner" : { params : { "min" : 1 /*, culture : "px" */}, 
                         event : "spinstop"
-                        , lib : null //jquery.plugins.spinner example
-                    }
-					/*,
+                    },
+        "button": { params : {},
+                        event: ""
+                    },
+       "buttonset": { params : {},
+                        event: ""
+                    }/*,
 
         "ColorPicker" : { 
         				lib: {
@@ -109,7 +89,7 @@ data : [
 		if(!this.__init) {
 	        var that = this;
 
-		    this.$editor=$("#" + that.prefix + "-editor-container").css("z-index", $(".adminbar").css("z-index") - 1);
+		    this.$editor=$("#" + that.prefix + "-editor-container").css("z-index", $(".toolbaradmin").css("z-index") - 1);
 		    this.$editorMenu=$("." + that.prefix + "-editor-menu");
 		    
 		    this.$editorMenu.each(function(i) {
@@ -121,14 +101,26 @@ data : [
 				$(that.$editor).append('<div class="vg-panel ' + i + '"></div>');		    
 		    }
 		    //that.menu["edit"] = [];
-			var widgetToLoad = []; 
-			for(var widget in that.widgets) {
-				if(widget.lib)
-					widgetToLoad.push(widget.lib);
-			}
 
-			if(widgetToLoad.length)
-				ff.load(widgetToLoad);
+			for(var widget in that.widgets) {
+				if(that.widgets[widget]["lib"]) {
+					var widgetPath = that.widgets[widget]["lib"]["path"];
+					if(widgetPath.substring(0,1) != "/") {
+						widgetPath = "/themes/library/plugins/" + widgetPath;
+					}
+
+					if(that.widgets[widget]["lib"]["css"]) {
+						that.widgets[widget]["lib"]["css"].each(function(i, value) {
+							ff.injectCSS(value["key"], widgetPath + "/" + value["path"]);
+						});
+					}
+					if(that.widgets[widget]["lib"]["js"]) {
+						that.widgets[widget]["lib"]["js"].each(function(i, value) {
+							ff.pluginLoad(value["key"], widgetPath + "/" + value["path"]);
+						});
+					}
+				}
+			}
 
 			$(this.$editorMenu).click(function() {
 			    ff.cms.editor.display(undefined, $(this).attr("rel"));
@@ -161,8 +153,8 @@ data : [
 			
    			$("body").bind("click", function(e) {
    				if(!that.$editor.find(e.target).length
-   					&& !$(".adminbar").find(e.target).length
-   					&& !$(".adminbar").is(e.target)
+   					&& !$(".toolbaradmin").find(e.target).length
+   					&& !$(".toolbaradmin").is(e.target)
    					&& that.target
    					&& $("." + that.target, that.$editor).is(":visible")
    				) {

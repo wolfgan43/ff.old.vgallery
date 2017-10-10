@@ -28,13 +28,14 @@ if(!check_function("get_schema_def"))
 	return;
 	
 $schema_def = get_schema_def();
+$return = array();
 
 //$ServiceAvailable = $schema_def["service_available"]; // da togliere
 $service_api 		= $schema_def["api"];
 $service_module 	= $schema_def["module_available"];
 $service_schema 	= $schema_def["schema"];
 
-$return = false;
+
 /*
 if(is_file(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT)) {
 	require(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT);	
@@ -188,10 +189,11 @@ switch($request_method) {
 	default:
 		$arrPath = explode("/", trim($service_path_info, "/"));
 		$target = $arrPath[0];
+
 		check_function("get_schema_fields_by_type");
 		$relative_api_path = str_replace(FF_DISK_PATH . "/conf/gallery", "", __DIR__);
 
-		if(/*preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info &&*/ is_file(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
+		if(preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info && is_file(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
 			$cm->real_path_info = $service_path_info;
 
 			require_once(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT);
@@ -201,7 +203,7 @@ switch($request_method) {
 			require_once(FF_DISK_PATH . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
 		} elseif(is_array($service_module) && count($service_module)) {
 			foreach($service_module AS $module_name) {
-				if(/*preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info &&*/ is_file(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
+				if(preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info && is_file(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
 					$cm->real_path_info = $service_path_info;
 
 					require_once(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . $service_path_info . "." . FF_PHP_EXT);
@@ -213,8 +215,9 @@ switch($request_method) {
 				}
 			}
 		}
-
-		if($return === false && is_file(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
+		
+		
+		if(!isset($return) && is_file(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
 			$cm->real_path_info = substr($service_path_info, strlen($target) + 1);
 
 			require_once(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
@@ -223,13 +226,13 @@ switch($request_method) {
 		
 
 /*			
-		if($return === false && is_file(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
+		if(!$return && is_file(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
 			$cm->real_path_info = "/" . $target;
 			
 			require_once(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
 		}
-*/
-		if($return === false) {
+*/			
+		if(!isset($return)) {
 			if(!$service) {
 				if($target == "pages") {
 					$schema 				= get_schema_fields_by_type("page"); //da fare

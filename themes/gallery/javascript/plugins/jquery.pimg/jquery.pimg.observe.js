@@ -3,7 +3,7 @@ ff.cms.fn.pimg = function(targetid) {
 	if(targetid.length > 0)
 		targetid = targetid + " ";
        /*css */
-   ff.load("jquery.plugins.pimg", function() { 
+   ff.pluginLoad("pimg", "/themes/library/plugins/jquery.pimg/jquery.pimg.js", function() { 
        	pimg();
-	});
+	}, false);
 };img

@@ -32,6 +32,9 @@ if($_POST["params"])
 if(is_array($req) && count($req)) {
     foreach($req AS $service_name => $service) {
 		switch($service_name) {
+			case "cache":
+				check_function("refresh_cache");
+				break;
 			case "notify":
 				check_function("system_trace");
 				$response["notify"] = system_trace_get_notify($user_path, $service["response"]);

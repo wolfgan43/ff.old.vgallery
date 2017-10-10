@@ -29,6 +29,9 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
     $globals = ffGlobals::getInstance("gallery");
     $settings_path = $globals->settings_path;
 
+    if(check_function("get_layout_settings"))
+    	$layout_settings = get_layout_settings(NULL, "ADMIN");
+
     $count_element = 0;
     /*
     $admin_menu["unic_name"];
@@ -70,6 +73,12 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
         $tpl->set_var("ret_url", urlencode($ret_url));
 
         $class_name = "admin-link";
+        //$class_primary = " vg-primary";
+        if(strlen($layout_settings["ADMIN_INTERFACE_PLUGIN"])) {
+			$class_name = ffCommon_url_rewrite($layout_settings["ADMIN_INTERFACE_PLUGIN"]);
+        
+        	setJsRequest($layout_settings["ADMIN_INTERFACE_PLUGIN"]);
+		}
 
         if($template_name == "popup") {
             $icon_size = null;
@@ -119,15 +128,15 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
         if(isset($admin_menu["layout"]) && is_array($admin_menu["layout"])) {
             $count_element++;
             if($admin_menu["layout"]["ID"] > 0) {
-	            $tpl->set_var("item_modify_path", get_path_by_rule("blocks") . "/modify");
+	            $tpl->set_var("item_modify_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block/modify");
 	            if(USE_ADMIN_AJAX) {
 		            $tpl->set_var("item_delete_path", urlencode(ffDialog(TRUE,
 		                                                "yesno",
 		                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
 		                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
 		                                                $cancel_dialog_url,
-		                                                get_path_by_rule("blocks") . "/modify?keys[ID]=" . urlencode($admin_menu["layout"]["ID"]) . "&location=" . urlencode($location) . "&path=" . urlencode($user_path) . "&LayoutModify_frmAction=confirmdelete", 
-		                                                get_path_by_rule("blocks") . "/dialog")
+		                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block/modify?keys[ID]=" . urlencode($admin_menu["layout"]["ID"]) . "&location=" . urlencode($location) . "&path=" . urlencode($user_path) . "&LayoutModify_frmAction=confirmdelete", 
+		                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block" . "/dialog")
 		                                ));
 				} else {
 		            $tpl->set_var("item_delete_path", ffDialog(TRUE,
@@ -135,8 +144,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 		                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
 		                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
 		                                                $cancel_dialog_url,
-		                                                get_path_by_rule("blocks") . "/modify?keys[ID]=" . urlencode($admin_menu["layout"]["ID"]) . "&location=" . urlencode($location) . "&path=" . urlencode($user_path) . "&LayoutModify_frmAction=confirmdelete", 
-		                                                get_path_by_rule("blocks") . "/dialog")
+		                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block/modify?keys[ID]=" . urlencode($admin_menu["layout"]["ID"]) . "&location=" . urlencode($location) . "&path=" . urlencode($user_path) . "&LayoutModify_frmAction=confirmdelete", 
+		                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block" . "/dialog")
 		                                );
 				}
 	            $tpl->set_var("item_id", urlencode($admin_menu["layout"]["ID"]));
@@ -145,7 +154,7 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 
 	            $tpl->parse("SezLayoutDelete", false);
 			} else {
-				$tpl->set_var("item_modify_path", get_path_by_rule("blocks") . "/type/modify/" . strtolower($admin_menu["layout"]["type"]));
+				$tpl->set_var("item_modify_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block/settings/modify/" . strtolower($admin_menu["layout"]["type"]));
 
 			   	$tpl->set_var("SezLayoutDelete", "");
 			}    
@@ -163,7 +172,7 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 			{
 				$count_element++;
 				
-		        $tpl->set_var("item_modify_path", get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"]);
+		        $tpl->set_var("item_modify_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules/" . $admin_menu["module"]["value"] . "/config/modify/" . $admin_menu["module"]["params"]);
 				$tpl->set_var("class_name", $class_name . $class_primary);
 		        $tpl->parse("SezModuleModify", false);
 
@@ -174,8 +183,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 			                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
 			                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
 			                                                $cancel_dialog_url,
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "?form-config_frmAction=confirmdelete", 
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "/dialog")
+			                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules/" . $admin_menu["module"]["value"] . "/config/modify/" . $admin_menu["module"]["params"] . "?form-config_frmAction=confirmdelete", 
+			                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules/" . $admin_menu["module"]["value"] . "/config/modify/dialog")
 			                                ));
 				    } else {
 			            $tpl->set_var("item_delete_path", ffDialog(TRUE,
@@ -183,8 +192,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 			                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
 			                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
 			                                                $cancel_dialog_url,
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "?form-config_frmAction=confirmdelete", 
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "/dialog")
+			                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules/" . $admin_menu["module"]["value"] . "/config/modify/" . $admin_menu["module"]["params"] . "?form-config_frmAction=confirmdelete", 
+			                                                FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules/" . $admin_menu["module"]["value"] . "/config/modify/dialog")
 			                                );
 				    }
 				    $tpl->set_var("class_name", $class_name);

@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function get_locale($type = null, $nocurrent = false) {
+  function get_locale($type = null, $nocurrent = false) {
   	static $locale_loaded = null;
 	$target = ($nocurrent ? "nocurrent" : "current");
   	//if(!$arrLocale)
@@ -38,7 +38,6 @@ function get_locale($type = null, $nocurrent = false) {
 	if(!$locale_loaded[$target]) {
 		if(is_file(FF_DISK_PATH . "/cache" . "/locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT)) {
 			require(FF_DISK_PATH . "/cache" . "/locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT);
-
             /** @var include $locale */
             $locale_loaded[$target] = $locale;
 		} else {
@@ -57,7 +56,6 @@ function get_locale($type = null, $nocurrent = false) {
 	else
   		return $locale_loaded[$target];
 }
-
 
 function translate($words, $toLang, $fromLang = LANGUAGE_DEFAULT, $webservice = null) {
     static $t = null;

@@ -128,7 +128,7 @@
 		    		if(is_file($plugin_path . "/libs." . FF_PHP_EXT)) {
 						$tmp = include($plugin_path . "/libs." . FF_PHP_EXT);
 					}
-					
+
 					if($tmp) {
 						if($plugin_name == $plugin_key)
 							$objPlugin = $tmp[$lib_base]["all"]["js_defs"][$plugin_key];
@@ -138,19 +138,23 @@
 					
 					if($objPlugin) {
 						$res[$plugin_name] = system_get_js_obj($plugin_name, $plugin_key, $type, (bool) $tmp, $objPlugin, $return);
-						
 					}
 		    	}
 			}
 		}
+
 		//da eliminare tutti i riferimenti alla tabella js. se cerchi FROM js ne trovi
 		if(strpos($return, "sql") !== false) {
-			$res = "SELECT tbl_src.*
+		    if($res) {
+                $res = "SELECT tbl_src.*
 					FROM (
 						" . implode(" UNION ", $res) . "
 					) AS tbl_src
 					[WHERE]
 					ORDER BY tbl_src.name";
+            } else {
+                $res = "SELECT 1 FROM dual WHERE false";
+            }
 		}
 
 		return $res;	

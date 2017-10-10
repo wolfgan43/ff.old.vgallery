@@ -4,7 +4,7 @@ ff.cms.fn.popeye = function(targetid) {
 		targetid = targetid + " ";
 
 	/*css */
-	ff.load("jquery.plugins.popeye", function() {	
+	ff.pluginLoad("jquery.fn.popeye", "/themes/library/plugins/jquery.popeye/jquery.popeye.js", function() {	
 		var options = {
 		            caption:    false, /*The visibility of the navigation. Can be 'hover' (show on mouseover) or 'permanent' */
 		            navigation: 'permanent', /*The visibility of the navigation. Can be 'hover' (show on mouseover) or 'permanent' or false (don't show caption) */
@@ -15,5 +15,5 @@ ff.cms.fn.popeye = function(targetid) {
 					/* easing: 'swing' //easing type, can be 'swing', 'linear' or any of jQuery Easing Plugin types (Plugin required)*/
 		};
 		jQuery(targetid + ".popeye").popeye(options);
-	});
+	}, true);
 };

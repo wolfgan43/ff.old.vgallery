@@ -681,10 +681,9 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 
 				if(strpos($permalink, "/") !== 0)	
 					continue;
-					
+
 				if($permalink == "/")
 					$permalink = "";
-
 
 				if($field_request)
 					$request = $db->getField("request", "Text", true);

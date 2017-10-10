@@ -5,7 +5,7 @@ ff.cms.fn.slidingpanel = function(targetid) {
 
 	/*css*/
 	jQuery(targetid + ".slidingpanel").each(function() {
-		jQuery(this).parent().append('<div class="slidingtoggle"><a href="#"><img src="' + ff.base_path + '/themes/gallery/javascript/plugin/jquery.slidingpanel/toggle.png"></a></div>');
+		jQuery(this).parent().append('<div class="slidingtoggle"><a href="#"><img src="' + ff.site_path + '/themes/gallery/javascript/plugin/jquery.slidingpanel/toggle.png"></a></div>');
         jQuery(this).next().click(function() {
             if(jQuery(this).prev().hasClass("visible")) {
                 jQuery(this).prev().slideUp("slow");

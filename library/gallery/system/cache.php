@@ -71,87 +71,6 @@
         }
     }
 
-    /**
-     * @param $string
-     * @param string $filename
-     */
-    function cache_writeLog($string, $filename = "log")
-    {
-        clearstatcache();
-
-        $file = dirname(__FILE__) . '/cache/' . $filename . '.txt';
-        if(!is_file($file)) {
-            $set_mod = true;
-        }
-        if($handle = @fopen($file, 'a'))
-        {
-            if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
-            {
-                $i18n_error = true;
-            }
-            @fclose($handle);
-
-            if($set_mod)
-                chmod($file, 0777);
-        }
-    }
-
-
-    /**
-     * @param $destination
-     * @param null $http_response_code
-     * @param null $request_uri
-     */
-    function cache_do_redirect($destination, $http_response_code = null, $request_uri = null)
-    {
-        if($http_response_code === null)
-            $http_response_code = 301;
-        if($request_uri === null)
-            $request_uri = $_SERVER["REQUEST_URI"];
-
-        //system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
-        if(defined("DEBUG_MODE")) {
-            cache_writeLog(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
-        }
-
-        cache_send_header_content(false, false, false, false);
-
-        if(strpos($destination, "/") !== 0)
-            $destination = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $destination;
-
-        header("Location: " . $destination, true, $http_response_code);
-        exit;
-    }
-
-
-    /**
-     * @param $path_info
-     * @param null $query
-     * @param null $hostname
-     */
-    function cache_check_redirect($path_info, $query = null, $hostname = null)
-    {
-        if($hostname === null)
-            $hostname = $_SERVER["HTTP_HOST"];
-
-        if($query === null)
-            $query = $_SERVER["QUERY_STRING"];
-
-        $request_uri = $path_info;
-        if(strlen($query))
-            $request_uri .= "?" . $query;
-
-        if(is_file(__DIR__ . "/cache/redirect/" . $hostname . ".php")) {
-            require(__DIR__ . "/cache/redirect/" . $hostname . ".php");
-
-            /** @var include $r */
-            if($r[$request_uri]) {
-                cache_do_redirect($r[$request_uri]["dst"], $r[$request_uri]["code"]);
-            }
-        }
-    }
-
-
     function cache_get_page_by_id($id) {
     	$page = cache_get_settings("page");
     	
@@ -193,39 +112,39 @@
             return $schema[$type];
         else
             return $schema;
-    }
-
+    }    
+    
     function cache_get_page_properties($user_path, $page_type = null, $skip_locale = false) {
         //require(CACHE_DISK_PATH . "/library/gallery/settings.php");
         $schema = cache_get_settings();
 
-        //strippa il path di base per la cache
-        if(is_array($schema["alias"]) && count($schema["alias"])) {
-            if($schema["alias"][$_SERVER["HTTP_HOST"]]) {
-                $resAlias["alias"] = $schema["alias"][$_SERVER["HTTP_HOST"]];
-                if(strpos($user_path, $schema["alias"][$_SERVER["HTTP_HOST"]] . "/") === 0
+		//strippa il path di base per la cache
+		if(is_array($schema["alias"]) && count($schema["alias"])) {
+			if($schema["alias"][$_SERVER["HTTP_HOST"]]) {
+				$resAlias["alias"] = $schema["alias"][$_SERVER["HTTP_HOST"]];
+				if(strpos($user_path, $schema["alias"][$_SERVER["HTTP_HOST"]] . "/") === 0
                     || $user_path == $schema["alias"][$_SERVER["HTTP_HOST"]]
                 ) {
-                    $user_path = substr($user_path, strlen($schema["alias"][$_SERVER["HTTP_HOST"]]));
-                    $resAlias["redirect"] = $_SERVER["HTTP_HOST"] . $user_path;
-                    if(!$user_path)
-                        $user_path = "/";
-                }
+					$user_path = substr($user_path, strlen($schema["alias"][$_SERVER["HTTP_HOST"]]));
+					$resAlias["redirect"] = $_SERVER["HTTP_HOST"] . $user_path;
+					if(!$user_path)
+	            		$user_path = "/";					
+				}
 
-                if($resAlias["alias"] != "/") {
-                    $arrLocale = cache_get_settings("locale");
-                    if($arrLocale["rev"]["lang"][basename($resAlias["alias"])]) {
-                        $lang = $arrLocale["rev"]["lang"][basename($resAlias["alias"])];
-                    } else {
-                        $settings_user_path = $resAlias["alias"];
-                    }
-                }
-            } else {
-                $resAlias["redirect"] = false;
-            }
-        }
-
-        $settings_user_path                                     .= $user_path;
+				if($resAlias["alias"] != "/") {
+					$arrLocale = cache_get_settings("locale");
+					if($arrLocale["rev"]["lang"][basename($resAlias["alias"])]) {
+						$lang = $arrLocale["rev"]["lang"][basename($resAlias["alias"])];
+					} else {
+						$settings_user_path = $resAlias["alias"];
+					}
+				}
+			} else {
+				$resAlias["redirect"] = false;
+			}
+		}
+        
+		$settings_user_path                                     .= $user_path;
         $arrSettings_path                                       = explode("/", trim($user_path, "/"));
 
         if(!$lang && $arrLocale["rev"]["lang"][$arrSettings_path[0]]) {
@@ -256,21 +175,21 @@
 
         if(strpos($user_path, $res["strip_path"]) === 0) {
             $user_path                                          = substr($user_path, strlen($res["strip_path"]));
-            if(!$user_path)
-                $user_path                                      = "/";
-        }
-
-        if($resAlias) {
-            $res["alias"]                                       = $resAlias["alias"];
-            if($resAlias["redirect"] === false) {
-                $alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
-                if($alias_flip["/" . $arrSettings_path[0]]) {
-                    $resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
-                }
-            }
-
-            $res["redirect"]                                    = $resAlias["redirect"];
-        }
+	        if(!$user_path)
+	            $user_path                                      = "/";
+		}
+		
+		if($resAlias) {
+			$res["alias"]                                       = $resAlias["alias"];
+			if($resAlias["redirect"] === false) {
+				$alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
+				if($alias_flip["/" . $arrSettings_path[0]]) {
+					$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
+				}		
+			}
+			
+			$res["redirect"]                                    = $resAlias["redirect"];
+		}
 
         $res["user_path"]                                       = $user_path;
 
@@ -278,30 +197,30 @@
             $res["lang"]                                        = $lang;
 
         if($res["db_path"] && $page_key && strpos($user_path, $page_key) === 0) {
-            $res["db_path"]                                     .= substr($user_path, strlen($page_key));
-        } else {
-            $res["db_path"]                                     = $user_path;
-        }
+        	$res["db_path"]                                     .= substr($user_path, strlen($page_key));
+		} else {
+			$res["db_path"]                                     = $user_path;
+		}
 
-        $arrUserPath = pathinfo($user_path);
+		$arrUserPath = pathinfo($user_path);
         if($arrUserPath["extension"])
-            $res["type"]                                        = $arrUserPath["extension"];
+        	$res["type"]                                        = $arrUserPath["extension"];
 
-        if(!$res["framework_css"])
-            $res["framework_css"]                               = $schema["page"]["/"]["framework_css"];
-        if(!$res["font_icon"])
-            $res["font_icon"]                                   = $schema["page"]["/"]["font_icon"];
+		if(!$res["framework_css"])
+			$res["framework_css"]                               = $schema["page"]["/"]["framework_css"];
+		if(!$res["font_icon"])
+			$res["font_icon"]                                   = $schema["page"]["/"]["font_icon"];
 
-        if(!$res["layer"])
-            $res["layer"]                                       = $schema["page"]["/" . $arrSettings_path[0]]["layer"];
-
+		if(!$res["layer"])
+			$res["layer"]                                       = $schema["page"]["/" . $arrSettings_path[0]]["layer"];
+		
         if(!$res["group"])
             $res["group"]                                       = $res["name"];
 
         if(!$skip_locale)
             $res["locale"]                                      = cache_get_locale($res);
 
-        return $res;
+        return $res;        
     }
     
 	function cache_token_write($u, $objToken = null, $type = null) {
@@ -566,7 +485,7 @@
                 $token = $_GET[$token_user];
 				$objToken = cache_token_resolve($token);
 				$objToken["token"] = $token_user . "-" . $objToken["token"];
-				
+
 				$fsToken = cache_token_get_file_token($objToken["public"], $token_user);
 
 				if(is_file($fsToken["file"])) {
@@ -575,7 +494,7 @@
                     cache_token_set_session_cookie($objToken);
                 }
 
-                cache_do_redirect($_SERVER["HTTP_HOST"] . trim(preg_replace('/([?&])'.$token_user.'=[^&]+(&|$)/','$1',$_SERVER["REQUEST_URI"]), "?"));
+				do_redirect($_SERVER["HTTP_HOST"] . trim(preg_replace('/([?&])'.$token_user.'=[^&]+(&|$)/','$1',$_SERVER["REQUEST_URI"]), "?"));
             }
 			
 			
@@ -719,8 +638,8 @@
                 } else {
                 	cache_token_destroy_session_cookie(SESSION_NAME);
                 }
-            } 
-            
+            }
+
             if(!count($user_permission)) {
 	            $user_permission = cache_create_session_by_token();
             }
@@ -770,10 +689,10 @@
 
         return $arrLocale;
     }
-
+      
     function cache_get_locale(&$page, $domain_name = null) {
         static $localeLoaded = null;
-
+        
         if($localeLoaded) {
             $locale = $localeLoaded;
         } else {
@@ -800,17 +719,17 @@
             //recupero della lingua dal nome dominio del sito es: .it .ru
             if(!$lang && $domain_name !== false)
             {
-                if($domain_name === null)
-                {
-                    if(strpos(strtolower($_SERVER["HTTP_HOST"]), "www.") === 0) {
-                        $domain_name = substr($_SERVER["HTTP_HOST"], strpos($_SERVER["HTTP_HOST"], ".") + 1);
-                    } else {
-                        $domain_name = $_SERVER["HTTP_HOST"];
-                    }
+            	if($domain_name === null)
+            	{
+	                if(strpos(strtolower($_SERVER["HTTP_HOST"]), "www.") === 0) {
+	                    $domain_name = substr($_SERVER["HTTP_HOST"], strpos($_SERVER["HTTP_HOST"], ".") + 1);    
+	                } else {
+	                    $domain_name = $_SERVER["HTTP_HOST"];
+	                }
 
                     if(strpos($domain_name, ":") !== false)
                         $domain_name = substr($domain_name, 0, strpos($domain_name, ":"));
-                }
+	            }
                 //$arrState = cache_get_state_available();
                 $lang = $locale["rev"]["country"][strtolower(substr($domain_name, strrpos($domain_name, ".") + 1))];
             }
@@ -825,7 +744,7 @@
                 $ID_lang = LANGUAGE_DEFAULT_ID;
             }
 
-            if(!defined("LANGUAGE_DEFAULT_TINY"))
+            if(!defined("LANGUAGE_DEFAULT_TINY"))   
                 define("LANGUAGE_DEFAULT_TINY", strtolower(substr(LANGUAGE_DEFAULT, 0, 2)));
 
             if(!defined("FF_LOCALE"))
@@ -833,18 +752,18 @@
                 define("LANGUAGE_INSET_TINY", strtolower(substr($lang, 0, 2)));
                 define("LANGUAGE_INSET", $lang);
                 define("LANGUAGE_INSET_ID", $ID_lang);
-                define("FF_LOCALE", $lang);
-            }
+                define("FF_LOCALE", $lang);        
+            }            
 
             $locale["prefix"] = ($lang == LANGUAGE_DEFAULT
-                ? ""
-                : "/" . $locale["lang"][$lang]["tiny_code"]
-            );
+                                    ? ""
+                                    : "/" . $locale["lang"][$lang]["tiny_code"]
+                                );
             $locale["lang"]["current"] =  $locale["lang"][$lang];
-
+            
             $localeLoaded = $locale;
         }
-
+        
         if($locale["prefix"])
         {
             if($page["user_path"] == $locale["prefix"])
@@ -881,8 +800,8 @@
                 require_once(CACHE_DISK_PATH . "/library/gallery/process/html_page_error.php");
                 
                 $res = get_international_settings_path($page["user_path"], FF_LOCALE);
-
-                cache_do_redirect(normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix));
+                
+				do_redirect(normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix));
                 //cache_send_header_content(null, false, false, false);
                 //header('Location:' . normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix), true, 301);
                 //exit;        
@@ -991,7 +910,7 @@
                         case "utm_term": 
                         case "utm_content": 
                             $res["get"]["gparams"][$req_key] = $req_value;
-                            break;                        
+                            break;
                         case "q": 
                             $res["get"]["search"]["term"] = $req_value;
                             $res["get"]["search"]["params"]["q"] = "q=" . urlencode($req_value);
@@ -1802,7 +1721,7 @@
     }
     function cache_get_path($page, $user_permission = null) {
         $cache_path = false;
-           
+
         if($page["cache"]) {
             if($user_permission === null && $page["session"] !== false)
                 $user_permission = cache_get_session();
@@ -1867,7 +1786,7 @@
             } 
 
             if(strpos($domain_name, ":") !== false)
-            	$domain_name = substr($domain_name, 0, strpos($domain_name, ":")); 
+            	$domain_name = substr($domain_name, 0, strpos($domain_name, ":"));
             
             //cache_get_locale($page["user_path"], $domain_name, $user_permission);
 
@@ -2071,7 +1990,7 @@
                         if(strpos($src, "(") !== false && strpos($action, "$") !== false)
                             $redirect = preg_replace("#" . $src . "#i", $action, $path_info);
 
-                        cache_do_redirect($_SERVER["HTTP_HOST"] . $redirect);
+                        do_redirect($_SERVER["HTTP_HOST"] . $redirect);
                     }
                 }
             }
@@ -2081,10 +2000,8 @@
     }
 
     function check_static_cache_page($save_path = null, $status_code = null) {
-        static $arrSem = array();
+    	static $arrSem = array();
         static $init = false;
-
-        $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
 
         if(!$init) {
 			//clearstatcache(); //nn so
@@ -2154,18 +2071,19 @@
 			}
 			unset($fftmp_requri_parts);
 		}
-		    	
+
+
         if($save_path) {
             $path_info = $save_path;
         } else {
             $path_info = cache_check_allowed_path($_SERVER["PATH_INFO"]);
         }
 
-
         $cache_params = cache_get_path(cache_get_page_properties($path_info));
 		if(is_array($cache_params)) { //da verificare il nocache
-	        $schema = cache_get_settings();
-	        $rule["path"] = $cache_params["user_path"];
+            $schema = cache_get_settings();
+
+            $rule["path"] = $cache_params["user_path"];
 
 	        if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") 
 	            $rule["path"] = $cache_params["strip_path"] . $rule["path"];
@@ -2200,20 +2118,19 @@
 	        } elseif(isset($request["valid"])) { 
 	            $path_info = $_SERVER["PATH_INFO"];
 	            if($path_info == "/index")
-	                $path_info = "";
+	                $path_info = "";           
 
-                cache_do_redirect($_SERVER["HTTP_HOST"] . $path_info . $request["valid"]);
+	            do_redirect($_SERVER["HTTP_HOST"] . $path_info . $request["valid"]);
 	        }
 			//necessario XHR perche le request a servizi esterni path del domain alias non triggerano piu			
 	        if(!$save_path && $cache_params["redirect"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {// Evita pagine duplicate quando i link vengono gestiti dagli alias o altro
-                cache_do_redirect($cache_params["redirect"] . $request["valid"]);
+        		do_redirect($cache_params["redirect"] . $request["valid"]);
 			}
 		}
 
 		//Gestisce gli errori delle pagine provenienti da apachee con errorDocument nell'.htaccess
 		if($cache_params === true) {
 			cache_send_header_content(null, false, false, false);
-
 			if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
                 cache_http_response_code(500);
 			} else {
@@ -2223,7 +2140,7 @@
 				$cache_media["theme"] = "site";
 
 				if(strpos($_SERVER["REQUEST_URI"], $cache_media["url"]) === 0) {
-                    cache_do_redirect(str_replace("/media", $_SERVER["HTTP_HOST"] . "/cm/showfiles.php", $_SERVER["REQUEST_URI"]), 307);
+					do_redirect(str_replace("/media", $_SERVER["HTTP_HOST"] . "/cm/showfiles.php", $_SERVER["REQUEST_URI"]), 307);
 				}
 
                 cache_http_response_code(404);
@@ -2231,9 +2148,8 @@
 
             cache_writeLog(" URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_apache");
 	        exit;
-		} 
- 
-		
+		}  
+
 		if(!$cache_params) {
             if($cache_params === false && !$save_path) {
                  define("DISABLE_CACHE", true);

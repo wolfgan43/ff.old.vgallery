@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<{tag_vgallery} id="{real_father}">
+    <!--BeginSezVGalleryTitle-->
+    <{tag_title}><![CDATA[{name_title}]]></{tag_title}> 
+    <!--EndSezVGalleryTitle-->
+    <!--BeginSezVGallerys-->
+    <!--BeginSezVGallery-->
+    <{tag_vgallery_item}>
+            <!--BeginSezVGalleryImage-->
+            <![CDATA[
+            <!--BeginSezVGalleryImageNode-->
+            {content}
+            <!--EndSezVGalleryImageNode-->
+            ]]>
+            <!--EndSezVGalleryImage-->
+            <!--BeginSezVGalleryDescription-->
+            <!--BeginSezVGalleryDescriptionNode-->
+            {content}
+            <!--EndSezVGalleryDescriptionNode-->
+            <!--EndSezVGalleryDescription-->
+	</{tag_vgallery_item}>
+    <!--EndSezVGallery-->
+    <!--EndSezVGallerys-->
+</{tag_vgallery}>

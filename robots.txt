@@ -3,5 +3,6 @@ Allow: /
 Disallow: /admin/
 Disallow: /restricted/
 Disallow: /manage/
+Disallow: /wiki/
 
 Sitemap: /sitemap.xml

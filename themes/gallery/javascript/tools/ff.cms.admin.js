@@ -1,27 +1,3 @@
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 ff.cms.admin = {};
 ff.cms.admin.type = {};
 
@@ -53,17 +29,17 @@ ff.cms.admin.location = function() {
 };
 
 ff.cms.admin.makeNewUrl = function(target, altUrl, parentValue) {
-    var target = target || "INPUT.title-page:visible:last";
-    var altUrl = altUrl || "INPUT.alt-url:visible:last";
+    var target = target || "INPUT.title-page:last";
+    var altUrl = altUrl || "INPUT.alt-url:last";
 
     if(!parentValue)
-    	if(jQuery("SELECT.parent-page:visible:last").length)
-    		parentValue = jQuery("SELECT.parent-page:visible:last").val() || "/";
+    	if(jQuery("SELECT.parent-page:last").length)
+    		parentValue = jQuery("SELECT.parent-page:last").val() || "/";
     	else
     		parentValue = "";
 
     if(jQuery(target).val()) {
-		ff.load("ff.ffField.slug", function () {
+		ff.pluginLoad("ff.ffField.slug", "/themes/restricted/ff/ffField/widgets/slug/slug.js", function(){
 		    var pre = (parentValue && parentValue != "/" ? "/" : "");
 			var slugName = ff.ffField.slug(target, undefined, pre);
 
@@ -124,8 +100,8 @@ ff.cms.admin.getTypeUrl = function(name, target, obj) { /*getLayoutTypeUrl*/
     } else {
         var relPathBlock = "";
         var targetValue = "";
-        var subUrl = ff.cms.admin.type[name]["url"].replace(/\[value\]/g, "[[" + target + targetValue + "]]");
-        var subResource = ff.cms.admin.type[name]["resource"].replace(/\[value\]/g, "[[" + target + targetValue + "]]");
+        var subUrl = ff.cms.admin.type[name]["url"];
+        var subResource = ff.cms.admin.type[name]["resource"];
 
         if(!parseInt(ff.cms.admin.type[name]["useID"]) > 0) {
                 targetValue = "_TEXT_ENCODE";
@@ -138,7 +114,7 @@ ff.cms.admin.getTypeUrl = function(name, target, obj) { /*getLayoutTypeUrl*/
 
         if(ff.cms.admin.type[name]["add"].length > 0) {
             var tmpDlg = ff.ffPage.dialog.dialog_params.get("actex_dlg_" + target);
-            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["add"].replace(/\[value\]/g, "[[" + target + targetValue + "]]");
+            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["add"];
 
             ff.ffPage.dialog.dialog_params.set("actex_dlg_" + target, tmpDlg);
 
@@ -150,7 +126,7 @@ ff.cms.admin.getTypeUrl = function(name, target, obj) { /*getLayoutTypeUrl*/
         
         if(ff.cms.admin.type[name]["edit"].length > 0) {
             var tmpDlg = ff.ffPage.dialog.dialog_params.get("actex_dlg_edit_" + target);
-            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["edit"].replace(/\[value\]/g, "[[" + target + targetValue + "]]") + (relPathBlock ? relPathBlock + "[[" + target + targetValue + "]]" : "");
+            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["edit"] + relPathBlock + "[[" + target + targetValue + "]]";
 
             ff.ffPage.dialog.dialog_params.set("actex_dlg_edit_" + target, tmpDlg);
             obj.buttonToggle("edit", true);
@@ -160,7 +136,7 @@ ff.cms.admin.getTypeUrl = function(name, target, obj) { /*getLayoutTypeUrl*/
         
         if(ff.cms.admin.type[name]["delete"].length > 0) {
             var tmpDlg = ff.ffPage.dialog.dialog_params.get("actex_dlg_delete_" + target); 
-            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["delete"].replace(/\[value\]/g, "[[" + target + targetValue + "]]").replace(/%5Bvalue%5D/g, "[[" + target + targetValue + "]]").replace("--key--", (relPathBlock ? encodeURIComponent(relPathBlock) + "[[" + target + targetValue + "]]" : "")) + encodeURIComponent((relPathBlock.indexOf("?") >= 0 ? "&" : "?") + "frmAction=" + subResource + "_confirmdelete");
+            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["delete"].replace("--key--", relPathBlock + "[[" + target + targetValue + "]]") + encodeURIComponent((relPathBlock.indexOf("?") >= 0 ? "&" : "?") + "frmAction=" + subResource + "_confirmdelete");
 
             ff.ffPage.dialog.dialog_params.set("actex_dlg_delete_" + target, tmpDlg);
             obj.buttonToggle("delete", true);
@@ -200,7 +176,7 @@ ff.cms.admin.getRemoteData = function(name, srvName, target, obj) { /*getLayoutR
                 ff.ffPage.dialog.dialog_params.set("actex_dlg_" + target, tmpDlg);  
                  
                 jQuery.ajax({
-                    url: ff.site_path + "/api/updater" + srvName + "?out=html&url=" + encodeURIComponent(jQuery("#activecomboex_" + target + "_dialogaddlink a").attr("href"))
+                    url: ff.site_path + "/srv/updater" + srvName + "?out=html&url=" + encodeURIComponent(jQuery("#activecomboex_" + target + "_dialogaddlink a").attr("href"))
                 }).done(function(data) {  
                     if(data) {
                         jQuery("#LayoutModify .general").append(data);
@@ -235,8 +211,8 @@ ff.cms.admin.getBlock = function(name, target, father, obj) { /*getLayoutBlock*/
     } else  {
         var relPathBlock = "";
         var targetValue = "";
-        var subUrl = ff.cms.admin.type[name]["sub"]["url"].replace(/\[father\]/g, father.toLowerCase()).replace(/\[value\]/g, "[[" + target + targetValue + "]]");
-        var subResource = ff.cms.admin.type[name]["sub"]["resource"].replace(/\[father\]/g, father.capitalize()).replace(/\[value\]/g, "[[" + target + targetValue + "]]");
+        var subUrl = ff.cms.admin.type[name]["sub"]["url"].replace("[father]", father.toLowerCase());
+        var subResource = ff.cms.admin.type[name]["sub"]["resource"].replace("[father]", father.capitalize());
 
         if(!parseInt(ff.cms.admin.type[name]["sub"]["useID"]) > 0) {
             targetValue = "_TEXT_ENCODE";
@@ -250,7 +226,7 @@ ff.cms.admin.getBlock = function(name, target, father, obj) { /*getLayoutBlock*/
         
         if(ff.cms.admin.type[name]["sub"]["add"].length > 0) {
             var tmpDlg = ff.ffPage.dialog.dialog_params.get("actex_dlg_" + target);
-            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["sub"]["add"].replace(/\[father\]/g, father.toLowerCase()).replace(/\[value\]/g, "[[" + target + targetValue + "]]");
+            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["sub"]["add"].replace(/\[father\]/g, father.toLowerCase());
                                        
             ff.ffPage.dialog.dialog_params.set("actex_dlg_" + target, tmpDlg);
              obj.buttonToggle("add", true);
@@ -259,8 +235,7 @@ ff.cms.admin.getBlock = function(name, target, father, obj) { /*getLayoutBlock*/
         }
         if(ff.cms.admin.type[name]["sub"]["edit"].length > 0) {
             var tmpDlg = ff.ffPage.dialog.dialog_params.get("actex_dlg_edit_" + target);
-            
-            tmpDlg["url"] = subUrl + ff.cms.admin.type[name]["sub"]["edit"].replace(/\[father\]/g, father.toLowerCase()).replace(/\[value\]/g, "[[" + target + targetValue + "]]") + (relPathBlock ? relPathBlock + "[[" + target + targetValue + "_ENCODE]]" : "");
+            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["sub"]["edit"].replace(/\[father\]/g, father.toLowerCase()) + relPathBlock + "[[" + target + targetValue + "]]";
             ff.ffPage.dialog.dialog_params.set("actex_dlg_edit_" + target, tmpDlg);
              obj.buttonToggle("edit", true);
         } else {
@@ -269,7 +244,7 @@ ff.cms.admin.getBlock = function(name, target, father, obj) { /*getLayoutBlock*/
         
         if(ff.cms.admin.type[name]["sub"]["delete"].length > 0) {
             var tmpDlg = ff.ffPage.dialog.dialog_params.get("actex_dlg_delete_" + target);
-            tmpDlg["url"] = subUrl + ff.cms.admin.type[name]["sub"]["delete"].replace(/\[father\]/g, father.toLowerCase()).replace(/%5Bfather%5D/g, father.toLowerCase()).replace(/\[value\]/g, father.toLowerCase()).replace(/%5Bvalue%5D/g, "[[" + target + targetValue + "]]").replace("--key--", (relPathBlock ? relPathBlock + "[[" + target + targetValue + "]]" : "")) + encodeURIComponent((relPathBlock.indexOf("?") >= 0 ? "&" : "?") + "frmAction=" + subResource + "_confirmdelete");
+            tmpDlg["url"] = subUrl + "/" + ff.cms.admin.type[name]["sub"]["delete"].replace(/\[father\]/g, father.toLowerCase()).replace(/-father-/g, father.toLowerCase()).replace("--key--", relPathBlock + "[[" + target + targetValue + "]]") + encodeURIComponent((relPathBlock.indexOf("?") >= 0 ? "&" : "?") + "frmAction=" + subResource + "_confirmdelete");
 
             ff.ffPage.dialog.dialog_params.set("actex_dlg_delete_" + target, tmpDlg);
             obj.buttonToggle("delete", true);
@@ -310,8 +285,8 @@ ff.cms.admin.setNameByBlock = function(blockUpdate, tblsrc, item, subitem, tblsr
 
         if(subitem.length && subitem != "") {
             labelSubItem = subitem;
-            if(labelSubItem == i18nLabel["subitem"]) {
-                labelSubItem = "";
+            if(labelSubItem == "/") {
+                labelSubItem = i18nLabel["subitem"];
             } else {
                 labelSubItem = labelSubItem.replace("/", "");
             }
@@ -324,17 +299,18 @@ ff.cms.admin.setNameByBlock = function(blockUpdate, tblsrc, item, subitem, tblsr
             }
         
         }
-        if(labelItem.length > 0 || labelSubItem.length > 0) {
+		if(labelItem.length > 0 || labelSubItem.length > 0) {
             jQuery("#LayoutModify_name").val(labelItem + (labelSubItem.length > 0 ? " (" + labelSubItem + ")" : ""));
-            if(!jQuery("#LayoutModify_smart_url").val())
+            if(jQuery("#LayoutModify_smart_url").hasClass("slug"))
             	jQuery("#LayoutModify_smart_url").val(ff.slug(jQuery("#LayoutModify_name").val()));
         } else if(labelTblsrc.length > 0) {
             jQuery("#LayoutModify_name").val(labelTblsrc);
-            if(!jQuery("#LayoutModify_smart_url").val())
+            if(jQuery("#LayoutModify_smart_url").hasClass("slug"))
             	jQuery("#LayoutModify_smart_url").val(ff.slug(jQuery("#LayoutModify_name").val()));
         } else {
             jQuery("#LayoutModify_name").val("");
-            jQuery("#LayoutModify_smart_url").val("");
+            if(jQuery("#LayoutModify_smart_url").hasClass("slug"))
+            	jQuery("#LayoutModify_smart_url").val("");
         }
 
         if(jQuery("#LayoutModify_name").val()) {
@@ -345,7 +321,7 @@ ff.cms.admin.setNameByBlock = function(blockUpdate, tblsrc, item, subitem, tblsr
                 jQuery("#LayoutModify_name_label").parent().show();
                 jQuery("#LayoutModify_name_label").text(jQuery("#LayoutModify_name").val());
             }
-        }				
+        }
     }
 	
     if(adminBarH1.length > 0 ) {
@@ -489,39 +465,3 @@ ff.cms.admin.checkFieldTypeGridSystem = function(elem) {
 			jQuery(elem).closest("FIELDSET").find("DIV.fluid-dep").fadeIn();
 	}
 }
-
-ff.cms.admin.translate = function(what, fromlang, tolang, callback) {
-    $.ajax({
-        url: "http://api.mymemory.translated.net/get?q=" + what + "&langpair=" + fromlang + "|" + tolang,
-        success: function(data) {
-        	if(callback)
-            	callback($(data)[0].responseData.translatedText);
-        }
-    });
-}
-
-ff.cms.admin.checkiFrame = function(iFrame, title) {
-	if(!title)
-		title = "Installation Complete.";
-
-	jQuery(iFrame).css({
-		"width" : "100%"
-		, "min-height": "600px"
-	}).show();
-	//jQuery(iFrame).parent().children(".installer").remove();
-
-	
-/*
-	try {
-	console.log(iFrame.contentDocument);
-		if (!iFrame.contentDocument.location) {
-		  //  jQuery(iFrame).hide().before('<div class="installer"><h1>' + title + '<a style="disp	lay:block;" target="_blank" href="' + jQuery(iFrame).attr("src") + '">Go to Site</a></h1></div>');
-		}
-	}
-	catch(err) {
-	console.log(err);	
-	  //  jQuery(iFrame).hide().before('<div class="installer"><h1>' + title + '<a style="display:block;" target="_blank" href="' + jQuery(iFrame).attr("src") + '">Go to Site</a></h1></div>');
-	}	
-*/
-}
-

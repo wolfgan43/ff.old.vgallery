@@ -4,7 +4,7 @@ ff.cms.fn.colorbox = function(targetid) {
 		targetid = targetid + " ";
 
 	if(jQuery(targetid + ".colorbox").length > 0) {
-		ff.load("jquery.plugins.colorbox", function() {	
+		ff.pluginLoad("jquery.colorbox", "/themes/library/plugins/jquery.colorbox/jquery.colorbox.js", function() {	
 			jQuery(targetid + "a.colorbox").attr("rel", "colorbox[gallery]");
 				if(jQuery("a.middlegallery").length > 0) {
 		        jQuery("a.middlegallery img").each(function() {
@@ -76,6 +76,6 @@ ff.cms.fn.colorbox = function(targetid) {
 					fixed: false,
 					data: undefined
 				});
-		});
+		}, true);
 	}
 };

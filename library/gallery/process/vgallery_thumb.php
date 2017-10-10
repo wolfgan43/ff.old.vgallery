@@ -332,7 +332,6 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	    if (is_array($vg)) 
 	    {
 		    $count_files = 0;
-            $count_field_per_row_empty = 0;
 
 	        $switch_style_row = false;
 	        $switch_style_col = false;
@@ -498,13 +497,15 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                $popup = process_vgallery_admin_popup($vg_father, $vg_data_value, $layout);
 					if(is_array($popup)) 
 					{
-						if(check_function("set_template_var"))
-							$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
-
-	                    //$serial_popup = json_encode($popup);
-	                    //$item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-
-                    	$item_class["admin"] = "admin-bar";
+	                    //if(strlen($block["admin"]["popup"])) {
+	                        $serial_popup = json_encode($popup);
+	                        
+	                        $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+                    		$item_class["admin"] = "admin-bar";
+                    		
+	                    //} elseif(check_function("process_admin_menu")) {
+	                    //    $tpl_data["obj"]->set_var("admin", process_admin_menu($popup["admin"], "popup"));
+	                    //}
 	                }                  
 
 					if($father_settings["AREA_VGALLERY_THUMB_EQUALIZER"])
@@ -574,22 +575,22 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                    }
 	                }
 
-                    if($vg_father["is_custom_template"]) {
-                        parse_vgallery_tpl_custom_vars(
-                            $tpl_data["obj"]
+	                if($vg_father["is_custom_template"]) {
+	                    parse_vgallery_tpl_custom_vars(
+	                        $tpl_data["obj"]
                             , $params_fields
                             , $vg_father["unic_id"] . "-" . $vg_data_value["name"]
                             , $item_class
                             , $item_properties
                         );
 
-                        $tpl_data["obj"]->parse("Item", true);
-                    } else {
-                        $tpl_data["obj"]->set_var("real_name", preg_replace('/[^a-zA-Z0-9]/', '', $vg_father["unic_id"] . $vg_data_value["name"]));
-                        if(is_array($item_class) && count($item_class))
-                            $item_properties["class"] = 'class="' . implode(" ",array_filter($item_class)) . '"';
+	                    $tpl_data["obj"]->parse("Item", true);
+	                } else {
+	                    $tpl_data["obj"]->set_var("real_name", preg_replace('/[^a-zA-Z0-9]/', '', $vg_father["unic_id"] . $vg_data_value["name"]));
+	                    if(is_array($item_class) && count($item_class))
+                    		$item_properties["class"] = 'class="' . implode(" ",array_filter($item_class)) . '"';
 
-                        $tpl_data["obj"]->set_var("item_properties", " " . implode(" ", array_filter($item_properties)));
+	                    $tpl_data["obj"]->set_var("item_properties", " " . implode(" ", array_filter($item_properties)));
 		                if($count["total_img"]) {
 		                    if($count["total_desc"]) {
 		                         if($vg_father["template"]["field"]["desc"]) {
@@ -957,6 +958,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 							$tpl_data["obj"]->set_var("PageNavigator", $nav["hidden"] . $nav["bottom"]);
 							$tpl_data["obj"]->parse("SezPageNavigatorBottom", false);
 						}
+						
 
 	                    /**
 	                    * Parse VGallery
@@ -1005,15 +1007,16 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
                 return;
             }
         } else {
-			if($vg_father["seo"]["mode"] == "thumb")
+            if($vg_father["seo"]["mode"] == "thumb")
         		$globals->navigation["tot_page"] = $vg_father["navigation"]["tot_page"];
+
 //print_r($vg_father["search"]);
         	if($vg_father["search"]["encoded_params"]) {
         		$globals->user_path_params = "?" . $vg_father["search"]["encoded_params"];
 			}
 
         	if($father_settings["AREA_VGALLERY_THUMB_SHOW_FILTER_AZ"] || $father_settings["AREA_VGALLERY_THUMB_FULLCLICK"])
-        		$cm->oPage->tplAddJs("ff.cms.vgallery");
+        		setJsRequest("ff.cms.vgallery", "tools");
 
 			//Set JS Plugin
 		    setJsRequest($arrJsRequest);
@@ -1042,10 +1045,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 
     if($params["output"]) {
     	$res = array("nodes" => $arrKeyNode
-    					, "pre" => $block["tpl"]["header"]
-    					, "post" => $block["tpl"]["footer"]
-    					, "content" => $buffer
-                        , "default" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+                        , "content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
                         , "params" => $vg_father["request_params"]
                         , "js_request" => array_keys($arrJsRequest)
                     );
@@ -1055,11 +1055,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
         else
         	return $res[$params["output"]]; 
     } else {
-	    return array(
-			"pre" 			=> $block["tpl"]["header"]
-			, "post" 		=> $block["tpl"]["footer"]
-			, "content" 	=> $buffer
-			, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-		);
+        return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
     }
 }
+?>

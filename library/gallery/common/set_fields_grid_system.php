@@ -26,17 +26,26 @@
 	function set_fields_grid_system(&$component, $params = null, $framework_css = null) {
 		$cm = cm::getInstance();
 		 
+		static $js;
 		static $event_loaded = null;
 		
 		$enable_slider = is_subclass_of($component, "ffRecord_base");
 		$group_class = ($params["group"] ? $params["group"] : null);
 
         if($framework_css === null) {
-        	$framework_css = cm_getFrameworkCss();
+            $db = ffDB_Sql::factory();
+
+            $sSQL = "SELECT cm_layout.* 
+                    FROM cm_layout 
+                    WHERE cm_layout.path = " . $db->toSql("/");
+            $db->query($sSQL);
+            if($db->nextRecord()) {
+                $framework_css = cm_getFrameworkCss($db->getField("framework_css", "Text", true));
+            }         
         }
                 
-	    $framework_css_name = $framework_css["name"];
-		if($framework_css_name)
+	    $template_framework = $framework_css["name"];
+		if($template_framework)
 		{
 			$wrap_columns = null;
 			if($params === null || !isset($params["fluid"]) || $params["fluid"]) {
@@ -48,10 +57,10 @@
 		            		if($params["class"] === false)
 		            			$wrap_columns = array(6,6,6,6);
 		            	} else {
-				            if($framework_css_name == "bootstrap") {
+				            if($template_framework == "bootstrap") {
 				                $fluid_columns = array(4,4,4,4);
 				                $grid_columns = array(2,2,2,2);     
-							} elseif($framework_css_name == "foundation") {
+							} elseif($template_framework == "foundation") {
 								$fluid_columns = array(3,3,3);
 				                $grid_columns = array(3,3,3);
 							} else {
@@ -95,9 +104,9 @@
 				}		
 
 				if($grid_columns === false) {
-					if($framework_css_name == "bootstrap") {
+					if($template_framework == "bootstrap") {
 		                $grid_columns = array(3,3,3,3);     
-					} elseif($framework_css_name == "foundation") {
+					} elseif($template_framework == "foundation") {
 		                $grid_columns = array(4,4,4);
 					} else {
 		                $grid_columns = null;
@@ -133,7 +142,7 @@
 					$oField = ffField::factory($cm->oPage);
 					$oField->id = ($prefix_grid == "grid" ? "default_" : "") . $prefix_grid;
 					$oField->container_class = "col-dep";
-					$oField->label = ffTemplate::_get_word_by_code("grid_" . $framework_css_name . "_default_grid");
+					$oField->label = ffTemplate::_get_word_by_code("grid_" . $template_framework . "_default_grid");
 					$oField->base_type = "Number";
 					$oField->min_val = "0";
 					$oField->max_val = "12";
@@ -158,12 +167,12 @@
 	                $oField->default_value = new ffData($default_value, "Number");
 					$component->addContent($oField, $group_class);
 
-					if($framework_css_name == "bootstrap" || $framework_css_name == "foundation") 
+					if($template_framework == "bootstrap" || $template_framework == "foundation") 
 					{
 						$oField = ffField::factory($cm->oPage);
 						$oField->id = $prefix_grid . "_md";
 						$oField->container_class = "col-dep";
-						$oField->label = ffTemplate::_get_word_by_code("grid_" . $framework_css_name . "_grid_md");
+						$oField->label = ffTemplate::_get_word_by_code("grid_" . $template_framework . "_grid_md");
 						$oField->base_type = "Number";
 						$oField->min_val = "0";
 						$oField->max_val = "12";
@@ -191,7 +200,7 @@
 						$oField = ffField::factory($cm->oPage);
 						$oField->id = $prefix_grid . "_sm";
 						$oField->container_class = "col-dep";
-						$oField->label = ffTemplate::_get_word_by_code("grid_" . $framework_css_name . "_grid_sm");
+						$oField->label = ffTemplate::_get_word_by_code("grid_" . $template_framework . "_grid_sm");
 						$oField->base_type = "Number";
 						$oField->min_val = "0";
 						$oField->max_val = "12";
@@ -216,12 +225,12 @@
 	                    $oField->default_value = new ffData($default_value, "Number");
 	                    $component->addContent($oField, $group_class);
 						
-						if($framework_css_name == "bootstrap")
+						if($template_framework == "bootstrap")
 						{
 							$oField = ffField::factory($cm->oPage);
 							$oField->id = $prefix_grid . "_xs";
 							$oField->container_class = "col-dep";
-							$oField->label = ffTemplate::_get_word_by_code("grid_" . $framework_css_name . "_grid_xs");
+							$oField->label = ffTemplate::_get_word_by_code("grid_" . $template_framework . "_grid_xs");
 							$oField->base_type = "Number";
 							$oField->min_val = "0";
 							$oField->max_val = "12";
@@ -337,9 +346,9 @@
             
             if($params["extra"]) 
             {
-				if($framework_css_name == "bootstrap") {
+				if($template_framework == "bootstrap") {
 	                $extra_columns = array(3,3,3,3);     
-				} elseif($framework_css_name == "foundation") {
+				} elseif($template_framework == "foundation") {
 	                $extra_columns = array(4,4,4);
 				} else {
 	                $extra_columns = null;
@@ -427,11 +436,12 @@
                 $oField->container_class = "dep-container-grid" . $extra_class;
 				$oField->setWidthComponent(6);
                 $oField->default_value = new ffData($params["extra"]["class_left"]);
-                $component->addContent($oField, $group_class);                 
+                $component->addContent($oField, $group_class);           
+                
                 
                 $oField = ffField::factory($cm->oPage);
                 $oField->id = ($prefix_extra == "extra" ? "default_" : "") . $prefix_extra;                
-                $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_default_grid");
+                $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_default_grid");
                 $oField->container_class = "dep-container-grid" . $extra_class;
                 $oField->base_type = "Number";
                 $oField->min_val = "0";
@@ -457,11 +467,11 @@
                 $oField->default_value = new ffData($default_value, "Number");
                 $component->addContent($oField, $group_class);
 
-                if($framework_css_name == "bootstrap" || $framework_css_name == "foundation") 
+                if($template_framework == "bootstrap" || $template_framework == "foundation") 
                 {
                     $oField = ffField::factory($cm->oPage);
                     $oField->id = $prefix_extra . "_md";
-                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_grid_md");
+                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_grid_md");
                     $oField->container_class = "dep-container-grid" . $extra_class;
                     $oField->base_type = "Number";
                     $oField->min_val = "0";
@@ -489,7 +499,7 @@
 
                     $oField = ffField::factory($cm->oPage);
                     $oField->id = $prefix_extra . "_sm";
-                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_grid_sm");
+                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_grid_sm");
                     $oField->container_class = "dep-container-grid" . $extra_class;
                     $oField->base_type = "Number";
                     $oField->min_val = "0";
@@ -515,11 +525,11 @@
                     $oField->default_value = new ffData($default_value, "Number");
                     $component->addContent($oField, $group_class);
                     
-                    if($framework_css_name == "bootstrap")
+                    if($template_framework == "bootstrap")
                     {
                         $oField = ffField::factory($cm->oPage);
                         $oField->id = $prefix_extra . "_xs";
-                        $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_grid_xs");
+                        $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_grid_xs");
                         $oField->container_class = "dep-container-grid" . $extra_class;
                         $oField->base_type = "Number";
                         $oField->min_val = "0";
@@ -550,9 +560,9 @@
             
 			if(isset($params["image"])) 
             {
-				if($framework_css_name == "bootstrap") {
+				if($template_framework == "bootstrap") {
 	                $image_columns = array(3,3,3,3);     
-				} elseif($framework_css_name == "foundation") {
+				} elseif($template_framework == "foundation") {
 	                $image_columns = array(4,4,4);
 				} else {
 	                $image_columns = array(4);
@@ -573,7 +583,7 @@
 											FROM " . CM_TABLE_PREFIX . "showfiles_modes 
 											ORDER BY name";
 	            if(!$params["image"]["dialog_url"])
-	            	$params["image"]["dialog_url"] = get_path_by_rule("utility") . "/image/modify";
+	            	$params["image"]["dialog_url"] = $cm->oPage->site_path . VG_SITE_ADMINGALLERY . "/layout/extras/image/modify";
 	            if(!$params["image"]["dialog_edit_params"])
 	            	$params["image"]["dialog_edit_params"] =  array("keys[ID]" => null);
 	            if(!$params["image"]["dialog_delete_url"])
@@ -583,7 +593,7 @@
 						            	
                 $oField = ffField::factory($cm->oPage);
                 $oField->id = $prefix_image;                
-                $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_default_image");
+                $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_default_image");
                 $oField->base_type = "Number";
 				$oField->widget = "actex";
 			    $oField->actex_update_from_db 		= !$params["image"]["multi_pairs"];
@@ -605,11 +615,11 @@
                 $oField->setWidthComponent($image_columns);
                 $component->addContent($oField, $group_class);
 
-                if($framework_css_name == "bootstrap" || $framework_css_name == "foundation") 
+                if($template_framework == "bootstrap" || $template_framework == "foundation") 
                 {
                     $oField = ffField::factory($cm->oPage);
                     $oField->id = $prefix_image . "_md";
-                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_image_md");
+                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_image_md");
                     $oField->base_type = "Number";
 					$oField->widget = "actex";
 				    $oField->actex_update_from_db 		= !$params["image"]["multi_pairs"];
@@ -633,7 +643,7 @@
 
                     $oField = ffField::factory($cm->oPage);
                     $oField->id = $prefix_image . "_sm";
-                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_image_sm");
+                    $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_image_sm");
                     $oField->base_type = "Number";
 					$oField->widget = "actex";
 				    $oField->actex_update_from_db 		= !$params["image"]["multi_pairs"];
@@ -655,11 +665,11 @@
                     $oField->setWidthComponent($image_columns);
                     $component->addContent($oField, $group_class);
                     
-                    if($framework_css_name == "bootstrap")
+                    if($template_framework == "bootstrap")
                     {
                         $oField = ffField::factory($cm->oPage);
                         $oField->id = $prefix_image . "_xs";
-                        $oField->label = ffTemplate::_get_word_by_code("extra_" . $framework_css_name . "_image_xs");
+                        $oField->label = ffTemplate::_get_word_by_code("extra_" . $template_framework . "_image_xs");
                         $oField->base_type = "Number";
 						$oField->widget = "actex";
 					    $oField->actex_update_from_db 		= !$params["image"]["multi_pairs"];
@@ -715,8 +725,19 @@
 			}
         	$event_loaded = true;
 		}
-		
-		$cm->oPage->tplAddJs("ff.cms.admin.field-gridsystem");
+		if(!$js) {
+			$js = '$(function() {
+							ff.pluginLoad("ff.cms.admin", "' . FF_THEME_DIR . "/" . THEME_INSET . '/javascript/tools/ff.cms.admin.js", function() {
+								var container = jQuery(\'.dep-container-grid INPUT[type="hidden"][value!="0"]\').closest("fieldset");
+								jQuery(container).each(function() {
+									//jQuery(this).find(".check-container-grid INPUT").click();
+								});
+								
+								jQuery(".fluid-def SELECT").change(); 
+							});
+						});';
+			$cm->oPage->tplAddJs(null,null,null, false, $cm->isXHR(), $js);
+		}
 		
 		return null;
 	}

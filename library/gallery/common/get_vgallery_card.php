@@ -194,8 +194,8 @@
   								<div class="' . cm_getClassByDef($framework_css["desc" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
   							: '<div class="' . cm_getClassByDef($framework_css["desconly" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
   						) . '
-  							' . str_replace(array(" - "), array("<br />"), $desc) . $isbn . '
-  						</div>'
+  							' .  str_replace(array(" - "), array("<br />"), $desc) . $isbn . '
+  						</div>' 
   						. ($icons
   							? '<span class="vg-card-icons">' . $icons . '</span>'
   							: ""

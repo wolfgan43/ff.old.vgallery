@@ -4,7 +4,7 @@ ff.cms.fn.nivoslider = function(targetid) {
 		targetid = targetid + " ";
 	
 	if(jQuery(targetid + '.nivoslider').length > 0) {
-		ff.load("jquery.plugins.nivoslider", function() {	
+		ff.pluginLoad("jquery.fn.nivoSlider", "/themes/library/plugins/jquery.nivoslider/jquery.nivoslider.js", function() {	
 			jQuery(targetid + '.nivoslider').closest("DIV").nivoSlider ({
 		        effect:'random', /*Specify sets like: 'fold,fade,sliceDown' */
 		        slices:15,
@@ -28,6 +28,6 @@ ff.cms.fn.nivoslider = function(targetid) {
 		        lastSlide: function(){}, /*Triggers when last slide is shown */
 		        afterLoad: function(){} /*Triggers when slider has loaded */
 		    });
-		});
+		}, true);
 	}
 };

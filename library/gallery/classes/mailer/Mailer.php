@@ -23,7 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-require_once(__DIR__ . "/../vgCommon.php");
+if(!defined("FF_PHP_EXT"))
+    define("FF_PHP_EXT", "php");
+
+require_once(__DIR__ . "/../vgCommon." . FF_PHP_EXT);
 
 class Mailer extends vgCommon
 {
@@ -61,9 +64,9 @@ class Mailer extends vgCommon
     //body
     protected $prefix                   = array(
         "subject"                       => null
-    , "group"                       => null
-    , "label"                       => null
-    , "field"                       => null
+        , "group"                       => null
+        , "label"                       => null
+        , "field"                       => null
     );
     protected $pre                      = null;
     protected $post                     = null;
@@ -184,18 +187,6 @@ class Mailer extends vgCommon
         $this->loadControllers(__DIR__);
     }
 
-    /**
-     * @param $message
-     * @param null $to
-     * @param null $from
-     * @param null $cc
-     * @param null $bcc
-     * @param null $subject
-     * @param null $actions
-     * @param null $attach
-     * @param null $settings
-     * @return array|null
-     */
     public function send($message, $to = null, $from = null, $cc = null, $bcc = null, $subject = null, $actions = null, $attach = null, $settings = null)
     {
         $this->clearResult($from);
@@ -568,7 +559,7 @@ class Mailer extends vgCommon
     }
     private function loadConfig($service = "email")
     {
-        require_once($this->getAbsPathPHP("/storage/Storage", true));
+        require_once($this->getAbsPath("/storage/Storage." . FF_PHP_EXT, true));
 
         $connectors = $this->controllers[$service]["storage"];
         foreach($connectors AS $type => $data)
@@ -695,16 +686,16 @@ class Mailer extends vgCommon
 
         if($service)
         {
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmailer"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmaileroauth"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmaileroauthgoogle"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.smtp"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.pop3"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/extras/EasyPeasyICS"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/extras/ntlm_sasl_client"));
+            require_once($this->getAbsPath("/library/phpmailer/class.phpmailer." . FF_PHP_EXT));
+            require_once($this->getAbsPath("/library/phpmailer/class.phpmaileroauth." . FF_PHP_EXT));
+            require_once($this->getAbsPath("/library/phpmailer/class.phpmaileroauthgoogle." . FF_PHP_EXT));
+            require_once($this->getAbsPath("/library/phpmailer/class.smtp." . FF_PHP_EXT));
+            require_once($this->getAbsPath("/library/phpmailer/class.pop3." . FF_PHP_EXT));
+            require_once($this->getAbsPath("/library/phpmailer/extras/EasyPeasyICS." . FF_PHP_EXT));
+            require_once($this->getAbsPath("/library/phpmailer/extras/ntlm_sasl_client." . FF_PHP_EXT));
 
             $controller                                                 = "mailer" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/mailer/services/" . $type . "_" . $service, true));
+            require_once($this->getAbsPath("/mailer/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
 
             $driver                                                     = new $controller($this);
 

@@ -39,7 +39,7 @@ class storageMongodb {
         $this->setData($data);
 
         if (!class_exists("ffDB_MongoDB"))
-            require_once($storage->getAbsPathPHP("/ff/classes/ffDB_Mongo/ffDb_MongoDB"));
+            require_once($storage->getAbsPath("/ff/classes/ffDB_Mongo/ffDb_MongoDB.php"));
 
         $this->device = new ffDB_MongoDB();
         $this->device->on_error = "ignore";
@@ -67,9 +67,9 @@ class storageMongodb {
 
         if (!$this->config["name"])
         {
-            if (is_file($this->storage->getAbsPathPHP("/conf/gallery/config/db")))
+            if (is_file($this->storage->getAbsPath("/conf/gallery/config/db." . FF_PHP_EXT)))
             {
-                require_once($this->storage->getAbsPathPHP("/conf/gallery/config/db"));
+                require_once($this->storage->getAbsPath("/conf/gallery/config/db." . FF_PHP_EXT));
 
                 $this->config["host"] = (defined("FF_NOSQL_HOST")
                     ? FF_NOSQL_HOST

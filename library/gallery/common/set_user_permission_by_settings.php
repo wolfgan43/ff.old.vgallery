@@ -317,10 +317,10 @@ function set_user_permission_by_settings($ID_user, $status = true, $skip_redirec
 
 function user_to_anagraph($ID) {
     $db = ffDB_Sql::factory();
-   
+    
     if(check_function("analytics"))
         analytics_set_event('/registrazione/social-registration', "Social registration");
-
+    
     $field_composite = array(
         "smart_url" => array("username_slug")
         , "parent" => array("/")

@@ -26,8 +26,12 @@
 
 
     check_function("Notifier");
+check_function("Mailer");
 
-   
+   $mail = Mailer::getInstance("account registration");
+   echo $mail->send("asd", "wolfgan@gmail.com");
+
+
     $notifier = Notifier::getInstance();
     $notifier->setFields(array(
        "users" => "ID_dest"
@@ -35,9 +39,9 @@
        , "service" => "reader"         
        , "schedule" => "time_from" 
     ));
-    $res = $notifier->send("ci55555ao", array(22,22,22));
+    $res = $notifier->sendMail("ci55555ao", array(22,22,22));
     print_R($res);
-
+    
     /*$res = $notifier->read(array(
         "users" => array(22,22,22)
         , "expire" => "0"

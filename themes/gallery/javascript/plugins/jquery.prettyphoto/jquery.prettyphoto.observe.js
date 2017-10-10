@@ -5,7 +5,7 @@ ff.cms.fn.prettyphoto = function(targetid) {
 
 	if(jQuery(targetid + ".prettyphoto").length > 0) {
 		/*css */
-		ff.load("jquery.plugins.prettyphoto", function() {	
+		ff.pluginLoad("jquery.prettyPhoto", "/themes/library/plugins/jquery.prettyphoto/jquery.prettyphoto.js", function() {	
 			
 		    if(jQuery("a.middlegallery").length > 0) {
 		        jQuery("a.middlegallery img").each(function() {
@@ -54,6 +54,6 @@ ff.cms.fn.prettyphoto = function(targetid) {
             inline_markup: '<div class="pp_inline">{content}</div>',
             custom_markup: "",
             social_tools: '<div class="twitter"><a href="http://twitter.com/share" class="twitter-share-button" data-count="none">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script></div><div class="facebook"><iframe src="//www.facebook.com/plugins/like.php?locale=en_US&href={location_href}&layout=button_count&show_faces=true&width=500&action=like&font&colorscheme=light&height=23" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px; height:23px;" allowTransparency="true"></iframe></div>'});
-		});
+		}, true);
 	}
 };

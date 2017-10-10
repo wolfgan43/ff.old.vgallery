@@ -2,13 +2,13 @@
     font-family: galleryicon;
     src: url(../font/galleryicon3.ttf);
 }
-/*
+
 .fa { 
 	font-family: inherit !important;
 	font-style: inherit !important;
 	font-weight: inherit !important;
 	
-	 line-height:inherit;
+	 /*line-height:inherit;*/ /* problematica quando replico template di terzi */
 }
 
 
@@ -19,17 +19,28 @@
 
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-}*/
+}
+
+.fa-transparent, vg-transparent { 
+	opacity:0.5 !important;
+}
 
 
+.fa-6x { font-size:6em; }
+.fa-7x { font-size:7em; }
+.fa-8x { font-size:8em; }
+.fa-9x { font-size:9em; }
+.fa-10x { font-size:10em; }
+.fa-11x { font-size:11em; }
+.fa-12x { font-size:12em; }
 
 /* color class */
-/*
+
 .vg-active { color:#cacaca; }
 .vg-success { color:#75d726}
 .vg-info { color:#1d73f7; }
 .vg-warning { color:#f6c327; }
-.vg-danger { color:#dd4330; }*/
+.vg-danger { color:#dd4330; }
 
 /*
 .vg-content,

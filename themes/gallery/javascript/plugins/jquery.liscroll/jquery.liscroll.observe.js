@@ -4,9 +4,9 @@ ff.cms.fn.liscroll = function(targetid) {
 		targetid = targetid + " ";
 		
     /*css */
-    ff.load("jquery.plugins.liscroll", function() {    
+    ff.pluginLoad("jquery.fn.liScroll", "/themes/library/plugins/jquery.liscroll/jquery.liscroll.js", function() {    
         jQuery(targetid + ".liscroll").closest("ul").liScroll({
             travelocity: 0.07
         }); 
-    });
+    }, true);
 };

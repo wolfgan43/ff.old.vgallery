@@ -4,7 +4,7 @@ ff.cms.fn.kwicks = function(targetid) {
 		targetid = targetid + " ";
 
 	/*css*/
-	ff.load("jquery.plugins.kwicks", function() {	
+	ff.pluginLoad("jquery.fn.kwicks", "/themes/library/plugins/jquery.kwicks/jquery.kwicks.js", function() {	
 		jQuery(targetid + '.kwicks').each(function() {
 			
 			var kwicks_counter = 0;
@@ -23,5 +23,5 @@ ff.cms.fn.kwicks = function(targetid) {
 						spacing : 5
 			});
 		});
-	});
+	}, true);
 };

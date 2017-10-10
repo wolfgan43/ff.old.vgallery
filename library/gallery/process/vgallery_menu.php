@@ -91,8 +91,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
 		$menu_params = get_grid_system_menu($params_menu, $follow_framework);
 
 
-	//$tpl_data["custom"] = $vgallery_name . "_menu.html";
-	$tpl_data["custom"] = $layout["smart_url"] . ".html";		
+	$tpl_data["custom"] = $vgallery_name . "_menu.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
@@ -133,7 +132,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
             $admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
         }
 
-        $admin_menu["sys"]["path"] = $user_path;
+        $admin_menu["sys"]["path"] = $globals->user_path;
         $admin_menu["sys"]["type"] = "admin_toolbar";
     }
 
@@ -259,7 +258,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
 				) . " 
                 ORDER BY (LENGTH(full_path) - LENGTH(REPLACE(full_path, '/', '')))
                     , vgallery_nodes.`order`
-                    , vgallery_nodes.name ";
+                    , vgallery_nodes.ID ";
     $db->query($sSQL);
 	if ($db->nextRecord()) {
 		$menu_item = array();
@@ -339,8 +338,10 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
 				    $file_permission = get_file_permission($full_path, "vgallery_nodes");
 	            if (!check_mod($file_permission, 1, ($enable_multilang_visible ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY)) {  
 	                unset($menu_item[$full_path]);
-
-	                continue;
+	            }
+            } else {
+                if(!$menu_item[$full_path]["visible"]) {
+                    unset($menu_item[$full_path]);
                 }
             }
 			
@@ -434,31 +435,30 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                     $popup["admin"]["extra"] = FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vgallery_name) . "/properties?keys[ID]=" . $home_id . "&type=dir" . "&vname=" . $vgallery_name . "&path=" . urlencode("/" . $vgallery_name . stripslash(ffCommon_dirname($user_path))) . "&extype=vgallery_nodes" . "&layout=" . $layout["ID"];
                 }
                 if(AREA_ECOMMERCE_SHOW_MODIFY && $enable_ecommerce) {
-                    $popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vgallery_name) . "/ecommerce/all?keys[ID]=" . $home_id . "&type=dir" . "&vname=" . $vgallery_name . "&path=" . urlencode("/" . $vgallery_name . stripslash(ffCommon_dirname($user_path))) . "&extype=vgallery_nodes";
+                    $popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vgallery_name) . "/ecommerce/all?keys[ID]=" . $home_id . "&type=dir" . "&vname=" . $vgallery_name . "&path=" . urlencode("/" . $vgallery_name . stripslash(ffCommon_dirname($user_path))) . "&extype=vgallery_nodes";
                 }
                 if(AREA_SETTINGS_SHOW_MODIFY) {
                     $popup["admin"]["setting"] = "";
                 }
                 
-                $popup["sys"]["path"] = $user_path;
+                $popup["sys"]["path"] = $globals->user_path;
                 $popup["sys"]["type"] = "admin_popup";
 
-				if(check_function("set_template_var"))
-					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
-                
-//	            $serial_popup = json_encode($popup);
-//	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-
-	            $item_class["admin"] = "admin-bar";
+				if(strlen($block["admin"]["popup"])) {
+	                $serial_popup = json_encode($popup);
+	                
+	                $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+	                $item_class["admin"] = "admin-bar";
+				}  
             }
 
             $tpl->set_var("home", ffCommon_specialchars("home"));
             if($settings_path == $home_path) { 
-                $item_class["current"] = $menu_params["class"]["current"];
+                $item_class["current"] = $menu_params["params"]["active"];
 			}
 
 	        if($source_user_path) {
-        		$tpl->set_var("show_file", normalize_url_by_current_lang($item["permalink_parent"]));
+        		$tpl->set_var("show_file", FF_SITE_PATH . $item["permalink_parent"]);
 			} else {
 				$tpl->set_var("show_file", "#" . preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . "home"));
 			}
@@ -537,9 +537,9 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
             if(!$layout_settings["AREA_VGALLERY_SHOW_FULLTREE_ITEM"] && !$item["is_dir"]) {
 				continue;
 			}
-			
-            set_cache_data("V", $item["ID"], $item["ID_vgallery"]);
-            //$globals->cache["data_blocks"]["V" . $item["ID_vgallery"] . "-" . $item["ID"]] = $item["ID"];
+
+            set_cache_data("V", $item["ID"]);
+            //$layout["data_blocks"]["V" . $item["ID_vgallery"] . "-" . $item["ID"]] = $item["ID"];
             
             //$tpl->set_var("real_name", ffCommon_specialchars(preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . $item["parent"] . $item["name"])));
             
@@ -565,7 +565,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
 	            $frame["sys"]["settings_path"] = $settings_path;
 	            $serial_frame = json_encode($frame);
 
-	            $tpl->set_var("ajax_child", FF_SITE_PATH . VG_SITE_FRAME . stripslash($item["parent"]) . "/" . $item["name"] . "?sid=" . set_sid($serial_frame));
+	            $tpl->set_var("ajax_child", FF_SITE_PATH . VG_SITE_FRAME . stripslash($item["permalink_parent"]) . "/" . $item["smart_url"] . "?sid=" . set_sid($serial_frame));
 	            $tpl->parse("SezAjaxChild", false);
 			} else {
 				$tpl->set_var("SezAjaxChild", "");
@@ -605,11 +605,45 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
 					) {
                     	$tpl->parse("SezTarget", false);
 					}
+
+/*
+					if (
+						substr($item["alt_url"], 0, 1) != "/"
+					) {
+						$tpl->set_var("show_file", $item["alt_url"]);
+						if(
+							substr(strtolower($item["alt_url"]), 0, 7) == "http://"
+							|| substr(strtolower($item["alt_url"]), 0, 8) == "https://"
+                            || substr($item["alt_url"], 0, 2) == "//"
+						) {
+                    		$tpl->parse("SezTarget", false);
+						} else {
+							$tpl->set_var("SezTarget", "");	
+						}
+					} else {
+						if(strpos($item["alt_url"], "#") !== false) {
+							$part_alternative_hash = substr($item["alt_url"], strpos($item["alt_url"], "#"));
+							$alternative_path = substr($item["alt_url"], 0, strpos($item["alt_url"], "#"));
+						}
+
+						if(strpos($item["alt_url"], "?") !== false) {
+							$part_alternative_path = substr($item["alt_url"], 0, strpos($item["alt_url"], "?"));
+							$part_alternative_url = substr($item["alt_url"], strpos($item["alt_url"], "?"));
+						} else {
+							$part_alternative_path = $item["alt_url"];
+							$part_alternative_url = "";
+						}
+						if(check_function("normalize_url") && check_function("get_international_settings_path")) {
+							$res = get_international_settings_path($part_alternative_path, LANGUAGE_DEFAULT);
+							$tpl->set_var("show_file", normalize_url(FF_SITE_PATH . $res["url"], HIDE_EXT, true, LANGUAGE_INSET) . $part_alternative_url . $part_alternative_hash);
+						}
+					}
+*/
 				} else {                
 					$tpl->set_var("show_file", $item_permalink);
 				}                
             }
-
+			
             if($layout_settings["AREA_VGALLERY_FORCE_EMPTY_LINK"]) {
             	$enable_link = true;
 			} else {
@@ -618,7 +652,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
             if($layout_settings["AREA_VGALLERY_NAME_SHOW_IMAGE"]) {
                 if($enable_link) {
                     if($is_here) {
-                		$item_class["current"] = $menu_params["class"]["current"];
+                		$item_class["current"] = $menu_params["params"]["active"];
 						if($item["ajax"])
 							$item_class["ajax"] = "ajaxcontent";
 
@@ -627,7 +661,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                         $tpl->set_var("SezItemImgNoHere", "");
                     } else {
                         if(strpos($settings_path, stripslash($item["parent"]) . "/" . $item["name"]) !== FALSE) {
-	                        $item_class["current"] = $menu_params["class"]["current"];
+	                        $item_class["current"] = $menu_params["params"]["active"];
                         }
 						if($item["ajax"]) 
 						{
@@ -638,7 +672,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                         $tpl->parse("SezItemImgNoHere", false);
                     }
                     $tpl->set_var("SezItemImgNoLink", "");
-                } else {
+				} else {
                     $tpl->set_var("SezItemImgHere", "");
                     $tpl->set_var("SezItemImgNoHere", "");
                     $tpl->parse("SezItemImgNoLink", false);
@@ -649,7 +683,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
             } else {
                 if($enable_link) {
                     if($is_here) {
-                		$item_class["current"] = $menu_params["class"]["current"];
+                		$item_class["current"] = $menu_params["params"]["active"];
 	                   
 						if($item["ajax"])
 							$item_class["ajax"] = "ajaxcontent";
@@ -659,7 +693,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                         $tpl->set_var("SezItemNoImgNoHere", "");
                     } else {
                         if(strpos($settings_path, stripslash($item["parent"]) . "/" . $item["name"]) !== FALSE) {
-                			$item_class["current"] = $menu_params["class"]["current"];
+                			$item_class["current"] = $menu_params["params"]["active"];
 	                    }
 	                    
 						if($item["ajax"])
@@ -729,39 +763,33 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                     $popup["admin"]["extra"] = FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vgallery_name) . "/properties?keys[ID]=" . $item["ID"] . "&type=" . ($item["is_dir"] ? "dir" : "node") . "&vname=" . $vgallery_name . "&path=" . urlencode($item["parent"]) . "&extype=vgallery_nodes&ret_url=" . "--encodereturl--" . "&layout=" . $layout["ID"]; 
                 }
                 if(AREA_ECOMMERCE_SHOW_MODIFY && $enable_ecommerce) {
-                    $popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vgallery_name) . "/ecommerce/all?keys[ID]=" . $item["ID"] . "&type=" . ($item["is_dir"] ? "dir" : "node") . "&vname=" . $vgallery_name . "&path=" . urlencode($item["parent"]) . "&extype=vgallery_nodes&ret_url=" . "--encodereturl--"; 
+                    $popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vgallery_name) . "/ecommerce/all?keys[ID]=" . $item["ID"] . "&type=" . ($item["is_dir"] ? "dir" : "node") . "&vname=" . $vgallery_name . "&path=" . urlencode($item["parent"]) . "&extype=vgallery_nodes&ret_url=" . "--encodereturl--"; 
                 }
                 if(AREA_SETTINGS_SHOW_MODIFY) {
                     $popup["admin"]["setting"] = "";
                 }
 
-                $popup["sys"]["path"] = $user_path;
+                $popup["sys"]["path"] = $globals->user_path;
                 $popup["sys"]["type"] = "admin_popup";
 
-				if(check_function("set_template_var"))
-					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
-					                
-//	            $serial_popup = json_encode($popup);
-//	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-
-	            $item_class["admin"] = "admin-bar";
+				if(strlen($block["admin"]["popup"])) {
+	                $serial_popup = json_encode($popup);
+	                
+	                $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+	                $item_class["admin"] = "admin-bar";
+				}  
             } 
 
             if(1 || $enable_link) {
             	if(check_function("process_vgallery_menu_array_child"))
                 	$child = process_vgallery_menu_array_child($menu_item, stripslash($item["parent"]) . "/" . $item["name"], $source_user_path, $vgallery_name, $layout, 2, $enable_ecommerce, $limit_level);
-
-                if(strlen($child) && $menu_params["icon"]) {
-                    $tpl->set_var("caret_class", $menu_params["icon"]);
-                    $tpl->parse("SezCaret", false);
-                }
 			}
 
             $tpl->set_var("child", $child);
             if(strlen($child))
-            	$item_class["child"] = $menu_params["class"]["has_child"];
+            	$item_class["child"] = $menu_params["params"]["has_child"];
 
-            //$item_class["default"] = $item["smart_url"];
+            $item_class["default"] = "item" . $count_item;
 
 			if(count($item_class))
 				$item_properties["class"] = 'class="' . implode(" ", array_filter($item_class)) . '"';
@@ -789,21 +817,7 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
     } else {
         $tpl->set_var("SezError", "");
     }
-    
-	$res["pre"] 								= $block["tpl"]["header"];
-	$res["post"] 								= $block["tpl"]["footer"];    
-    if(is_array($menu_params["template"]) && count($menu_params["template"])) {
-    	$res["template"] 						= $menu_params["template"];
-    	$res["template"]["offcanvas"] 			= $tpl->rpparse("main", false);
-
-		$res["content"] 						= $res["template"]["content"];
-		$res["default"] 						= $res["template"]["content"];
-    } else { 
-    	$res["content"] 						= $tpl->rpparse("main", false);
-		$res["default"] 						= $res["pre"] . $res["content"] . $res["post"];
-    }
-    
-    /*
+                            
     if($layout_settings["AREA_VGALLERY_MENU_OFFCANVAS"])
     {
         $template["offcanvas"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
@@ -817,6 +831,6 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
     }
 	if(is_array($template) && count($template))
 		$res["template"] = $template;
-    */
+        
 	return $res;
 }

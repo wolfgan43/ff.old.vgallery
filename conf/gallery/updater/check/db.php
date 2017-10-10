@@ -1,29 +1,5 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage updater
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
-	error_reporting((E_ALL ^ E_WARNING ^ E_NOTICE ^ E_DEPRECATED) | E_STRICT);
+	error_reporting((E_ALL ^ E_NOTICE) | E_STRICT);
 	ini_set("memory_limit", "300M"); 
     
     if(!function_exists("ffCommon_dirname")) {
@@ -114,6 +90,11 @@
         $remote_host = substr(urldecode($_REQUEST["s"]), strpos(urldecode($_REQUEST["s"]), ".") + 1);
     }
 */
+	if(strpos(strtolower(DOMAIN_INSET), "www.") === 0) {
+    	define("DOMAIN_NAME"		, substr(DOMAIN_INSET, strpos(DOMAIN_INSET, ".") + 1));	
+	} else {
+		define("DOMAIN_NAME"		, DOMAIN_INSET);
+	}
 
 	if(defined("PRODUCTION_SITE") && strlen(PRODUCTION_SITE)) {
 	    if(strpos(PRODUCTION_SITE, "www.") === 0) {
@@ -127,13 +108,7 @@
 	    } else {
 	        define("DOMAIN_SYNC_NAME"        , DEVELOPMENT_SITE);
 	    }
-	}    
-
-    if(strpos(strtolower(DOMAIN_INSET), "www.") === 0) {
-        define("DOMAIN_NAME"        , substr(DOMAIN_INSET, 4));
-    } else {
-        define("DOMAIN_NAME"        , DOMAIN_INSET);
-    }
+	}   
 
     if(strpos($_REQUEST["s"], "www.") === 0) {
         $remote_host = substr($_REQUEST["s"], 4);
@@ -287,7 +262,7 @@
                                         } while($db_updater->nextRecord());
                                     }
                                 }
-                                
+                                 
                                 foreach($manifesto AS $manifesto_key => $manifesto_value) {
                                     if(is_array($manifesto_value["db"])) {
 	                                    if($manifesto_value["enable"]) {
@@ -295,14 +270,6 @@
                                         		foreach($manifesto_value["db"]["data"] AS $db_key => $db_value) {
                                                     if(strlen($db_value)) {
 													    $db_master_include["basic"][$db_key] = $db_value;
-                                                    }
-												}
-	                                        }
-	                                        
-	                                        if(is_array($manifesto_value["db"]["exclude"])) {
-                                        		foreach($manifesto_value["db"]["exclude"] AS $db_value) {
-                                                    if(strlen($db_value)) {
-														$db_master_exclude[$db_value] = true;
                                                     }
 												}
 	                                        }
@@ -333,8 +300,7 @@
 									}
                                 }
                             }
-                            
-                            
+
                             $denied_check = false;
                         } else {
                             $denied_check = "expire_date";
@@ -497,14 +463,6 @@
                                 }
                             }
                         }
-                        
-                        if(!$skip_table && $real_remote_host == $remote_host && strpos($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), "cm_mod_") === 0) {
-                        	$arrTableModule = explode("_", substr($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), strlen("cm_mod_")));
-                        	if(!is_dir(FF_DISK_PATH . "/modules/" . $arrTableModule[0])) {
-								$skip_table = true;
-                        	}
-                        }
-                        
                         if(!$skip_table) {
                             $db_res[$db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true)] = array();
                             
@@ -543,14 +501,6 @@
                                 }
                             }
                         }
-                        
-                        if(!$skip_table && $real_remote_host == $remote_host && strpos($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), "cm_mod_") === 0) {
-                        	$arrTableModule = explode("_", substr($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), strlen("cm_mod_")));
-                        	if(!is_dir(FF_DISK_PATH . "/modules/" . $arrTableModule[0])) {
-								$skip_table = true;
-                        	}
-                        }
-                        
                         if(!$skip_table) {
                             $db_res[$db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true)] = array();
                             
@@ -808,3 +758,4 @@ function resolve_rel_data($table, $key, $value, $db_include, $db) {  //da finire
 	return $sSQL_compare;
 }
 
+?>

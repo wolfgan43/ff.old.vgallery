@@ -4,11 +4,11 @@ ff.cms.fn.uploadify = function(targetid) {
 		targetid = targetid + " ";
 
 	/*css*/
-	ff.load("jquery.plugins.uploadify", function() {
+	ff.pluginLoad("jquery.fn.uploadify", "/themes/library/plugins/jquery.uploadify/jquery.uploadify.js", function() {
 	    jQuery(targetid + ".uploadify").uploadify({
 	        'uploader'       : ff.site_path + '/themes/library/plugins/jquery.uploadify/uploadify.swf',
 	        'script'         : ff.site_path + '/themes/library/plugins/jquery.uploadify/uploadify.php' +  jQuery("#type_upload").attr("value"),
-	        'cancelImg'      : ff.base_path + '/themes/library/plugins/jquery.uploadify/cancel.png',
+	        'cancelImg'      : ff.site_path + '/themes/library/plugins/jquery.uploadify/cancel.png',
 	        'folder'         : jQuery("#path_upload").attr("value"),
 		    'buttonText'	 : 'Sfoglia', 
 	        /*'buttonImg'      : ff.site_path + '/themes/library/plugins/jquery.uploadify/browse.png',*/
@@ -16,5 +16,5 @@ ff.cms.fn.uploadify = function(targetid) {
 	        'multi'          : true, 
 	        'sizeLimit'      : jQuery("#max_upload").attr("value")
 	    });
-	});
+	}, true);
 };

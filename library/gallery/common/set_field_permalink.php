@@ -32,7 +32,7 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
 
   	if(!$permalink_rule)
   		$permalink_rule = "[PARENT]/[SMART_URL]";
-  	
+
 	switch($tbl_src) {
   		case "anagraph":
   			$arrTable = array(
@@ -289,7 +289,7 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
  		} else {
  			$source_user_path = $default_parent;
  			$start_path = "";
- 			
+
  			$skip_redirect = true;
  		}
 
@@ -615,7 +615,7 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
 					    		: "/" . $default_smart_url
 							)
 						), $permalink_rule
-					);                
+					);
                 }            
             }
 

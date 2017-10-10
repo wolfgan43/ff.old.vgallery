@@ -1,0 +1,51 @@
+<script type="text/javascript">
+	if(window["google"] === undefined) {
+		jQuery(document).ready(function() {
+			var script = document.createElement("script");
+			script.type = "text/javascript";
+			var url_data = window.location.href.parseUri();
+			script.src = url_data.protocol + "://maps.googleapis.com/maps/api/js?v=3.exp&key={gmap_key}{gmap_region}{gmap_lang}&callback=initialize{real_name}";
+			document.body.appendChild(script);
+		});
+	} else {
+		jQuery(document).ready(function() {
+			initialize{real_name}();
+		});	
+	}
+
+	var map{real_name} = "";
+	var marker{real_name} = ff.hash();
+	var markers = [];		
+
+	function initialize{real_name}() {
+		if(!jQuery("#map{real_name}").height()) {
+			jQuery("#map{real_name}").height("300");
+		}
+
+		map{real_name} = new google.maps.Map(document.getElementById("map{real_name}"), { 
+			zoom		: {zoom} ,
+			center		: new google.maps.LatLng({latitude}, {longitude}) ,
+			mapTypeId	: google.maps.MapTypeId.ROADMAP ,
+		});
+		<!--BeginSezMarker-->
+		var marker = new google.maps.Marker({
+			position: new google.maps.LatLng({marker_latitude}, {marker_longitude}),
+			map: map{real_name}
+		});
+		markers.push(marker);
+		<!--EndSezMarker-->
+		<!--BeginSezMarkerDescription-->
+		var infowindow = new google.maps.InfoWindow({
+			content: "{marker_description}"
+		});
+		google.maps.event.addListener(marker, 'click', function() {
+			infowindow.open(map{real_name}, marker);
+		});
+		<!--EndSezMarkerDescription-->
+	}
+
+
+</script>
+
+
+<div id="map{real_name}" style="width: 100%; height:100%;"></div>

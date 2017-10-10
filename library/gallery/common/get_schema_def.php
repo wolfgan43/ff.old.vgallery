@@ -28,17 +28,16 @@
 
 		if(is_file(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT)) {
 			require(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT);
-            /** @var include $schema */
-            if(is_array($schema))
+			if(is_array($schema))	
 				$res = $schema;
 		}
 		if($load_module) {
-			/*$arrServiceFileName = glob(FF_DISK_PATH . "/conf/gallery/api/process_*");
+			/*$arrServiceFileName = glob(FF_DISK_PATH . "/library/" . THEME_INSET . "/service/include/*");
 			if(is_array($arrServiceFileName) && count($arrServiceFileName)) {
 				foreach($arrServiceFileName AS $real_service_name) {
 				    if(is_file($real_service_name) && strpos($real_service_name, "." . FF_PHP_EXT) !== false) {
 	        			$tmp_service_name = ffGetFilename($real_service_name);
-
+	        			
         				$ServiceAvailable[] = $tmp_service_name;
 				    }
 				}
@@ -57,13 +56,13 @@
 				}
 			}
 		}
-
+		
 		if(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/settings." . FF_PHP_EXT)) {
 			require(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/settings." . FF_PHP_EXT);
 			if(is_array($schema))	
 				$res = array_replace_recursive($res, $schema);
-		}			
-		
+		}	
+				
 		if($selective !== false) {
 			if(is_array($selective)) {
 				foreach($selective AS $selective_value) {
@@ -91,8 +90,8 @@
 
   				//$res["service_available"] = $ServiceAvailable;
   				if($load_module)
-  					$res["module_available"] = $ModuleAvailable;
+  					$res["module_available"] = $ModuleAvailable;  					
 		}
-
+		
 		return $res;
   }

@@ -1,0 +1,36 @@
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->
+<!--BeginSezPreview-->
+    <!--BeginSezVGalleryTitle-->
+    <h1>{name_title}</h1>
+    <!--EndSezVGalleryTitle-->
+    <!--BeginSezGroupFields-->
+    <ul class="shadetabs">
+        <!--BeginSezField-->
+        <li class="{class_name}">
+            <a href="{show_file}">{name}</a>
+        </li>
+        <!--EndSezField-->
+    </ul>
+    <!--EndSezGroupFields-->
+
+    <div class="{class_name}" id="{real_name}">
+        <!--BeginSezVGalleryImage-->
+        <div class="vgallery_detail_image">
+        <!--BeginSezVGalleryImageNode-->
+        {content}
+        <!--EndSezVGalleryImageNode-->
+        </div>
+        <!--EndSezVGalleryImage-->
+        
+        <!--BeginSezGroup--> 
+        <div class="vgallery_detail_description">
+        <!--BeginSezVGalleryDescriptionNode-->
+        {content}
+        <!--EndSezVGalleryDescriptionNode-->
+        </div>
+        <!--EndSezGroup-->        
+    </div>    
+    
+<!--EndSezPreview-->

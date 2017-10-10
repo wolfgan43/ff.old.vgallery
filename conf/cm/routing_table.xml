@@ -60,12 +60,11 @@
 		</destination>
 	</rule>
 	<rule id="getlibs">
-        <source>^/srv/getlibs$</source>
+        <source>^/services/getlibs$</source>
         <destination>
             <url>/cm/contents/getlibs</url>
         </destination>
-        <reverse>/srv/getlibs</reverse>
-        <index>10</index>
+        <reverse>/services/getlibs</reverse>
     </rule>		
 	<rule id="ds">
 		<priority>NORMAL</priority>
@@ -81,8 +80,7 @@
 		<priority>BOTTOM</priority>
 		<source>(.*)</source>
 		<destination>
-			<url>$0</url>
-			<content_root>/contents</content_root>
+			<url>/contents$0</url>
 		</destination>
         <accept_path_info />
         <process_next />

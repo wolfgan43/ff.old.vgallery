@@ -1,28 +1,5 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
+require(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
 use_cache(false);
 
@@ -33,7 +10,7 @@ $mod_sec_login = $cm->router->getRuleById("mod_sec_login");
 $mod_sec_dashboard = $cm->router->getRuleById("mod_sec_dashboard");
 if($mod_sec_dashboard)
 	$dashboard_ret_url = $mod_sec_dashboard->reverse;
-	
+
 if(basename($cm->real_path_info) == "username") {
     $mod_sec_recover = ($cm->router->getRuleById("mod_sec_recover_username_" . $tiny_lang_code) 
                             ? $cm->router->getRuleById("mod_sec_recover_username_" . $tiny_lang_code)
@@ -53,15 +30,11 @@ if(MOD_SEC_CSS_PATH !== false && isset($cm->router->matched_rules["mod_sec_login
     if(MOD_SEC_CSS_PATH)
         $filename = MOD_SEC_CSS_PATH;
     else
-        $filename = cm_cascadeFindTemplate("/css/" . $css_name, "security");
-        //$filename = cm_moduleCascadeFindTemplateByPath("security", "/css/" . $css_name, $cm->oPage->theme);
+        $filename = cm_moduleCascadeFindTemplateByPath("security", "/css/" . $css_name, $cm->oPage->theme);
 
     $ret = cm_moduleGetCascadeAttrs($filename);
-    $cm->oPage->tplAddCSS($css_name
-        , array(
-            "file" => $filename
-            , "path" => $ret["path"]
-    ));
+    $cm->oPage->tplAddCSS($css_name, $filename, $ret["path"]);
+    //$cm->oPage->tplAddCSS("modules.security", "", cm_getModulesExternalPath() . "/security/restricted/css/ff.modules.security.css"); // useful for caching purpose
 }    
     
 $tpl = ffTemplate::factory(get_template_cascading($user_path, "lostpassword.html", "/login"));
@@ -128,13 +101,13 @@ if(MOD_SEC_LOGIN_LABEL) {
 /* 
 if ($cm->oPage->getXHRDialog())
 {
-    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.ajax.ctxDoRequest('" . $_REQUEST["XHR_CTX_ID"] . "', {
+    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.ffPage.dialog.doRequest('" . $_REQUEST["XHR_DIALOG_ID"] . "', {
                 'action' : 'request'
         });");
 }
 else 
 {
-    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.load('ff.ajax', function(){ ff.ajax.doRequest({
+    $tpl->set_var("bt_confirm", "jQuery(this).closest('.login').css({'opacity': 0.5, 'pointer-events': 'none'}); ff.pluginLoad('ff.ajax', '/themes/library/ff/ajax.js', function(){ ff.ajax.doRequest({
                 'action' : 'request'
                 , 'formName'    : 'ffRecover'
 				, 'injectid'    : 'ffRecover'
@@ -272,38 +245,37 @@ switch($frmAction) {
                     				, password_generated_at = " . $db->toSql(date("Y-m-d H:i:s", time()), "DateTime") . "
                     			WHERE ID = " . $db->toSql($uid, "Number");
 	                    $db->execute($sSQL);
-                    
-                    /**                                               
-                    * TODO:Da togliere gestione utente e fonderla con anagraph
-                    */  
-	                if($options["table_name"] != "anagraph") {
-	                    $sSQL = "UPDATE anagraph SET 
-	                    			`password` = PASSWORD(" . $db->toSql($rnd_password, "Text") . ") 
-	                    			, `status` = '1'
-										, password_generated_at = " . $db->toSql(date("Y-m-d H:i:s", time()), "DateTime") . "
-	                    		WHERE uid = " . $db->toSql($uid, "Number");
-	                    $db->execute($sSQL);
-					}                    
-					
-					$cm->doEvent("on_done_recover", array($ID));
-					$sSQL = "SELECT token
-								FROM cm_mod_security_token
-								WHERE ID_user = " . $db->toSql($uid, "Number");
-					$db->query($sSQL);
-					if($db->nextRecord()) {
-						$token = $db->getField("token", "Text", true);
-					}
-								
-                    $fields_lostpassword["lostpassword"]["username"] = $username;
-                    $fields_lostpassword["lostpassword"]["password"] = $rnd_password;
-                    $fields_lostpassword["lostpassword"]["email"] = $email;
-					
-					if(strlen($token)) {
-						$fields_lostpassword["lostpasswordlogin"]["link"] = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH . $dashboard_ret_url . "?t=" . $token . "&lost-password";
-					} else {
-						$fields_lostpassword["lostpasswordlogin"]["link"] = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH . $mod_sec_login->reverse . "?username=" . urlencode($fields_lostpassword["lostpassword"]["username"]) . "&ret_url=" . urlencode(FF_SITE_PATH . $dashboard_ret_url . "?lost-password");
-					}
-                    
+	                    
+	                    /**                                               
+	                    * TODO:Da togliere gestione utente e fonderla con anagraph
+	                    */  
+		                if($options["table_name"] != "anagraph") {
+		                    $sSQL = "UPDATE anagraph SET 
+	                    				`password` = PASSWORD(" . $db->toSql($rnd_password, "Text") . ") 
+	                    				, `status` = '1'
+	                    				, password_generated_at = " . $db->toSql(date("Y-m-d H:i:s", time()), "DateTime") . "
+	                    			WHERE uid = " . $db->toSql($uid, "Number");
+		                    $db->execute($sSQL);
+						}                    
+						
+						$cm->doEvent("on_done_recover", array($ID));
+						$sSQL = "SELECT token
+									FROM cm_mod_security_token
+									WHERE ID_user = " . $db->toSql($uid, "Number");
+						$db->query($sSQL);
+						if($db->nextRecord()) {
+							$token = $db->getField("token", "Text", true);
+						}
+									
+	                    $fields_lostpassword["lostpassword"]["username"] = $username;
+	                    $fields_lostpassword["lostpassword"]["password"] = $rnd_password;
+	                    $fields_lostpassword["lostpassword"]["email"] = $email;
+						if(strlen($token)) {
+							$fields_lostpassword["lostpasswordlogin"]["link"] = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH . $dashboard_ret_url . "?t=" . $token . "&lost-password";
+						} else {
+							$fields_lostpassword["lostpasswordlogin"]["link"] = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH . $mod_sec_login->reverse . "?username=" . urlencode($fields_lostpassword["lostpassword"]["username"]) . "&ret_url=" . urlencode(FF_SITE_PATH . $mod_sec_dashboard->reverse . "?lost-password");
+						}
+
 	                    if(check_function("process_mail")) {
 	                        $rc_from_lostpassword = process_mail(email_system("account lostpassword"), $to_lostpassword, NULL, NULL, $fields_lostpassword, null, null, null, false, null, true);
                     		$rc_lostpassword = process_mail(email_system("account lostpassword"), $to_lostpassword, NULL, NULL, $fields_lostpassword);
@@ -380,12 +352,10 @@ if(MOD_SEC_LOGO) {
     } else {
         if(is_file(FF_DISK_PATH . MOD_SEC_LOGO_PATH))
             $logo_url = MOD_SEC_LOGO_PATH;
-        elseif(is_file(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/images/logo/login.svg")) 
-            $logo_url = FF_SITE_PATH . FF_THEME_DIR . "/" . $cm->oPage->getTheme() . "/images/logo/login.svg";
-        elseif(is_file(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/images/logo/login.png")) 
-            $logo_url = FF_SITE_PATH . FF_THEME_DIR . "/" . $cm->oPage->getTheme() . "/images/logo/login.png";
-        elseif(is_file(FF_THEME_DISK_PATH . "/" . cm_getMainTheme() . "/images/logo/login.gif"))
-            $logo_url = FF_SITE_PATH . FF_THEME_DIR . "/" . cm_getMainTheme() . "/images/logo/login.gif";
+        elseif(is_file(FF_THEME_DISK_PATH . "/" . $cm->oPage->getTheme() . "/images/logo-login.png")) 
+            $logo_url = FF_THEME_DIR . "/" . $cm->oPage->getTheme() . "/images/logo-login.png";
+        elseif(is_file(FF_THEME_DISK_PATH . "/" . cm_getMainTheme() . "/images/logo-login.gif"))
+            $logo_url = FF_THEME_DIR . "/" . cm_getMainTheme() . "/images/logo-login.gif";
 
         $tpl->set_var("logo_login", $logo_url);
         $tpl->parse("SectLogoImg" . MOD_SEC_LOGO, false);
@@ -394,3 +364,4 @@ if(MOD_SEC_LOGO) {
     $tpl->parse("SectLogo" . MOD_SEC_LOGO, false);
 }
 $cm->oPage->addContent($tpl->rpparse("main", false), null, "LostPassword");
+?>

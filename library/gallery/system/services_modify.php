@@ -52,7 +52,6 @@ function system_services_modify($service_name, $type_field) {
 	    $oGrid->ret_url = $_REQUEST["ret_url"];
 		$oGrid->user_vars["type_field"] = $type_field;
 		$oGrid->fixed_pre_content = ffTemplate::_get_word_by_code(ffCommon_url_rewrite($service_name, "_") . "_info");
-		$oGrid->buttons_options["export"]["display"] = false;
 	    
 	    $oGrid->display_new = false;
 	    $oGrid->display_edit_bt = false;

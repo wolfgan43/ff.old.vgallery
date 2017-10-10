@@ -3,7 +3,7 @@ ff.cms.fn.crosslide = function(targetid) {
 	if(targetid.length > 0)
 		targetid = targetid + " ";
 
-	ff.load("jquery.plugins.crosslide", "/themes/library/plugins/jquery.crosslide/jquery.crosslide.js", function() {
+	ff.pluginLoad("jquery.fn.crossSlide", "/themes/library/plugins/jquery.crosslide/jquery.crosslide.js", function() {
 		var arrCrosSlide = new Array();
 		
 		jQuery(targetid + '.crosslide').each(function() {
@@ -30,5 +30,5 @@ ff.cms.fn.crosslide = function(targetid) {
 				jQuery("#" + crossSlide).show();
 			}
 		}
-	});
+	}, true);
 };

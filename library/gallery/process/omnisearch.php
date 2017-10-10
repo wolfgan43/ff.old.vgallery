@@ -29,20 +29,20 @@ function process_omnisearch($user_path, &$layout)
     $globals = ffGlobals::getInstance("gallery");
     $menu_categories = array();
 
-    //$settings_path = $globals->settings_path;
+    $settings_path = $globals->settings_path;
 
     $unic_id = $layout["prefix"] . $layout["ID"];
     $layout_settings = $layout["settings"];
 
-    $cm->oPage->tplAddJs("ff.cms.search");
+    setJsRequest("ff.cms.search", "tools");
+    $cm->oPage->tplAddJs("ff.cms.search", "ff.cms.search.js", FF_THEME_DIR . "/" . THEME_INSET . '/javascript/tools');
 
     $template_name = ($layout["template"]
     					? $layout["template"]
     					: "default"
     				) . ".html";
     
-    //$tpl_data["custom"] = "omnisearch.html";
-	$tpl_data["custom"] = $layout["smart_url"] . ".html";		    
+    $tpl_data["custom"] = "omnisearch.html";
     $tpl_data["base"] = $template_name;
     $tpl_data["path"] = $layout["tpl_path"];
     
@@ -135,7 +135,7 @@ function process_omnisearch($user_path, &$layout)
 	if($layout_settings["AREA_SEARCH_MENU_BUTTON"]) {
 		$oSearchField->autocomplete_icon["search"] = "actex-search";
 	}
-	if($layout_settings["AREA_SEARCH_AUTOCOMPLETE"]) {
+	if(!$disable_autocomplete) {
 		$oSearchField->widget = "autocomplete"; 
 		$oSearchField->actex_service = FF_SITE_PATH . "/search";
 		$oSearchField->autocomplete_minLength = 3;
@@ -191,12 +191,5 @@ function process_omnisearch($user_path, &$layout)
  
  
     }
-
-	$buffer = $tpl->rpparse("main", false);
-    return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
-		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-	);	
+	return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
 }

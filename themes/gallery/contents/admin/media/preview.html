@@ -1,9 +1,9 @@
 <div class="{container_class}">
     <div class="uploaded-thumb">
         <div class="icons-abs"> 
-            <a download="{media_name_normalized}" href="{view_path}{media_path}?v={media_time}" alt="download" class="{download_class}"></a>
+			<a download="{media_name_normalized}" href="{view_path}{media_path}?v={media_time}" alt="download" class="{download_class}"></a>
             <a href="javascript:void(0);" alt="modify" class="{modify_class}" onclick="
-                ff.load('ff.ffField.aviary', function() {  
+                ff.pluginLoad('ff.ffField.aviary', '/themes/responsive/ff/ffField/widgets/aviary/aviary.js', function() {  
                     ff.ffField.aviary.launch('{media_name_normalized}', '{media_path}');
                 });"></a>
         </div>    

@@ -87,30 +87,29 @@
 </head>
 <body class="loading">
 <script type="text/javascript">
-	if(window.location.search.indexOf("__nocache__") < 0) {
-		var linkParams = window.location.search;
-		linkParams = (linkParams.indexOf("?") < 0
-			? "?"
-			: linkParams + "&"
-		) + "__nocache__";
-			
-		setTimeout(function() {
-			window.location.href = window.location.pathname + linkParams; 
-		
-		}, 2000);
-	} else {
-		var linkParams = window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "");
+    if(window.location.search.indexOf("__nocache__") < 0) {
+            var linkParams = window.location.search;
+            linkParams = (linkParams.indexOf("?") < 0
+                    ? "?"
+                    : linkParams + "&"
+            ) + "__nocache__";
 
-        history.replaceState(null, null, window.location.pathname + linkParams);
-		linkParams = (linkParams.indexOf("?") < 0
-			? "?"
-			: linkParams + "&"
-		) + "__nocache__";
-        
-        // linkParams.push("__nocache__");
-        
-       // setTimeout(function() {window.location.href = window.location.pathname + linkParams; }, 10000);
-	}
+            setTimeout(function() {
+                window.location.href = window.location.pathname + linkParams; 
+            }, 2000);
+    } else {
+            var linkParams = window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "");
+
+            history.replaceState(null, null, window.location.pathname + linkParams);
+            linkParams = (linkParams.indexOf("?") < 0
+                    ? "?"
+                    : linkParams + "&"
+            ) + "__nocache__";
+
+    // linkParams.push("__nocache__");
+
+    // setTimeout(function() {window.location.href = window.location.pathname + linkParams; }, 10000);
+    }
 </script>
 </body>
 </html>

@@ -1,28 +1,4 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage services
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 if(!mod_security_check_session(false) || get_session("UserNID") == MOD_SEC_GUEST_USER_ID) {
 	prompt_login();
 }
@@ -159,7 +135,7 @@ $resources = array(
                             , "sort" => "order"
                             , "normalize_sort" => "`order`, `name`"
                         )
-                        
+
     , "search_tags_categories" => array(
                             "tbl_name" => "search_tags_categories"
                             , "sort" => "order"
@@ -194,8 +170,6 @@ $resources = array(
 
 $resources = cache_get_settings("services", "sort", $resources);
 
-$res = $cm->doEvent("vg_on_sort_grid", array(&$resources));        
-					
 if(!isset($_REQUEST["resource"]) && strlen(basename($cm->real_path_info))) {
 	$_REQUEST["resource"] = basename($cm->real_path_info);
 }
@@ -215,7 +189,7 @@ if(!is_array($positions)) {
 	    $positions = array();
     }
 }
-$resources = $_REQUEST["resources"];
+//$resources = $_REQUEST["resources"];
      /*
 switch ($_REQUEST["resource"])
 {
@@ -412,3 +386,4 @@ if(is_array($resource) && count(is_array($resource))) {
 	http_response_code(500);
 }
 exit;
+?>

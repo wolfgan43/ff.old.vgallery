@@ -1,6 +1,7 @@
 <?php
 function analytics($type, $params) {
     $res = null;
+
     switch($type)
     {
         case "event":

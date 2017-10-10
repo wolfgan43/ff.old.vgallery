@@ -54,7 +54,7 @@ function system_ffgrid_process_customize_field_button($component, $area, $params
 	     , array(
 	        "tpl_id" => $component->id
 	        //"name" => "myTitle"
-	        , "url" => get_path_by_rule("services", "restricted") . "/display-field/" . $area
+	        , "url" => $cm->oPage->site_path . VG_SITE_SERVICES . "/display-field/" . $area
 	                . "?resources=" . urlencode(implode(",", $component->resources))
 	                . $str_field
 					. $str_params

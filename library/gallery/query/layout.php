@@ -22,8 +22,8 @@
  * @copyright Copyright (c) 2004, Alessandro Stucchi
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
+
  */
- 
  function query_layout() {
  
  }
@@ -34,13 +34,6 @@
 		
 		if(!$ID_domain)
 			$ID_domain = $globals->ID_domain;	
-		
-		if(strtoupper(substr($smart_url, 0, 1)) == "L") {
-			$ID_layout = str_replace(array("T", "V"), "", strtoupper(substr($smart_url, 1)));
-		}
-		//if(strpos($smart_url, "L") === 0) {
-		//	$ID_layout = intval(preg_replace('/[^0-9]+/', '', $smart_url));
-		//}
 	
 		$sSQL = "
                 SELECT  
@@ -67,10 +60,7 @@
                     INNER JOIN layout_type ON layout_type.ID = layout.ID_type 
                     INNER JOIN layout_location ON layout_location.ID = layout.ID_location 
                     INNER JOIN layout_path ON layout_path.ID_layout = layout.ID
-                WHERE " . ($ID_layout > 0
-                		? "layout.ID = " . $db->toSql($ID_layout, "Number")
-                		: "layout.smart_url = " . $db->toSql($smart_url) 
-                	) . "
+                WHERE layout.smart_url = " . $db->toSql($smart_url) . "
 	                AND (layout.ID_domain = " . $db->toSql($ID_domain, "Number") . "
 	                    " . ($ID_domain > 0
                     		? " OR layout.ID_domain = 0"

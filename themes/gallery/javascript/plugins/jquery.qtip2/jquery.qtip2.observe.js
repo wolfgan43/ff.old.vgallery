@@ -3,7 +3,7 @@ ff.cms.fn.qtip = function(targetid) {
 	if(targetid.length > 0)
 		targetid = targetid + " ";
 	/*css*/
-	ff.load("jquery.plugins.qtip", function() {
+	ff.pluginLoad("jquery.qtip", "/themes/library/plugins/jquery.qtip2/jquery.qtip.js", function() {
 		jQuery( targetid + ".qtip").qtip({  
 		        prerender: FALSE,
 				id: FALSE,
@@ -74,5 +74,5 @@ ff.cms.fn.qtip = function(targetid) {
 					blur: NULL
 				}
 		});
-	});
+	}, true);
 };

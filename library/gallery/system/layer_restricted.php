@@ -3,7 +3,7 @@
 *   VGallery: CMS based on FormsFramework
     Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
 
-This program is free software: you can redistribute it and/or modify
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -23,1441 +23,690 @@ This program is free software: you can redistribute it and/or modify
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-
-function system_load_menu($type = "admin") 
+function system_layer_administration($oPage, $tpl_layer) 
 {
-	if(is_file(FF_DISK_PATH . "/cache/menu/" . $type . "." . FF_PHP_EXT))
-		require FF_DISK_PATH . "/cache/menu/" . $type . "." . FF_PHP_EXT;
+    $cm = cm::getInstance();
+    
+    $real_path = str_replace($cm->real_path_info, "", $cm->path_info);
+    
+    $tpl_layer->set_var("helper", ffTemplate::_get_word_by_code(substr(str_replace("/", "_", $real_path), 1)));
+    
+}
 
-    /** @var include $menu */
-    if(!is_array($menu))
-	{
-	    $db = ffDB_Sql::factory();  
-	    $globals = ffGlobals::getInstance("gallery");
-	    if(check_function("system_get_sections"))
-	        $block_type = system_get_block_type();	
+function system_layer_notify($oPage, $tpl_layer) 
+{
+return;
+	if($oPage->layer == ffGetFilename(VG_SITE_ADMIN) || $oPage->layer == ffGetFilename(VG_SITE_RESTRICTED) || $oPage->layer == ffGetFilename(VG_SITE_MANAGE)) {
+        $filename = null;
+        if(is_file(FF_DISK_PATH . "/themes/" . $oPage->theme . "/layouts/notify_" . $oPage->layer . ".html")) {
+            $filename = FF_DISK_PATH . "/themes/" . $oPage->theme . "/layouts/notify_" . $oPage->layer . ".html";
+        } elseif(is_file(FF_DISK_PATH . "/themes/" . THEME_INSET . "/layouts/notify_" . $oPage->layer . ".html")) {
+            $filename = FF_DISK_PATH . "/themes/" . THEME_INSET . "/layouts/notify_" . $oPage->layer . ".html";
+        }
+        if($filename !== null) {
+			//$oPage->tplAddCss("crystalnotifications", "jquery.crystalnotifications.css", FF_THEME_DIR . "/library/plugins/jquery.crystalnotifications");
+			//$oPage->tplAddJs("jquery.crystalnotifications", "jquery.crystalnotifications.js", FF_THEME_DIR . "/library/plugins/jquery.crystalnotifications");
+			$oPage->tplAddJs("layerProcess", "layerprocess.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/system");
+            $db = ffDB_Sql::factory();
+            $db_control = ffDB_Sql::factory();
 
-		$menu 											= array();
-		$actual_page 									= "/" . $type . "/pages";
-		
-		if(strpos($globals->page["user_path"], $actual_page) === 0 && basename($globals->page["user_path"]) == "builder") {
-			$user_path = str_replace($actual_page, "", ffCommon_dirname($globals->page["user_path"]));
-			if($user_path == "/home")
-				$user_path = "/";
-		}
-		
-		if(strpos($globals->page["user_path"], "/" . $type . "/pages") === 0) {
-			$actual_page = (basename($globals->page["user_path"]) == "builder" 
-							? ffCommon_dirname($globals->page["user_path"])
-							: $globals->page["user_path"]
-						);
-		}
-				
-		switch($type) {
-			case "builder":
-				$def = array(
-					"pages" 							=> true
-					, "block" 							=> true
-					, "widgets"							=> true
-					, "util"							=> true
-				);
-				
-				$menu_override["pages"]["menu"]			= array(
-					"collapse" => false
-					, "actions" => array(
-						"modify" => array("class" => "-floating"
-							, "icon" => "sitemap"
-						)
-					)
-				);
-				break;
-			case "restricted":
-				$def = array(
-					"contents" 							=> true
-					, "util" 							=> true
-				);
-				$menu_override["wysiwyg"]				= false;
-				$menu_override["html"]					= false;
-				$menu_override["vgallery"]				= array(
-					"menu" => array(
-						"actions" => null	
-					)
-				);
-				$menu_override["addons"]				= array(
-					"menu" => array(
-						"actions" => null
-					)
-					, "piece" => array(
-						"actions" => null
-					)
-					, "limit" => array(
-						"readonly" => false
-					)
-				);
-				break;
-			case "contents":
-				$def = array(
-					"contents" 							=> true
-				);
-				$menu_override["publishing"]["nodes"]	= false;
-				$menu_override["wysiwyg"]["nodes"]		= false;
-				$menu_override["html"]["nodes"]			= false;
-				$menu_override["albums"]["nodes"]		= false;
-				$menu_override["vgallery"]["nodes"]		= false;
-				$menu_override["addons"]["menu"]		= false;
-				$menu_override["applets"] 				= false;
-				break;
-			case "admin":
-			default:
-				$def = array(
-					"pages"								=> true
-					, "block"							=> true
-					, "content"							=> true
-					, "widgets"							=> true
-					, "ecommerce"						=> true
-					, "landing"							=> true
-					, "util"							=> true
-					, "auth"							=> true
-				);
-				
-				$menu_override["utility"]["menu"]			= array(
-					"actions" => array(
-						"modify" => array("class" => "-floating"
-							, "icon" => "cube"
-						)
-					)
-				);				
-		}
+            $count_notify = 0;    
 
-	    $block["dialog"] 								= true;
-		$extend["block"] = array(
-			"section"									=> "rightcol"
-			, "piece" 									=> array(
-				"key" 										=> "block"
-				, "icon" 									=> ""
-				, "actions" 								=> null
-				, "location" 								=> "rightcol"
-				, "dialog" 									=> true
-				, "class" 									=> "-draggable"
-				, "actions" 								=> array(
-																"modify" => array(
-															        "path" => "/" . $type . "/pages/blocks/[rel]?path=" . $user_path
-															        , "icon" => "object-group transparent"
-															        , "label" => $user_path
-																)
-				)
-			)
-			, "contents" 								=> array()
-		);
-		$extend["content"] = array(
-			"section"									=> null
-			, "menu" 									=> array(
-				"key" 										=> "content"
-				, "icon" 									=> $block_type["virtual-gallery"]["icon"]
-				, "actions" 								=> array(
-																"modify" => array(
-															        "path" => "/" . $type . "/contents/setting/add"
-															        , "icon" => "plus"
-																)
-				)
-			)
-			, "piece" 									=> array(
-				"key" 									=> "content"
-				, "icon"								=> ""
-			)
-			, "contents" 								=> array()
-		);		    
+            if(isset($_REQUEST["ret_url"]))
+                $ret_url = $_REQUEST["ret_url"];
+            else
+                $ret_url = $_SERVER["REQUEST_URI"];
 
-		if($def["pages"])
-		{
-		//print_r($block_type);
-			if(strpos($globals->page["user_path"], "/" . $type . "/pages") === 0
-				&& basename($globals->page["user_path"]) == "builder"
-			) {
-				$globals->page["icon"] = array(
-					"name" => $block_type["static-pages-menu"]["icon"]
-					, "type" => $block_type["static-pages-menu"]["group"]
-				);
-				$sSQL = "SELECT layout.* 
-						FROM layout
-							INNER JOIN layout_path ON layout_path.ID_layout = layout.ID
-						WHERE 1 AND " . $db->toSql($user_path) . " LIKE CONCAT(layout_path.ereg_path, IF(layout_path.cascading, '%', ''))
-						ORDER BY layout.ID";
-				$db->query($sSQL);
-				if($db->nextRecord()) {
-					do {
-						$block_key = ($db->getField("smart_url", "Text", true)
-							? $db->getField("smart_url", "Text", true)
-							: "L" . $db->getField("ID", "Number", true)
-						);
-						$block_in_page[$block_key] = array(
-							"value" => $db->getField("value", "Text", true)
-							, "params" => $db->getField("params", "Text", true)
-							, "type" => $block_type["rev"][$db->getField("ID_type", "Number", true)] 
-							
-						);
-					} while($db->nextRecord());
-				}
-				//print_r($block_in_page);
-			//	die();
-			} else {
-				$def["block"] = false;
-				$def["widgets"] = false;
-			}
-			/*********************
-			* Pages
-			*/
-		    $sSQL = "SELECT static_pages.ID
-		                , static_pages.parent
-		                , static_pages.name
-		                , static_pages.meta_title AS title
-		                , (SELECT GROUP_CONCAT(DISTINCT CONCAT(IF(layout.ID_type = '" . $block_type["gallery"]["ID"] . "', 'Album: ', ''), layout.value) SEPARATOR ' - ')
-	                		FROM layout
-	                			INNER JOIN layout_path ON layout_path.ID_layout = layout.ID
-	                		WHERE layout_path.visible > 0
-	                			AND layout.ID_type IN(" . $db->toSql($block_type["gallery"]["ID"], "Number") . "," . $db->toSql($block_type["virtual-gallery"]["ID"], "Number") . ")
-	                			AND CONCAT(IF(static_pages.parent = '/', '', static_pages.parent), '/', static_pages.name) LIKE layout_path.ereg_path
-		                ) AS aspect
-		                , CONCAT(IF(static_pages.parent = '/', '', static_pages.parent), '/', static_pages.name) AS full_path
-		            FROM static_pages
-		            WHERE 1
-		            ORDER BY full_path, sort";
-		    $db->query($sSQL);
-		    if($db->nextRecord()) {
-	    		//if(is_array($arrLayout) && count($arrLayout))
-	    		//	$arrLayoutPath 							= array_keys($arrLayout);
+            $tpl = ffTemplate::factory(ffCommon_dirname($filename));
+            $tpl->load_file("notify_" . $oPage->layer . ".html", "main");
+            
+            $tpl->set_var("site_path", FF_SITE_PATH);
+            $tpl->set_var("theme_inset", THEME_INSET);
+            $tpl->set_var("theme", $oPage->theme);
+            $tpl->set_var("delete_icon", cm_getClassByFrameworkCss("cancel", "icon"));
+            
+            
+            if($oPage->layer == ffGetFilename(VG_SITE_ADMIN))
+                $sSQL_add = " OR area = '' ";
+            
+            $sSQL = "SELECT * 
+                    FROM `notify_message` 
+                    WHERE visible = '1' 
+                        AND (area = " . $db->toSql($oPage->layer) . $sSQL_add . " ) 
+                    ORDER BY area, last_update DESC";
+            $db->query($sSQL);
+            if($db->nextRecord()) {
+                $arrNotify = array();
 
-				if($menu_override["pages"]["menu"] !== false) 
-				{
-					$menu["pages"]["menu"] = array(
-						"key" 									=> "pages"
-						, "path" 								=> "/" . $type . "/pages"
-						, "label" 								=> $block_type["static-pages-menu"]["description"]
-						, "icon"  								=> $block_type["static-pages-menu"]["icon"]
-						, "actions" 							=> array(
-																	"structure" => array(
-																		"path" => $actual_page . "/structure"
-                														, "icon" => "cog"
-																	)
-																	, "modify" => array(
-																        "path" => $actual_page . "/add"
-																        , "icon" => "plus"
-																	)
-																)
-						, "class" 								=> "-tree -sortable"	
-						
-					);
-					if(is_array($menu_override["pages"]["menu"]))
-						$menu["pages"]["menu"] = array_replace_recursive($menu["pages"]["menu"], $menu_override["pages"]["menu"]);
-				}
-				
-				if($def["widgets"])
-				{
-					$widgets["menu"]["default"] = array(
-						"key" 									=> "block"
-						, "subkey" 								=> "menu-default"
-						//, "path" 								=> "javascript:void(0);"
-						, "rel"									=> $block_type["static-pages-menu"]["smart_url"] . "-default"
-						, "readonly" 							=> true
-						, "label" 								=> "Default"
-						, "icon" 								=> "list-ul"
-						, "location" 							=> $extend["block"]["section"]
-						, "class" => "-draggable"
-        			);			
-				}
-				
-				if($menu_override["pages"]["nodes"] !== false) 
-				{
-			        do {
-        				$ID_page 								= $db->getField("ID", "Number", true);
-        				$parent 								= $db->getField("parent", "Text", true);
-        				$smart_url 								= $db->getField("name", "Text", true);
-			            $full_path 								= stripslash($parent) . "/" . $smart_url;
-			            $aspect 								= $db->getField("aspect", "Text", true);
-			            $acitons 								= null;
-						$description                            = "";	            
+                do {
+                    switch($db->getField("controls", "Text", true)) {
+                        case "file":
+                            if(
+                                (
+                                    substr(strtolower($db->getField("message", "Text", true)), 0, 7) != "http://" 
+                                    && substr(strtolower($db->getField("message", "Text", true)), 0, 8) != "https://"
+                                    && substr($db->getField("message", "Text", true), 0, 2) != "//"
+                                ) && @file_exists(FF_DISK_PATH . $db->getField("message", "Text", true))
+                            ) {
+                                $sSQL = "UPDATE `notify_message` SET visible = '0' WHERE `notify_message`.ID = " . $db_control->toSql($db->getField("ID"));
+                                $db_control->execute($sSQL);
+                                $is_visible = false;
+                            } else {
+                                $is_visible = true;
+                            }
+                            break;
+                        default:
+                            $is_visible = true;
+                    }
 
-			            if($full_path == "/") {
-			                $full_path 							= "/home";
-			                $class 								= "";
-						} else {
-				            $class 								= '-pad' . substr_count($full_path, "/");
-						}
-
-			            if($aspect) {
-				            $acitons["aspect"] 					= array(
-															        "path" => "/" . $type . "/pages" . $full_path . "/appearance"
-                													, "icon" => "object-group"
-															    );
-						    $description 						= ucwords($aspect);
-						}
-			            
-        				$title 									= $db->getField("title", "Text", true);
-        				if(!$title)
-        					$title 								= ucwords(str_replace("-", " ", $smart_url));
-						
-						$menu["pages"]["nodes"][] = array(
-							"key" 								=> "pages"
-			                , "subkey" 							=>  "S-" . $db->getField("ID", "Number", true)
-			                , "path" 							=> "/" . $type . "/pages" . $full_path . "/builder"
-			                , "label" 							=> $title
-                            , "description"                     => $description
-			                , "actions" 						=> $acitons
-							, "dialog" 							=> false	
-							, "class" 							=>  $class
-						);
-
-						if(is_array($menu_override["pages"]["piece"]))
-							$menu["pages"]["nodes"][count($menu["pages"]["nodes"]) - 1] = array_replace($menu["pages"]["nodes"][count($menu["pages"]["nodes"]) - 1], $menu_override["pages"]["piece"]);
-			        } while($db->nextRecord());
-				}
-		    }
-		}
-
-		if($def["contents"] || $def["block"] || $def["content"])
-		{
-			/*******
-			* Publishing
-			*/
-			if($menu_override["publishing"] !== false)
-			{
-				$sSQL = "SELECT publishing.ID
-			                , publishing.name
-			                , publishing.display_name
-			                , publishing.full_selection
-			            FROM publishing
-			            WHERE 1
-			            ORDER BY publishing.name";
-			    $db->query($sSQL);
-			    if($db->nextRecord()) {
-					$extend["block"]["contents"]["publishing"]		= true;
-					$extend["content"]["contents"]["publishing"]	= true;
-
-					if(strpos($globals->page["user_path"], "/" . $type . "/widgets") === 0)
-						$globals->page["icon"] = array(
-							"name" => $block_type["publishing"]["icon"]
-							, "type" => $block_type["publishing"]["group"]
-						);
-						
-					if($menu_override["publishing"]["menu"] !== false) {
-	    				$contents["publishing"]["menu"] = array(
-							"key" 									=> "publishing"
-						    , "path" 								=> "/" . $type . "/widgets"
-						    , "label" 								=> $block_type["publishing"]["description"]
-						    , "icon" 								=> $block_type["publishing"]["icon"]
-						    , "actions" 							=> array("modify" => array(
-																            "path" => "/" . $type . "/widgets/add"
-																            , "icon" => "plus"
-																	    )
-																    )	
-						);	 
-						if(is_array($menu_override["publishing"]["menu"]))
-							$contents["publishing"]["menu"] = array_replace_recursive($contents["publishing"]["menu"], $menu_override["publishing"]["menu"]);
-					}	   				
-	   				if($menu_override["publishing"]["nodes"] !== false) {
-				        do { 
-	        				$publish_name = $db->getField("name", "Text", true);
-	        				$publish_title = $db->getField("display_name", "Text", true);
-	        				$publish_auto = $db->getField("full_selection", "Number", true);
-	        				if(!$publish_title)
-	        					$publish_title = ucwords(str_replace("-", " ", $publish_name));
-
-	        				$contents["publishing"]["nodes"][] = array(
-								"key" 								=> "publishing"
-								, "subkey" 							=> $publish_name
-								, "path" 							=> "/" . $type . "/widgets/" . $publish_name . "/contents"
-								, "rel"								=> $block_type["publishing"]["smart_url"] . "-" . $publish_name
-								, "label" 							=> $publish_title
-								, "actions" 						=> array(
-                														"fields" => array(
-                															"path" => "/" . $type . "/widgets/" . $publish_name . "/structure"
-                															, "icon" => "table"
-                														)
-															            , "modify" => array(
-			            													"path" => "/" . $type . "/widgets/" . $publish_name
-                														)
-															        ) 																									//actions
-								, "dialog" 							=> $block["dialog"]							//dialog: false        			
-								, "readonly" 						=> (bool) $publish_auto
-        					);
-
-							if(is_array($menu_override["publishing"]["piece"]))
-								$contents["publishing"]["nodes"][count($contents["publishing"]["nodes"]) - 1] = array_replace($contents["publishing"]["nodes"][count($contents["publishing"]["nodes"]) - 1], $menu_override["publishing"]["piece"]);
-				        } while($db->nextRecord());
-					}
-			    }
-			}
-			
-			/*********************
-			* Draft
-			*/
-			if($menu_override["wysiwyg"] !== false)
-			{
-				$sSQL = "SELECT drafts.ID
-			                , drafts.name
-			            FROM drafts
-			            WHERE 1
-			            ORDER BY drafts.name";
-			    $db->query($sSQL);
-			    if($db->nextRecord()) {
-	    			$extend["block"]["contents"]["wysiwyg"]		= true;
-	    			$extend["content"]["contents"]["wysiwyg"]	= true;
-	    			
-					if(strpos($globals->page["user_path"], "/" . $type . "/wysiwyg") === 0)
-						$globals->page["icon"] = array(
-							"name" => $block_type["static-page-by-db"]["icon"]
-							, "type" => $block_type["static-page-by-db"]["group"]
-						);
-					
-					if($menu_override["wysiwyg"]["menu"] !== false) {
-	    				$contents["wysiwyg"]["menu"] = array(
-							"key" 									=> "wysiwyg"
-						    , "path" 								=> "/" . $type . "/wysiwyg"
-						    , "label" 								=> $block_type["static-page-by-db"]["description"]
-						    , "icon" 								=> $block_type["static-page-by-db"]["icon"]
-						    , "actions" 							=> array("modify" => array(
-																            "path" => "/" . $type . "/wysiwyg/add"
-																            , "icon" => "plus"
-																	    )
-																    )	
-						);
-						if(is_array($menu_override["wysiwyg"]["menu"]))
-							$contents["wysiwyg"]["menu"] = array_replace_recursive($contents["wysiwyg"]["menu"], $menu_override["wysiwyg"]["menu"]);
-					}					
-					if($menu_override["wysiwyg"]["nodes"] !== false) {
-				        do { 
-	        				$draft_name = $db->getField("name", "Text", true);
-							$contents["wysiwyg"]["nodes"][] = array(
-			 					"key" 								=> "wysiwyg"
-								, "subkey" 							=> $draft_name
-								, "path" 							=> "/" . $type . "/wysiwyg/" . $draft_name
-								, "rel"								=> $block_type["static-page-by-db"]["smart_url"] . "-" . $draft_name
-								, "label" 							=> $draft_name 
-								, "actions" 						=> array("preview" => array(
-																        "path" => "/" . $type . "/wysiwyg/preview/" . $draft_name
-																        , "icon" => "preview"
-																	))	
-								, "dialog" 							=> $block["dialog"]																					//dialog: false      
-			 				);
-
-							if(is_array($menu_override["wysiwyg"]["piece"]))
-								$contents["wysiwyg"]["nodes"][count($contents["wysiwyg"]["nodes"]) - 1] = array_replace($contents["wysiwyg"]["nodes"][count($contents["wysiwyg"]["nodes"]) - 1], $menu_override["wysiwyg"]["piece"]);
-				        } while($db->nextRecord());
-					}
-			    }
-			}
-			/*********************
-			* Html
-			*/
-			if($menu_override["html"] !== false)
-			{
-				$html = glob(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/contents/template/*");
-				if(is_array($html) && count($html)) {
-					$extend["block"]["contents"]["html"]		= true;
-					$extend["content"]["contents"]["html"]		= true;
-					
-					if(strpos($globals->page["user_path"], "/" . $type . "/html") === 0)
-						$globals->page["icon"] = array(
-							"name" => $block_type["static-page-by-file"]["icon"]
-							, "type" => $block_type["static-page-by-file"]["group"]
-						);
-					
-					if($menu_override["html"]["menu"] !== false) {
-						$contents["html"]["menu"] = array(
-							"key" 									=> "html"
-						    , "path" 								=> "/" . $type . "/html"
-						    , "label" 								=> $block_type["static-page-by-file"]["description"]
-						    , "icon" 								=> $block_type["static-page-by-file"]["icon"]
-						    , "actions" 							=> array("modify" => array(
-															            "path" => "/" . $type . "/html/add"
-															            , "icon" => "plus"
-																    ))	
-						);
-						if(is_array($menu_override["html"]["menu"]))
-							$contents["html"]["menu"] = array_replace_recursive($contents["html"]["menu"], $menu_override["html"]["menu"]);
-					}
-					
-					if($menu_override["html"]["nodes"] !== false) {
-						foreach($html AS $full_path) {
-		 					if(is_file($full_path)) {
-		 						$html_name = basename($full_path);
-
-			 					$contents["html"]["nodes"][] = array(
-			 						"key" 							=> "html"
-									, "subkey" 						=> $html_name
-									, "path" 						=> "/" . $type . "/html/" . $html_name
-									, "rel"							=> $block_type["static-page-by-file"]["smart_url"] . "-" . $html_name
-									, "label" 						=> $html_name 
-									, "actions" 					=> array("preview" => array(
-															            "path" => "/" . $type . "/html/preview/" . $html_name
-															            , "icon" => "preview"
-																    ))	
-									, "dialog" 						=> $block["dialog"]																					//dialog: false      
-			 					);
-
-								if(is_array($menu_override["html"]["piece"]))
-									$contents["html"]["nodes"][count($contents["html"]["nodes"]) - 1] = array_replace($contents["html"]["nodes"][count($contents["html"]["nodes"]) - 1], $menu_override["html"]["piece"]);
-							}
-						}
-					}
-				}
-			}
-			
-			/*********************
-			* VGallery
-			*/	    
-			if($menu_override["vgallery"] !== false)
-			{
-                $sSQL = "SELECT vgallery_type.ID
-                            , vgallery_type.name
-                            , vgallery_type.is_dir_default
-                        FROM vgallery_type
-                        WHERE 1
-                        ORDER BY vgallery_type.name";
-                $db->query($sSQL);
-                if($db->nextRecord()) {
-                    do {
-                        $arrVgalleryType[$db->getField("ID", "Number", true)] = array(
-                            "name" => $db->getField("name", "Text", true)
-                            , "is_dir" => $db->getField("is_dir_default", "Number", true)
-                        );
-                    } while($db->nextRecord());
-                }
+                    if(!$is_visible)
+                        continue;
+                    $notify_type = $db->getField("type", "Text", true);
+                    $notify_title = $db->getField("title", "Text", true);
+                    $notify_ID = $db->getField("ID", "Number", true);
+                    $arrNotify[$notify_type][$notify_title]["item"][$notify_ID]["message"] = $db->getField("message", "Text", true);
+                    $arrNotify[$notify_type][$notify_title]["item"][$notify_ID]["last_update"] = $db->getField("last_update", "Text", true);
+                    $arrNotify[$notify_type][$notify_title]["item"][$notify_ID]["url"] = $db->getField("url", "Text", true);
+                    $arrNotify[$notify_type][$notify_title]["item"][$notify_ID]["url_title"] = $db->getField("url_title", "Text", true);
+                    $arrNotify[$notify_type][$notify_title]["item"][$notify_ID]["count"] = $db->getField("count", "Text", true);
+                    $arrNotify[$notify_type][$notify_title]["item"][$notify_ID]["notify_url"] = FF_SITE_PATH . VG_SITE_ADMINNOTIFY . "/preview?keys[ID]=" . $db->getField("ID", "Number", true) . "&ret_url=" . urlencode($ret_url);
+                    
+                    $count_notify++;
+                } while($db->nextRecord());
                 
- 				$sSQL = "SELECT vgallery.ID AS ID_vgallery
- 							, vgallery.limit_type AS limit_type
-			                , vgallery.name AS vgallery_name
-			                , vgallery_nodes.ID AS ID_node
-			                , vgallery_nodes.parent
-			                , vgallery_nodes.name
-			                , vgallery_nodes.meta_title
-			                , (SELECT COUNT(count_node.ID) FROM vgallery_nodes AS count_node WHERE count_node.parent LIKE CONCAT(vgallery_nodes.parent, '/', vgallery_nodes.name, '%') AND count_node.is_dir = '0' )  AS count_node 
-			            FROM vgallery
-            				LEFT JOIN vgallery_nodes ON vgallery_nodes.ID_vgallery = vgallery.ID 
-            					AND vgallery_nodes.parent = CONCAT('/', vgallery.name)
-            					AND vgallery_nodes.is_dir > 0
-            					AND vgallery_nodes.name <> ''
-			            WHERE vgallery.public = 0
-			            ORDER BY vgallery.name, vgallery_nodes.parent, vgallery_nodes.name";
-			    $db->query($sSQL);
-			    if($db->nextRecord()) {
-					if(strpos($globals->page["user_path"], "/" . $type . "/contents") === 0)
-						$globals->page["icon"] = array(
-							"name" => $block_type["virtual-gallery"]["icon"]
-							, "type" => $block_type["virtual-gallery"]["group"]
-						);	
+                if($count_notify) {
+                    /*$css_deps         = array(
+                          "jquery.ui.core"        => array(
+                                  "file" => "jquery.ui.core.css"
+                                , "path" => null
+                                , "rel" => "jquery.ui"
+                            ), 
+                          "jquery.ui.theme"        => array(
+                                  "file" => "jquery.ui.theme.css"
+                                , "path" => null
+                                , "rel" => "jquery.ui"
+                            )
+                    );
 
-			        do { 
-						$ID_vgallery 							= $db->getField("ID_vgallery", "Number", true);
-        				$vgallery_name 							= $db->getField("vgallery_name", "Text", true);
-        				$limit_type 							= $db->getField("limit_type", "Text", true);
-        				$ID_node 								= $db->getField("ID_node", "Number", true);
-        				$parent 								= $db->getField("parent", "Text", true);
-        				$smart_url 								= $db->getField("name", "Text", true);
-        				$count_node 							= $db->getField("count_node", "Number", true);
-						$meta_title 							= $db->getField("meta_title", "Text", true);
-						$full_path 								= stripslash($parent) . "/" . $smart_url;
-						if(!$meta_title)
-							$meta_title 						= ucwords(str_replace("-", " " , $smart_url));
-							
-						if(!$contents[$vgallery_name]) {
-	        				$extend["block"]["contents"][$vgallery_name] = array(
-	        					"menu" => array(
-	        						 "key" 						=> "block"																								//key
-									, "subkey" 					=> "contents"																						//subkey
-									, "label" 					=> $block_type["virtual-gallery"]["description"] /*. '<span class="sub-title">' . ucwords($module_type) .'</span>'	*/					//label: ''
-									, "icon" 					=> $block_type["virtual-gallery"]["icon"]
-									, "location" 				=> $extend["block"]["section"]																		//location: null
-									, "readonly" 				=> "h4"
-									, "actions"					=> array("modify" => array(
-															            "path" => "/" . $type . "/contents/setting/add"
-															            , "icon" => "plus"
-																    )
-																)
-	        					)
-	        					, "skip_node" 					=> true
-	        					
-	        					, "limit" => array(
-	        						//"action2path" 				=> "struct"
-	        					)
-	        				);				
-                            $extend["content"]["contents"][$vgallery_name]		= array(
-	        					"menu" => array(
-	        						 "key" 						=> "content"																								//key
-									, "subkey" 					=> "contents"																						//subkey
-									, "label" 					=> $block_type["virtual-gallery"]["description"] /*. '<span class="sub-title">' . ucwords($module_type) .'</span>'	*/					//label: ''
-									, "icon" 					=> $block_type["virtual-gallery"]["icon"]
-									, "readonly" 				=> "h4"
-									, "actions"					=> array("modify" => array(
-															            "path" => "/" . $type . "/contents/setting/add"
-															            , "icon" => "plus"
-																    )
-																    ,"struct" => array(
-															            "path" => "/" . $type . "/contents/structure"
-															            , "icon" => "cog"
-															            , "dialog" => false
-																    )
-																)	
-	        					)
-	        					, "skip_node" 					=> true
-	        					
-	        				);	
-                            $actions = array();
-                            if($limit_type) {
-                                $arrLimitType = explode(",", $limit_type);
-                                foreach($arrLimitType AS $ID_type) {
-                                    if(!$arrVgalleryType[$ID_type])
-                                        continue;
+                    if(is_array($css_deps) && count($css_deps)) {
+                        foreach($css_deps AS $css_key => $css_value) {
+                            $rc = $oPage->widgetResolveCss($css_key, $css_value, $oPage);
 
-                                    $actions["struct-" . $ID_type] = array(
-                                        "path" => "/" . $type . "/contents/structure/" . $arrVgalleryType[$ID_type]["name"]
-                                        , "icon" => ($arrVgalleryType[$ID_type]["is_dir"] 
-                                            ? "folder"
-                                            : "table"
-                                        )
-                                    );
+                            $oPage->tplAddCss(preg_replace('/[^0-9a-zA-Z]+/', "", $css_key), $rc["file"], $rc["path"], "stylesheet", "text/css", false, false, null, false, "bottom");
+                        }
+                    }*/
+                    
+                    if(is_array($arrNotify) && count($arrNotify)) {
+                        foreach($arrNotify AS $arrNotify_key => $arrNotify_value) {
+                            $tpl->set_var("type", $arrNotify_key);
+                            $tpl->set_var("class_type", "notify-" . $arrNotify_key);
+
+                            if(is_array($arrNotify_value) && count($arrNotify_value)) {
+                                foreach($arrNotify_value AS $notify_group_key => $notify_group_value) {
+                                    $tpl->set_var("SezNotifyItem", "");
+                                    if(substr($notify_group_key, "0", 1) == "_") {
+                                        $tpl->set_var("title", ffTemplate::_get_word_by_code(ltrim($notify_group_key, "_")));
+                                    } else {
+                                        $tpl->set_var("title", $notify_group_key);
+                                    }
+                                    $tpl->set_var("real_title", $notify_group_key);
+                                    if(is_array($notify_group_value["item"]) && count($notify_group_value["item"])) {
+                                        foreach($notify_group_value["item"] AS $notify_item_key => $notify_item_value) {
+                                            $tpl->set_var("count", $notify_item_value["count"]);
+                                            
+                                            $last_update = new ffdata($notify_item_value["last_update"], "Timestamp");
+                                            $tpl->set_var("last_update", $last_update->getValue("DateTime", LANGUAGE_INSET));
+                                            
+                                            $message = strip_tags($notify_item_value["message"], "<br>");
+                                            if(strlen($message) > 500)
+                                                 $message = substr($message, 0, 500) . " ...";
+                                                 
+                                            $tpl->set_var("message", $message);
+                                            if(strlen($notify_item_value["url"])) {
+                                                $tpl->set_var("url", $notify_item_value["url"]);
+                                                $tpl->set_var("url_title", $notify_item_value["url"]);
+                                                $tpl->parse("SezUrl", false);
+                                            } else {
+                                                $tpl->set_var("SezUrl", "");
+                                            }
+
+                                            $tpl->set_var("notify_url", $notify_item_value["notify_url"]);
+                                            $tpl->parse("SezNotifyItem", true);
+                                        }
+                                    }
+                                    $tpl->parse("SezNotify", true);  
                                 }
                             }
-
-                            $actions["modify"] = array(
-                                "path" => "/" . $type . "/contents/" . $vgallery_name . "/setting?keys[ID]=" . $ID_vgallery
-                            );
-                            
-                            if($menu_override["vgallery"]["menu"] !== false) {
-        						$contents[$vgallery_name]["menu"] = array(
- 									"key" 							=> $vgallery_name
-						            , "path" 						=> "/" . $type . "/contents/" . $vgallery_name
-						            , "rel"							=> $block_type["virtual-gallery"]["smart_url"] . "-" . $vgallery_name
-						            , "label" 						=> ucwords(str_replace("-", " " , $vgallery_name))
-						            , "icon" 						=> $block_type["virtual-gallery"]["icon"]
-						            , "actions" 					=> $actions
-									, "dialog" 						=> false
-        						);
-								if(is_array($menu_override["vgallery"]["menu"]))
-									$contents[$vgallery_name]["menu"] = array_replace_recursive($contents[$vgallery_name]["menu"], $menu_override["vgallery"]["menu"]);
-							}        					
-							
-							if($def["widgets"])
-							{
-        						$widgets["menu"][$vgallery_name] = array(
-									"key" 							=> "block"
-									, "subkey" 						=> "menu-" . $vgallery_name
-									//, "path" 						=> "javascript:void(0);"
-									, "rel"							=> $block_type["vgallery-menu"]["smart_url"] . "-" . $vgallery_name
-									, "readonly" 					=> true
-									, "label" 						=> ucwords(str_replace("-", " " , $vgallery_name))
-									, "icon" 						=> $block_type["virtual-gallery"]["icon"]
-									, "location" 					=> $extend["block"]["section"]
-									, "class" 						=> "-draggable"
-        						);
-							}
-							if($ID_node && $menu_override[$vgallery_name]["nodes"] !== false) {
-								$contents[$vgallery_name]["nodes"][] = array(
- 									"key" 						=> $vgallery_name
-							        , "subkey" 					=> "V-" . $vgallery_name
-							        , "path" 					=> "/" . $type . "/contents/" . $vgallery_name
-							        , "label" 					=> ffTemplate::_get_word_by_code("all")   
-									, "dialog" 					=> false
-        						);  
-
-								if(is_array($menu_override["vgallery"]["piece"]))
-									$contents[$vgallery_name]["nodes"][count($contents[$vgallery_name]["nodes"]) - 1] = array_replace($contents[$vgallery_name]["nodes"][count($contents[$vgallery_name]["nodes"]) - 1], $menu_override["vgallery"]["piece"]);
-							}      			
-						}
-						if($ID_node && $menu_override["vgallery"]["nodes"] !== false) {
-        					$contents[$vgallery_name]["nodes"][] = array(
-        						"key" 							=> $vgallery_name
-							    , "subkey" 						=> "V-" . $ID_node
-							    , "path" 						=> "/" . $type . "/contents" . $full_path
-							    , "label" 						=> $meta_title . '<span class="nav-label">' . $count_node . '</span>'
-								, "dialog" 						=> false
-        					);
-
-							if(is_array($menu_override["vgallery"]["piece"]))
-								$contents[$vgallery_name]["nodes"][count($contents[$vgallery_name]["nodes"]) - 1] = array_replace($contents[$vgallery_name]["nodes"][count($contents[$vgallery_name]["nodes"]) - 1], $menu_override["vgallery"]["piece"]);
-						}
-			        } while($db->nextRecord());
-			    }
-			}
-
-			/*********************
-			* Album
-			*/
-			if($menu_override["albums"] !== false)
-			{
-				$album = glob(DISK_UPDIR . "/*", GLOB_ONLYDIR);
-				if(is_array($album) && count($album)) {
-					$extend["block"]["contents"]["albums"] 		= true;
-					$extend["content"]["contents"]["albums"]	= true;
-					
-					if(strpos($globals->page["user_path"], "/" . $type . "/albums") === 0)
-						$globals->page["icon"] = array(
-							"name" => $block_type["gallery"]["icon"]
-							, "type" => $block_type["gallery"]["group"]
-						);	
-
-					if($menu_override["albums"]["menu"] !== false) {
-						$contents["albums"]["menu"] = array(
-							"key" 									=> "albums"
-						    , "path" 								=> "/" . $type . "/albums"
-						    , "label" 								=> $block_type["gallery"]["description"]
-						    , "icon" 								=> $block_type["gallery"]["icon"]
-						    , "actions" 							=> array("modify" => array(
-															            "path" => "/" . $type . "/albums/add"
-															            , "icon" => "plus"
-																    ))	
-						);
-						if(is_array($menu_override["albums"]["menu"]))
-							$contents["albums"]["menu"] = array_replace_recursive($contents["albums"]["menu"], $menu_override["albums"]["menu"]);
-					}
-					foreach($album AS $full_path) {
-		 				$album_name = basename($full_path);
-		 	 			if($menu_override["albums"]["nodes"] !== false) {
-		 	 				$contents["albums"]["nodes"][] = array(
-		 	 					"key" 								=> "albums"
-								, "subkey" 							=> $album_name 
-								, "path" 							=> "/" . $type . "/albums/" . $album_name
-								, "rel"								=> $block_type["gallery"]["smart_url"] . "-" . $album_name
-								, "label" 							=> ucwords(str_replace("-", " " , $album_name)) . '<span class="sub-title">' . SITE_UPDIR . "/" . $album_name .'</span>'
-								, "dialog" 							=> $block["dialog"]	
-		 	 				);
-
-							if(is_array($menu_override["albums"]["piece"]))
-								$contents["albums"]["nodes"][count($contents["albums"]["nodes"]) - 1] = array_replace($contents["albums"]["nodes"][count($contents["albums"]["nodes"]) - 1], $menu_override["albums"]["piece"]);
-						}		 	 			
-        				if($def["widgets"])
-        				{
-        					$widgets["menu"][$album_name] = array(
-								"key" 								=> "block"
-								, "subkey" 							=> "menu-" . $album_name
-								//, "path" 							=> "javascript:void(0);"
-								, "rel"								=> $block_type["gallery-menu"]["smart_url"] . "-" . $album_name
-								, "readonly" 						=> true
-								, "label" 							=> ucwords(str_replace("-", " " , $album_name)) 
-								, "icon" 							=> $block_type["gallery"]["icon"]
-								, "location" 						=> $extend["block"]["section"]
-								, "class" 							=> "-draggable"
-        					);		 	 	
-						}
-					}
-				}			    
-			}
-			
-			/*******************
-			* Modules
-			*/
-			if($menu_override["addons"] !== false)
-			{
-				$sSQL = "SELECT modules.module_name AS type
-			                , modules.module_params AS name
-			            FROM modules
-			            WHERE 1
-			            ORDER BY modules.module_name, modules.module_params";
-			    $db->query($sSQL);
-			    if($db->nextRecord()) {
-                    $arrModule = array();
-			        do { 
-	        			$module_type 							= $db->getField("type", "Text", true);
-	        			$module_name 							= $db->getField("name", "Text", true);
-						$module_readonly						= !is_dir(FF_DISK_PATH . "/" . VG_UI_PATH . "/addons/" . $module_type . "/contents");
-
-						if(isset($menu_override["addons"]["limit"]["readonly"]) && $menu_override["addons"]["limit"]["readonly"] !== $module_readonly) {
-							continue;					
-						}	        		
-						
-	        			if(!$arrModule[$module_type]) {
-	        				$module_icon 						= $block_type["module"]["icon"];
-							if($block_type["module"]["child"][$module_type]["icon"])
-								$module_icon 					= $block_type["module"]["child"][$module_type]["icon"];
-
-	        				$extend["block"]["contents"][$module_type] = array(
-	        					"menu" => array(
-	        						 "key" 						=> "block"																								//key
-									, "subkey" 					=> "addons"																						//subkey
-									, "label" 					=> $block_type["module"]["description"] /*. '<span class="sub-title">' . ucwords($module_type) .'</span>'	*/					//label: ''
-									, "location" 				=> $extend["block"]["section"]																		//location: null
-									, "readonly" 				=> "h4"
-									, "actions"					=> array("modify" => array(
-															            "path" => "/" . $type . "/pages/blocks/add"
-															            , "icon" => "plus"
-															            , "class" => "-floating"
-																    )
-																)
-	        					)
-	        					, "skip_node" 					=> false
-	        					, "piece" => array(
-	        						"icon" 						=> $module_icon
-	        						, "actions" 				=> null
-	        						, "readonly"				=> false
-	        					)
-	        					, "limit" => array(
-	        						"action2path" 				=> "modify"
-	        					)
-	        				);
-	        				$extend["content"]["contents"][$module_type]	= array(
-	        					"menu" => array(
-	        						 "key" 						=> "content"																								//key
-									, "subkey" 					=> "addons"																						//subkey
-									, "label" 					=> $block_type["module"]["description"] /*. '<span class="sub-title">' . ucwords($module_type) .'</span>'	*/					//label: ''
-									, "readonly" 				=> "h4"
-	        					)
-	        					, "skip_node" 					=> true
-	        					, "piece" => array(
-	        						"icon" 						=> $module_icon
-	        						, "actions" 				=> null
-	        						, "readonly"				=> false
-	        					)
-	        				);
-	        				
-							if(strpos($globals->page["user_path"], "/" . $type . "/addons/" . $module_type) === 0)
-								$globals->page["icon"] = array(
-									"name" => $module_icon
-									, "type" => $block_type["module"]["group"]
-								);	
-
-							if($menu_override["addons"]["menu"] !== false) {
-	    						$contents[$module_type]["menu"] = array(
-									"key" 							=> $module_type
-								    , "path" 						=> "/" . $type . "/addons/" . $module_type
-								    , "label" 						=> ucwords($module_type)
-								    , "icon" 						=> $module_icon
-								    , "actions" 					=> array("modify" => array(
-															            "path" => "/" . $type . "/addons/" . $module_type . "/add"
-															            , "icon" => "plus"
-																    ))	
-								);
-
-								if(is_array($menu_override["addons"]["menu"]))
-									$contents[$module_type]["menu"] = array_replace_recursive($contents[$module_type]["menu"], $menu_override["addons"]["menu"]);
-							}
-							$arrModule[$module_type]["readonly"] = $module_readonly;
-	        			}
-
-	        			if(is_dir(FF_DISK_PATH . "/" . VG_UI_PATH . "/addons/" . $module_type . "/fields")) {
-	        				$arrModule[$module_type]["actions"]["field"] = array(
-							    "path" 							=> "/" . $type . "/addons/" . $module_type . "/" . $module_name . "/fields"
-							    , "icon" 						=> "table"
-							);
-						}
-	        			$arrModule[$module_type]["actions"]["modify"] = array(
-							"path" 								=> "/" . $type . "/addons/" . $module_type . "/" . $module_name
-						);
-
-						if($menu_override["addons"]["nodes"] !== false) {
-							$contents[$module_type]["nodes"][] = array(
-			 					"key" 								=> $module_type
-								, "subkey" 							=> $module_name	
-								, "path" 							=> "/" . $type . "/addons/" . $module_type . "/contents/" . $module_name	
-								, "rel"								=> $block_type["module"]["smart_url"] . $module_type . "-" . $module_name
-								, "label" 							=> ucwords($module_name) /*. '<span class="sub-title">' . ucwords($module_type) .'</span>'	*/
-								, "actions" 						=> $arrModule[$module_type]["actions"]
-								, "readonly"						=> $arrModule[$module_type]["readonly"]
-			 				);
-						
-							if(is_array($menu_override["addons"]["piece"]))
-								$contents[$module_type]["nodes"][count($contents[$module_type]["nodes"]) - 1] = array_replace($contents[$module_type]["nodes"][count($contents[$module_type]["nodes"]) - 1], $menu_override["addons"]["piece"]);
-						}
-			        } while($db->nextRecord());
-			    }
-			}
-			
-		    /*******************
-			* Applets
-			*/
-			if($menu_override["applets"] !== false)
-			{
-				$extend["block"]["contents"]["applets"] = array(
-					"piece" 									=> array(
-						"hide" 									=> false
-						//, "path" 								=> "javascript:void(0);"
-						, "readonly" 							=> true
-					)
-				);
-
-				if(strpos($globals->page["user_path"], "/" . $type . "/applets") === 0)
-					$globals->page["icon"] = array(
-						"name" => $block_type["forms-framework"]["icon"]
-						, "type" => $block_type["forms-framework"]["group"]
-					);	
-				if($menu_override["applets"]["menu"] !== false) {
-					$contents["applets"]["menu"] = array(
-						"key" 										=> "applets"
-						, "path" 									=> "/" . $type . "/applets"
-						, "label" 									=> $block_type["forms-framework"]["description"]
-						, "icon" 									=> $block_type["forms-framework"]["icon"]
-					);
-					if(is_array($menu_override["applets"]["menu"]))
-						$contents["applets"]["menu"] = array_replace_recursive($contents["applets"]["menu"], $menu_override["applets"]["menu"]);
-				}
-
-				if($menu_override["applets"]["nodes"] !== false) {
-					$applets = glob(FF_DISK_PATH . "/applets/*", GLOB_ONLYDIR);
-					if(is_array($applets) && count($applets)) {
-						foreach($applets AS $applet_path) {
-							$applet_name = basename($applet_path);
-							$contents["applets"]["nodes"][] = array(
-								"key" 								=> "applets"
-								, "subkey" 							=> $applet_name
-								, "path" 							=> "/" . $type . "/applets/" . $applet_name
-								, "rel"								=> $block_type["forms-framework"]["group"] . "-" . $applet_name
-								, "label" 							=> ucwords(str_replace("-" , " ", $applet_name)) . '<span class="sub-title">' . "FrontEnd" .'</span>'
-								, "icon" 							=> $block_type["forms-framework"]["icon"]
-								, "hide" 							=> !is_dir(FF_DISK_PATH . "/contents/restricted/" . $applet_name)
-								, "dialog" 							=> $block["dialog"]
-							);
-
-							if(is_array($menu_override["applets"]["piece"]))
-								$contents["applets"]["nodes"][count($contents["applets"]["nodes"]) - 1] = array_replace($contents["applets"]["nodes"][count($contents["applets"]["nodes"]) - 1], $menu_override["applets"]["piece"]);
-						}
-					}
-					
-					$applets = glob(FF_DISK_PATH . "/modules/*/applets/*", GLOB_ONLYDIR);
-					if(is_array($applets) && count($applets)) {
-						foreach($applets AS $applet_path) {
-							$applet_name = basename($applet_path);
-							$applet_type = basename(ffCommon_dirname(ffCommon_dirname($applet_path)));
-							$contents["applets"]["nodes"][] = array(
-								"key" 								=> "applets"
-								, "subkey" 							=> $applet_type . "-" . $applet_name
-								, "path" 							=> "/" . $type . "/applets/" . $applet_type . "/" . $applet_name
-								, "rel"								=> $block_type["forms-framework"]["group"] . "-" . $applet_type . "-" . $applet_name
-								, "label" 							=> ucwords(str_replace("-" , " ", $applet_name)) . '<span class="sub-title">' . $applet_type .'</span>'
-								, "icon" 							=> $block_type["forms-framework"]["icon"]
-								, "hide" 							=> !is_dir(FF_DISK_PATH . "/modules/" . $applet_type . "/contents/restricted/" . $applet_type . "/" . $applet_name)
-								, "dialog" 							=> $block["dialog"]
-							);
-
-							if(is_array($menu_override["applets"]["piece"]))
-								$contents["applets"]["nodes"][count($contents["applets"]["nodes"]) - 1] = array_replace($contents["applets"]["nodes"][count($contents["applets"]["nodes"]) - 1], $menu_override["applets"]["piece"]);
-						}
-					}	 
-				}
-			}		
-		}
-		
-		if(is_array($extend) && count($extend)) 
-		{
-			foreach($extend AS $ext_name => $ext_data)
-			{
-				if(!$def[$ext_name])
-					continue;
-
-				if($ext_data["menu"])
-					$menu[$ext_name]["menu"] = $ext_data["menu"];
-
-				$menu[$ext_name]["nodes"] = array();
-				foreach($ext_data["contents"] AS $key => $settings) 
-				{
-					$piece_override 				= $ext_data["piece"];
-					$piece_limit 					= null;
-					$skip_node						= false;					
-					if(is_array($settings)) {
-						if(!$menu[$ext_name]["nodes"][$settings["menu"]["subkey"]]) {
-							if(is_array($settings["menu"]))
-								$menu[$ext_name]["nodes"][$settings["menu"]["subkey"]] = $settings["menu"];
-							else {
-								$menu[$ext_name]["nodes"][$settings["menu"]["subkey"]] = array(
-									"key" 			=> $ext_name
-									, "subkey" 		=> $contents[$key]["menu"]["key"]
-									, "label" 		=> $contents[$key]["menu"]["label"]
-									, "icon" 		=> $contents[$key]["menu"]["icon"]
-									, "actions" 	=> $contents[$key]["menu"]["actions"]
-									, "location" 	=> $ext_data["section"]
-									, "readonly" 	=> "h4"
-								);								
-							}
-						}
-
-						if(is_array($settings["piece"]))
-							$piece_override 		= array_replace($ext_data["piece"], $settings["piece"]);
-
-						if(is_array($settings["limit"]))
-							$piece_limit 			= $settings["limit"];
-
-						$skip_node 					= $settings["skip_node"];
-						
-						if($skip_node) {
-							$nodes 					= (array) $contents[$key]["menu"];
-							$nodes["subkey"] 		= $nodes["key"];
-							$nodes["key"] 			= $settings["menu"]["subkey"];
-							
-							$menu[$ext_name]["nodes"][] = system_override_menu_piece($nodes, $piece_override, $piece_limit);
-						}
-					} else {
-						$menu[$ext_name]["nodes"][] = array(
-							"key" 					=> $ext_name
-							, "subkey" 				=> $contents[$key]["menu"]["key"]
-							, "label" 				=> $contents[$key]["menu"]["label"]
-							, "icon" 				=> $contents[$key]["menu"]["icon"]
-							, "actions" 			=> $contents[$key]["menu"]["actions"]
-							, "location" 			=> $ext_data["section"]
-							, "readonly" 			=> "h4"
-						);
-					}
-					
-					if(!$skip_node && is_array($contents[$key]["nodes"]) && count($contents[$key]["nodes"])) {
-						$nodes = (array) $contents[$key]["nodes"];
-						$menu[$ext_name]["nodes"] = array_merge($menu[$ext_name]["nodes"], array_filter($nodes, function(&$piece) use($piece_override, $piece_limit) {
-							$piece = system_override_menu_piece($piece, $piece_override, $piece_limit);
-							
-							return $piece;
-						}));
-					}
-				} 
-			}
-		}
-
-		if($def["widgets"]) 
-		{
-			/*******************
-			* Widgets
-			*/
-			$widgets["default"] = array(
-				"orinav" 								=> $block_type["orinav"]["icon"]
-				, "languages" 							=> $block_type["languages"]["icon"]
-				, "login" 								=> $block_type["login"]["icon"]
-				, "search" 								=> $block_type["search"]["icon"]
-			);			
-
-			foreach($widgets AS $widget_group => $widgets_data) {
-				if($widget_group != "default") {
-					$menu[$widget_group]["nodes"] 		= $widgets_data;
-					array_unshift($menu[$widget_group]["nodes"], array(
-						"key" 							=> "block"
-						, "subkey" 						=> $widget_group
-						, "label" 						=> ffTemplate::_get_word_by_code($widget_group)
-						, "icon" 						=> $widgets_data["default"]["icon"]
-						, "location" 					=> $extend["block"]["section"]
-						, "readonly" 					=> "h4"
-					));
-
-				} elseif(is_array($widgets_data) && count($widgets_data)) {
-					$menu["widgets"]["nodes"][] = array(
-						"key" 							=> "block"
-						, "subkey" 						=> "widgets"
-						, "label" 						=> "Widgets"
-						, "icon" 						=> "cubes"
-						, "location" 					=> $extend["block"]["section"]
-						, "readonly" 					=> "h4"
-					);
-					foreach($widgets_data AS $widget_key => $widget_icon) {
-						$menu["widgets"]["nodes"][] = array(
-							"key" 						=> "block"
-							, "subkey" 					=> "widgets-" . $widget_key
-							, "path" 					=> "javascript:void(0);"
-							, "rel"						=> $block_type[$widget_key]["smart_url"]
-							, "label" 					=> $block_type[$widget_key]["description"]
-							, "icon" 					=> $widget_icon
-							, "location" 				=> $extend["block"]["section"]
-							, "class" 					=> "-draggable"
-						);
-					}
-				}
-			}				
-		}
-
-		if($def["contents"])
-			$menu = $contents + $menu;
-		
-		
-		if($def["ecommerce"])
-		{
-			/****
-			* Ecommerce
-			*/
-			$menu["ec"]["menu"] = array(
-				"key" 										=> "ec"
-				, "label" 									=> "Ecommerce"
-				, "icon" 									=> $block_type["ecommerce"]["icon"]
-			);		
-
-			$arrEcommerce = glob(FF_DISK_PATH . VG_SYS_PATH . "/ecommerce/*", GLOB_ONLYDIR);
-		    if(is_array($arrEcommerce) && count($arrEcommerce)) {
-		        foreach($arrEcommerce AS $real_file) {
-		        	$file = basename($real_file);
-
-			        $menu["ec"]["nodes"][] = array(
-						"key"										=> "ec"
-						, "subkey" 									=> "ec-" . $file
-						, "path" 									=> VG_RULE_ECOMMERCE . "/" . $file
-						, "label" 									=> ucwords(str_replace("-", " ", $file))
-					);
-				}
-			}		
-		}
-		
-		
-		if($def["landing"])
-		{
-			/****
-			* Landing Page
-			*/
-			$menu["landing-pages"]["menu"] = array(
-				"key" 										=> "landing-pages"
-				, "label" 									=> "Landing Page"
-				, "icon" 									=> $block_type["tags-menu"]["icon"]
-				, "actions" 								=> array("modify" => array(
-														        "path" => "/" . $type . "/landing-pages/config"
-															))	
-			);
-			
-
-			if(strpos($globals->page["user_path"], "/" . $type . "/landing-pages/place") === 0)
-				$globals->page["icon"] = array(
-					"name" => "map-marker"
-					, "type" => "content"
-				);	
-				
-			$menu["landing-pages"]["nodes"][] = array(
-				"key" 										=> "landing-pages"
-				, "subkey" 									=> "place"
-				, "path" 									=> "/" . $type . "/landing-pages/place"
-				, "label" 									=> "Place"
-				, "icon" 									=> "map-marker"
-			);
-			
-			if(strpos($globals->page["user_path"], "/" . $type . "/landing-pages/tag") === 0)
-				$globals->page["icon"] = array(
-					"name" => "tag"
-					, "type" => "content"
-				);	
-			$menu["landing-pages"]["nodes"][] = array(
-				"key" 										=> "landing-pages"
-				, "subkey" 									=> "tags"
-				, "path" 									=> "/" . $type . "/landing-pages/tag"
-				, "label" 									=> "Tag"
-				, "icon" 									=> "tag"
-			);	
-				
-			if(strpos($globals->page["user_path"], "/" . $type . "/landing-pages/search") === 0)
-				$globals->page["icon"] = array(
-					"name" => "tag"
-					, "type" => "content"
-				);	
-			$menu["landing-pages"]["nodes"][] = array(
-				"key" 										=> "landing-pages"
-				, "subkey" 									=> "search"
-				, "path" 									=> "/" . $type . "/landing-pages/search"
-				, "label" 									=> "Search"
-				, "icon" 									=> "search"
-			);				
-		}	    
-
-		/*****
-		* Anagraph
-		*/
-		if($def["auth"])
-		{
-			if(strpos($globals->page["user_path"], "/" . $type . "/auth") === 0)
-				$globals->page["icon"] = array(
-					"name" => $block_type["user"]["icon"]
-					, "type" => $block_type["user"]["group"]
-				);			
-		
-			$menu["auth"]["menu"] = array(
-				"key" 										=> "auth"
-				, "path" 									=> "/" . $type . "/auth"
-				, "label" 									=> ffTemplate::_get_word_by_code("auth")
-				, "icon" 									=> $block_type["user"]["icon"]
-				, "actions" 								=> array("add" => array(
-															    "path" => "/" . $type . "/auth/users/add"
-															    , "icon" => "user-plus"
-															))	
-			);	
-			if(is_array($menu_override["auth"]["menu"]))
-				$menu["auth"]["menu"] = array_replace_recursive($menu["auth"]["menu"], $menu_override["auth"]["menu"]);
-
-			$menu["auth"]["nodes"][] = array(
- 				"key" 										=> "auth"
-				, "subkey" 									=> "auth-users"
-				, "path" 									=> "/" . $type . "/auth/users"
-				, "label" 									=> ffTemplate::_get_word_by_code("users")   
-			); 		
-			$menu["auth"]["nodes"][] = array(
- 				"key" 										=> "auth"
-				, "subkey" 									=> "auth-groups"
-				, "path" 									=> "/" . $type . "/auth/groups"
-				, "label" 									=> ffTemplate::_get_word_by_code("groups")   
-			); 		
-		    $menu["auth"]["nodes"][] = array(
- 				"key" 										=> "auth"
-				, "subkey" 									=> "auth-perm"
-				, "path" 									=> "/" . $type . "/auth/settings"
-				, "label" 									=> ffTemplate::_get_word_by_code("permissions")   
-			); 	
-		    $menu["auth"]["nodes"][] = array(
- 				"key" 										=> "auth"
-				, "subkey" 									=> "oauth-apps"
-				, "path" 									=> "/" . $type . "/auth/oauth-apps"
-				, "label" 									=> ffTemplate::_get_word_by_code("oauth2_apps")   
-			); 	
-		    $menu["auth"]["nodes"][] = array(
- 				"key" 										=> "auth"
-				, "subkey" 									=> "oauth-scopes"
-				, "path" 									=> "/" . $type . "/auth/oauth-scopes"
-				, "label" 									=> ffTemplate::_get_word_by_code("oauth2_scopes")   
-			); 				
-
-		    /*
- 			$sSQL = "SELECT anagraph_categories.name AS ID
-					    , anagraph_categories.name
-					    , (SELECT count(*) FROM anagraph WHERE FIND_IN_SET(anagraph_categories.ID, anagraph.categories)) AS count_node
-					FROM anagraph_categories
-					WHERE 1
-					ORDER BY anagraph_categories.name";
-			$db->query($sSQL);
-			if($db->nextRecord()) {
-				$menu["users"]["nodes"][] = array(
- 					"key" 									=> "auth"
-					, "subkey" 								=> "users-all"
-					, "path" 								=> "/" . $type . "/users"
-					, "label" 								=> ffTemplate::_get_word_by_code("all")   
-			    ); 		
-				do {
-					$cat_name 								= $db->getField("name", "Text", true);
-					$count_node 							= $db->getField("count_node", "Number", true);
-					$menu["users"]["nodes"][] = array(
- 						"key" 								=> "users"
-						, "subkey" 							=> "users-all"
-						, "path"							=>"/" . $type . "/users/" . ffCommon_url_rewrite($cat_name) . '<span class="nav-label">' . $count_node . '</span>'
-						, "label" 							=>  $cat_name  
-				    ); 	
-
-					if(is_array($menu_override["auth"]["piece"]))
-						$menu["auth"]["nodes"][count($menu["auth"]["nodes"]) - 1] = array_replace($menu["auth"]["nodes"][count($menu["auth"]["nodes"]) - 1], $menu_override["auth"]["piece"]);
-				} while($db->nextRecord());
-			}*/
-		}		
-
-		/****
-		* Utility
-		*/
-	    if($def["util"])
-		{
-			if(strpos($globals->page["user_path"], "/" . $type . "/utility") === 0)
-				$globals->page["icon"] = array(
-					"name" => "cog"
-					, "type" => "content"
-				);	
-					
-			$menu["utility"]["menu"] = array(
-				"key" 										=> "utility"
-				, "label" 									=> "Utility"
-				, "icon" 									=> "cog"
-				, "actions"									=> array(
-																"modify" => array(
-																	"path" => "/" . $type . "/pages/blocks/add"
-																	, "icon" => "plus"
-																)
-															)	
-			);
-
-			if(is_array($menu_override["utility"]["menu"]))
-				$menu["utility"]["menu"] = array_replace_recursive($menu["utility"]["menu"], $menu_override["utility"]["menu"]);
-			
-			$util = array(
-				"icons" => array(
-					"email" => "paper-plane-o"
-					, "international" => "language"
-					, "notify" => "bell-o"
-				)
-				, "favorite" => array(
-					"international" => true
-					, "notify" => true
-				)
-				, "actions" => null
-			);
-			$menu["utility"]["nodes"][] = array(
-				"key"										=> "utility"
-				, "subkey" 									=> "blocks"
-				, "path" 									=> "/" . $type . "/pages/blocks"
-				, "label" 									=> ffTemplate::_get_word_by_code("blocks")
-				, "icon" 									=> "cubes"
-			);
-		    $arrUtility = glob(FF_DISK_PATH . "/" . VG_UI_PATH . "/restricted/utility/*", GLOB_ONLYDIR);
-		    if(is_array($arrUtility) && count($arrUtility)) {
-		        foreach($arrUtility AS $real_file) {
-		        	$file = basename($real_file);
-			        $menu["utility"]["nodes"][] = array(
-						"key"										=> "utility"
-						, "subkey" 									=> $file
-						, "path" 									=> "/" . $type . "/utility/" . $file
-						, "label" 									=> ucwords(str_replace("-", " ", $file))
-						, "icon" 									=> $util["icons"][$file]
-						, "favorite"								=> $util["favorite"][$file]
-						, "actions"									=> $util["actions"][$file]
-					);
-				}
-			}
-		}		
-	}
-
-	return $menu;
+                        }
+                    }
+                    $tpl->set_var("notify_url", FF_SITE_PATH . VG_SITE_ADMINNOTIFY);
+                    
+                    $tpl->parse("SezNotifyList", false);
+                }
+            }
+            $tpl_layer->set_var("notify", $tpl->rpparse("main", false));
+        } else {
+            if(check_function("write_notification"))
+                write_notification("_error_layer_not_exist", "notify_" . $oPage->layer . ".html", "warning", "", "", true, -1, null, "file");
+        }    
+    }
 }
 
-function system_override_menu_piece($piece, $piece_override, $piece_limit = null) 
+function system_layer_quickpanel($oPage, $tpl_layer) 
 {
-	if(isset($piece_limit["readonly"]) && $piece["readonly"] !== $piece_limit["readonly"])
-		return false;
+    if($oPage->layer == ffGetFilename(VG_SITE_ADMIN) || $oPage->layer == ffGetFilename(VG_SITE_RESTRICTED) || $oPage->layer == ffGetFilename(VG_SITE_MANAGE)) {
+        $filename = null;
+        if(is_file(FF_DISK_PATH . "/themes/" . $oPage->theme . "/layouts/quickpanel_" . $oPage->layer . ".html")) {
+            $filename = FF_DISK_PATH . "/themes/" . $oPage->theme . "/layouts/quickpanel_" . $oPage->layer . ".html";
+        } elseif(is_file(FF_DISK_PATH . "/themes/" . THEME_INSET . "/layouts/quickpanel_" . $oPage->layer . ".html")) {
+            $filename = FF_DISK_PATH . "/themes/" . THEME_INSET . "/layouts/quickpanel_" . $oPage->layer . ".html";
+        }
+        if($filename !== null) {
+			$oPage->tplAddJs("layerProcess", "layerprocess.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/system");
+            $tpl = ffTemplate::factory(ffCommon_dirname($filename));
+            $tpl->load_file("quickpanel_" . $oPage->layer . ".html", "main");
 
-	$piece["subkey"] 		= $piece["key"] . "-" . $piece["subkey"];
-	if($piece_limit["action2path"])
-		$piece["path"] 		= $piece["actions"][$piece_limit["action2path"]]["path"];
-	
-	$piece = array_replace($piece, $piece_override);
-
-	return $piece;
+            $tpl->set_var("site_path", FF_SITE_PATH);
+            $tpl->set_var("theme_inset", THEME_INSET);
+            $tpl->set_var("theme", $oPage->theme);
+			$tpl->set_var("frontend_icon", cm_getClassByFrameworkCss("vg-fontend", "icon-tag"));
+			$tpl->set_var("logout_icon", cm_getClassByFrameworkCss("power-off", "icon-tag", "2x"));
+            
+            if(AREA_ADMIN_SHOW_MODIFY) {
+            	$tpl->set_var("admin_icon", cm_getClassByFrameworkCss("vg-admin", "icon-tag"));
+                $tpl->parse("SezAdmin", false);
+            } else {
+                $tpl->set_var("SezAdmin", "");
+            }
+            if(AREA_RESTRICTED_SHOW_MODIFY) {
+            	$tpl->set_var("restricted_icon", cm_getClassByFrameworkCss("vg-restricted", "icon-tag"));
+                $tpl->parse("SezRestricted", false);
+            } else {
+                $tpl->set_var("SezRestricted", "");
+            }
+            if(AREA_ECOMMERCE_SHOW_MODIFY) {
+            	$tpl->set_var("manage_icon", cm_getClassByFrameworkCss("vg-manage", "icon-tag"));
+                $tpl->parse("SezManage", false);
+            } else {
+                $tpl->set_var("SezManage", "");
+            }
+            
+            $tpl_layer->set_var("quickpanel", $tpl->rpparse("main", false));
+        } else {
+            if(check_function("write_notification"))
+                write_notification("_error_layer_not_exist", "quickpanel_" . $oPage->layer . ".html", "warning", "", "", true, -1, null, "file");
+        }
+    }
 }
 
-function system_load_menu_special($menu = array()) 
+function system_layer_languages($oPage, $tpl_layer) 
 {
+    if($oPage->layer == ffGetFilename(VG_SITE_ADMIN) || $oPage->layer == ffGetFilename(VG_SITE_RESTRICTED) || $oPage->layer == ffGetFilename(VG_SITE_MANAGE)) {
+        $filename = null;
+        if(is_file(FF_DISK_PATH . "/themes/" . $oPage->theme . "/layouts/languages_" . $oPage->layer . ".html")) {
+            $filename = FF_DISK_PATH . "/themes/" . $oPage->theme . "/layouts/languages_" . $oPage->layer . ".html";
+        } elseif(is_file(FF_DISK_PATH . "/themes/" . THEME_INSET . "/layouts/languages_" . $oPage->layer . ".html")) {
+            $filename = FF_DISK_PATH . "/themes/" . THEME_INSET . "/layouts/languages_" . $oPage->layer . ".html";
+        }
+		$css = null;
+		if(is_file(FF_DISK_PATH . "/themes/" . $oPage->theme . "/css/lang-flags16.css")) {
+			$css = "f16";
+			$oPage->tplAddCss("langFlag", "lang-flags16.css", FF_THEME_DIR . "/" . $oPage->theme . "/css");
+		} elseif(is_file(FF_DISK_PATH . "/themes/" . THEME_INSET . "/css/lang-flags16.css")) {
+			$css = "f16";
+            $oPage->tplAddCss("langFlag", "lang-flags16.css", FF_THEME_DIR . "/" . THEME_INSET . "/css");
+		} elseif(is_file(FF_DISK_PATH . "/themes/" . $oPage->theme . "/css/lang-flag32.css")) {
+			$css = "f32";
+            $oPage->tplAddCss("langFlag", "lang-flags32.css", FF_THEME_DIR . "/" . $oPage->theme . "/css");
+		} elseif(is_file(FF_DISK_PATH . "/themes/" . THEME_INSET . "/css/lang-flags32.css")) {
+			$css = "f32";
+            $oPage->tplAddCss("langFlag", "lang-flags32.css", FF_THEME_DIR . "/" . THEME_INSET . "/css");
+		}
+		if($filename !== null && $css) {
+			$oPage->tplAddJs("layerProcess", "layerprocess.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/system");
+            $db = ffDB_Sql::factory(); 
+			
+            $tpl = ffTemplate::factory(ffCommon_dirname($filename));
+            $tpl->load_file("languages_" . $oPage->layer . ".html", "main");
 
-//da togliere stage_admin e tutti i vg_site_
-	$menu["install"]["menu"] = array(
-		"key"										=> "install"
-		, "path" 									=> VG_RULE_INSTALL
-		, "label" 									=> ffTemplate::_get_word_by_code("install")
-		//, "favorite" 								=> true
-		, "icon" 									=> "download"
-		, "dialog" 									=> true
-		, "location" 								=> "brand"
-	);
-	$menu["updater"]["menu"] = array(
-		"key"										=> "updater"
-		, "path" 									=> VG_RULE_UPDATER
-		, "label" 									=> ffTemplate::_get_word_by_code("updater")
-		//, "favorite" 								=> true
-		, "icon" 									=> "refresh"
-		, "dialog" 									=> true
-		, "location" 								=> "brand"
-	);
-	$menu["webservices"]["menu"] = array(
-		"key"										=> "webservices"
-		, "path" 									=> VG_WEBSERVICES
-		, "label" 									=> ffTemplate::_get_word_by_code("webservices")
-		//, "favorite" 								=> true
-		, "icon" 									=> "share-alt"
-		, "dialog" 									=> false
-		, "location" 								=> "brand"
-	);	
-	$menu["frontend"]["menu"] = array(
-		"key"										=> "frontend"
-		, "path" 									=> FF_SITE_PATH . "/"
-		, "label" 									=> ffTemplate::_get_word_by_code("frontend")
-		//, "favorite" 								=> true
-		, "icon" 									=> "desktop"
-		, "location" 								=> "admin"
-	);
-	$menu["admin"]["menu"] = array(
-		"key"										=> "admin"
-		, "path" 									=> VG_WS_ADMIN
-		, "label" 									=> ffTemplate::_get_word_by_code("admin")
-		//, "favorite" 								=> true
-		, "icon" 									=> "cog"
-		, "location" 								=> "admin"
-	);
-	$menu["builder"]["menu"] = array(
-		"key"										=> "builder"
-		, "path" 									=> VG_WS_BUILDER
-		, "label" 									=> ffTemplate::_get_word_by_code("builder")
-		//, "favorite" 								=> true
-		, "icon" 									=> "industry"
-		, "location" 								=> "admin"
-	);
+            $tpl->set_var("site_path", FF_SITE_PATH);
+            $tpl->set_var("theme_inset", THEME_INSET);
+            $tpl->set_var("theme", $oPage->theme);
 
-	$menu["restricted"]["menu"] = array(
-		"key"										=> "restricted"
-		, "path" 									=> VG_WS_RESTRICTED
-		, "label" 									=> ffTemplate::_get_word_by_code("console")
-		//, "favorite" 								=> true
-		, "icon" 									=> "newspaper-o"
-		, "location" 								=> "admin"
-	);
-
-	$menu["ecommerce"]["menu"] = array(
-		"key"										=> "ecommerce"
-		, "path" 									=> VG_WS_ECOMMERCE
-		, "label" 									=> ffTemplate::_get_word_by_code("ecommerce")
-		//, "favorite" 								=> true
-		, "icon" 									=> "shopping-cart"
-		, "location" 								=> "admin"
-	);
-	return $menu;
+            $sSQL = "SELECT " . FF_PREFIX . "languages.*
+						FROM " . FF_PREFIX . "languages
+						WHERE " . FF_PREFIX . "languages.status = '1'
+						ORDER BY " . FF_PREFIX . "languages.description";
+            $db->query($sSQL);
+            if($db->nextRecord()) {
+				$tpl->set_var("flag_dim", $css);
+                do {
+                    $code = $db->getField("code", "Text", true);
+                    $tpl->set_var("code", $code);
+                    $tpl->set_var("description", $db->getField("description", "Text", true));
+					$tpl->set_var("flag_lang", "flag " . $db->getField("tiny_code", "Text", true));
+                    if($code == LANGUAGE_INSET) {
+						$tpl->set_var("flag_lang_active", "flag " . $db->getField("tiny_code", "Text", true));
+                        $tpl->parse("SezActualLang", false);
+                    } else {
+                        $tpl->set_var("show_files", "?lang=" . $code);
+                        $tpl->parse("SezLang", true);
+                    }
+						
+                } while($db->nextRecord());
+            }
+            
+            $tpl_layer->set_var("languages", $tpl->rpparse("main", false));
+        } else {
+            if(check_function("write_notification"))
+                write_notification("_error_layer_not_exist", "languages_" . $oPage->layer . ".html", "warning", "", "", true, -1, null, "file");
+        }
+    }
 }
 
-function system_layer_restricted($cm, $type) 
+
+function system_layer_restricted($cm) 
 {
     $globals = ffGlobals::getInstance("gallery");
-	
-	$cm->oPage->tplAddJs("ff.cms.admin");
-	$cm->oPage->minify = false; //previene l'eliminazione degli invii a capo all'interno delle TEXTAREA
-    //ffErrorHandler::raise("ASD", E_USER_ERROR, null, get_defined_vars());
-    if($type == "restricted") 
-    {
-	    if(check_function("system_get_sections"))
-	        $block_module = system_get_block_type("module");	
-	        
-	    if(is_array($cm->modules["restricted"]["menu"]) && count($cm->modules["restricted"]["menu"])) {
-    		foreach($cm->modules["restricted"]["menu"] AS $key => $menu) {
-    			if(!$cm->modules["restricted"]["menu"][$key]["icon"])
-    				$cm->modules["restricted"]["menu"][$key]["icon"] = $block_module["icon"];
-    		}
-	    }
-    } else {
-    	$cm->modules["restricted"]["menu"] = array();
+    $db = ffDB_Sql::factory();
+    
+    $cm->oPage->minify = false; //previene l'eliminazione degli invii a capo all'interno delle TEXTAREA
+
+	if(check_function("set_header_page")) {
+		set_header_page(null, false, false, false, false); 	
 	}
 
-    $menu = system_load_menu($type);
-    $menu = system_load_menu_special($menu);
-
-    if(is_array($menu) && count($menu)) {
-		if(isset($menu["block"]))
-    		$cm->oPage->class_body = "-rightview";
-
-    	foreach($menu AS $key => $data) {
-    		if(is_array($data["menu"]))
-    			call_user_func("mod_restricted_add_menu_child", $data["menu"]);
-    		
-    		if(is_array($data["nodes"]) && count($data["nodes"])) {
-    			foreach($data["nodes"] AS $submenu) {
-    			    call_user_func("mod_restricted_add_menu_sub_element", $submenu);
-
-    			}
-    		}
-    	}
+    check_function("set_generic_tags");
+    if(check_function("check_chron_job"))
+        check_chron_job(ffGetFilename(VG_SITE_RESTRICTED));
+    
+    if (!AREA_RESTRICTED_SHOW_MODIFY) {
+        prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_SITE_RESTRICTED) . "/login");
+        //ffRedirect(FF_SITE_PATH . VG_SITE_RESTRICTED . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
     }
     
-    if(check_function("system_set_media"))            
-        system_set_media($cm->oPage, $globals->settings_path);  
-		
+    if(check_function("system_ffrecord_process_print_button")) {
+        ffRecord::addEvent("on_before_process_interface", "system_ffrecord_process_print_button" , ffEvent::PRIORITY_DEFAULT);
+    }
+    
+    
+    $menu_edit = array("modify" => "/modify");
+
+    
+    if(AREA_VGALLERY_SHOW_SEO) {
+        $menu_edit["seo"] = "/seo";
+    }
+    if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
+        $menu_edit["permission"] = "/permission";
+    }
+
+    $menu_structure = array();
+    if(AREA_PROPERTIES_SHOW_MODIFY) {
+        $menu_structure["properties"] = "/properties";
+    }
+    
+    
+    
+    
+    
+    $restricted_content = glob(FF_DISK_PATH . "/contents/restricted/*");
+    if(is_array($restricted_content) && count($restricted_content)) {
+        foreach($restricted_content AS $real_file) {
+            if(is_dir($real_file)) {
+                mod_restricted_add_menu_child(basename($real_file), VG_SITE_RESTRICTED . "/" . basename($real_file), ffTemplate::_get_word_by_code("mn_" . basename($real_file)));
+                //if(strpos($cm->path_info, VG_SITE_RESTRICTED . "/" . basename($real_file)) !== false) {
+                    $restricted_sub_content = glob(FF_DISK_PATH . "/contents/restricted/" . basename($real_file) . "/*");
+                    if(is_array($restricted_sub_content) && count($restricted_sub_content)) {
+                        foreach($restricted_sub_content AS $real_sub_file) {
+                            if(is_dir($real_sub_file) && (file_exists($real_sub_file . "/index." . FF_PHP_EXT) || file_exists($real_sub_file . "/index." . "html"))) {
+                                mod_restricted_add_menu_sub_element(basename($real_file), basename($real_sub_file), VG_SITE_RESTRICTED . "/" . basename($real_file) . "/" . basename($real_sub_file), ffTemplate::_get_word_by_code("mt_" . basename($real_sub_file)));
+                            }
+                        }
+                    }                        
+                //}
+            }
+        }
+    }
+
+    if((AREA_VGALLERY_SHOW_MODIFY || AREA_VGALLERY_SHOW_ADDNEW || AREA_VGALLERY_SHOW_DELETE || AREA_VGALLERY_SHOW_SEO || AREA_VGALLERY_SHOW_PERMISSION || AREA_ECOMMERCE_SHOW_MODIFY)) {
+        $db_rescricted_detail = ffDB_Sql::factory();
+
+        $db->query("SELECT vgallery.* 
+                               FROM vgallery
+                               WHERE
+                                vgallery.status = 1");
+        if($db->nextRecord()) {
+            $vg_data = array();
+            do {
+                $vg_data[$db->getField("ID", "Number", true)]["full_path"] = "/" . $db->getField("name", "Text", true);
+                $vg_data[$db->getField("ID", "Number", true)]["name"] = $db->getField("name", "Text", true);
+            } while($db->nextRecord());    
+
+            if(is_array($vg_data) && count($vg_data)) {
+                if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+                    get_file_permission(null, "vgallery_nodes", array_keys($vg_data));
+
+                if(!MOD_RES_FULLBAR && !array_key_exists("fullbar", $cm->modules["restricted"])) 
+	                mod_restricted_add_menu_child("vgallery", VG_SITE_RESTRICTED . "/vgallery", ffTemplate::_get_word_by_code("vgallery_menu_title"));
+
+                foreach($vg_data AS $vg_data_key => $vg_data_value) {
+                    if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+                        $file_permission = get_file_permission($vg_data_value["full_path"], "vgallery_nodes");
+
+                    if(!check_mod($file_permission, 1, false))
+                        continue;
+
+
+ 					if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])) {
+ 						mod_restricted_add_menu_child($vg_data_value["name"], VG_SITE_RESTRICTED . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"]), ffTemplate::_get_word_by_code(ucwords(str_replace("-", " ", $vg_data_value["name"]))));
+
+                        $db_rescricted_detail->query("SELECT vgallery_nodes.name AS name
+                                                        , CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name) AS full_path
+                                                        , ( SELECT count(*) FROM vgallery_nodes WHERE (vgallery_nodes.parent = full_path OR vgallery_nodes.parent LIKE CONCAT(full_path, '/%')) AND NOT(vgallery_nodes.is_dir > 0)) AS count_tot_elem
+                                                      FROM vgallery_nodes
+                                                      WHERE 
+                                                        vgallery_nodes.ID_vgallery = " . $db_rescricted_detail->toSql($vg_data_key, "Number")  . "
+                                                        AND (vgallery_nodes.is_dir > 0)
+                                                        AND CONCAT(vgallery_nodes.parent, vgallery_nodes.name) <> " . $db_rescricted_detail->toSql("/" . $vg_data_value["name"])  . "
+                                                        AND vgallery_nodes.parent = " . $db_rescricted_detail->toSql("/" . $vg_data_value["name"] /*. $actual_parent*/) . "
+                                                      ORDER BY full_path
+                                                        
+                                                        
+                                                        ");
+                        if($db_rescricted_detail->nextRecord()) {
+                            mod_restricted_add_menu_sub_element($vg_data_value["name"]
+                                , $vg_data_value["name"]
+                                , VG_SITE_RESTRICTED . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])
+                                , ffTemplate::_get_word_by_code("vgallery_" . $vg_data_value["name"] . "_all"));
+
+                            do {
+                                mod_restricted_add_menu_sub_element($vg_data_value["name"]
+                                , $db_rescricted_detail->getField("name")->getValue()
+                                , VG_SITE_RESTRICTED . "/vgallery" . strtolower($db_rescricted_detail->getField("full_path")->getValue())
+                                , "(" . $db_rescricted_detail->getField("count_tot_elem")->getValue() . ") " .  ucwords(str_replace("-", " ", $db_rescricted_detail->getField("name")->getValue())));
+                                
+                            } while($db_rescricted_detail->nextRecord());
+                        }
+                    } else {
+						mod_restricted_add_menu_sub_element("vgallery", "vgallery_" . $vg_data_value["name"], VG_SITE_RESTRICTED . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"]), ffTemplate::_get_word_by_code(ucwords(str_replace("-", " ", $vg_data_value["name"]))), "[QUERY_STRING]");
+                    }
+                }
+            }
+        }
+    }
+    if ((AREA_PUBLISHING_SHOW_ADDNEW || AREA_PUBLISHING_SHOW_MODIFY || AREA_PUBLISHING_SHOW_DELETE || AREA_PUBLISHING_SHOW_DETAIL || AREA_PUBLISHING_SHOW_PREVIEW)) {
+        $db->query("SELECT 
+                                    publishing.*
+                                    , IF(ISNULL(layout.ID), 'not_visible', 'visible') AS visible
+                                    , (SELECT 
+                                            count(*) AS cont_elem
+                                        FROM rel_nodes 
+                                        WHERE 
+                                        (
+                                            ID_node_src = publishing.ID 
+                                            AND contest_src = 'publishing'
+                                        ) 
+                                        OR 
+                                        (
+                                            ID_node_dst = publishing.ID
+                                            AND contest_dst ='publishing'
+                                        )
+                                    ) AS count_elem
+                               FROM publishing
+                                LEFT JOIN layout ON layout.value REGEXP CONCAT('(.*)_', publishing.ID)
+                                LEFT JOIN layout_type ON layout_type.ID = layout.ID_type AND layout_type.name = 'PUBLISHING'
+                               WHERE
+                                1");
+        if($db->nextRecord()) {
+            mod_restricted_add_menu_child("publishing", VG_SITE_RESTRICTED . "/publishing", ffTemplate::_get_word_by_code("publishing"));
+            if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
+                || strpos($cm->path_info, VG_SITE_RESTRICTED . "/publishing") === 0
+            ) {
+                if(isset($menu_edit[basename($cm->path_info)])) {  
+                    mod_restricted_add_menu_sub_element("publishing", "modify", VG_SITE_RESTRICTED . "/publishing/modify", ffTemplate::_get_word_by_code("publishing_modify"), "[QUERY_STRING]");
+                    mod_restricted_add_menu_sub_element("publishing", "properties", VG_SITE_RESTRICTED . "/publishing/properties", ffTemplate::_get_word_by_code("publishing_properties"), "[QUERY_STRING]");
+                } else {
+                    do {
+                        mod_restricted_add_menu_sub_element("publishing", $db->getField("name")->getValue(), VG_SITE_RESTRICTED . "/publishing/detail/" . ffCommon_url_rewrite($db->getField("name")->getValue()), set_generic_tags(ffTemplate::_get_word_by_code($db->getField("visible")->getValue()) . " (" . $db->getField("count_elem")->getValue() . "/" . $db->getField("limit")->getValue() . ") " . $db->getField("name")->getValue()), "keys[ID]=" . $db->getField("ID")->getValue() . "&ret_url=" . urlencode(VG_SITE_RESTRICTED . "/publishing"));
+                    } while($db->nextRecord());
+                }
+            }
+        }
+    }
+    if ((AREA_DRAFT_SHOW_MODIFY || AREA_DRAFT_SHOW_ADDNEW || AREA_DRAFT_SHOW_DELETE)) {
+        $db->query("SELECT drafts.*
+                                    , IF(ISNULL(layout.ID), 'not_visible', 'visible') AS visible
+                               FROM drafts
+                                    LEFT JOIN layout ON layout.value = drafts.ID
+                                    LEFT JOIN layout_type ON layout_type.ID = layout.ID_type AND layout_type.name = 'STATIC_PAGE_BY_DB'
+                               WHERE 1
+                                " . ($globals->ID_domain > 0
+                                    ? " AND drafts.ID_domain = " . $db->toSql($globals->ID_domain, "Number")
+                                    : ""
+                                )
+                            );
+        if($db->nextRecord()) {
+            mod_restricted_add_menu_child("draft", VG_SITE_RESTRICTED . "/draft", ffTemplate::_get_word_by_code("draft"));
+            if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
+                || strpos($cm->path_info, VG_SITE_RESTRICTED . "/draft") === 0
+            ) {
+                do {
+                    mod_restricted_add_menu_sub_element("draft", $db->getField("name")->getValue(), VG_SITE_RESTRICTED . "/draft/modify/" . ffCommon_url_rewrite($db->getField("name")->getValue()), set_generic_tags(ffTemplate::_get_word_by_code($db->getField("visible")->getValue()) . " " . $db->getField("name")->getValue()), "keys[ID]=" . $db->getField("ID")->getValue() . "&ret_url=" . urlencode(VG_SITE_RESTRICTED . "/draft"));
+                } while($db->nextRecord());
+            }
+        }
+    }
+    if ((AREA_GALLERY_SHOW_MODIFY || AREA_GALLERY_SHOW_ADDNEW || AREA_GALLERY_SHOW_DELETE || AREA_GALLERY_SHOW_RELATIONSHIP || AREA_GALLERY_SHOW_PERMISSION || AREA_GALLERY_SHOW_SEO || AREA_ECOMMERCE_SHOW_MODIFY)) {
+        mod_restricted_add_menu_child("resources", VG_SITE_RESTRICTED . "/resources", ffTemplate::_get_word_by_code("resources"));
+
+        if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
+            || strpos($cm->path_info, VG_SITE_RESTRICTED . "/resources") === 0
+        ) {
+            if(strpos($cm->path_info, VG_SITE_RESTRICTED . "/resources") === 0 && (isset($menu_edit[basename($cm->path_info)]) || isset($menu_structure[basename($cm->path_info)]))) {
+                foreach($menu_edit AS $edit_key => $edit_value) {
+                    if(constant("AREA_GALLERY_SHOW_" . strtoupper($edit_key))) {
+                        mod_restricted_add_menu_sub_element("resources", "resources_" . $edit_key, ffCommon_dirname($cm->path_info) . $edit_value, ffTemplate::_get_word_by_code("resources_" . $edit_key), "[QUERY_STRING]");
+                    }
+                }
+                foreach($menu_structure AS $structure_key => $structure_value) {
+                    if(constant("AREA_" . strtoupper($structure_key) . "_SHOW_MODIFY")) {
+                        mod_restricted_add_menu_sub_element("resources", "resources_" . $structure_key, ffCommon_dirname($cm->path_info) . $structure_value, ffTemplate::_get_word_by_code("resources_" . $structure_key), "[QUERY_STRING]");
+                    }
+                }
+            } elseif(basename(ffCommon_dirname($cm->path_info)) == "add") {
+                mod_restricted_add_menu_sub_element("resources", "resources_dir", ffCommon_dirname($cm->path_info) . "/dir", ffTemplate::_get_word_by_code("resources_dir"), "[QUERY_STRING]");
+                mod_restricted_add_menu_sub_element("resources", "resources_item", ffCommon_dirname($cm->path_info) . "/item", ffTemplate::_get_word_by_code("resources_item"), "[QUERY_STRING]");
+            } else {
+                
+            }
+        }
+    }
+
+    if((AREA_MODULES_SHOW_MODIFY || MODULE_SHOW_CONFIG)) {
+        $db->query("SELECT module_form.*
+                                    , IF(ISNULL(layout.ID), 'not_visible', 'visible') AS visible
+                                    , (SELECT count(*) FROM module_form_nodes WHERE module_form_nodes.ID_module = module_form.ID) AS count_nodes 
+                               FROM module_form
+                                LEFT JOIN layout ON layout.value = 'form' AND layout.params = module_form.name
+                                LEFT JOIN layout_type ON layout_type.ID = layout.ID_type AND layout_type.name = 'MODULE'
+                               WHERE
+                                1");
+        if($db->nextRecord()) {
+            if(!array_key_exists("form", $cm->modules["restricted"]["menu"])) {
+                mod_restricted_add_menu_child("form", VG_SITE_RESTRICTED . "/modules/form", ffTemplate::_get_word_by_code("forms"));    
+                $form_default = true;
+            } else {
+                $form_default = false;
+            }
+
+            if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
+                || strpos($cm->path_info, $cm->modules["restricted"]["menu"]["form"]["path"]) === 0
+            ) {
+                do {
+                    //"ret_url=" . urlencode($cm->modules["restricted"]["menu"]["form"]["path"])
+                    mod_restricted_add_menu_sub_element("form", $db->getField("name")->getValue(), $cm->modules["restricted"]["menu"]["form"]["path"] . "/detail/" . ffCommon_url_rewrite($db->getField("name")->getValue()), set_generic_tags(($form_default ? ffTemplate::_get_word_by_code($db->getField("visible")->getValue()) : "") . " (" . $db->getField("count_nodes")->getValue() . ") " . ffTemplate::_get_word_by_code($db->getField("name")->getValue())), null);
+                } while($db->nextRecord());
+            }
+        }
+    }
+
+    if(AREA_INTERNATIONAL_SHOW_MODIFY) {
+        mod_restricted_add_menu_child("wordcode", VG_SITE_RESTRICTED . "/wordcode", ffTemplate::_get_word_by_code("wordcode"));
+    }
+	 if(1) {
+        mod_restricted_add_menu_child("tags", VG_SITE_RESTRICTED . "/tags", ffTemplate::_get_word_by_code("tags"));
+    }
+	 if(1) {
+        mod_restricted_add_menu_child("place", VG_SITE_RESTRICTED . "/place", ffTemplate::_get_word_by_code("place"));
+    }
+    if(AREA_SITEMAP_SHOW_MODIFY) {
+        mod_restricted_add_menu_child("sitemap", VG_SITE_RESTRICTED . "/site-map", ffTemplate::_get_word_by_code("sitemap"));
+    }
+    
+    //Users
+    if(AREA_USERS_SHOW_MODIFY) {
+        mod_restricted_add_menu_child("users", VG_SITE_RESTRICTED . "/users", ffTemplate::_get_word_by_code("mn_users"));
+        if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
+            || strpos($cm->path_info, VG_SITE_RESTRICTED . "/users") === 0
+        ) {
+            $sSQL = "
+                    SELECT 'noactive' AS ID, 
+                        " . $db->toSql("anagraph_noactive") . " AS name
+                        , (SELECT count(*) FROM anagraph WHERE anagraph.status = 0) AS count_nodes 
+                    UNION
+                    SELECT 'nopublic' AS ID, 
+                        " . $db->toSql("anagraph_nopublic") . " AS name
+                        , (SELECT count(*) FROM anagraph WHERE anagraph.visible = 0) AS count_nodes 
+                    UNION
+                    SELECT anagraph_categories.name AS ID
+                        , anagraph_categories.name
+                        , (SELECT count(*) FROM anagraph WHERE FIND_IN_SET(anagraph_categories.ID, anagraph.categories)) AS count_nodes 
+                    FROM anagraph_categories
+                    UNION
+                    SELECT 'nocategory' AS ID, 
+                        " . $db->toSql("anagraph_nocategory") . " AS name
+                        , (SELECT count(*) FROM anagraph WHERE anagraph.categories = '') AS count_nodes 
+                    ";
+            $db->query($sSQL);
+            if($db->nextRecord()) {
+                do {
+                    mod_restricted_add_menu_sub_element("users", $db->getField("ID", "Text", true), VG_SITE_RESTRICTED . "/users/" . ffCommon_url_rewrite($db->getField("ID", "Text", true)), " (" . number_format($db->getField("count_nodes", "Number", true), "0", ",", ".") . ") " . ffTemplate::_get_word_by_code($db->getField("name", "Text", true)));
+                } while($db->nextRecord());
+            } 
+        }
+    }
+
+    if(AREA_GROUPS_SHOW_MODIFY) {
+        mod_restricted_add_menu_child("groups", VG_SITE_RESTRICTED . "/groups", ffTemplate::_get_word_by_code("groups"));
+    }
+    
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_administration");
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_notify");
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_quickpanel");
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_languages");
+
+    if(check_function("system_set_css"))
+        system_set_css($cm->oPage, $globals->settings_path, false, true);
+    if(check_function("system_set_js"))
+        system_set_js($cm->oPage, $globals->settings_path, false);
+
 }
 
+function system_layer_admin($cm) 
+{
+    $globals = ffGlobals::getInstance("gallery");
 
+	$cm->oPage->minify = false; //previene l'eliminazione degli invii a capo all'interno delle TEXTAREA
+        
+	if(check_function("set_header_page")) {
+		set_header_page(null, false, false, false, false); 	
+	}
 
-// mm entra	da sistemare
+    if(check_function("check_chron_job"))
+        check_chron_job(ffGetFilename(VG_SITE_ADMIN));
+
+    if (!AREA_ADMIN_SHOW_MODIFY) {
+        prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_SITE_ADMIN) . "/login");
+        //ffRedirect(FF_SITE_PATH . VG_SITE_ADMIN . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
+    }
+    
+    if(MASTER_CONTROL) {
+        $cm->modules["restricted"]["menu"]["config"]["elements"]["domain"]["hide"] = false;
+    } else {
+        $cm->modules["restricted"]["menu"]["config"]["elements"]["domain"]["hide"] = true;
+    }
+
+    $admin_content = glob(FF_DISK_PATH . "/contents/admin/*");
+    if(is_array($admin_content) && count($admin_content)) {
+        foreach($admin_content AS $real_file) {
+            if(is_dir($real_file)) {
+                mod_restricted_add_menu_child(basename($real_file), VG_SITE_ADMIN . "/" . basename($real_file), ffTemplate::_get_word_by_code("mn_" . basename($real_file)));
+                //if(strpos($cm->path_info, VG_SITE_ADMIN . "/" . basename($real_file)) !== false) {
+                    $admin_sub_content = glob(FF_DISK_PATH . "/contents/admin/" . basename($real_file) . "/*");
+                    if(is_array($admin_sub_content) && count($admin_sub_content)) {
+                        foreach($admin_sub_content AS $real_sub_file) {
+                            if(is_dir($real_sub_file) && (file_exists($real_sub_file . "/index." . FF_PHP_EXT) || file_exists($real_sub_file . "/index." . "html"))) {
+                                mod_restricted_add_menu_sub_element(basename($real_file), basename($real_sub_file), VG_SITE_ADMIN . "/" . basename($real_file) . "/" . basename($real_sub_file), ffTemplate::_get_word_by_code("mt_" . basename($real_sub_file)));
+                            }
+                        }
+                    }                        
+                //}
+            }
+        }
+    }
+
+    $module_file = glob(FF_DISK_PATH . "/conf/gallery/modules/*");
+    if(is_array($module_file) && count($module_file)) {
+        foreach($module_file AS $real_file) {
+            if(is_dir($real_file)) {
+                $relative_file = basename($real_file);
+                
+                mod_restricted_add_menu_sub_element("content", $relative_file, VG_SITE_ADMIN . "/content/modules/" . $relative_file . "/config", ffTemplate::_get_word_by_code("mn_" . $relative_file));
+                
+            }
+        }
+    }
+    
+    if(is_dir(FF_DISK_PATH . "/conf/gallery/ajaxplorer")) {
+        $cm->modules["restricted"]["menu"]["layout"]["elements"]["explore"]["hide"] = false;
+    } else {
+        $cm->modules["restricted"]["menu"]["layout"]["elements"]["explore"]["hide"] = true;
+    }
+    
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_administration");
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_notify");
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_quickpanel");
+    $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_languages");
+              
+    if(check_function("system_set_css"))
+        system_set_css($cm->oPage, $globals->settings_path, false, true);
+    if(check_function("system_set_js"))
+        system_set_js($cm->oPage, $globals->settings_path, false);
+
+}
+
 function system_layer_manage($cm) 
 {
     $globals = ffGlobals::getInstance("gallery");
 	$db = ffDB_Sql::factory();
 
-	$cm->oPage->tplAddJs("ff.cms.admin");
 	$cm->oPage->minify = false; //previene l'eliminazione degli invii a capo all'interno delle TEXTAREA
 
-	//if(check_function("set_header_page")) {
-		//set_header_page(null, false, false, false, false); 	
-	//}
-
-	check_function("set_generic_tags");
-	//if(check_function("check_chron_job"))
-	//    check_chron_job(ffGetFilename(VG_WS_ECOMMERCE));
-
-	if (!AREA_ECOMMERCE_SHOW_MODIFY) {
-	    prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_WS_ECOMMERCE) . "/login");
-	    //ffRedirect(FF_SITE_PATH . VG_WS_ECOMMERCE . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
+	if(check_function("set_header_page")) {
+		set_header_page(null, false, false, false, false); 	
 	}
 
-	if($cm->path_info == VG_WS_ECOMMERCE) 
-	    ffRedirect(FF_SITE_PATH . VG_WS_ECOMMERCE . "/operations/" . date("Y", time()));
+	check_function("set_generic_tags");
+	if(check_function("check_chron_job"))
+	    check_chron_job(ffGetFilename(VG_SITE_MANAGE));
+
+	if (!AREA_ECOMMERCE_SHOW_MODIFY) {
+	    prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_SITE_MANAGE) . "/login");
+	    //ffRedirect(FF_SITE_PATH . VG_SITE_MANAGE . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
+	}
+
+	if($cm->path_info == VG_SITE_MANAGE) 
+	    ffRedirect(FF_SITE_PATH . VG_SITE_MANAGE . "/operations/" . date("Y", time()));
 
 
 	$menu_structure = array(
@@ -1470,13 +719,7 @@ function system_layer_manage($cm)
 	                        );
 	//Anagraph
 	if ((AREA_ANAGRAPH_SHOW_MODIFY || AREA_ANAGRAPH_SHOW_ADDNEW || AREA_ANAGRAPH_SHOW_DELETE)) {
-        mod_restricted_add_menu_child(array(
-            "key"       => "anagraph"
-            , "path"    => VG_WS_ECOMMERCE . "/anagraph"
-            , "label"   => ffTemplate::_get_word_by_code("anagraph")
-            , "redir"   => VG_WS_ECOMMERCE . "/anagraph/all"
-        ));
-
+	    mod_restricted_add_menu_child("anagraph", VG_SITE_MANAGE . "/anagraph", ffTemplate::_get_word_by_code("anagraph"), "", "", VG_SITE_MANAGE . "/anagraph/all");
 	    $db->query("
 	                        SELECT 'all' AS ID, 
 	                            " . $db->toSql("anagraph_all") . " AS name
@@ -1497,22 +740,16 @@ function system_layer_manage($cm)
 	                        ");
 	    if($db->nextRecord()) {
 	        if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
-	            || strpos($cm->path_info, VG_WS_ECOMMERCE . "/anagraph") === 0
+	            || strpos($cm->path_info, VG_SITE_MANAGE . "/anagraph") === 0
 	        ) {
-	            if(strpos($cm->path_info, VG_WS_ECOMMERCE . "/anagraph") === 0 && strpos($cm->path_info, "modify") !== false) {
+	            if(strpos($cm->path_info, VG_SITE_MANAGE . "/anagraph") === 0 && strpos($cm->path_info, "modify") !== false) {
 	                $hide_anagraph_categories = true;
 	            } else {
 	                $hide_anagraph_categories = false;
 	            }
 
 	            do {
-                    mod_restricted_add_menu_sub_element(array(
-                        "key"           => "anagraph"
-                        , "subkey"      => $db->getField("ID")->getValue()
-                        , "path"        => VG_WS_ECOMMERCE . "/anagraph/" . ffCommon_url_rewrite($db->getField("ID")->getValue())
-                        , "label"       => " (" . $db->getField("count_nodes")->getValue() . ") " . ffTemplate::_get_word_by_code($db->getField("name")->getValue())
-                        , "hide"        => $hide_anagraph_categories
-                    ));
+	                mod_restricted_add_menu_sub_element("anagraph", $db->getField("ID")->getValue(), VG_SITE_MANAGE . "/anagraph/" . ffCommon_url_rewrite($db->getField("ID")->getValue()), " (" . $db->getField("count_nodes")->getValue() . ") " . ffTemplate::_get_word_by_code($db->getField("name")->getValue()), null, "" , null, $hide_anagraph_categories);
 	            } while($db->nextRecord());
 	        }
 	    }
@@ -1543,19 +780,15 @@ function system_layer_manage($cm)
 	                if(!check_mod($file_permission, 1, false))
 	                    continue;
 
-                    mod_restricted_add_menu_child(array(
-                        "key"       => $vg_data_value["name"]
-                        , "path"    => VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])
-                        , "label"   => ffTemplate::_get_word_by_code("vgallery_" . $vg_data_value["name"])
-                    ));
+	                mod_restricted_add_menu_child($vg_data_value["name"], VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"]), ffTemplate::_get_word_by_code("vgallery_" . $vg_data_value["name"]));
 
 	                if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
-	                    || strpos($cm->path_info, VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])) === 0
+	                    || strpos($cm->path_info, VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])) === 0
 	                ) {
 	                    if(basename($cm->path_info) == "ecommerce") {
 	                        foreach($menu_structure AS $structure_key => $structure_value) {
 	                            if(constant("AREA_ECOMMERCE_" . strtoupper($structure_key) . "_SHOW_MODIFY")) {
-	                                ffRedirect(VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"]) . "/ecommerce" . $structure_value . "?". $cm->query_string);
+	                                ffRedirect(VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"]) . "/ecommerce" . $structure_value . "?". $cm->query_string);
 	                            }
 	                        }
 	                    } elseif(isset($menu_structure[basename($cm->path_info)])) {
@@ -1571,35 +804,21 @@ function system_layer_manage($cm)
 	                                    if(strpos($structure_key, "_by") !== false && strlen($ecommerce_properties["type"]) && strpos($structure_key, $ecommerce_properties["type"]) === false)
 	                                        continue;
 
-                                        mod_restricted_add_menu_sub_element(array(
-                                            "key"           => $vg_data_value["name"]
-                                            , "subkey"      => "ecommerce_" . $structure_key
-                                            , "path"        => ffCommon_dirname($cm->path_info) . $structure_value
-                                            , "label"       => ffTemplate::_get_word_by_code("ecommerce_" . $structure_key)
-                                            , "params"      => "[QUERY_STRING]"
-                                        ));
+	                                    mod_restricted_add_menu_sub_element($vg_data_value["name"], "ecommerce_" . $structure_key, ffCommon_dirname($cm->path_info) . $structure_value, ffTemplate::_get_word_by_code("ecommerce_" . $structure_key), "[QUERY_STRING]");
 	                                }
 	                            }
 	                        } elseif(constant("AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY")) {
-                                mod_restricted_add_menu_sub_element(array(
-                                    "key"           => $vg_data_value["name"]
-                                    , "subkey"      => "ecommerce_settings"
-                                    , "path"        => ffCommon_dirname($cm->path_info) . "/settings"
-                                    , "label"       => ffTemplate::_get_word_by_code("ecommerce_settings")
-                                    , "params"      => "[QUERY_STRING]"
-                                ));
+	                            mod_restricted_add_menu_sub_element($vg_data_value["name"], "ecommerce_settings", ffCommon_dirname($cm->path_info) . "/settings", ffTemplate::_get_word_by_code("ecommerce_settings"), "[QUERY_STRING]");
 	                        } else {
 	                            ffRedirect($_REQUEST["ret_url"]);
 	                        }
 	                    } else {
-	                        /*$actual_parent = str_replace(VG_WS_ECOMMERCE . "/vgallery/" . $vg_data_value["name"], "", $cm->path_info);
+	                        /*$actual_parent = str_replace(VG_SITE_MANAGE . "/vgallery/" . $vg_data_value["name"], "", $cm->path_info);
 	                        if($actual_parent != ffcommon_dirname($actual_parent)) {
 	                            mod_restricted_add_menu_sub_element($vg_data_value["name"]
 	                            , "backto"
-	                            , VG_WS_ECOMMERCE . "/vgallery" . ffcommon_dirname("/" . $vg_data_value["name"] . $actual_parent)
+	                            , VG_SITE_MANAGE . "/vgallery" . ffcommon_dirname("/" . $vg_data_value["name"] . $actual_parent)
 	                            , ffTemplate::_get_word_by_code("back_to") . " " . str_replace("-", " ", basename(ffcommon_dirname("/" . $vg_data_value["name"] . $actual_parent)))
-	                            , ""
-	                            , null
 	                            , "[QUERY_STRING]");
 	                        }*/
 
@@ -1615,7 +834,6 @@ function system_layer_manage($cm)
 	                        if($show_available && $show_unavailable && $show_stock && $show_error) {
 	                            $sSQL_cond_count = "";
 	                        } else {
-                                $sSQL_cond = "";
 	                            if($show_available) {
 	                                $sSQL_cond .= " OR (qta > 0)";
 	                            }
@@ -1695,13 +913,12 @@ function system_layer_manage($cm)
 	                                                        ");
 	                        if($db_manage_detail->nextRecord()) {
 	                            do {
-                                    mod_restricted_add_menu_sub_element(array(
-                                        "key"           => $vg_data_value["name"]
-                                        , "subkey"      => $db_manage_detail->getField("name")->getValue()
-                                        , "path"        => VG_WS_ECOMMERCE . "/vgallery" . $db_manage_detail->getField("full_path")->getValue()
-                                        , "label"       => "(" . $db_manage_detail->getField("count_tot_elem")->getValue() . ") " .  str_replace("-", " ", $db_manage_detail->getField("name")->getValue())
-                                        , "params"      => "[QUERY_STRING]"
-                                    ));
+	                                mod_restricted_add_menu_sub_element($vg_data_value["name"]
+	                                , $db_manage_detail->getField("name")->getValue()
+	                                , VG_SITE_MANAGE . "/vgallery" . $db_manage_detail->getField("full_path")->getValue()
+	                                , "(" . $db_manage_detail->getField("count_tot_elem")->getValue() . ") " .  str_replace("-", " ", $db_manage_detail->getField("name")->getValue())
+	                                , "[QUERY_STRING]");
+	                                
 	                            } while($db_manage_detail->nextRecord());
 	                        }
 	                    }
@@ -1712,19 +929,10 @@ function system_layer_manage($cm)
 	}
 	//Discount
 	if(AREA_ECOMMERCE_USE_COUPON || AREA_ECOMMERCE_USE_PROMOTION) {
-        mod_restricted_add_menu_child(array(
-            "key"       => "discount"
-            , "path"    => VG_WS_ECOMMERCE . "/discount"
-            , "label"   => ffTemplate::_get_word_by_code("discount")
-        ));
-
+	    mod_restricted_add_menu_child("discount", VG_SITE_MANAGE . "/discount", ffTemplate::_get_word_by_code("discount"));
+	        
 	    if(AREA_ECOMMERCE_USE_COUPON && AREA_COUPON_SHOW_MODIFY) {
-            mod_restricted_add_menu_sub_element(array(
-                "key"           => "discount"
-                , "subkey"      => "coupon"
-                , "path"        => VG_WS_ECOMMERCE . "/discount/coupon"
-                , "label"       => ffTemplate::_get_word_by_code("discount_coupon")
-            ));
+	        mod_restricted_add_menu_sub_element("discount", "coupon", VG_SITE_MANAGE . "/discount/coupon", ffTemplate::_get_word_by_code("discount_coupon"));
 	    }
 	}
 	//Operation
@@ -1733,134 +941,75 @@ function system_layer_manage($cm)
 	                   FROM ecommerce_order
 	                   ORDER BY ecommerce_order.date DESC");
 	if($db->nextRecord()) {
-        mod_restricted_add_menu_child(array(
-            "key"       => "operations"
-            , "path"    => VG_WS_ECOMMERCE . "/operations"
-            , "label"   => ffTemplate::_get_word_by_code("operations")
-            , "redir"   => VG_WS_ECOMMERCE . "/operations/" . $db->getField("archive", "Text", true)
-        ));
-
+	    mod_restricted_add_menu_child("operations", VG_SITE_MANAGE . "/operations", ffTemplate::_get_word_by_code("operations"), "", "", VG_SITE_MANAGE . "/operations/" . $db->getField("archive", "Text", true));
 	    do {
 	        $operation_menu[] = $db->getField("archive")->getValue();
 	    } while($db->nextRecord());
 	} else {
-        mod_restricted_add_menu_child(array(
-            "key"       => "operations"
-            , "path"    => VG_WS_ECOMMERCE . "/operations"
-            , "label"   => ffTemplate::_get_word_by_code("operations")
-            , "redir"   => VG_WS_ECOMMERCE . "/operations/" . "all"
-        ));
-	}
+	    mod_restricted_add_menu_child("operations", VG_SITE_MANAGE . "/operations", ffTemplate::_get_word_by_code("operations"), "", "", VG_SITE_MANAGE . "/operations/" . "all");
+	}     
 
 	foreach($operation_menu AS $operation_menu_value) {
-        mod_restricted_add_menu_sub_element(array(
-            "key"           => "operations"
-            , "subkey"      => $operation_menu_value
-            , "path"        => VG_WS_ECOMMERCE . "/operations/" . ffCommon_url_rewrite($operation_menu_value)
-            , "label"       => $operation_menu_value
-            , "params"      => "[QUERY_STRING]"
-        ));
+	    mod_restricted_add_menu_sub_element("operations"
+	    , $operation_menu_value
+	    , VG_SITE_MANAGE . "/operations/" . ffCommon_url_rewrite($operation_menu_value)
+	    , $operation_menu_value
+	    , $_SERVER["QUERY_STRING"]);
 	}
 	//Documents
 	if(AREA_ECOMMERCE_SHOW_DOCUMENT) {
-        mod_restricted_add_menu_child(array(
-            "key"       => "documents"
-            , "path"    => VG_WS_ECOMMERCE . "/documents"
-            , "label"   => ffTemplate::_get_word_by_code("documents")
-        ));
+	    mod_restricted_add_menu_child("documents", VG_SITE_MANAGE . "/documents", ffTemplate::_get_word_by_code("documents"));
 
 	    if(AREA_BILL_SHOW_MODIFY) {
 	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
-                mod_restricted_add_menu_sub_element(array(
-                    "key"           => "documents"
-                    , "subkey"      => "bill_sent"
-                    , "path"        => VG_WS_ECOMMERCE . "/documents/bill/sent"
-                    , "label"       => ffTemplate::_get_word_by_code("bill_sent")
-                ));
-
+	            mod_restricted_add_menu_sub_element("documents", "bill_sent", VG_SITE_MANAGE . "/documents/bill/sent", ffTemplate::_get_word_by_code("bill_sent"));
 	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
-                mod_restricted_add_menu_sub_element(array(
-                    "key"           => "documents"
-                    , "subkey"      => "bill_received"
-                    , "path"        => VG_WS_ECOMMERCE . "/documents/bill/received"
-                    , "label"       => ffTemplate::_get_word_by_code("bill_received")
-                ));
+	            mod_restricted_add_menu_sub_element("documents", "bill_received", VG_SITE_MANAGE . "/documents/bill/received", ffTemplate::_get_word_by_code("bill_received"));
 	    }
 	    if(AREA_PAYMENTS_SHOW_MODIFY) {
 	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
-                mod_restricted_add_menu_sub_element(array(
-                    "key"           => "documents"
-                    , "subkey"      => "payments_sent"
-                    , "path"        => VG_WS_ECOMMERCE . "/documents/payments/sent"
-                    , "label"       => ffTemplate::_get_word_by_code("payments_sent")
-                ));
-
+	            mod_restricted_add_menu_sub_element("documents", "payments_sent", VG_SITE_MANAGE . "/documents/payments/sent", ffTemplate::_get_word_by_code("payments_sent"));
 	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
-                mod_restricted_add_menu_sub_element(array(
-                    "key"           => "documents"
-                    , "subkey"      => "payments_received"
-                    , "path"        => VG_WS_ECOMMERCE . "/documents/payments/received"
-                    , "label"       => ffTemplate::_get_word_by_code("payments_received")
-                ));
+	        mod_restricted_add_menu_sub_element("documents", "payments_received", VG_SITE_MANAGE . "/documents/payments/received", ffTemplate::_get_word_by_code("payments_received"));
 	    }
 	    if(1) {
 	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
-                mod_restricted_add_menu_sub_element(array(
-                    "key"           => "documents"
-                    , "subkey"      => "contracts_sent"
-                    , "path"        => VG_WS_ECOMMERCE . "/documents/contracts/sent"
-                    , "label"       => ffTemplate::_get_word_by_code("contracts_sent")
-                ));
-
+	            mod_restricted_add_menu_sub_element("documents", "contracts_sent", VG_SITE_MANAGE . "/documents/contracts/sent", ffTemplate::_get_word_by_code("contracts_sent"));
 	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
-                mod_restricted_add_menu_sub_element(array(
-                    "key"           => "documents"
-                    , "subkey"      => "contracts_received"
-                    , "path"        => VG_WS_ECOMMERCE . "/documents/contracts/received"
-                    , "label"       => ffTemplate::_get_word_by_code("contracts_received")
-                ));
+	            mod_restricted_add_menu_sub_element("documents", "contracts_received", VG_SITE_MANAGE . "/documents/contracts/received", ffTemplate::_get_word_by_code("contracts_received"));
 	    }
 	}
 	//Reports
 	if(AREA_ECOMMERCE_SHOW_REPORT && AREA_REPORT_SHOW_MODIFY) {
-        mod_restricted_add_menu_child(array(
-            "key"       => "reports"
-            , "path"    => VG_WS_ECOMMERCE . "/reports"
-            , "label"   => ffTemplate::_get_word_by_code("reports")
-        ));
-
+	    mod_restricted_add_menu_child("reports", VG_SITE_MANAGE . "/reports", ffTemplate::_get_word_by_code("reports"));
+	    
 	    if(is_dir(FF_DISK_PATH . "/conf" . GALLERY_PATH_ECOMMERCE . "/reports")) {
 	        $reports = glob(FF_DISK_PATH . "/conf" . GALLERY_PATH_ECOMMERCE . "/reports/*", GLOB_ONLYDIR);
 	        if(is_array($reports) && count($reports)) {
 	            foreach($reports AS $reports_dir) {
 	                $report_dirname = ffGetFilename($reports_dir);
-                    mod_restricted_add_menu_sub_element(array(
-                        "key"           => "reports"
-                        , "subkey"      => $report_dirname
-                        , "path"        => VG_WS_ECOMMERCE . "/reports/" . $report_dirname
-                        , "label"       => ffTemplate::_get_word_by_code("reports_" . strtolower($report_dirname))
-                    ));
+	                mod_restricted_add_menu_sub_element("reports", $report_dirname, VG_SITE_MANAGE . "/reports/" . $report_dirname, ffTemplate::_get_word_by_code("reports_" . strtolower($report_dirname)));
 	            }
 	        }
 	    }
 	}
 	//Shipping
 	if(AREA_ECOMMERCE_USE_SHIPPING && AREA_ECOMMERCE_SHIPPINGPRICE_SHOW_MODIFY) {
-        mod_restricted_add_menu_child(array(
-            "key"       => "shipping"
-            , "path"    => VG_WS_ECOMMERCE . "/shipping"
-            , "label"   => ffTemplate::_get_word_by_code("shipping")
-        ));
+	    mod_restricted_add_menu_child("shipping", VG_SITE_MANAGE . "/shipping", ffTemplate::_get_word_by_code("shipping"));
 	}
 
 	//mod_restricted_add_menu_child("back", FF_SITE_PATH . "/", ffTemplate::_get_word_by_code("backtosite"));
 	//ffErrorHandler::raise("mod_security: User Not Found!!!", E_USER_ERROR, null, get_defined_vars());             
-	//$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_administration");
-	//$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_notify");
-	//$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_quickpanel");
-	//$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_languages");
+	$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_administration");
+	$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_notify");
+	$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_quickpanel");
+	$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_languages");
 
-	if(check_function("system_set_media"))            
-    	system_set_media($cm->oPage, $globals->settings_path);  
+	if(check_function("system_set_css"))
+	    system_set_css($cm->oPage, $globals->settings_path, false, true);
+	if(check_function("system_set_js"))
+	    system_set_js($cm->oPage, $globals->settings_path, false);
+
 }
+
 

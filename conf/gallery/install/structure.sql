@@ -1929,14 +1929,14 @@ CREATE TABLE IF NOT EXISTS `module_search_group` (
 DROP TABLE IF EXISTS `module_search_vgallery`;
 CREATE TABLE IF NOT EXISTS `module_search_vgallery` (
   `ID` int(11) NOT NULL auto_increment,
-  `ID_module` int(11) NOT NULL default '0',
+  `ID_module_search` int(11) NOT NULL default '0',
   `ID_vgallery_type` int(11) NOT NULL,
   `ID_vgallery_fields` int(11) NOT NULL,
   `ID_extended_type` int(11) NOT NULL default '0',
   `ID_module_search_group` int(11) NOT NULL,
   `order` int(11) NOT NULL default '0',
   PRIMARY KEY  (`ID`),
-  KEY `ID_module` (`ID_module`),
+  KEY `ID_module_search` (`ID_module_search`),
   KEY `ID_vgallery_type` (`ID_vgallery_type`),
   KEY `ID_vgallery_fields` (`ID_vgallery_fields`),
   KEY `ID_extended_type` (`ID_extended_type`),

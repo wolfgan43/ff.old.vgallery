@@ -4,7 +4,8 @@ ff.cms.fn.fancybox = function(targetid) {
 		targetid = targetid + " ";
 
 	if(jQuery(targetid + ".fancybox").length > 0) {
-		ff.load("jquery.plugins.fancybox", function() {	
+		ff.pluginLoad("jquery.fancybox", "/themes/library/plugins/jquery.fancybox/jquery.fancybox.js", function() {	
+			
 		    jQuery(targetid + ".fancybox").attr("rel","fancybox");
 			if(jQuery("a.middlegallery").length > 0) {
 				jQuery("a.middlegallery img").each(function() {
@@ -20,6 +21,7 @@ ff.cms.fn.fancybox = function(targetid) {
 			var francyFirst = true,
 				IE =  navigator.userAgent.match(/msie/i),
 				isTouch		= document.createTouch !== undefined;
+			
 			
 			jQuery("a[rel^='fancybox']").fancybox({
 					padding : 15,

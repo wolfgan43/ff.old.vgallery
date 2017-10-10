@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
  
- /* //da eliminare e mettere il mod notifier al posto
+ //da eliminare e mettere il mod notifier al posto
 function check_chron_job($area = null) {
     $db = ffDB_Sql::factory();
     
@@ -74,4 +74,4 @@ function check_chron_job($area = null) {
             break;
         } while($db->nextRecord());    
     }
-}*/
+}

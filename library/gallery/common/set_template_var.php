@@ -59,6 +59,8 @@ function set_template_var($tpl, $vars = null, $prefix = "") {
 }
 
 function get_template_header($user_path, $admin_menu = null, $layout = null, &$tpl = null, $block = array()) {
+	static $layout_settings_popup = null;
+	
 	$cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
 
@@ -87,16 +89,32 @@ function get_template_header($user_path, $admin_menu = null, $layout = null, &$t
 				$filename = ffCommon_url_rewrite(ffGetFilename($tpl->sTemplate));
 		}
 	}
+	if(AREA_SHOW_NAVBAR_ADMIN) {
+		if($layout_settings_popup === null && check_function("get_layout_settings")) {
+	    	$layout_settings_popup = get_layout_settings(NULL, "ADMIN");		
+                $layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"] = "toolbar";
+                $layout_settings_popup["ADMIN_INTERFACE_MENU_PLUGIN"] = "toolbaradmin";
+                $layout_settings_popup["ADMIN_INTERFACE_PLUGIN"] = "";
+		
+		    setJsRequest($layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"]);
+		    setJsRequest($layout_settings_popup["ADMIN_POPUP_MENU_PLUGIN"]);
+		}
+
+		$block["admin"]["menu"] = $layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"];
+		$block["admin"]["popup"] = $layout_settings_popup["ADMIN_POPUP_MENU_PLUGIN"];
+	}
 
 	if($layout !== null) {
 		//$block["class"] = array();
 		//$block["properties"] = array();
 		
 		if(is_array($admin_menu) && count($admin_menu)) {
-			$block["properties"]["admin"] = 'data-admin="'. get_admin_bar($admin_menu, VG_SITE_FRAME . $user_path) . '"';
+            $block["properties"]["admin"] = 'data-admin="'. get_admin_bar($admin_menu, VG_SITE_FRAME . $user_path) . '"';
 
-		    //$serial_admin_menu = json_encode($admin_menu);
-		    //$block["properties"]["admin"] = 'data-admin="'. FF_SITE_PATH . VG_SITE_FRAME . $user_path . "?sid=" . set_sid($serial_admin_menu, $admin_menu["admin"]["unic_name"]) . '"';
+			/*if(strlen($layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"])) {
+		        $serial_admin_menu = json_encode($admin_menu);
+		        $block["properties"]["admin"] = 'data-admin="'. FF_SITE_PATH . VG_SITE_FRAME . $user_path . "?sid=" . set_sid($serial_admin_menu, $admin_menu["admin"]["unic_name"]) . '"';
+			}*/
 		}
 		$block["class"]["block"] = "block";
 		if($filename)
@@ -152,6 +170,7 @@ function get_template_header($user_path, $admin_menu = null, $layout = null, &$t
  			//if($layout["ajax_on_ready"] != "preload" && $layout["ajax_on_ready"] != "inview")
                // $block["class"]["ajax"] = "ajaxcontent";
 		}
+
         $str_id = "";
 		if(is_array($block["class"]))
 			$str_class =  ' class="' . implode(" " , array_unique(explode(" ", implode(" " , array_filter($block["class"]))))) . '"';
@@ -163,7 +182,7 @@ function get_template_header($user_path, $admin_menu = null, $layout = null, &$t
 
 		$block["tpl"]["header"] = '<div ' . $str_id . $str_class . $str_properties . '>'; 
 		$block["tpl"]["footer"] = '</div>';
-
+		
 		if($layout["wrap"]) {
 			$block["tpl"]["header"] .= '<div class="' . $layout["wrap"] . '">'; 
 			$block["tpl"]["footer"] .= '</div>';
@@ -177,7 +196,9 @@ function get_admin_bar($arrAdmin = null, $url = null) {
 	$cm = cm::getInstance();
 	static $js_isset = false;
 	if(!$js_isset) {
-		$cm->oPage->tplAddJs("ff.cms.bar.block");
+       // $cm->oPage->tplAddJs("ff.cms.bar.block");
+		//$cm->oPage->tplAddJs("ff.cms.toolbar");
+		//$cm->oPage->tplAddJs("ff.cms.contextbar");
 
 		$js_isset = true;
 	}

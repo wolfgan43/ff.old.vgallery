@@ -39,8 +39,7 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"], $layout_settings["AREA_STATIC_MENU_FOLLOW_FRAMEWORK_CSS"], true);
     
-	//$tpl_data["custom"] = "menu_child.html";
-	$tpl_data["custom"] = $layout["smart_url"] . "_child.html";		
+	$tpl_data["custom"] = "menu_child.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
@@ -99,7 +98,7 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
             //$tpl->set_var("real_name", ffCommon_specialchars(preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . $item["parent"] . $item["name"])));
 
             if($search_param && !$layout_settings["AREA_STATIC_NAME_SHOW_IMAGE"])
-                $tpl->set_var("item", preg_replace("/(" . preg_quote($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", ffCommon_specialchars($item["title"])));
+                $tpl->set_var("item", preg_replace("/(" . escape_string_x_regexp($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", ffCommon_specialchars($item["title"])));
             else
                 $tpl->set_var("item", ffCommon_specialchars($item["title"]));
 			
@@ -111,12 +110,11 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 				$tpl->set_var("submenu_properties", '');
 			}
 
-			$item_permalink = normalize_url_by_current_lang(stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]);			
             if($user_path == stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]) {
                 $is_here = true; 
 
                 if($layout_settings["AREA_STATIC_FORCE_ACTUAL_LINK"]) {
-                    $tpl->set_var("show_file", $item_permalink);
+                    $tpl->set_var("show_file", normalize_url_by_current_lang(stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]));
                 } else {
                     //$tpl->set_var("show_file",  "#" . preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . $item["parent"] . $item["name"]));
                     $tpl->set_var("show_file",  "javascript:void(0);");
@@ -125,20 +123,40 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
                 $is_here = false;
 
                 $tpl->set_var("SezTarget", "");
-                if(strlen($item["alt_url"])) {
-                	if(strpos($item["alt_url"], "/") === 0)
-                		$tpl->set_var("show_file", normalize_url_by_current_lang($item["alt_url"]));
-                	else
-						$tpl->set_var("show_file", $item["alt_url"]);
-					if(
-						substr(strtolower($item["alt_url"]), 0, 7) == "http://"
-						|| substr(strtolower($item["alt_url"]), 0, 8) == "https://"
-                        || substr($item["alt_url"], 0, 2) == "//"
+				if($item["alt_url"]) {
+					if (
+						substr($item["alt_url"], 0, 1) != "/"
 					) {
-                    	$tpl->parse("SezTarget", false);
-					}
+						$tpl->set_var("show_file", $item["alt_url"]);
+						if(
+							substr(strtolower($item["alt_url"]), 0, 7) == "http://"
+							|| substr(strtolower($item["alt_url"]), 0, 8) == "https://"
+                            || substr($item["alt_url"], 0, 2) == "//"
+						) {
+                    		$tpl->parse("SezTarget", false);
+						} else {
+							$tpl->set_var("SezTarget", "");	
+						}
+					} else {
+						if(strpos($item["alt_url"], "#") !== false) {
+							$part_alternative_hash = substr($item["alt_url"], strpos($item["alt_url"], "#"));
+							$alternative_path = substr($item["alt_url"], 0, strpos($item["alt_url"], "#"));
+						}
+						
+						if(strpos($item["alt_url"], "?") !== false) {
+							$part_alternative_path = substr($item["alt_url"], 0, strpos($item["alt_url"], "?"));
+							$part_alternative_url = substr($item["alt_url"], strpos($item["alt_url"], "?"));
+						} else {
+							$part_alternative_path = $item["alt_url"];
+							$part_alternative_url = "";
+						}
+						if(check_function("get_international_settings_path")) {
+							$arrAltUrl = get_international_settings_path($part_alternative_path, LANGUAGE_INSET);
+							$tpl->set_var("show_file", normalize_url($arrAltUrl["url"], HIDE_EXT, true, LANGUAGE_INSET) . $part_alternative_url . $part_alternative_hash);
+						}
+                    }
 				} else {
-                   	$tpl->set_var("show_file", $item_permalink);
+                   	$tpl->set_var("show_file", normalize_url_by_current_lang(stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]));
 				}
             }
 
@@ -195,7 +213,7 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 
 			if ($layout_settings["AREA_STATIC_SHOW_DESCRIPTION"] && (strlen(trim(strip_tags($item["description"]))) || strpos($item["description"], "<img") !== false)) {
                 if($search_param)
-                    $tpl->set_var("description", preg_replace("/(" . preg_quote($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", $item["description"]));
+                    $tpl->set_var("description", preg_replace("/(" . escape_string_x_regexp($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", $item["description"]));
                 else
                     $tpl->set_var("description", $item["description"]);
                 $tpl->parse("SezItemDescription", false);
@@ -238,12 +256,12 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 	                                                    FF_SITE_PATH . VG_SITE_MENU . "/dialog");
 				} else {
 	                if(AREA_STATIC_SHOW_ADDNEW) {
-	                    $popup["admin"]["addnew"] = get_path_by_rule("pages") . "/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]);
+	                    $popup["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]);
 	                } else {
 	                    $popup["admin"]["addnew"] = "";
 	                }
 	                if (AREA_STATIC_SHOW_MODIFY) {
-                		$popup["admin"]["modify"] = get_path_by_rule("pages") . "/modify" . stripslash($item["parent"]) . "/" . $item["name"];
+                		$popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify" . stripslash($item["parent"]) . "/" . $item["name"];
 					}
 	                if(AREA_STATIC_SHOW_DELETE) {
 	                    $popup["admin"]["delete"] = ffDialog(TRUE,
@@ -251,8 +269,8 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 	                                                    ffTemplate::_get_word_by_code("vgallery_erase_title"),
 	                                                    ffTemplate::_get_word_by_code("vgallery_erase_description"),
 	                                                    "--returl--",
-	                                                    get_path_by_rule("pages") . "/modify" . stripslash($item["parent"]) . "/" . $item["name"] . "?ret_url=" . "--encodereturl--" . "&frmAction=StaticModify_confirmdelete", 
-	                                                    get_path_by_rule("pages") . "/dialog");
+	                                                    FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify" . stripslash($item["parent"]) . "/" . $item["name"] . "?ret_url=" . "--encodereturl--" . "&frmAction=StaticModify_confirmdelete", 
+	                                                    FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static" . "/dialog");
 	                }
 				}
                 if(AREA_PROPERTIES_SHOW_MODIFY) {
@@ -268,12 +286,9 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
                 $popup["sys"]["path"] = $settings_path;
                 $popup["sys"]["type"] = "admin_popup";
 
-				if(check_function("set_template_var"))
-					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME) . '"';
-
-	            //$serial_popup = json_encode($popup);
-	            //$item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-
+	            $serial_popup = json_encode($popup);
+	            
+	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
 	            $item_class["admin"] = "admin-bar";
             }
 

@@ -31,17 +31,13 @@
 		
 			$services_params = get_webservices("google.maps");
 			 
-			if($services_params["enable"] && strlen<($services_params["key"])) {
+			if($services_params["enable"] && strlen($services_params["key"])) {
 				if($gmap3_enabled)
 				{
 					if($only_maps) {
 					
 					} else {
-						$cm->oPage->tplAddJs("MarkerClusterer"
-                            , array(
-                                "file" => "markerclusterer.js"
-                                , "path" => "/themes/library/plugins/gmap3.markerclusterer"
-                        ));
+						$cm->oPage->tplAddJs("MarkerClusterer", "markerclusterer.js", "/themes/library/plugins/gmap3.markerclusterer", false, $cm->isXHR());
 
 						if($services_params["region"])
 							$component->gmap_region											= $services_params["region"];
@@ -131,3 +127,4 @@
 
 		return $component;
 	}
+?>

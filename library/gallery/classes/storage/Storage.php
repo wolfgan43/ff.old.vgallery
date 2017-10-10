@@ -23,7 +23,10 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-require_once(__DIR__ . "/../vgCommon.php");
+if(!defined("FF_PHP_EXT"))
+    define("FF_PHP_EXT", "php");
+
+require_once(__DIR__ . "/../vgCommon." . FF_PHP_EXT);
 
 class Storage extends vgCommon
 {
@@ -138,7 +141,7 @@ class Storage extends vgCommon
         return $this->getResult();
     }
     
-    public function update($data = null, $where = null, $table = null)
+    public function update($update = null, $where = null, $table = null, $data = null)
     {
         $this->clearResult();
         if($this->isError()) 
@@ -148,6 +151,7 @@ class Storage extends vgCommon
             $this->where                = $where;
             $this->table                = $table;
             $this->setData($data);
+            $this->setUpdate($update);
 
             $this->controller();
         }
@@ -220,7 +224,11 @@ class Storage extends vgCommon
         }        
         $this->$param = $data;
     }
-    public function convertData($source, $dest)
+    public function setUpdate($data) 
+    {
+        $this->setData($data, "update");
+    }
+    public function convertData($source, $dest) 
     {
         $this->convertParam($source, $dest, "data");
     }
@@ -262,7 +270,7 @@ class Storage extends vgCommon
         if($service)
         {
             $controller                                                 = "storage" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
+            require_once($this->getAbsPath("/storage/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
@@ -385,7 +393,7 @@ class Storage extends vgCommon
         if($service)
         {
             $controller                                                 = "storage" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
+            require_once($this->getAbsPath("/storage/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
@@ -482,7 +490,7 @@ class Storage extends vgCommon
         if($service)
         {
             $controller = "storage" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
+            require_once($this->getAbsPath("/storage/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
 
             $this->device = new Filemanager();
 
@@ -516,6 +524,7 @@ class Storage extends vgCommon
     private function clearResult() 
     {
         $this->data                                                     = array();
+        $this->update                                                   = array();
         $this->action                                                   = null;
         $this->where                                                    = null;
         $this->table                                                    = null;

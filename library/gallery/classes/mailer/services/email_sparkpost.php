@@ -55,9 +55,9 @@ class mailerLocalhost
 
         if (!$this->config["password"])
         {
-            if (is_file($this->mailer->getAbsPathPHP("/conf/gallery/config/other")))
+            if (is_file($this->mailer->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT)))
             {
-                require_once($this->mailer->getAbsPathPHP("/conf/gallery/config/other"));
+                require_once($this->mailer->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT));
 
                 $this->config["host"] = (defined("A_SMTP_HOST")
                     ? A_SMTP_HOST

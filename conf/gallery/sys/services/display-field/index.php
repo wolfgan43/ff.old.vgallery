@@ -1,28 +1,4 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage services
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
 if(!mod_security_check_session(false) || get_session("UserNID") == MOD_SEC_GUEST_USER_ID) {
 	prompt_login();
 }
@@ -68,7 +44,7 @@ $resources = array(
 												            (vgallery_nodes.parent = " . $db->toSql($_REQUEST["params"]["real_path_info"])  . " 
 												                OR vgallery_nodes.parent LIKE '" . $db->toSql($_REQUEST["params"]["real_path_info"] . "/", "Text", false)  . "%'
 												            )
-															" . (strpos($_REQUEST["params"]["path_info"], VG_WS_ECOMMERCE) === 0
+															" . (strpos($_REQUEST["params"]["path_info"], VG_SITE_MANAGE) === 0
             													? " AND IF(vgallery.enable_ecommerce_all_level > 0 
 												                        , 1
 												                        , vgallery.limit_level >= (LENGTH(CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name)) - LENGTH(REPLACE(CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name), '/', '')))
@@ -162,7 +138,6 @@ if (!is_array($resource)
 	http_response_code(400);
 	exit;
 }
-
 if(strlen($resource["SQL"])) {
 	$sSQL = $resource["SQL"];
 	
@@ -228,7 +203,6 @@ $oGrid->display_delete_bt = false;
 $oGrid->display_edit_bt = false;
 $oGrid->display_edit_url = false;
 $oGrid->display_new = false;
-$oGrid->buttons_options["export"]["display"] = false;
 
 $oGrid->widget_deps[] = array(
     "name" => "dragsort"
@@ -271,13 +245,13 @@ $oButton->label = ffTemplate::_get_word_by_code("ffRecord_update");//Definita ne
 $oButton->action_type = "submit";
 $oButton->frmAction = "update";
 $oButton->aspect = "link";
-$oButton->jsaction = "updateCustomize('" . $_REQUEST["XHR_CTX_ID"] . "');";
+$oButton->jsaction = "javascript:updateCustomize('" . $_REQUEST["XHR_DIALOG_ID"] . "');";
 $oGrid->addActionButton($oButton);
 
 $oButton = ffButton::factory($cm->oPage);
 $oButton->id = "ActionButtonCancel";
 $oButton->label = ffTemplate::_get_word_by_code("ffRecord_close");//Definita nell'evento
-if($_REQUEST["XHR_CTX_ID"]) {
+if($_REQUEST["XHR_DIALOG_ID"]) {
     $oButton->action_type     = "submit";
     $oButton->frmAction        = "close";
 } else {
@@ -290,8 +264,39 @@ $oGrid->addActionButton($oButton);
 
 $cm->oPage->addContent($oGrid);
 
-$cm->oPage->tplAddJs("ff.cms.admin.display-field");
 
+
+$js = '
+    function updateCustomize(id) {
+        var pos = "";
+        var nopos = "";
+        var $table = jQuery(".ffGrid", jQuery("#Customize"));
+        
+		$table.find("tbody tr").each(function () {
+			if($(this).find("input[type=checkbox]").is(":checked")) {
+				if(pos)
+					pos += ",";
+				
+				pos += jQuery(this).data("sort_id");
+			} else {
+				if(nopos)
+					nopos += ",";
+				
+				nopos += jQuery(this).data("sort_id");
+			}
+		});
+        document.getElementById("frmAction").value = "Customize_update";
+
+		if(id) {
+			ff.ffPage.dialog.doAction(id, "update", "Customize_", undefined, undefined, [{"name" : "pos", "value" : pos}, {"name" : "nopos", "value" : nopos}]);
+		} else {
+			document.getElementById("frmMain").action = window.location.href + "&pos=" + encodeURIComponent(pos) + "&nopos=" + encodeURIComponent(nopos);
+			document.getElementById("frmMain").submit();
+		}
+        
+    }
+';
+$cm->oPage->tplAddJs("updateCustomize", null, null, false, $cm->oPage->isXHR(), $js, false, "bottom");
 //$cm->oPage->addContent($js);
 /*
 $oRecord = ffRecord::factory($cm->oPage);

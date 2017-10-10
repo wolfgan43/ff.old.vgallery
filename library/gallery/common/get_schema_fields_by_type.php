@@ -31,39 +31,38 @@
 	if(is_array($type)) {
 		$src = array_replace_recursive($def["default"], $type);
 	} else {
-	
-        switch($type) {
-            case "thumb-anagraph":
-            case "detail-anagraph":
-            case "anagraph":
-            case "/thumb-anagraph":
-            case "/detail-anagraph":
-            case "/anagraph":
+		switch($type) {
+	        case "thumb-anagraph":
+	        case "detail-anagraph":
+		    case "anagraph":
+	        case "/thumb-anagraph":
+	        case "/detail-anagraph":
+		    case "/anagraph":
                 $src = $def["anagraph"];
-                break;
-            case "media":            
-            case "gallery":
-            case "/media":            
-            case "/gallery":
-                $src = $def["files"];
-                break;
-            case "page":
+		        break;
+			case "media":	        
+		    case "gallery":
+			case "/media":	        
+		    case "/gallery":
+		        $src = $def["files"];
+		        break;
+		    case "page":
             case "/page":                
-                $src = $def["page"];
-                break;
-            case "tag":
+				$src = $def["page"];
+	    		break;
+		    case "tag":
             case "/tag":
-                $src = $def["tag"];
-                break;
-            case "thumb":
-            case "detail":
-            case "vgallery":
-            case "/thumb":
-            case "/detail":
-            case "/vgallery":
-                $src = $def["vgallery"];
-                break;
-            default:
+				$src = $def["tag"];
+	    		break;
+		    case "thumb":
+		    case "detail":
+		    case "vgallery":
+		    case "/thumb":
+		    case "/detail":
+		    case "/vgallery":
+	    		$src = $def["vgallery"];
+		        break;
+		    default:
 	    		if($def[$type])
 	    			$src = $def[$type];
 	    		elseif($def[$default]) {
@@ -73,7 +72,7 @@
 				}
 		}  
 	}
-
+    
     if(!$src["table"]) {
         if($src["seo"]["primary_table"]) {
             $src["table"]                   = $src["seo"]["primary_table"];

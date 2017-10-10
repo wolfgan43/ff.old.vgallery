@@ -214,8 +214,7 @@ function process_vgallery_fields_system($limit = null, $rev = false) {
 }
 
 
-function process_vgallery_father($params, $mode = "thumb") 
-{
+function process_vgallery_father($params, $mode = "thumb") {
     $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
@@ -1096,7 +1095,7 @@ function process_vgallery_father($params, $mode = "thumb")
 	/**
 	 * Seo Social
 	 */
-	if (!$skip_social && is_array($file_properties["social"]) && count($file_properties["social"])) {
+	if (!$skip_social /*&& !isset($globals->seo[$seo_mode])*/ && is_array($file_properties["social"]) && count($file_properties["social"])) {
 		$vg_father["seo"]["meta"] = array_replace($vg_father["seo"]["meta"], $file_properties["social"]["done"]);
 		$vg_father["seo"]["meta_todo"] = $file_properties["social"]["todo"];
 	}
@@ -1357,7 +1356,7 @@ function process_vgallery_admin_bar($vg_father, $layout) {
 		    }
 
 		    if (AREA_PROPERTIES_SHOW_MODIFY && !$searched) {
-				$admin_menu["admin"]["fields"] = get_path_by_rule("contents-structure");
+				$admin_menu["admin"]["fields"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/vgallery/type";
 				if (is_array($vg_father["limit_type"]) && count($vg_father["limit_type"])) {
 				    if (count($vg_father["limit_type"]) > 1)
 						$admin_menu["admin"]["fields"] .= "?limit=" . urlencode(implode(",", $vg_father["limit_type"]));
@@ -1380,50 +1379,52 @@ function process_vgallery_admin_bar($vg_father, $layout) {
 		    }
 
 		    if (AREA_ECOMMERCE_SHOW_MODIFY && $vg_father["enable_ecommerce"] && !$searched && $vg_father["wishlist"] === null) {
-				$admin_menu["admin"]["ecommerce"] = FF_SITE_PATH . VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_father["ID_node"] . "&type=" . ($vg_father["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&path=" . urlencode($vg_father["settings_path"]) . "&extype=" . $vg_father["settings_type"];
+			$admin_menu["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_father["ID_node"] . "&type=" . ($vg_father["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&path=" . urlencode($vg_father["settings_path"]) . "&extype=" . $vg_father["settings_type"];
 		    }
 		    if (AREA_LAYOUT_SHOW_MODIFY && !$searched && $vg_father["type"] != "learnmore") {
-				$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
-				$admin_menu["admin"]["layout"]["type"] = $layout["type"];
+			$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
+			$admin_menu["admin"]["layout"]["type"] = $layout["type"];
 		    }
 		    if (AREA_SETTINGS_SHOW_MODIFY && !$searched && $vg_father["wishlist"] === null) {
-				$admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
+			$admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
 		    }
 		}
     } else {
 	if ((AREA_PUBLISHING_SHOW_MODIFY || AREA_PUBLISHING_SHOW_DETAIL || AREA_PUBLISHING_SHOW_DELETE)) {
 	    if (AREA_PUBLISHING_SHOW_DETAIL && $vg_father["allow_insert"]) {
-			$admin_menu["admin"]["addnew"] = get_path_by_rule("widgets", "restricted") . "/" . ffCommon_url_rewrite(basename($vg_father["settings_path"])) . "/contents?keys[ID]=" . $vg_father["publishing"]["ID"];
+		$admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/detail/" . ffCommon_url_rewrite(basename($vg_father["settings_path"])) . "?keys[ID]=" . $vg_father["publishing"]["ID"] . "&extype=" . $vg_father["settings_type"];
+		/*
+		  if($vg_father["automatic_selection"]) {
+		  if(strlen($vg_father["vgallery_name"])) {
+		  $admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/modify?type=node" . "&vname=" . $vg_father["vgallery_name"] . "&path=" . urlencode($vg_father["settings_path"]) . "&extype=" . $vg_father["settings_type"];
+		  }
+		  } else {
+		  $admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/detail/" . ffCommon_url_rewrite(basename($vg_father["settings_path"])) . "?keys[ID]=" . $vg_father["publishing"]["ID"] . "&extype=" . $vg_father["settings_type"];
+		  }
+		 */
 	    }
 	    if (AREA_PUBLISHING_SHOW_MODIFY) {
-			$admin_menu["admin"]["modify"] = get_path_by_rule("widgets", "restricted") . "?keys[ID]=" . $vg_father["publishing"]["ID"];
+		$admin_menu["admin"]["modify"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/modify?keys[ID]=" . $vg_father["publishing"]["ID"] . "&extype=" . $vg_father["settings_type"];
 	    }
 	    if (AREA_PUBLISHING_SHOW_DELETE) {
-			$admin_menu["admin"]["delete"] = ffDialog(TRUE
-													, "yesno"
-													, ffTemplate::_get_word_by_code("vgallery_erase_title")
-													, ffTemplate::_get_word_by_code("vgallery_erase_description")
-													, "--returl--"
-													, get_path_by_rule("widgets", "restricted") . "/" . ffCommon_url_rewrite(basename($vg_father["settings_path"])) . "?keys[ID]=" . $vg_father["publishing"]["ID"] . "&PublishingModify_frmAction=confirmdelete"
-													, get_path_by_rule("widgets", "restricted") . "/" . ffCommon_url_rewrite(basename($vg_father["settings_path"])) . "/dialog"
-												);
+		$admin_menu["admin"]["delete"] = ffDialog(TRUE, "yesno", ffTemplate::_get_word_by_code("vgallery_erase_title"), ffTemplate::_get_word_by_code("vgallery_erase_description"), "--returl--", FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/modify?keys[ID]=" . $vg_father["publishing"]["ID"] . "&extype=" . $vg_father["settings_type"] . "&ret_url=" . "--encodereturl--" . "&PublishingModify_frmAction=confirmdelete", FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/dialog");
 	    }
 
 	    if (AREA_PROPERTIES_SHOW_MODIFY) {
-	    	$admin_menu["admin"]["extra"] = get_path_by_rule("blocks-appearance") . "?path=" . $vg_father["settings_path"] . "&extype=" . $vg_father["settings_type"] . "&layout=" . $vg_father["settings_layout"] . ($vg_father["type"] == "learnmore" ? "&skipd=1" : "");
-			$admin_menu["admin"]["fields"] = get_path_by_rule("widgets", "restricted") . "/" . ffCommon_url_rewrite(basename($vg_father["settings_path"])) . "/fields?keys[ID]=" . $vg_father["publishing"]["ID"] . "&src=" . urlencode($vg_father["src"]["type"]);
+			$admin_menu["admin"]["extra"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/properties?path=" . $vg_father["settings_path"] . "&extype=" . $vg_father["settings_type"] . "&layout=" . $vg_father["settings_layout"] . ($vg_father["type"] == "learnmore" ? "&skipd=1" : "");
+			$admin_menu["admin"]["fields"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/extra?keys[ID]=" . $vg_father["publishing"]["ID"] . "&src=" . urlencode($vg_father["src"]["type"]);
 	    }
 
 
 	    if (AREA_ECOMMERCE_SHOW_MODIFY) {
-			$admin_menu["admin"]["ecommerce"] = "";
+		$admin_menu["admin"]["ecommerce"] = "";
 	    }
 	    if (AREA_LAYOUT_SHOW_MODIFY) {
-			$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
-			$admin_menu["admin"]["layout"]["type"] = $layout["type"];
+		$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
+		$admin_menu["admin"]["layout"]["type"] = $layout["type"];
 	    }
 	    if (AREA_SETTINGS_SHOW_MODIFY) {
-			$admin_menu["admin"]["setting"] = ""; //"PUBLISHING";
+		$admin_menu["admin"]["setting"] = ""; //"PUBLISHING";
 	    }
 	}
     }
@@ -1466,7 +1467,7 @@ function process_vgallery_admin_popup($vg_father, $vg_node, $layout) {
 		$popup["admin"]["extra"] = FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/properties?type=" . ($vg_node["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&src=" . urlencode($vg_father["src"]["type"]) . "&path=" . urlencode($vg_node["parent"]) . "&extype=vgallery_nodes" . "&layout=" . $vg_father["settings_layout"];
 	    }
 	    if (AREA_ECOMMERCE_SHOW_MODIFY && $vg_father["enable_ecommerce"]) {
-		$popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_node["ID"] . "&type=" . ($vg_node["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&src=" . urlencode($vg_father["src"]["type"]) . "&path=" . urlencode($vg_node["parent"]) . "&extype=vgallery_nodes";
+		$popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_node["ID"] . "&type=" . ($vg_node["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&src=" . urlencode($vg_father["src"]["type"]) . "&path=" . urlencode($vg_node["parent"]) . "&extype=vgallery_nodes";
 	    }
 	    if (AREA_SETTINGS_SHOW_MODIFY) {
 		$popup["admin"]["setting"] = "";
@@ -1483,7 +1484,7 @@ function process_vgallery_admin_popup($vg_father, $vg_node, $layout) {
 		$popup["admin"]["extra"] = "";
 	    }
 	    if (AREA_ECOMMERCE_SHOW_MODIFY && $vg_father["enable_ecommerce"]) {
-		$popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_node["ID"] . "&type=" . ($vg_node["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&path=" . urlencode($vg_node["parent"]) . "&extype=vgallery_nodes";
+		$popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_node["ID"] . "&type=" . ($vg_node["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&path=" . urlencode($vg_node["parent"]) . "&extype=vgallery_nodes";
 	    }
 	    if (AREA_SETTINGS_SHOW_MODIFY) {
 		$popup["admin"]["setting"] = "";
@@ -1500,7 +1501,7 @@ function process_vgallery_admin_popup($vg_father, $vg_node, $layout) {
 		$popup["admin"]["extra"] = "";
 	    }
 	    if (AREA_ECOMMERCE_SHOW_MODIFY && $vg_father["enable_ecommerce"]) {
-		$popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_node["ID"] . "&type=" . ($vg_node["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&path=" . urlencode($vg_node["parent"]) . "&extype=vgallery_nodes";
+		$popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vg_father["vgallery_name"]) . "/ecommerce/all?keys[ID]=" . $vg_node["ID"] . "&type=" . ($vg_node["is_dir"] ? "dir" : "node") . "&vname=" . $vg_father["vgallery_name"] . "&path=" . urlencode($vg_node["parent"]) . "&extype=vgallery_nodes";
 	    }
 	    if (AREA_SETTINGS_SHOW_MODIFY) {
 		$popup["admin"]["setting"] = "";
@@ -1509,15 +1510,13 @@ function process_vgallery_admin_popup($vg_father, $vg_node, $layout) {
     }
 
     if (is_array($popup)) {
-		$popup["admin"]["unic_name"] = $vg_father["src"]["type"] . "-" . $vg_node["ID"];
-		$popup["admin"]["title"] = ($vg_father["mode"] == "thumb" 
-			? $layout["title"] 
-			: ": " . stripslash($vg_node["parent"]) . "/" . $vg_node["name"]
+	$popup["admin"]["unic_name"] = $vg_father["src"]["type"] . "-" . $vg_node["ID"];
+	$popup["admin"]["title"] = ($vg_father["mode"] == "thumb" ? $layout["title"] : ": " . stripslash($vg_node["parent"]) . "/" . $vg_node["name"]
 		);
-		$popup["admin"]["class"] = $layout["type_class"];
-		$popup["admin"]["group"] = $layout["type_group"];
-		$popup["sys"]["path"] = $vg_father["settings_path"];
-		$popup["sys"]["type"] = "admin_popup";
+	$popup["admin"]["class"] = $layout["type_class"];
+	$popup["admin"]["group"] = $layout["type_group"];
+	$popup["sys"]["path"] = $vg_father["settings_path"];
+	$popup["sys"]["type"] = "admin_popup";
     }
 
     return $popup;
@@ -1787,6 +1786,7 @@ function process_vgallery_fields($vg_father, &$arrFieldLimit = null) {
 				$loaded_fields[$table_source]["params"][$field_key]["relationship"][$rel_type]["src"][$field_key] = $rel_tbl;
 				
 				$loaded_fields[$table_source]["params"][$field_key]["keys"][$field_key] = $field_key;
+				
 				//$loaded_fields[$table_source]["params"][$field_key]["relationship"][$rel_type]["tbl"][$rel_tbl]["src_field"] = $field_key;
 				//$loaded_fields[$table_source]["params"][$field_key]["relationship"][$rel_type]["tbl"][$rel_tbl]["dst_field"] = $arrDataLimit;
 				foreach($arrDataLimit AS $arrDataLimit_value) {
@@ -2023,41 +2023,40 @@ function process_vgallery_fields($vg_father, &$arrFieldLimit = null) {
 	$res["fields"] = array_intersect_key($loaded_fields[$table_source]["fields"], array_flip($vg_father["limit_type"]));
     else
 	$res["fields"] = $loaded_fields[$table_source]["fields"];
-
     if (is_array($arrFieldLimit) && count($arrFieldLimit)) {
 		foreach ($arrFieldLimit AS $field_type => $arrFieldLimitData) {
 		    if (is_array($arrFieldLimitData) && count($arrFieldLimitData)) {
-				switch ($field_type) {
-				    case "filters":
-						foreach ($res["fields"] AS $ID_type => $arrFields) {
-						    $res["fields"][$ID_type] = array_filter($arrFields, function($field) use ($arrFieldLimitData, &$arrFieldLimit) {
-								foreach ($arrFieldLimitData AS $field_name => $arrField_value) {
-								    $res = array_search(ffCommon_url_rewrite($field["base"][$field_name]), $arrField_value);
-								    if ($res !== false) {
-										$arrFieldLimit["ID"][] = $field["system"]["ID"];
-										return true;
-								    }
-								}
-						    });
+			switch ($field_type) {
+			    case "filters":
+				foreach ($res["fields"] AS $ID_type => $arrFields) {
+				    $res["fields"][$ID_type] = array_filter($arrFields, function($field) use ($arrFieldLimitData, &$arrFieldLimit) {
+					foreach ($arrFieldLimitData AS $field_name => $arrField_value) {
+					    $res = array_search(ffCommon_url_rewrite($field["base"][$field_name]), $arrField_value);
+					    if ($res !== false) {
+							$arrFieldLimit["ID"][] = $field["system"]["ID"];
+							return true;
+					    }
+					}
+				    });
 
-						    if (!count($res["fields"][$ID_type]))
-								unset($res["fields"][$ID_type]);
-						}
-					break;
-				    case "keys":
-						$arrFieldFlip = array_flip($arrFieldLimitData);
-						foreach ($res["fields"] AS $ID_type => $arrFields) {
-						    if (is_array($res["fields"][$ID_type]))
-								$res["fields"][$ID_type] = array_replace($res["fields"][$ID_type], array_intersect_key($arrFields, $arrFieldFlip));
-						    else
-								$res["fields"][$ID_type] = array_intersect_key($arrFields, $arrFieldFlip);
-
-						    if (!count($res["fields"][$ID_type]))
-								unset($res["fields"][$ID_type]);
-						}
-					break;
-				    default:
+				    if (!count($res["fields"][$ID_type]))
+					unset($res["fields"][$ID_type]);
 				}
+				break;
+			    case "keys":
+				$arrFieldFlip = array_flip($arrFieldLimitData);
+				foreach ($res["fields"] AS $ID_type => $arrFields) {
+				    if (is_array($res["fields"][$ID_type]))
+					$res["fields"][$ID_type] = array_replace($res["fields"][$ID_type], array_intersect_key($arrFields, $arrFieldFlip));
+				    else
+					$res["fields"][$ID_type] = array_intersect_key($arrFields, $arrFieldFlip);
+
+				    if (!count($res["fields"][$ID_type]))
+					unset($res["fields"][$ID_type]);
+				}
+				break;
+			    default:
+			}
 		    }
 		}
 
@@ -2074,8 +2073,7 @@ function process_vgallery_fields($vg_father, &$arrFieldLimit = null) {
 
 function process_vgallery_type(&$vg_father, $tpl_data, $layout) {
     static $loaded_fields = array();
-	
-	$globals =  ffGlobals::getInstance("gallery");
+
     $db = ffDB_Sql::factory();
 
     $actual_field_schema = array();
@@ -2084,59 +2082,59 @@ function process_vgallery_type(&$vg_father, $tpl_data, $layout) {
 
 //se rimesso non funzionano i templare learnmore
     if (/*!is_array($vg_father["limit"]["fields"]) &&*/ $tpl_data["result"]["type"] == "custom" && is_array($tpl_data["obj"]->DVars) && count($tpl_data["obj"]->DVars)) {
-	foreach ($tpl_data["obj"]->DVars AS $tpl_var => $tpl_ignore) {
-	    $arrTplField = array();
+		foreach ($tpl_data["obj"]->DVars AS $tpl_var => $tpl_ignore) {
+		    $arrTplField = array();
 
-	    //$tpl_var = strtolower($tpl_var);
-	    if (strpos($tpl_var, ":") !== false) {
-		$arrTplField["properties"] = explode(":", $tpl_var);
-		$tmp_field = $arrTplField["properties"][0];
-		unset($arrTplField["properties"][0]);
-	    } else {
-		$tmp_field = $tpl_var;
-	    }
-	    switch ($tmp_field) {
-		case "class":
-		case "properties":
-		case "item":
-		case "admin":
-		case "pagination":
-		    break;
-		default:
-		    $property_data = "";
-		    if (count($arrTplField["properties"])) {
-				$main_property = $arrTplField["properties"][1];
-				unset($arrTplField["properties"][1]);
-				$property_data = array($main_property => implode(":", $arrTplField["properties"]));
-		    }
-
-		    if (strpos($tmp_field, ".") === false) {
-			$field_key = ffCommon_url_rewrite($tmp_field);
-			$vg_father["limit"]["tpl"]["vars"][$field_key] = $tmp_field;
-
-			if (is_array($vg_father["limit"]["tpl"]["fields"][$field_key]) && is_array($property_data))
-			    $vg_father["limit"]["tpl"]["fields"][$field_key] = array_merge($vg_father["limit"]["tpl"]["fields"][$field_key], $property_data);
-			else
-			    $vg_father["limit"]["tpl"]["fields"][$field_key] = $property_data;
+		    //$tpl_var = strtolower($tpl_var);
+		    if (strpos($tpl_var, ":") !== false) {
+			$arrTplField["properties"] = explode(":", $tpl_var);
+			$tmp_field = $arrTplField["properties"][0];
+			unset($arrTplField["properties"][0]);
 		    } else {
-			$arrTplField["shard"] = explode(".", $tmp_field);
-			$field_key = ffCommon_url_rewrite($arrTplField["shard"][0]);
-
-			$vg_father["limit"]["tpl"]["vars"][$field_key . "." . $arrTplField["shard"][1]] = $tmp_field;
-			$vg_father["limit"]["tpl"]["fields"][$field_key] = "";
-			if (is_array($vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]]) && is_array($property_data))
-			    $vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]] = array_merge($vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]], $property_data);
-			else
-			    $vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]] = $property_data;
+			$tmp_field = $tpl_var;
 		    }
-	    }
-	}
+		    switch ($tmp_field) {
+			case "class":
+			case "properties":
+			case "item":
+			case "admin":
+			case "pagination":
+			    break;
+			default:
+			    $property_data = "";
+			    if (count($arrTplField["properties"])) {
+					$main_property = $arrTplField["properties"][1];
+					unset($arrTplField["properties"][1]);
+					$property_data = array($main_property => implode(":", $arrTplField["properties"]));
+			    }
 
-	if(is_array($vg_father["limit"]["tpl"]["fields"]))
-		$vg_father["limit"]["fields"] = implode(",", array_keys($vg_father["limit"]["tpl"]["fields"]));
+			    if (strpos($tmp_field, ".") === false) {
+				$field_key = ffCommon_url_rewrite($tmp_field);
+				$vg_father["limit"]["tpl"]["vars"][$field_key] = $tmp_field;
 
-	$vg_father["limit"]["compare_key"] = "name";
-	$vg_father["is_custom_template"] = true;
+				if (is_array($vg_father["limit"]["tpl"]["fields"][$field_key]) && is_array($property_data))
+				    $vg_father["limit"]["tpl"]["fields"][$field_key] = array_merge($vg_father["limit"]["tpl"]["fields"][$field_key], $property_data);
+				else
+				    $vg_father["limit"]["tpl"]["fields"][$field_key] = $property_data;
+			    } else {
+				$arrTplField["shard"] = explode(".", $tmp_field);
+				$field_key = ffCommon_url_rewrite($arrTplField["shard"][0]);
+
+				$vg_father["limit"]["tpl"]["vars"][$field_key . "." . $arrTplField["shard"][1]] = $tmp_field;
+				$vg_father["limit"]["tpl"]["fields"][$field_key] = "";
+				if (is_array($vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]]) && is_array($property_data))
+				    $vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]] = array_merge($vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]], $property_data);
+				else
+				    $vg_father["limit"]["tpl"]["shard"][$field_key][$arrTplField["shard"][1]] = $property_data;
+			    }
+		    }
+		}
+
+		if(is_array($vg_father["limit"]["tpl"]["fields"]))
+			$vg_father["limit"]["fields"] = implode(",", array_keys($vg_father["limit"]["tpl"]["fields"]));
+
+		$vg_father["limit"]["compare_key"] = "name";
+		$vg_father["is_custom_template"] = true;
     }
 
     if (is_array($vg_father["limit"]) && is_array($vg_father["limit"]["fields"])) {
@@ -2172,9 +2170,9 @@ function process_vgallery_type(&$vg_father, $tpl_data, $layout) {
     }
 
     if ($actual_field_schema["sub"] === null)
-	$vg_field = $loaded_fields[$actual_field_schema["macro"]];
+		$vg_field = $loaded_fields[$actual_field_schema["macro"]];
     else
-	$vg_field = $loaded_fields[$actual_field_schema["macro"]][$actual_field_schema["sub"]];
+		$vg_field = $loaded_fields[$actual_field_schema["macro"]][$actual_field_schema["sub"]];
 
     /*
       if(is_array($arrType)) {
@@ -2204,7 +2202,8 @@ function process_vgallery_type(&$vg_father, $tpl_data, $layout) {
     {
 		$vg_field = array();
 		$arrFieldOverride = array();
-		$field_key = ($vg_father["limit"]["compare_key"] ? $vg_father["limit"]["compare_key"] : "ID");
+		$field_key = ($vg_father["limit"]["compare_key"] ? $vg_father["limit"]["compare_key"] : "ID"
+			);
 
 		if (is_array($vg_father["limit"]["fields"]))
 		    $field_limit = $vg_father["limit"]["fields"];
@@ -2223,178 +2222,153 @@ function process_vgallery_type(&$vg_father, $tpl_data, $layout) {
 
 		switch ($actual_field_schema["macro"]) {
 		    case "publishing":
-    			if(!$globals->data_storage["publishing_fields"][$vg_father["publishing"]["ID"]]) {
-					if(is_array($globals->tpl["blocks_by_type"]["publishing"]) && count($globals->tpl["blocks_by_type"]["publishing"])) {
-	        			$publishing_keys = implode(",", $globals->tpl["blocks_by_type"]["publishing"]);
-			        } else {
-	        			$publishing_keys = $vg_father["publishing"]["ID"];
-			        }    	
-					$sSQL = "SELECT 
-									publishing_fields.ID_publishing																	AS ID_publishing
-				                    , publishing_fields.ID_fields																	AS ID
-				                    , publishing_fields.enable_lastlevel                                      						AS enable_lastlevel
-				                    , publishing_fields.enable_thumb_label                                    						AS enable_label
-				                    , vgallery_label_htmltag.tag                                                					AS htmltag_label_tag
-				                    , vgallery_label_htmltag.attr                                               					AS htmltag_label_attr
-				                    , publishing_fields.enable_thumb_empty                                    						AS enable_empty
-				                    , publishing_fields.thumb_limit                                           						AS limit_char
-				                    , publishing_fields.parent_thumb                                          						AS parent
-				                    , publishing_fields.enable_thumb_cascading                                						AS enable_cascading
-				                    , publishing_fields.display_view_mode_thumb                               						AS display_view_mode
-				                    , publishing_fields.enable_sort                                           						AS enable_sort
-									, publishing_fields.settings_type_thumb                											AS settings_type
-									, publishing_fields.settings_type_thumb_md                										AS settings_type_md
-									, publishing_fields.settings_type_thumb_sm                										AS settings_type_sm
-									, publishing_fields.settings_type_thumb_xs                										AS settings_type_xs
-				                    , vgallery_fields_htmltag.tag                                               					AS htmltag_tag
-				                    , vgallery_fields_htmltag.attr                                              					AS htmltag_attr
-				                    , publishing_fields.custom_thumb_field                                    						AS custom_field
-								    , publishing_fields.fixed_pre_content_thumb            											AS fixed_pre_content
-								    , publishing_fields.fixed_post_content_thumb           											AS fixed_post_content
-									, publishing_fields.field_fluid_thumb															AS field_fluid
-									, publishing_fields.field_grid_thumb															AS field_grid
-									, publishing_fields.field_class_thumb															AS field_class
-									, publishing_fields.label_fluid_thumb															AS label_fluid
-									, publishing_fields.label_grid_thumb															AS label_grid
-				                 FROM publishing_fields
-				                    LEFT JOIN vgallery_fields_htmltag 							ON vgallery_fields_htmltag.ID = publishing_fields.ID_thumb_htmltag 
-				                    LEFT JOIN vgallery_fields_htmltag AS vgallery_label_htmltag ON vgallery_label_htmltag.ID = publishing_fields.ID_label_thumb_htmltag 
-				                 WHERE publishing_fields.ID_publishing IN(" . $db->toSql($publishing_keys, "Text", false) . ")
-				                 ORDER BY publishing_fields.parent_thumb, publishing_fields.`order_thumb`";
-					$db->query($sSQL);
-					if ($db->nextRecord()) {
-					    do {
-				    		
-				    		$db->record["htmltag_label_attr"] 																		= ($db->record["htmltag_label_attr"] 
-																																		? array($db->record["htmltag_label_attr"]) 
-																																		: array()
-																																	);
-				    		$db->record["plugin"]["name"] 																			= $db->record["display_view_mode"];
-				    		$db->record["plugin"]["class"] 																			= preg_replace('/[^a-zA-Z0-9\-]/', '', $db->record["plugin"]["name"]);
-							$db->record["plugin"]["image"]["src"] 																	= get_image_properties_by_grid_system(
-				    																													$db->record["settings_type"]
-				    																													, $db->record["settings_type_md"]
-				    																													, $db->record["settings_type_sm"]
-				    																													, $db->record["settings_type_xs"]
-																																	);		
-				    		$globals->data_storage["publishing_fields"][$db->record["ID_publishing"]][$db->record["ID"]] 			= $db->record;
-				    		
-							/*$field_key = $db->getField("ID", "Number", true);
-							$arrFieldOverride[$field_key]["enable_lastlevel"] = $db->getField("enable_lastlevel", "Number", true);
-							$arrFieldOverride[$field_key]["enable_label"] = $db->getField("enable_label", "Number", true);
-							$arrFieldOverride[$field_key]["htmltag_label_tag"] = $db->getField("htmltag_label_tag", "Text", true);
-							$arrFieldOverride[$field_key]["htmltag_label_attr"] = ($db->getField("htmltag_label_attr", "Text", true) 
-								? array($db->getField("htmltag_label_attr", "Text", true)) 
-								: array()
-							);
-							$arrFieldOverride[$field_key]["enable_empty"] = $db->getField("enable_empty", "Number", true);
-							$arrFieldOverride[$field_key]["limit_char"] = $db->getField("limit_char", "Number", true);
-							$arrFieldOverride[$field_key]["parent"] = $db->getField("parent", "Text", true);
-							$arrFieldOverride[$field_key]["enable_cascading"] = $db->getField("enable_cascading", "Number", true);
-							$arrFieldOverride[$field_key]["enable_sort"] = $db->getField("enable_sort", "Number", true);
+			$sSQL = "SELECT 
+		                    publishing_fields.ID_fields																		AS ID
+		                    , publishing_fields.enable_lastlevel                                      						AS enable_lastlevel
+		                    , publishing_fields.enable_thumb_label                                    						AS enable_label
+		                    , vgallery_label_htmltag.tag                                                					AS htmltag_label_tag
+		                    , vgallery_label_htmltag.attr                                               					AS htmltag_label_attr
+		                    , publishing_fields.enable_thumb_empty                                    						AS enable_empty
+		                    , publishing_fields.thumb_limit                                           						AS limit_char
+		                    , publishing_fields.parent_thumb                                          						AS parent
+		                    , publishing_fields.enable_thumb_cascading                                						AS enable_cascading
+		                    , publishing_fields.display_view_mode_thumb                               						AS display_view_mode
+		                    , publishing_fields.enable_sort                                           						AS enable_sort
+							, publishing_fields.settings_type_thumb                											AS settings_type
+							, publishing_fields.settings_type_thumb_md                										AS settings_type_md
+							, publishing_fields.settings_type_thumb_sm                										AS settings_type_sm
+							, publishing_fields.settings_type_thumb_xs                										AS settings_type_xs
+		                    , vgallery_fields_htmltag.tag                                               					AS htmltag_tag
+		                    , vgallery_fields_htmltag.attr                                              					AS htmltag_attr
+		                    , publishing_fields.custom_thumb_field                                    						AS custom_field
+						    , publishing_fields.fixed_pre_content_thumb            											AS fixed_pre_content
+						    , publishing_fields.fixed_post_content_thumb           											AS fixed_post_content
+							, publishing_fields.field_fluid_thumb															AS field_fluid
+							, publishing_fields.field_grid_thumb															AS field_grid
+							, publishing_fields.field_class_thumb															AS field_class
+							, publishing_fields.label_fluid_thumb															AS label_fluid
+							, publishing_fields.label_grid_thumb															AS label_grid
+		                 FROM publishing_fields
+		                    LEFT JOIN vgallery_fields_htmltag 							ON vgallery_fields_htmltag.ID = publishing_fields.ID_thumb_htmltag 
+		                    LEFT JOIN vgallery_fields_htmltag AS vgallery_label_htmltag ON vgallery_label_htmltag.ID = publishing_fields.ID_label_thumb_htmltag 
+		                 WHERE publishing_fields.ID_publishing = " . $db->toSql($vg_father["publishing"]["ID"], "Number") . "
+		                 ORDER BY publishing_fields.parent_thumb, publishing_fields.`order_thumb`";
+			$db->query($sSQL);
+			if ($db->nextRecord()) {
+			    do {
+					$field_key = $db->getField("ID", "Number", true);
+					$arrFieldOverride[$field_key]["enable_lastlevel"] = $db->getField("enable_lastlevel", "Number", true);
+					$arrFieldOverride[$field_key]["enable_label"] = $db->getField("enable_label", "Number", true);
+					$arrFieldOverride[$field_key]["htmltag_label_tag"] = $db->getField("htmltag_label_tag", "Text", true);
+					$arrFieldOverride[$field_key]["htmltag_label_attr"] = ($db->getField("htmltag_label_attr", "Text", true) 
+						? array($db->getField("htmltag_label_attr", "Text", true)) 
+						: array()
+					);
+					$arrFieldOverride[$field_key]["enable_empty"] = $db->getField("enable_empty", "Number", true);
+					$arrFieldOverride[$field_key]["limit_char"] = $db->getField("limit_char", "Number", true);
+					$arrFieldOverride[$field_key]["parent"] = $db->getField("parent", "Text", true);
+					$arrFieldOverride[$field_key]["enable_cascading"] = $db->getField("enable_cascading", "Number", true);
+					$arrFieldOverride[$field_key]["enable_sort"] = $db->getField("enable_sort", "Number", true);
 
-							$arrFieldOverride[$field_key]["plugin"]["name"] = $db->getField("display_view_mode", "Text", true);
-							$arrFieldOverride[$field_key]["plugin"]["class"] = preg_replace('/[^a-zA-Z0-9\-]/', '', $arrFieldOverride[$field_key]["plugin"]["name"]);
-							$arrFieldOverride[$field_key]["image"]["src"] = get_image_properties_by_grid_system(
-				    						$db->getField("settings_type", "Number", true)
-				    						, $db->getField("settings_type_md", "Number", true)
-				    						, $db->getField("settings_type_sm", "Number", true)
-				    						, $db->getField("settings_type_xs", "Number", true)
-									    );		
-							$arrFieldOverride[$field_key]["htmltag_tag"] = $db->getField("htmltag_tag", "Text", true);
-							$arrFieldOverride[$field_key]["htmltag_attr"] = $db->getField("htmltag_attr", "Text", true);
-							$arrFieldOverride[$field_key]["custom_field"] = $db->getField("custom_field", "Text", true);
-							$arrFieldOverride[$field_key]["fixed_pre_content"] = $db->getField("fixed_pre_content", "Text", true);
-							$arrFieldOverride[$field_key]["fixed_post_content"] = $db->getField("fixed_post_content", "Text", true);
-							$arrFieldOverride[$field_key]["field_fluid"] = $db->getField("field_fluid", "Number", true);
-							$arrFieldOverride[$field_key]["field_grid"] = $db->getField("field_grid", "Text", true);
-							$arrFieldOverride[$field_key]["field_class"] = $db->getField("field_class", "Text", true);
-							$arrFieldOverride[$field_key]["label_fluid"] = $db->getField("label_fluid", "Number", true);
-							$arrFieldOverride[$field_key]["label_grid"] = $db->getField("label_grid", "Text", true);*/
-					    } while ($db->nextRecord());
-					}
-				}
-				$arrFieldOverride = $globals->data_storage["publishing_fields"][$vg_father["publishing"]["ID"]];
-				
-				if (!$vg_father["is_custom_template"] && !$arrFieldLimit)
+					$arrFieldOverride[$field_key]["plugin"]["name"] = $db->getField("display_view_mode", "Text", true);
+					$arrFieldOverride[$field_key]["plugin"]["class"] = preg_replace('/[^a-zA-Z0-9\-]/', '', $arrFieldOverride[$field_key]["plugin"]["name"]);
+					$arrFieldOverride[$field_key]["image"]["src"] = get_image_properties_by_grid_system(
+				    				$db->getField("settings_type", "Number", true)
+				    				, $db->getField("settings_type_md", "Number", true)
+				    				, $db->getField("settings_type_sm", "Number", true)
+				    				, $db->getField("settings_type_xs", "Number", true)
+							    );		
+					$arrFieldOverride[$field_key]["htmltag_tag"] = $db->getField("htmltag_tag", "Text", true);
+					$arrFieldOverride[$field_key]["htmltag_attr"] = $db->getField("htmltag_attr", "Text", true);
+					$arrFieldOverride[$field_key]["custom_field"] = $db->getField("custom_field", "Text", true);
+					$arrFieldOverride[$field_key]["fixed_pre_content"] = $db->getField("fixed_pre_content", "Text", true);
+					$arrFieldOverride[$field_key]["fixed_post_content"] = $db->getField("fixed_post_content", "Text", true);
+					$arrFieldOverride[$field_key]["field_fluid"] = $db->getField("field_fluid", "Number", true);
+					$arrFieldOverride[$field_key]["field_grid"] = $db->getField("field_grid", "Text", true);
+					$arrFieldOverride[$field_key]["field_class"] = $db->getField("field_class", "Text", true);
+					$arrFieldOverride[$field_key]["label_fluid"] = $db->getField("label_fluid", "Number", true);
+					$arrFieldOverride[$field_key]["label_grid"] = $db->getField("label_grid", "Text", true);
+			    } while ($db->nextRecord());
+
+			    if (!$vg_father["is_custom_template"] && !$arrFieldLimit)
 					$arrFieldLimit["ID"] = array_keys($arrFieldOverride);
-				
+			}
 		    case "tpl":
 		    case "learnmore":
-				$mode = "thumb";
-				break;
+			$mode = "thumb";
+			break;
 		    case "group":
-				$sSQL = "SELECT 
-			                    vgallery_groups_fields.ID_fields																AS ID
-			                    , vgallery_groups_fields.enable_detail_label                                    				AS enable_label
-			                    , vgallery_label_htmltag.tag                                                					AS htmltag_label_tag
-			                    , vgallery_label_htmltag.attr                                               					AS htmltag_label_attr
-			                    , vgallery_groups_fields.enable_detail_empty                                    				AS enable_empty
-			                    , vgallery_groups_fields.parent_detail                                          				AS parent
-			                    , vgallery_groups_fields.enable_detail_cascading                                				AS enable_cascading
-			                    , vgallery_groups_fields.display_view_mode_detail                               				AS display_view_mode
-			                    , vgallery_groups_fields.settings_type_detail                                                	AS settings_type
-			                    , vgallery_groups_fields.settings_type_detail_md                                               	AS settings_type_md
-			                    , vgallery_groups_fields.settings_type_detail_sm                                               	AS settings_type_sm
-			                    , vgallery_groups_fields.settings_type_detail_xs                                               	AS settings_type_xs
-			                    , vgallery_fields_htmltag.tag                                               					AS htmltag_tag
-			                    , vgallery_fields_htmltag.attr                                              					AS htmltag_attr
-			                    , vgallery_groups_fields.custom_detail_field                                    				AS custom_field
-							    , vgallery_groups_fields.fixed_pre_content_detail            									AS fixed_pre_content
-							    , vgallery_groups_fields.fixed_post_content_detail           									AS fixed_post_content
-								, vgallery_groups_fields.field_fluid_detail														AS field_fluid
-								, vgallery_groups_fields.field_grid_detail														AS field_grid
-								, vgallery_groups_fields.field_class_detail														AS field_class
-								, vgallery_groups_fields.label_fluid_detail														AS label_fluid
-								, vgallery_groups_fields.label_grid_detail														AS label_grid
-						     FROM vgallery_groups_fields
-			                    LEFT JOIN vgallery_fields_htmltag 							ON vgallery_fields_htmltag.ID = vgallery_groups_fields.ID_detail_htmltag 
-			                    LEFT JOIN vgallery_fields_htmltag AS vgallery_label_htmltag ON vgallery_label_htmltag.ID = vgallery_groups_fields.ID_label_detail_htmltag 
-			                 WHERE vgallery_groups_fields.ID_group = " . $db->toSql($vg_father["group"]["ID"], "Number") . "
-			                 ORDER BY vgallery_groups_fields.parent_detail, publishing_fields.`order_detail`";
-				$db->query($sSQL);
-				if ($db->nextRecord()) {
-				    do {
-						$field_key = $db->getField("ID", "Number", true);
-						$arrFieldOverride[$field_key]["enable_lastlevel"] = $db->getField("enable_lastlevel", "Number", true);
-						$arrFieldOverride[$field_key]["enable_label"] = $db->getField("enable_label", "Number", true);
-						$arrFieldOverride[$field_key]["htmltag_label_tag"] = $db->getField("htmltag_label_tag", "Text", true);
-						$arrFieldOverride[$field_key]["htmltag_label_attr"] = ($db->getField("htmltag_label_attr", "Text", true) 
-							? array($db->getField("htmltag_label_attr", "Text", true)) 
-							: array()
-						);
-						$arrFieldOverride[$field_key]["enable_empty"] = $db->getField("enable_empty", "Number", true);
-						$arrFieldOverride[$field_key]["limit_char"] = $db->getField("limit_char", "Number", true);
-						$arrFieldOverride[$field_key]["parent"] = $db->getField("parent", "Text", true);
-						$arrFieldOverride[$field_key]["enable_cascading"] = $db->getField("enable_cascading", "Number", true);
-						$arrFieldOverride[$field_key]["enable_sort"] = $db->getField("enable_sort", "Number", true);
+			$sSQL = "SELECT 
+		                    vgallery_groups_fields.ID_fields																AS ID
+		                    , vgallery_groups_fields.enable_detail_label                                    				AS enable_label
+		                    , vgallery_label_htmltag.tag                                                					AS htmltag_label_tag
+		                    , vgallery_label_htmltag.attr                                               					AS htmltag_label_attr
+		                    , vgallery_groups_fields.enable_detail_empty                                    				AS enable_empty
+		                    , vgallery_groups_fields.parent_detail                                          				AS parent
+		                    , vgallery_groups_fields.enable_detail_cascading                                				AS enable_cascading
+		                    , vgallery_groups_fields.display_view_mode_detail                               				AS display_view_mode
+		                    , vgallery_groups_fields.settings_type_detail                                                	AS settings_type
+		                    , vgallery_groups_fields.settings_type_detail_md                                               	AS settings_type_md
+		                    , vgallery_groups_fields.settings_type_detail_sm                                               	AS settings_type_sm
+		                    , vgallery_groups_fields.settings_type_detail_xs                                               	AS settings_type_xs
+		                    , vgallery_fields_htmltag.tag                                               					AS htmltag_tag
+		                    , vgallery_fields_htmltag.attr                                              					AS htmltag_attr
+		                    , vgallery_groups_fields.custom_detail_field                                    				AS custom_field
+						    , vgallery_groups_fields.fixed_pre_content_detail            									AS fixed_pre_content
+						    , vgallery_groups_fields.fixed_post_content_detail           									AS fixed_post_content
+							, vgallery_groups_fields.field_fluid_detail														AS field_fluid
+							, vgallery_groups_fields.field_grid_detail														AS field_grid
+							, vgallery_groups_fields.field_class_detail														AS field_class
+							, vgallery_groups_fields.label_fluid_detail														AS label_fluid
+							, vgallery_groups_fields.label_grid_detail														AS label_grid
+					     FROM vgallery_groups_fields
+		                    LEFT JOIN vgallery_fields_htmltag 							ON vgallery_fields_htmltag.ID = vgallery_groups_fields.ID_detail_htmltag 
+		                    LEFT JOIN vgallery_fields_htmltag AS vgallery_label_htmltag ON vgallery_label_htmltag.ID = vgallery_groups_fields.ID_label_detail_htmltag 
+		                 WHERE vgallery_groups_fields.ID_group = " . $db->toSql($vg_father["group"]["ID"], "Number") . "
+		                 ORDER BY vgallery_groups_fields.parent_detail, publishing_fields.`order_detail`";
+			$db->query($sSQL);
+			if ($db->nextRecord()) {
+			    do {
+					$field_key = $db->getField("ID", "Number", true);
+					$arrFieldOverride[$field_key]["enable_lastlevel"] = $db->getField("enable_lastlevel", "Number", true);
+					$arrFieldOverride[$field_key]["enable_label"] = $db->getField("enable_label", "Number", true);
+					$arrFieldOverride[$field_key]["htmltag_label_tag"] = $db->getField("htmltag_label_tag", "Text", true);
+					$arrFieldOverride[$field_key]["htmltag_label_attr"] = ($db->getField("htmltag_label_attr", "Text", true) 
+						? array($db->getField("htmltag_label_attr", "Text", true)) 
+						: array()
+					);
+					$arrFieldOverride[$field_key]["enable_empty"] = $db->getField("enable_empty", "Number", true);
+					$arrFieldOverride[$field_key]["limit_char"] = $db->getField("limit_char", "Number", true);
+					$arrFieldOverride[$field_key]["parent"] = $db->getField("parent", "Text", true);
+					$arrFieldOverride[$field_key]["enable_cascading"] = $db->getField("enable_cascading", "Number", true);
+					$arrFieldOverride[$field_key]["enable_sort"] = $db->getField("enable_sort", "Number", true);
 
-						$arrFieldOverride[$field_key]["plugin"]["name"] = $db->getField("display_view_mode", "Text", true);
-						$arrFieldOverride[$field_key]["plugin"]["class"] = preg_replace('/[^a-zA-Z0-9\-]/', '', $arrFieldOverride[$field_key]["plugin"]["name"]);
-						$arrFieldOverride[$field_key]["image"]["src"] = get_image_properties_by_grid_system(
-				    					$db->getField("settings_type", "Number", true)
-				    					, $db->getField("settings_type_md", "Number", true)
-				    					, $db->getField("settings_type_sm", "Number", true)
-				    					, $db->getField("settings_type_xs", "Number", true)
-								    );		
-						$arrFieldOverride[$field_key]["htmltag_tag"] = $db->getField("htmltag_tag", "Text", true);
-						$arrFieldOverride[$field_key]["htmltag_attr"] = $db->getField("htmltag_attr", "Text", true);
-						$arrFieldOverride[$field_key]["custom_field"] = $db->getField("custom_field", "Text", true);
-						$arrFieldOverride[$field_key]["fixed_pre_content"] = $db->getField("fixed_pre_content", "Text", true);
-						$arrFieldOverride[$field_key]["fixed_post_content"] = $db->getField("fixed_post_content", "Text", true);
-						$arrFieldOverride[$field_key]["field_fluid"] = $db->getField("field_fluid", "Number", true);
-						$arrFieldOverride[$field_key]["field_grid"] = $db->getField("field_grid", "Text", true);
-						$arrFieldOverride[$field_key]["field_class"] = $db->getField("field_class", "Text", true);
-						$arrFieldOverride[$field_key]["label_fluid"] = $db->getField("label_fluid", "Number", true);
-						$arrFieldOverride[$field_key]["label_grid"] = $db->getField("label_grid", "Text", true);
-				    } while ($db->nextRecord());
-				}
-				$mode = "detail";
-				break;
+					$arrFieldOverride[$field_key]["plugin"]["name"] = $db->getField("display_view_mode", "Text", true);
+					$arrFieldOverride[$field_key]["plugin"]["class"] = preg_replace('/[^a-zA-Z0-9\-]/', '', $arrFieldOverride[$field_key]["plugin"]["name"]);
+					$arrFieldOverride[$field_key]["image"]["src"] = get_image_properties_by_grid_system(
+				    				$db->getField("settings_type", "Number", true)
+				    				, $db->getField("settings_type_md", "Number", true)
+				    				, $db->getField("settings_type_sm", "Number", true)
+				    				, $db->getField("settings_type_xs", "Number", true)
+							    );		
+					$arrFieldOverride[$field_key]["htmltag_tag"] = $db->getField("htmltag_tag", "Text", true);
+					$arrFieldOverride[$field_key]["htmltag_attr"] = $db->getField("htmltag_attr", "Text", true);
+					$arrFieldOverride[$field_key]["custom_field"] = $db->getField("custom_field", "Text", true);
+					$arrFieldOverride[$field_key]["fixed_pre_content"] = $db->getField("fixed_pre_content", "Text", true);
+					$arrFieldOverride[$field_key]["fixed_post_content"] = $db->getField("fixed_post_content", "Text", true);
+					$arrFieldOverride[$field_key]["field_fluid"] = $db->getField("field_fluid", "Number", true);
+					$arrFieldOverride[$field_key]["field_grid"] = $db->getField("field_grid", "Text", true);
+					$arrFieldOverride[$field_key]["field_class"] = $db->getField("field_class", "Text", true);
+					$arrFieldOverride[$field_key]["label_fluid"] = $db->getField("label_fluid", "Number", true);
+					$arrFieldOverride[$field_key]["label_grid"] = $db->getField("label_grid", "Text", true);
+			    } while ($db->nextRecord());
+			}
+			$mode = "detail";
+			break;
 		    case "limited":
 		    case "anagraph":
 		    default:
-				$mode = $vg_father["mode"];
+			$mode = $vg_father["mode"];
 		}
 
 		if (is_array($arrFieldLimit)) {
@@ -2768,6 +2742,7 @@ function process_vgallery_node_relationship_data($src_table, $sSQL, $vg_father, 
             
             $vg_father_rel[$vgallery_name]["nodes"][$unic_id_node] = $vg_node_rel;
 		    $vg_father_rel[$vgallery_name]["nodes"][$unic_id_node]["preload"][$src_table] = $db->record;
+		
 	    } while ($db->nextRecord());
 
 	    $res = array(
@@ -3127,13 +3102,13 @@ function process_vgallery_node_relationship_vgallery($vg_father, $arrKey, $arrRe
                     : "ID"
                 );
 		}	 
-	}  
+	 } 
 
 	 if(is_array($arrSQL) && count($arrSQL)) {
 	 	$sSQL = "(" . implode(") UNION (", $arrSQL) . ")";
 
     //print_r($sSQL);
-   	$res = process_vgallery_node_relationship_data("vgallery_nodes", $sSQL, $vg_father, $layouts);
+   		$res = process_vgallery_node_relationship_data("vgallery_nodes", $sSQL, $vg_father, $layouts);
    		
    		//print_r($res);
     }
@@ -3235,8 +3210,8 @@ function process_vgallery_node_data($vg_father, $vg_field, &$vg, $arrData = arra
 		$db->query($sSQL);
 		if ($db->nextRecord()) {
             $rel_data = array();
-		    $count_field_by_rel_tbl = array_count_values($vg_field["relationship"][$tbl]["src"]);
-
+			$count_field_by_rel_tbl = array_count_values($vg_field["relationship"][$tbl]["src"]);
+		
 		    do {
 				$ID_actual_node = $db->getField("ID_nodes", "Number", true);
 				$actual_field_key = $db->getField("ID_fields", "Number", true);
@@ -4591,55 +4566,45 @@ function process_vgallery_anagraph_sql(&$vg_father, $settings, $query = null) {
 }
 
 function process_anagraph_publishing_sql($vg_father, $settings, $query = null) {
-	$globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
 
-    if(!is_array($globals->data_storage["publishing_criteria"][$vg_father["publishing"]["ID"]])) {
-		if(is_array($globals->tpl["blocks_by_type"]["publishing"]) && count($globals->tpl["blocks_by_type"]["publishing"])) {
-			$globals->data_storage["publishing_criteria"] = array_fill_keys($globals->tpl["blocks_by_type"]["publishing"], array());
-		    $publishing_keys = implode(",", $globals->tpl["blocks_by_type"]["publishing"]);
-		} else {
-		    $globals->data_storage["publishing_criteria"][$vg_father["publishing"]["ID"]] = array();
-		    $publishing_keys = $vg_father["publishing"]["ID"];
-		} 
-		
-	    $sSQL = "SELECT publishing_criteria.* 
-	            FROM publishing_criteria 
-	            WHERE publishing_criteria.ID_publishing IN(" . $db->toSql($publishing_keys, "Text", false) . ")";
-	    $db->query($sSQL);
-	    if ($db->nextRecord()) {
-			do {
-			    if (substr($db->record["value"], 0, 1) === "[" && substr($db->record["value"], -1, 1) === "]") {
-					$critetia_value = substr($db->record["value"], 1, -1);
-					$critetia_value_encloser = false;
-			    } else {
-					$critetia_value = $db->record["value"];
-					$critetia_value_encloser = true;
-			    }
-
-			    $globals->data_storage["publishing_criteria"][$db->record["ID_publishing"]][] = "
-		                                " . $vg_father["src"]["table"] . ".ID
-		                                IN (
-		                                    SELECT " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes AS ID
-		                                    FROM " . $vg_father["src"]["type"] . "_rel_nodes_fields
-		                                        INNER JOIN " . $vg_father["src"]["type"] . "_fields ON " . $vg_father["src"]["type"] . "_fields.ID = " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_fields 
-		                                    WHERE " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes = " . $vg_father["src"]["table"] . ".ID
-		                                        AND " . $vg_father["src"]["type"] . "_fields.name = " . $db->toSql($db->record["src_fields"]) . "
-		                                        AND " . $vg_father["src"]["type"] . "_fields.ID_type = " . $vg_father["src"]["table"] . ".ID_type
-		                                        AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.uid = IF(" . $vg_father["src"]["type"] . "_rel_nodes_fields.`nodes` = ''
-		                                            , 0
-		                                            , " . $db->toSql((get_session("UserID") == MOD_SEC_GUEST_USER_NAME ? "0" : get_session("UserNID")), "Number") . "
-		                                        )
-		                                        AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.description " . $db->record["operator"] . " " . ($critetia_value == "''" 
-		                                        	? "''"
-		                                        	: $db->toSql($critetia_value, "Text", $critetia_value_encloser) 
-		                                        ) . "
-		                                ) 
-		                            ";
-			} while ($db->nextRecord());
+    $SQL_criteria = "";
+    $sSQL = "SELECT publishing_criteria.* 
+            FROM publishing_criteria 
+            WHERE publishing_criteria.ID_publishing = " . $db->toSql($vg_father["publishing"]["ID"], "Number");
+    $db->query($sSQL);
+    if ($db->nextRecord()) {
+	do {
+	    if (substr($db->getField("value")->getValue(), 0, 1) === "[" && substr($db->getField("value")->getValue(), -1, 1) === "]") {
+			$critetia_value = substr($db->getField("value")->getValue(), 1, -1);
+			$critetia_value_encloser = false;
+	    } else {
+			$critetia_value = $db->getField("value")->getValue();
+			$critetia_value_encloser = true;
 	    }
-	}	
-	$SQL_criteria = implode(" AND ", $globals->data_storage["publishing_criteria"][$vg_father["publishing"]["ID"]]);
+
+	    $SQL_criteria .= " AND ";
+	    $SQL_criteria .= "
+                                " . $vg_father["src"]["table"] . ".ID
+                                IN (
+                                    SELECT " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes AS ID
+                                    FROM " . $vg_father["src"]["type"] . "_rel_nodes_fields
+                                        INNER JOIN " . $vg_father["src"]["type"] . "_fields ON " . $vg_father["src"]["type"] . "_fields.ID = " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_fields 
+                                    WHERE " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes = " . $vg_father["src"]["table"] . ".ID
+                                        AND " . $vg_father["src"]["type"] . "_fields.name = " . $db->toSql($db->getField("src_fields")->getValue(), "Text") . "
+                                        AND " . $vg_father["src"]["type"] . "_fields.ID_type = " . $vg_father["src"]["table"] . ".ID_type
+                                        AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.uid = IF(" . $vg_father["src"]["type"] . "_rel_nodes_fields.`nodes` = ''
+                                            , 0
+                                            , " . $db->toSql((get_session("UserID") == MOD_SEC_GUEST_USER_NAME ? "0" : get_session("UserNID")), "Number") . "
+                                        )
+                                        AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.description " . $db->getField("operator")->getValue() . " " . ($critetia_value == "''" 
+		                                    ? "''"
+		                                    : $db->toSql($critetia_value, "Text", $critetia_value_encloser) 
+		                                ) . "
+                                ) 
+                            ";
+	} while ($db->nextRecord());
+    }
 	
 	if(!is_array($query["order"]))
 		$query["order"] = array();
@@ -4764,7 +4729,7 @@ function process_anagraph_publishing_sql($vg_father, $settings, $query = null) {
                 )"
 	    ) . "
         " . ($SQL_criteria 
-        	? " AND " . $SQL_criteria 
+        	? $SQL_criteria 
         	: ""
 	    ) . "
 		" . (is_array($vg_father["limit"]) && is_array($vg_father["limit"]["nodes"]) && count($vg_father["limit"]["nodes"]) 
@@ -4804,65 +4769,55 @@ function process_anagraph_publishing_sql($vg_father, $settings, $query = null) {
 }
 
 function process_vgallery_publishing_sql($vg_father, $settings, $query = null) {
-	$globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
 
-    if(!is_array($globals->data_storage["publishing_criteria"][$vg_father["publishing"]["ID"]])) {
-		if(is_array($globals->tpl["blocks_by_type"]["publishing"]) && count($globals->tpl["blocks_by_type"]["publishing"])) {
-			$globals->data_storage["publishing_criteria"] = array_fill_keys($globals->tpl["blocks_by_type"]["publishing"], array());
-		    $publishing_keys = implode(",", $globals->tpl["blocks_by_type"]["publishing"]);
-		} else {
-		    $globals->data_storage["publishing_criteria"][$vg_father["publishing"]["ID"]] = array();
-		    $publishing_keys = $vg_father["publishing"]["ID"];
-		} 
-		
-	    $sSQL = "SELECT publishing_criteria.* 
-	            FROM publishing_criteria 
-	            WHERE publishing_criteria.ID_publishing IN(" . $db->toSql($publishing_keys, "Text", false) . ")";
-	    $db->query($sSQL);
-		if ($db->nextRecord()) {
-			do {
-			    if (substr($db->record["value"], 0, 1) === "[" && substr($db->record["value"], -1, 1) === "]") {
-					$critetia_value = substr($db->record["value"], 1, -1);
-					$critetia_value_encloser = false;
-			    } else {
-					$critetia_value = $db->record["value"];
-					$critetia_value_encloser = true;
-			    }
+    $SQL_criteria = "";
+    $sSQL = "SELECT publishing_criteria.* 
+    		FROM publishing_criteria 
+    		WHERE publishing_criteria.ID_publishing = " . $db->toSql($vg_father["publishing"]["ID"], "Number");
+    $db->query($sSQL);
+    if ($db->nextRecord()) {
+	do {
+	    if (substr($db->getField("value")->getValue(), 0, 1) === "[" && substr($db->getField("value")->getValue(), -1, 1) === "]") {
+			$critetia_value = substr($db->getField("value")->getValue(), 1, -1);
+			$critetia_value_encloser = false;
+	    } else {
+			$critetia_value = $db->getField("value")->getValue();
+			$critetia_value_encloser = true;
+	    }
 
-			    $globals->data_storage["publishing_criteria"][$db->record["ID_publishing"]][] = "
-			                            " . $vg_father["src"]["table"] . ".ID
-			                            IN (
-											SELECT " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes AS ID
-									        FROM " . $vg_father["src"]["type"] . "_rel_nodes_fields
-									            INNER JOIN " . $vg_father["src"]["type"] . "_fields ON " . $vg_father["src"]["type"] . "_fields.ID = " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_fields 
-										        INNER JOIN vgallery_fields_data_type ON vgallery_fields_data_type.ID = " . $vg_father["src"]["type"] . "_fields.ID_data_type
-									        WHERE " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes = " . $vg_father["src"]["table"] . ".ID
-			                                    AND " . $vg_father["src"]["type"] . "_fields.name = " . $db->toSql( $db->record["src_fields"]) . "
-			                                    AND " . $vg_father["src"]["type"] . "_fields.ID_type = " . $vg_father["src"]["table"] . ".ID_type
-									            AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.uid = IF(" . $vg_father["src"]["type"] . "_rel_nodes_fields.`nodes` = ''
-									                , 0
-									                , " . $db->toSql((get_session("UserID") == MOD_SEC_GUEST_USER_NAME ? "0" : get_session("UserNID")), "Number") . "
-									            )
-		                                        AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_lang = " . ($vg_father["enable_multilang_visible"] 
-									    			? "IF(" . $vg_father["src"]["type"] . "_fields.disable_multilang > 0 
-															OR " . $vg_father["src"]["type"] . "_fields_data_type.name IN('relationship', 'media') 
-                                								, " . $db->toSql(LANGUAGE_DEFAULT_ID, "Number") . "
-                                								, " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
-                                					)" 
-                                					: $db->toSql(LANGUAGE_DEFAULT_ID, "Number")
-											    ) . "
-			                                    AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.description " . $db->record["operator"] . " " . ($critetia_value == "''" 
-		                                        	? "''"
-		                                        	: $db->toSql($critetia_value, "Text", $critetia_value_encloser) 
-		                                        ) . "
-			                            ) 
-			                        ";
-			} while ($db->nextRecord());
-		}
-	}
 
-	$SQL_criteria = implode(" AND ", $globals->data_storage["publishing_criteria"][$vg_father["publishing"]["ID"]]);
+	    $SQL_criteria .= " AND ";
+	    $SQL_criteria .= "
+                                " . $vg_father["src"]["table"] . ".ID
+                                IN (
+									SELECT " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes AS ID
+						            FROM " . $vg_father["src"]["type"] . "_rel_nodes_fields
+						                INNER JOIN " . $vg_father["src"]["type"] . "_fields ON " . $vg_father["src"]["type"] . "_fields.ID = " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_fields 
+								        INNER JOIN vgallery_fields_data_type ON vgallery_fields_data_type.ID = " . $vg_father["src"]["type"] . "_fields.ID_data_type
+						            WHERE " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_nodes = " . $vg_father["src"]["table"] . ".ID
+                                        AND " . $vg_father["src"]["type"] . "_fields.name = " . $db->toSql($db->getField("src_fields")->getValue(), "Text") . "
+                                        AND " . $vg_father["src"]["type"] . "_fields.ID_type = " . $vg_father["src"]["table"] . ".ID_type
+						                AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.uid = IF(" . $vg_father["src"]["type"] . "_rel_nodes_fields.`nodes` = ''
+						                    , 0
+						                    , " . $db->toSql((get_session("UserID") == MOD_SEC_GUEST_USER_NAME ? "0" : get_session("UserNID")), "Number") . "
+						                )
+                                        AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.ID_lang = " . ($vg_father["enable_multilang_visible"] 
+									    	? "IF(" . $vg_father["src"]["type"] . "_fields.disable_multilang > 0 
+													OR " . $vg_father["src"]["type"] . "_fields_data_type.name IN('relationship', 'media') 
+                                						, " . $db->toSql(LANGUAGE_DEFAULT_ID, "Number") . "
+                                						, " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
+                                			)" 
+                                			: $db->toSql(LANGUAGE_DEFAULT_ID, "Number")
+									    ) . "
+                                        AND " . $vg_father["src"]["type"] . "_rel_nodes_fields.description " . $db->getField("operator")->getValue() . " " . ($critetia_value == "''" 
+		                                    ? "''"
+		                                    : $db->toSql($critetia_value, "Text", $critetia_value_encloser) 
+		                                ) . "
+                                ) 
+                            ";
+	} while ($db->nextRecord());
+    }
 
     if(!is_array($query["order"]))
 		$query["order"] = array();
@@ -5071,11 +5026,8 @@ function process_vgallery_publishing_sql($vg_father, $settings, $query = null) {
 		. (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID 
 			? " AND " . $vg_father["src"]["table"] . "_rel_languages.permalink != ''" 
 			: " AND " . $vg_father["src"]["table"] . ".permalink != ''"
-		)		
-		. ($SQL_criteria 
-			? " AND " .$SQL_criteria 
-			: ""
-		) . "
+		)
+		. ($SQL_criteria ? $SQL_criteria : "") . "
 		" . (is_array($vg_father["limit"]) && is_array($vg_father["limit"]["nodes"]) && count($vg_father["limit"]["nodes"]) 
 			? " AND " . $vg_father["src"]["table"] . ".ID IN(" . $db->toSql(implode(", ", $vg_father["limit"]["nodes"]), "Text", false) . ") " 
 			: ""
@@ -5811,7 +5763,6 @@ function pre_process_vgallery_tpl_fields(&$tpl, $vg_father, $vg_field, $vg_data_
 			$tpl->set_var($tpl_var, $vg_data_value[$tpl_var]);	
 		}
 	}
-	
 //da aggiungere published created last update e url completo
     return array(
     	"permalink" 						=> $vgallery_item_permalink
@@ -6010,7 +5961,7 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 			    }
 
 			    if (!$more_detail && $params["enable_error"]) {
-				$more_detail = '<span class="' . preg_replace('/[^a-zA-Z0-9]/', '', $field_value["type"] . $field_value["name"]) . '">' . ffTemplate::_get_word_by_code($vg_father["vgallery_name"] . "_" . $field_value["name"] . "_notfound") . '</span>';
+				    $more_detail = '<span class="' . preg_replace('/[^a-zA-Z0-9]/', '', $field_value["type"] . $field_value["name"]) . '">' . ffTemplate::_get_word_by_code($vg_father["vgallery_name"] . "_" . $field_value["name"] . "_notfound") . '</span>';
 			    }
 
 			    /* Set Field Content */
@@ -6084,7 +6035,7 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 				$serial_frame = json_encode($frame);
 				$serial_frame_url = FF_SITE_PATH . VG_SITE_FRAME . stripslash($vg_data_value["parent"]) . "/" . $vg_data_value["name"] . "?sid=" . set_sid($serial_frame);
 
-				$cm->oPage->tplAddJs("ff.ajax");
+				$cm->oPage->tplAddJs("ff.ajax", "ajax.js", FF_THEME_DIR . "/library/ff");
 
 				//$more_detail = "";
 				//$field_value["enable_empty"] = true; 
@@ -6118,7 +6069,7 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 				$serial_frame = json_encode($frame);
 				$serial_frame_url = FF_SITE_PATH . VG_SITE_FRAME . stripslash($vg_father["user_path"]) . "?sid=" . set_sid($serial_frame);
 
-				$cm->oPage->tplAddJs("ff.ajax");
+				$cm->oPage->tplAddJs("ff.ajax", "ajax.js", FF_THEME_DIR . "/library/ff");
 
 				//$more_detail = "";
 				//$field_value["enable_empty"] = true;
@@ -6511,7 +6462,7 @@ function process_shard_by_schema($field_shard, $schema_tbl, $tmp_data_field = ar
 				    $tmp_data_field["shard"][$key]["fields"][$field_name]["thumb"] = $schema_tbl["field"][$field_name]["noimg"]["thumb"];
 				    $tmp_data_field["shard"][$key]["fields"][$field_name]["width"] = $schema_tbl["field"][$field_name]["noimg"]["width"];
 				    $tmp_data_field["shard"][$key]["fields"][$field_name]["height"] = $schema_tbl["field"][$field_name]["noimg"]["height"];
-				    
+
 				    $base_disk_path = FF_DISK_PATH;
 				}
 		    } else {
@@ -7020,7 +6971,6 @@ function process_vgallery_htmltag_attr($htmltag = array(), $alt_class = null) {
 
 function process_vgallery_field_by_extended_type(&$vg_father, $data, $field_params, $vg_params, $tmp_data_field, $output = null) {
 	$cm = cm::getInstance();
-
     if (is_array($data))
 		$data =  implode(" ", $data);
 	//$data = '<span>' . implode("</span><span>", $data) . '</span>';		
@@ -7298,6 +7248,27 @@ function process_vgallery_htmltag_field($vg_father, $field_params, $struct_data 
 			, "grid" => (strlen($field_params["field_grid"]) ? explode(",", $field_params["field_grid"]) : "")
 		), "grid", (isset($replace["class"]) ? $replace["class"] : null)); 
 	}    
+    /*
+    $field_grid = (strlen($field_params["field_grid"]) ? explode(",", $field_params["field_grid"]) : "");
+    switch ($field_params["field_fluid"]) {
+	case -1:
+	    $replace["class"]["grid_alt"] = cm_getClassByFrameworkCss("", "row" . ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : ""), "col");
+	    break;
+	case -2:
+	    $replace["class"]["grid_alt"] = cm_getClassByFrameworkCss("", "row" . ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : ""), "col");
+	    break;
+	case -3:
+	    break;
+	case 1:
+	    break;
+	case 2:
+	    if ($field_grid)
+		$replace["class"]["grid"] = cm_getClassByFrameworkCss($field_grid, "col", array("skip-prepost" => true));
+	    break;
+	default:
+	    if ($field_grid)
+		$replace["class"]["grid"] = cm_getClassByFrameworkCss($field_grid, "col");
+    }*/
 
     if (!$tmp_data_field["htmltag"]["tag"])
 	$tmp_data_field["htmltag"]["tag"] = (global_settings("ENABLE_VGALLERY_HTMLTAG_AUTOMATIC") && $field_params["smart_url"] ? "h" . ($field_params["smart_url"] + $vg_father["enable_title"] + ($vg_father["mode"] == "thumb" ? ($vg_father["type"] == "publishing" ? 2 : 1
@@ -7769,12 +7740,12 @@ function process_vgallery_data_by_type(&$vg_father, $data, $field_params, $vg_pa
 	case "datecombobooking":
 	case "dateinv":
 	    if (is_numeric($data) && $data > 0) {
-			$cdata_more_detail = new ffData($data, "Timestamp", FF_SYSTEM_LOCALE);
+		$cdata_more_detail = new ffData($data, "Timestamp", FF_SYSTEM_LOCALE);
 	    } elseif (strlen($data) && $data != '0000-00-00' && $data != '0000-00-00 00:00:00') {
-			$cdata_more_detail = new ffData($data, $field_params["ff_extended_type"], FF_SYSTEM_LOCALE);
+		$cdata_more_detail = new ffData($data, $field_params["ff_extended_type"], FF_SYSTEM_LOCALE);
 	    }
 	    if ($cdata_more_detail)
-			$data = $cdata_more_detail->getValue($field_params["ff_extended_type"], LANGUAGE_INSET);
+		$data = $cdata_more_detail->getValue($field_params["ff_extended_type"], LANGUAGE_INSET);
 	default:
 		$tmp_data_field["text"] = $data;
 	    if (check_function("transmute_inlink")) {
@@ -7927,120 +7898,122 @@ function parse_vgallery_tpl_custom_vars(&$tpl, $vars, $id = null, $class = null,
 
     $tpl->set_var("id"                                                              , ffCommon_url_rewrite($id));
 
-    $tpl->set_var("item:permalink"													, $vars["permalink"]);
-    $tpl->set_var("item:slug"														, $vars["smart_url"]);
-    $tpl->set_var("item:title"														, $vars["title"]);
-    $tpl->set_var("item:description"												, $vars["description"]);
-    $tpl->set_var("item:h1"															, $vars["header_title"]);
-    $tpl->set_var("item:keywords"													, $vars["keywords"]);
-    $tpl->set_var("item:tags"														, $vars["tags"]);
-    $tpl->set_var("item:parent"														, $vars["parent"]);
-    $tpl->set_var("item:parentname"													, $vars["parent_title"]);
-    $tpl->set_var("item:parentslug"													, $vars["parent_smart_url"]);
+	$tpl->set_var("item:permalink"													, $vars["permalink"]);
+	$tpl->set_var("item:slug"														, $vars["smart_url"]);
+	$tpl->set_var("item:title"														, $vars["title"]);
+	$tpl->set_var("item:description"												, $vars["description"]);
+	$tpl->set_var("item:h1"															, $vars["header_title"]);
+	$tpl->set_var("item:keywords"													, $vars["keywords"]);
+	$tpl->set_var("item:tags"														, $vars["tags"]);
+	$tpl->set_var("item:parent"														, $vars["parent"]);
+	$tpl->set_var("item:parentname"													, $vars["parent_title"]);
+	$tpl->set_var("item:parentslug"													, $vars["parent_smart_url"]);
+	
+	//created
+	$tpl->set_var("item:created"													, $vars["created"]);
+	if($tpl->isset_var("item:created:date"))
+	    $tpl->set_var("item:created:date"											, convert_vgallery_field_data($vars["created"], "Timestamp", "Date"));
+	if($tpl->isset_var("item:created:time"))
+	    $tpl->set_var("item:created:time"											, convert_vgallery_field_data($vars["created"], "Timestamp", "Time"));
+	if($tpl->isset_var("item:created:datetime"))
+	    $tpl->set_var("item:created:datetime"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateTime"));
 
-    //created
-    $tpl->set_var("item:created"													, $vars["created"]);
-    if($tpl->isset_var("item:created:date"))
-        $tpl->set_var("item:created:date"											, convert_vgallery_field_data($vars["created"], "Timestamp", "Date"));
-    if($tpl->isset_var("item:created:time"))
-        $tpl->set_var("item:created:time"											, convert_vgallery_field_data($vars["created"], "Timestamp", "Time"));
-    if($tpl->isset_var("item:created:datetime"))
-        $tpl->set_var("item:created:datetime"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateTime"));
+	if($tpl->isset_var("item:created:date:iso"))
+	    $tpl->set_var("item:created:date:iso"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateISO"));
+	if($tpl->isset_var("item:created:time:iso"))
+	    $tpl->set_var("item:created:time:iso"										, convert_vgallery_field_data($vars["created"], "Timestamp", "TimeISO"));
+	if($tpl->isset_var("item:created:datetime:iso"))
+	    $tpl->set_var("item:created:datetime:iso"									, convert_vgallery_field_data($vars["created"], "Timestamp", "DateTimeISO"));
 
-    if($tpl->isset_var("item:created:date:iso"))
-        $tpl->set_var("item:created:date:iso"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateISO"));
-    if($tpl->isset_var("item:created:time:iso"))
-        $tpl->set_var("item:created:time:iso"										, convert_vgallery_field_data($vars["created"], "Timestamp", "TimeISO"));
-    if($tpl->isset_var("item:created:datetime:iso"))
-        $tpl->set_var("item:created:datetime:iso"									, convert_vgallery_field_data($vars["created"], "Timestamp", "DateTimeISO"));
+	if($tpl->isset_var("item:created:date:dd"))
+	    $tpl->set_var("item:created:date:dd"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateDay"));
+	if($tpl->isset_var("item:created:date:mm"))
+	    $tpl->set_var("item:created:date:mm"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateMonth"));
+	if($tpl->isset_var("item:created:date:yyyy"))
+	    $tpl->set_var("item:created:date:yyyy"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateYear"));
+	if($tpl->isset_var("item:created:time:hh"))
+	    $tpl->set_var("item:created:time:hh"										, convert_vgallery_field_data($vars["created"], "Timestamp", "TimeHour"));
+	if($tpl->isset_var("item:created:time:mm"))
+	    $tpl->set_var("item:created:time:mm"										, convert_vgallery_field_data($vars["created"], "Timestamp", "TimeMinute"));
+	    
+	//lastupdate	
+	$tpl->set_var("item:lastupdate"													, $vars["lastupdate"]);
+	if($tpl->isset_var("item:lastupdate:date"))
+	    $tpl->set_var("item:lastupdate:date"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "Date"));
+	if($tpl->isset_var("item:lastupdate:time"))
+	    $tpl->set_var("item:lastupdate:time"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "Time"));
+	if($tpl->isset_var("item:lastupdate:datetime"))
+	    $tpl->set_var("item:lastupdate:datetime"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateTime"));
 
-    if($tpl->isset_var("item:created:date:dd"))
-        $tpl->set_var("item:created:date:dd"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateDay"));
-    if($tpl->isset_var("item:created:date:mm"))
-        $tpl->set_var("item:created:date:mm"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateMonth"));
-    if($tpl->isset_var("item:created:date:yyyy"))
-        $tpl->set_var("item:created:date:yyyy"										, convert_vgallery_field_data($vars["created"], "Timestamp", "DateYear"));
-    if($tpl->isset_var("item:created:time:hh"))
-        $tpl->set_var("item:created:time:hh"										, convert_vgallery_field_data($vars["created"], "Timestamp", "TimeHour"));
-    if($tpl->isset_var("item:created:time:mm"))
-        $tpl->set_var("item:created:time:mm"										, convert_vgallery_field_data($vars["created"], "Timestamp", "TimeMinute"));
+	if($tpl->isset_var("item:lastupdate:date:dd"))
+	    $tpl->set_var("item:lastupdate:date:dd"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateDay"));
+	if($tpl->isset_var("item:lastupdate:date:mm"))
+	    $tpl->set_var("item:lastupdate:date:mm"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateMonth"));
+	if($tpl->isset_var("item:lastupdate:date:yyyy"))
+	    $tpl->set_var("item:lastupdate:date:yyyy"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateYear"));
+	if($tpl->isset_var("item:lastupdate:time:hh"))
+	    $tpl->set_var("item:lastupdate:time:hh"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "TimeHour"));
+	if($tpl->isset_var("item:lastupdate:time:mm"))
+	    $tpl->set_var("item:lastupdate:time:mm"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "TimeMinute"));
 
-    //lastupdate
-    $tpl->set_var("item:lastupdate"													, $vars["lastupdate"]);
-    if($tpl->isset_var("item:lastupdate:date"))
-        $tpl->set_var("item:lastupdate:date"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "Date"));
-    if($tpl->isset_var("item:lastupdate:time"))
-        $tpl->set_var("item:lastupdate:time"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "Time"));
-    if($tpl->isset_var("item:lastupdate:datetime"))
-        $tpl->set_var("item:lastupdate:datetime"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateTime"));
+	if($tpl->isset_var("item:lastupdate:date:iso"))
+	    $tpl->set_var("item:lastupdate:date:iso"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateISO"));
+	if($tpl->isset_var("item:lastupdate:time:iso"))
+	    $tpl->set_var("item:lastupdate:time:iso"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "TimeISO"));
+	if($tpl->isset_var("item:lastupdate:datetime:iso"))
+	    $tpl->set_var("item:lastupdate:datetime:iso"								, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateTimeISO"));
 
-    if($tpl->isset_var("item:lastupdate:date:dd"))
-        $tpl->set_var("item:lastupdate:date:dd"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateDay"));
-    if($tpl->isset_var("item:lastupdate:date:mm"))
-        $tpl->set_var("item:lastupdate:date:mm"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateMonth"));
-    if($tpl->isset_var("item:lastupdate:date:yyyy"))
-        $tpl->set_var("item:lastupdate:date:yyyy"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateYear"));
-    if($tpl->isset_var("item:lastupdate:time:hh"))
-        $tpl->set_var("item:lastupdate:time:hh"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "TimeHour"));
-    if($tpl->isset_var("item:lastupdate:time:mm"))
-        $tpl->set_var("item:lastupdate:time:mm"										, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "TimeMinute"));
+	//published
+	$tpl->set_var("item:published"													, $vars["published"]);
+	if($tpl->isset_var("item:published:date"))
+	    $tpl->set_var("item:published:date"											, convert_vgallery_field_data($vars["published"], "Timestamp", "Date"));
+	if($tpl->isset_var("item:published:time"))
+	    $tpl->set_var("item:published:time"											, convert_vgallery_field_data($vars["published"], "Timestamp", "Time"));
+	if($tpl->isset_var("item:published:datetime"))
+	    $tpl->set_var("item:published:datetime"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateTime"));
 
-    if($tpl->isset_var("item:lastupdate:date:iso"))
-        $tpl->set_var("item:lastupdate:date:iso"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateISO"));
-    if($tpl->isset_var("item:lastupdate:time:iso"))
-        $tpl->set_var("item:lastupdate:time:iso"									, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "TimeISO"));
-    if($tpl->isset_var("item:lastupdate:datetime:iso"))
-        $tpl->set_var("item:lastupdate:datetime:iso"								, convert_vgallery_field_data($vars["lastupdate"], "Timestamp", "DateTimeISO"));
+	if($tpl->isset_var("item:published:date:dd"))
+	    $tpl->set_var("item:published:date:dd"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateDay"));
+	if($tpl->isset_var("item:published:date:mm"))
+	    $tpl->set_var("item:published:date:mm"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateMonth"));
+	if($tpl->isset_var("item:published:date:yyyy"))
+	    $tpl->set_var("item:published:date:yyyy"									, convert_vgallery_field_data($vars["published"], "Timestamp", "DateYear"));
+	if($tpl->isset_var("item:published:time:hh"))
+	    $tpl->set_var("item:published:time:hh"										, convert_vgallery_field_data($vars["published"], "Timestamp", "TimeHour"));
+	if($tpl->isset_var("item:published:time:mm"))
+	    $tpl->set_var("item:published:time:mm"										, convert_vgallery_field_data($vars["published"], "Timestamp", "TimeMinute"));
+	    
+	if($tpl->isset_var("item:published:date:iso"))
+	    $tpl->set_var("item:published:date:iso"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateISO"));
+	if($tpl->isset_var("item:published:time:iso"))
+	    $tpl->set_var("item:published:time:iso"										, convert_vgallery_field_data($vars["published"], "Timestamp", "TimeISO"));
+	if($tpl->isset_var("item:published:datetime:iso"))
+	    $tpl->set_var("item:published:datetime:iso"									, convert_vgallery_field_data($vars["published"], "Timestamp", "DateTimeISO"));
 
-    //published
-    $tpl->set_var("item:published"													, $vars["published"]);
-    if($tpl->isset_var("item:published:date"))
-        $tpl->set_var("item:published:date"											, convert_vgallery_field_data($vars["published"], "Timestamp", "Date"));
-    if($tpl->isset_var("item:published:time"))
-        $tpl->set_var("item:published:time"											, convert_vgallery_field_data($vars["published"], "Timestamp", "Time"));
-    if($tpl->isset_var("item:published:datetime"))
-        $tpl->set_var("item:published:datetime"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateTime"));
+	$tpl->set_var("item:owner"														, $vars["owner"]);
+	$tpl->set_var("item:type"														, $vars["type"]);
+	
+	$tpl->set_var("item:url"														, $vars["url"]);
+	$tpl->set_var("item:target"														, $vars["target"]);
+	
+	$tpl->set_var("item:cover:content"												, $vars["cover"]["src"]["default"]["src"]);
+	if($tpl->isset_var("item:cover")) {
+		if(count($vars["cover"]["src"]) > 1) {
+			$tpl->set_var("item:cover"												, get_thumb_by_media_queries(null, $vars["cover"]["src"]));
+		} else {
+			$tpl->set_var("item:cover"												, '<img src="' . $vars["cover"]["src"]["default"]["src"] . '" width="' . $vars["cover"]["src"]["default"]["width"] . '" height="' . $vars["cover"]["src"]["default"]["height"] . '" />');
+		}
+	}	                    
 
-    if($tpl->isset_var("item:published:date:dd"))
-        $tpl->set_var("item:published:date:dd"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateDay"));
-    if($tpl->isset_var("item:published:date:mm"))
-        $tpl->set_var("item:published:date:mm"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateMonth"));
-    if($tpl->isset_var("item:published:date:yyyy"))
-        $tpl->set_var("item:published:date:yyyy"									, convert_vgallery_field_data($vars["published"], "Timestamp", "DateYear"));
-    if($tpl->isset_var("item:published:time:hh"))
-        $tpl->set_var("item:published:time:hh"										, convert_vgallery_field_data($vars["published"], "Timestamp", "TimeHour"));
-    if($tpl->isset_var("item:published:time:mm"))
-        $tpl->set_var("item:published:time:mm"										, convert_vgallery_field_data($vars["published"], "Timestamp", "TimeMinute"));
+	$tpl->set_var("item:placeholder:content"										, $vars["noimg"]["src"]["default"]["src"]);
+	if($tpl->isset_var("item:placeholder")) {
+		if(count($vars["noimg"]["src"]) > 1) {
+			$tpl->set_var("item:placeholder"										, get_thumb_by_media_queries(null, $vars["noimg"]["src"]));
+		} else {
+			$tpl->set_var("item:placeholder"										, '<img src="' . $vars["noimg"]["src"]["default"]["src"] . '" width="' . $vars["noimg"]["src"]["default"]["width"] . '" height="' . $vars["noimg"]["src"]["default"]["height"] . '" />');
+		}
+	}	
 
-    if($tpl->isset_var("item:published:date:iso"))
-        $tpl->set_var("item:published:date:iso"										, convert_vgallery_field_data($vars["published"], "Timestamp", "DateISO"));
-    if($tpl->isset_var("item:published:time:iso"))
-        $tpl->set_var("item:published:time:iso"										, convert_vgallery_field_data($vars["published"], "Timestamp", "TimeISO"));
-    if($tpl->isset_var("item:published:datetime:iso"))
-        $tpl->set_var("item:published:datetime:iso"									, convert_vgallery_field_data($vars["published"], "Timestamp", "DateTimeISO"));
-
-    $tpl->set_var("item:owner"														, $vars["owner"]);
-    $tpl->set_var("item:type"														, $vars["type"]);
-
-    $tpl->set_var("item:url"														, $vars["url"]);
-    $tpl->set_var("item:target"														, $vars["target"]);
-
-    $tpl->set_var("item:cover:content"												, $vars["cover"]["src"]["default"]["src"]);
-    if($tpl->isset_var("item:cover")) {
-        if(count($vars["cover"]["src"]) > 1) {
-            $tpl->set_var("item:cover"												, get_thumb_by_media_queries(null, $vars["cover"]["src"]));
-        } else {
-            $tpl->set_var("item:cover"												, '<img src="' . $vars["cover"]["src"]["default"]["src"] . '" width="' . $vars["cover"]["src"]["default"]["width"] . '" height="' . $vars["cover"]["src"]["default"]["height"] . '" />');
-        }
-    }
-
-    $tpl->set_var("item:placeholder:content"										, $vars["noimg"]["src"]["default"]["src"]);
-    if($tpl->isset_var("item:placeholder")) {
-        if(count($vars["noimg"]["src"]) > 1) {
-            $tpl->set_var("item:placeholder"										, get_thumb_by_media_queries(null, $vars["noimg"]["src"]));
-        } else {
-            $tpl->set_var("item:placeholder"										, '<img src="' . $vars["noimg"]["src"]["default"]["src"] . '" width="' . $vars["noimg"]["src"]["default"]["width"] . '" height="' . $vars["noimg"]["src"]["default"]["height"] . '" />');
-        }
-    }
-
+	
+	
 }

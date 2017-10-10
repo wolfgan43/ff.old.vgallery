@@ -1,1 +1,164 @@
-	
+/* menu primario e topbar */
+.mainmenu { display:inline-block; }
+
+.mainmenu LI  {display:inline-block;}
+
+.mainmenu LI A { display:block; padding:0.4em 1em; }
+
+.mainmenu.side:before {
+font-family:fontawesome;
+    display:block;
+    content:"f0c9";
+    font-size:1em;
+    width:1em;
+    height:1em;
+text-align:center;
+line-height:1em;
+    padding:10px;
+    color:#fff;
+    cursor:pointer;
+} 
+
+.mainmenu.side {
+    display:block;
+    position:fixed;
+
+    top:0;
+background:#3b3b3b;
+    z-index:999;
+}
+
+
+
+.mainmenu.side LI {
+    display:block;
+    width:auto;
+    
+}
+
+.rightbar { float:right; }
+
+#notifier, #language-chooser, .quick-links { display:inline-block; }
+
+.quick-links, .mainmenu, .menu-list UL { margin:0; }
+
+/* notifier */
+
+#notifier { position:relative; float:left; }
+
+.quick-notify { padding:10px; }
+
+.all-notifies {
+    position: fixed;
+    top: 50px;
+    bottom: 20px;
+    right: 16px;
+    height: auto;
+    overflow: auto;
+    z-index: 1000;
+    background: #3B3B3B;
+    padding: 20px 0px;
+    width: 400px;
+    border-radius:5px;
+    transition: 1s;
+}
+
+
+.all-notifies>div{
+    border-bottom: 1px solid #000;
+    margin-bottom: 12px;
+}
+.all-notifies h3{
+    color: #FFF;
+    font-size: 15px;
+    margin-bottom: 5px;
+    font-weight: lighter;
+    float: left;
+    padding-top: 5px;
+    clear: right;
+    display: block;
+    width: 90%;
+}
+.all-notifies a.ico-delete{
+    width: 25px;
+    height:25px;
+    float:right;
+}
+.all-notifies span, .all-notifies a{
+    color:#e0e0e0;
+    font-size: 11px;
+}
+
+.notify-close-all {
+	display:block;
+	width:100%;
+	padding:10px 0;
+	text-align:center;
+	position:absolute;
+	bottom:0;
+}
+
+/* language chooser */
+
+#language-chooser { position:relative; float:left;  }
+#language-chooser>A { display:block; }
+#language-chooser>A>.flag { margin-left:0; }
+
+#language-chooser UL {
+	overflow:hidden;
+	white-space:nowrap;
+	position:absolute;
+	top:100%;
+	right:0;
+	display:none;	
+}
+
+#language-chooser UL LI  { display:block; text-align:right; }
+#language-chooser UL LI IMG { margin-left:4px; }
+
+
+/* terribilmente provvisorio, verrà sostituito con una definizione generica sul .vg */
+.quick-links LI, 
+.icon,
+.ico-refresh, .ico-search  { 
+	display:inline-block;
+	font-family: 'FontAwesome';
+	font-style: normal;
+	font-weight: normal;
+	line-height: 1;
+}
+
+.quick-links LI A { display:block; padding:10px; }
+
+#menu-list H2 { display:none; }
+#menu-list  LI { display:inline-block; }
+#menu-list  LI A { display:block; padding:5px 10px; }
+
+
+/* menu contestuale */
+
+#menu-list { font-size:0.9em; }
+
+
+/* content */
+
+#bo-content {
+	font-size:12px;
+	padding: 10px 15px 0px 15px; 
+}
+.ui-dialog-content { font-size:0.8em; }
+
+#bo-content>DIV {
+	margin-bottom:25px;
+}
+
+#bo-content .ui-tabs-panel { overflow:visible; }
+
+/* updater */
+.unatantum { margin:1em 0; }
+input#unatantum { float:none; }
+
+.novisible {
+	color: red;
+}
+

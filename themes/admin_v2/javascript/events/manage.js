@@ -37,27 +37,32 @@ jQuery.fn.removeCol = function(col){
 	jQuery(this).hide();
 });
 */
-jQuery(function() {
-	jQuery(".total").find("table").addClass("compactable");
-	jQuery(".total").find("table").removeCol();
-	
-	jQuery(".total").find("table").children("tbody").children("tr:not(:last)").hide();
 
-	jQuery(".toggle").click(function(){
-		if(jQuery(".total").find("table").hasClass("compactable")) {
-			jQuery(".total").find("table").removeClass("compactable");
-			jQuery('.total tr td:nth-child(1), .total tr th:nth-child(1)').show();
-			
-			jQuery(this).attr("class", jQuery(this).attr("class").replace("expand", "compress"));
-			jQuery(".total").find("table").children("tbody").children("tr:not(:last)").fadeIn();
-		} else {
-			jQuery(".total").find("table").addClass("compactable");		
-			jQuery(".total").find("table").removeCol();
-			
-			jQuery(this).attr("class", jQuery(this).attr("class").replace("compress", "expand"));
-			jQuery(".total").find("table").children("tbody").children("tr:not(:last)").fadeOut();
-		}
-		return false;
-	});
+if(!jQuery(".toggle a").is("a")) {
+	/* tabella totali manage */
+	//if(jQuery(".total div").hasClass("grid")) {
+		jQuery(".total").find("table").addClass("compactable");
+		jQuery(".total").find("table").removeCol();
+		
+		jQuery(".total").find("table").children("tbody").children("tr:not(:last)").hide();
 
-});
+		jQuery(".toggle").click(function(){
+				if(jQuery(".total").find("table").hasClass("compactable")) {
+					jQuery(".total").find("table").removeClass("compactable");
+					jQuery('.total tr td:nth-child(1), .total tr th:nth-child(1)').show();
+					
+					jQuery(this).attr("class", jQuery(this).attr("class").replace("expand", "compress"));
+					jQuery(".total").find("table").children("tbody").children("tr:not(:last)").fadeIn();
+				} else {
+					jQuery(".total").find("table").addClass("compactable");		
+					jQuery(".total").find("table").removeCol();
+					
+					jQuery(this).attr("class", jQuery(this).attr("class").replace("compress", "expand"));
+					jQuery(".total").find("table").children("tbody").children("tr:not(:last)").fadeOut();
+				}
+				return false;
+		});
+	/*} else {
+		jQuery(".total").hide();
+	}*/
+}

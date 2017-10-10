@@ -9,10 +9,10 @@ if ($_SERVER["HTTP_HOST"] === "vgallery.alex")
 }
 else
 {
-    define("FF_DISK_PATH", '/var/www/vhosts/blueocarina.net/subdomains/dev/httpdocs');
+    define("FF_DISK_PATH", '/var/www/vhosts/blueocarina.net/httpdocs');
     define("FF_SITE_PATH", '');
 
-    define("DISK_UPDIR", '/var/www/vhosts/blueocarina.net/subdomains/dev/httpdocs/uploads');
+    define("DISK_UPDIR", '/var/www/vhosts/blueocarina.net/httpdocs/uploads');
     define("SITE_UPDIR", '/uploads');
 }   
     $config_check["path"] = true;

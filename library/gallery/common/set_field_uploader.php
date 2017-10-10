@@ -77,9 +77,9 @@
 					, $cm->oPage
 				);        
 			}
-			$component->file_modify_path = get_path_by_rule("seo");
+			$component->file_modify_path = FF_SITE_PATH . VG_SITE_RESTRICTED . "/resources/modify";
 			$component->file_modify_dialog = $dialog_loaded;
-			$component->uploadifive_sort_path = get_path_by_rule("services") . "/sort";
+			$component->uploadifive_sort_path = FF_SITE_PATH . VG_SITE_SERVICES . "/sort";
 
 			$component->file_edit_type = "Aviary";
 			if(check_function("get_webservices")) {

@@ -54,8 +54,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"], $layout_settings["AREA_STATIC_MENU_FOLLOW_FRAMEWORK_CSS"]);
     
-	//$tpl_data["custom"] = "menu.html";
-	$tpl_data["custom"] = $layout["smart_url"] . ".html";		
+	$tpl_data["custom"] = "menu.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
@@ -349,7 +348,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 				
                 $menu_key[] = $menu_item[$fullpath]["ID"];
 				
-				/*if($layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"] == "/") {
+				if($layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"] == "/") {
 	                if(strlen($sSQL_Where))
                 		$sSQL_Where .= " OR ";
 					if(ffCommon_dirname($fullpath) == "/") {
@@ -364,15 +363,13 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                 				)
 		                    ";
 					}
-				}  */              
+				}                
 			}
 		} while($db->nextRecord());
 	}
 
 	if($layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"]) {
-		if($layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"] == "/") {
-			$sSQL_Where = "";
-		} elseif(!strlen($sSQL_Where)) {
+		if(!strlen($sSQL_Where)) {
 			/*if(ffCommon_dirname($settings_path) == "/")
 				$source_user_path = stripslash($layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"]) . $settings_path;
 			else
@@ -387,15 +384,9 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 		}  
 
 		$sSQL = "SELECT DISTINCT 
-        			vgallery_nodes.ID AS ID
-        			, vgallery_nodes.ID_type AS ID_type
-        			, vgallery_nodes.parent AS parent
-        			, vgallery_nodes.name AS name
-        			, vgallery_nodes.is_dir AS is_dir
-        			, vgallery_nodes.visible AS visible
-        			, vgallery_nodes.use_ajax AS use_ajax
-        			, vgallery_nodes.ajax_on_event AS ajax_on_event
-                    , vgallery_nodes.ID_vgallery AS ID_vgallery
+                    vgallery.ID AS ID_vgallery
+                    , vgallery_type.name AS type
+                    , vgallery_nodes.*
 	                " . (OLD_VGALLERY
                         ? "
                             , (SELECT GROUP_CONCAT(CONCAT(vgallery_fields.name, ':::', vgallery_rel_nodes_fields.description) ORDER BY vgallery_fields.name SEPARATOR '|@|')
@@ -448,6 +439,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                     		: "''"
                     	) . "
                     ) AS cover
+                    , CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name) AS full_path
                 FROM vgallery_nodes
                     " . (OLD_VGALLERY
                         ? "LEFT JOIN vgallery_rel_nodes_fields
@@ -462,12 +454,14 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                                     AND vgallery_nodes_rel_languages.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number")
                         )
                     ) . "
-                WHERE vgallery_nodes.name <> ''
-                    AND vgallery_nodes.is_dir > 0
-                    " . ($sSQL_Where
+                    INNER JOIN vgallery_type ON vgallery_nodes.ID_type = vgallery_type.ID
+                    INNER JOIN vgallery ON vgallery_nodes.ID_vgallery = vgallery.ID
+                WHERE 1 " . ($sSQL_Where
                 		? " AND ($sSQL_Where)"
                 		: ""
                 	) . "
+                    AND vgallery_nodes.name <> ''
+                    AND vgallery_nodes.is_dir > 0
 					" . (ENABLE_STD_PERMISSION 
 				        ? ""
 				        : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && ENABLE_ADV_PERMISSION && !OLD_VGALLERY
@@ -475,14 +469,14 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 				            : " AND vgallery_nodes.visible > 0 "
 				        )
 				    ) . " 
-                    ORDER BY (LENGTH(vgallery_nodes.parent) - LENGTH(REPLACE(vgallery_nodes.parent, '/', '')))
+                    ORDER BY (LENGTH(full_path) - LENGTH(REPLACE(full_path, '/', '')))
                     	, vgallery_nodes.`order`
                     	, vgallery_nodes.name ";
         $db->query($sSQL);
         
 		if ($db->nextRecord()) {
 			do {
-				$fullpath = substr(stripslash($db->getField("parent", "Text", true) . "/" . $db->getField("name", "Text", true)), strlen(stripslash($layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"])));
+				$fullpath = substr($db->getField("full_path", "Text", true), strlen(stripslash($layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"])));
 				//$fullpath = $db->getField("full_path", "Text", true);
 				$static_parent = $layout_settings["AREA_STATIC_DESCEND_INTO_VGALLERY"];
                 if(OLD_VGALLERY) {
@@ -640,7 +634,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
         	$admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_MENU . "/modify?parent=" . urlencode($settings_path) . "&owner=" . $menu_item[$settings_path]["owner"];
 		} else {
 	        if(AREA_STATIC_SHOW_ADDNEW && !$search_param) {
-	            $admin_menu["admin"]["addnew"] = get_path_by_rule("pages") . "/modify?parent=" . urlencode($settings_path);
+	            $admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify?parent=" . urlencode($settings_path);
 	        } else {
 	            $admin_menu["admin"]["addnew"] = "";
 	        }
@@ -703,7 +697,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
             //$tpl->set_var("real_name", ffCommon_specialchars(preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . $item["parent"] . $item["name"])));
 
             if($search_param && !$layout_settings["AREA_STATIC_NAME_SHOW_IMAGE"])
-                $tpl->set_var("item", preg_replace("/(" . preg_quote($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", ffCommon_specialchars($item["title"])));
+                $tpl->set_var("item", preg_replace("/(" . escape_string_x_regexp($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", ffCommon_specialchars($item["title"])));
             else
                 $tpl->set_var("item", ffCommon_specialchars($item["title"]));
 			
@@ -714,35 +708,56 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 			{
 				$tpl->set_var("menu_properties", '');
 			}
-			
-			$item_permalink = normalize_url_by_current_lang(stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]);
+
             if($user_path == stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]) {
                 $is_here = true;
 
-                if($layout_settings["AREA_VGALLERY_FORCE_ACTUAL_LINK"]) {
-                    $tpl->set_var("show_file", $item_permalink);
+                if($layout_settings["AREA_STATIC_FORCE_ACTUAL_LINK"]) {
+                    $tpl->set_var("show_file", normalize_url_by_current_lang(stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]));    
                 } else {
-				    //$tpl->set_var("show_file", "#" . preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . $item["parent"] . $item["name"]));
-				    $tpl->set_var("show_file",  "javascript:void(0);");
+                    //$tpl->set_var("show_file",  "#" . preg_replace('/[^a-zA-Z0-9]/', '', $unic_id . $item["parent"] . $item["name"]));
+                    $tpl->set_var("show_file",  "javascript:void(0);");
                 }
             } else {
                 $is_here = false;
-
+                
                 $tpl->set_var("SezTarget", "");
-                if(strlen($item["alt_url"])) {
-                	if(strpos($item["alt_url"], "/") === 0)
-                		$tpl->set_var("show_file", normalize_url_by_current_lang($item["alt_url"]));
-                	else
-						$tpl->set_var("show_file", $item["alt_url"]);
-					if(
-						substr(strtolower($item["alt_url"]), 0, 7) == "http://"
-						|| substr(strtolower($item["alt_url"]), 0, 8) == "https://"
-                        || substr($item["alt_url"], 0, 2) == "//"
+				
+				
+				if($item["alt_url"]) { 
+					if (
+						substr($item["alt_url"], 0, 1) != "/"
 					) {
-                    	$tpl->parse("SezTarget", false);
-					}                    
+						$tpl->set_var("show_file", $item["alt_url"]);
+						if(
+							substr(strtolower($item["alt_url"]), 0, 7) == "http://"
+							|| substr(strtolower($item["alt_url"]), 0, 8) == "https://"
+                            || substr($item["alt_url"], 0, 2) == "//"
+						) {
+                        	$tpl->parse("SezTarget", false);
+						} else {
+							$tpl->set_var("SezTarget", "");
+						}
+					} else {
+						if(strpos($item["alt_url"], "#") !== false) {
+							$part_alternative_hash = substr($item["alt_url"], strpos($item["alt_url"], "#"));
+							$item["alt_url"] = substr($item["alt_url"], 0, strpos($item["alt_url"], "#"));
+						}
+
+						if(strpos($item["alt_url"], "?") !== false) {
+							$part_alternative_path = substr($item["alt_url"], 0, strpos($item["alt_url"], "?"));
+							$part_alternative_url = substr($item["alt_url"], strpos($item["alt_url"], "?"));
+						} else {
+							$part_alternative_path = $item["alt_url"];
+							$part_alternative_url = "";
+						}
+						if(check_function("get_international_settings_path")) {
+							$arrAltUrl = get_international_settings_path($part_alternative_path, LANGUAGE_INSET);
+							$tpl->set_var("show_file", normalize_url($arrAltUrl["url"], HIDE_EXT, true, LANGUAGE_INSET) . $part_alternative_url . $part_alternative_hash);
+						}
+                    }
 				} else {
-                   	$tpl->set_var("show_file", $item_permalink);
+                   	$tpl->set_var("show_file", normalize_url_by_current_lang(stripslash($item["permalink_parent"]) . "/" . $item["smart_url"]));
 				}
             }
             if($layout_settings["AREA_STATIC_SHOW_FULLTREE_ITEM"]
@@ -813,7 +828,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 
             if ($layout_settings["AREA_STATIC_SHOW_DESCRIPTION"] && (strlen(trim(strip_tags($item["description"]))) || strpos($item["description"], "<img") !== false)) {
                 if($search_param)
-                    $tpl->set_var("description", preg_replace("/(" . preg_quote($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", $item["description"]));
+                    $tpl->set_var("description", preg_replace("/(" . escape_string_x_regexp($search_param) . ")/i" , "<strong class=\"theone\">\${1}</strong>", $item["description"]));
                 else
                     $tpl->set_var("description", $item["description"]);
 
@@ -861,13 +876,13 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	                                                FF_SITE_PATH . VG_SITE_MENU . "/dialog");
 				} else {
 	                if(AREA_STATIC_SHOW_ADDNEW) {
-	                    $popup["admin"]["addnew"] = get_path_by_rule("pages") . "/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]);
+	                    $popup["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]);
 	                } else {
 	                    $popup["admin"]["addnew"] = "";
 	                }
 	                
 	                if(AREA_STATIC_SHOW_MODIFY) {
-                		$popup["admin"]["modify"] = get_path_by_rule("pages") . "/modify" . $full_path;
+                		$popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify" . $full_path;
 					}
 	                if(AREA_STATIC_SHOW_DELETE) {
 	                    $popup["admin"]["delete"] = ffDialog(TRUE,
@@ -875,8 +890,8 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	                                                    ffTemplate::_get_word_by_code("vgallery_erase_title"),
 	                                                    ffTemplate::_get_word_by_code("vgallery_erase_description"),
 	                                                    "--returl--",
-	                                                    get_path_by_rule("pages") . "/modify" . $full_path . "?ret_url=" . "--encodereturl--" . "&frmAction=StaticModify_confirmdelete", 
-	                                                    get_path_by_rule("pages") . "/dialog");
+	                                                    FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify" . $full_path . "?ret_url=" . "--encodereturl--" . "&frmAction=StaticModify_confirmdelete", 
+	                                                    FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static" . "/dialog");
 	                }
 				}
                 if(AREA_PROPERTIES_SHOW_MODIFY) {
@@ -892,13 +907,12 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                 $popup["sys"]["path"] = $globals->user_path;
                 $popup["sys"]["type"] = "admin_popup";
 
-				if(check_function("set_template_var"))
-					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME) . '"';
-
-	            //$serial_popup = json_encode($popup);
-	            //$item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME  . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-
-	            $item_class["admin"] = "admin-bar";
+				if(strlen($block["admin"]["popup"])) {
+	                $serial_popup = json_encode($popup);
+	                
+	                $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME  . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+	                $item_class["admin"] = "admin-bar";
+				}                
             }
 			
             $tpl->set_var("child", $child);
@@ -934,18 +948,13 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
     } else {
         $tpl->set_var("SezError", "");
     }
-
-	$res["pre"] 								= $block["tpl"]["header"];
-	$res["post"] 								= $block["tpl"]["footer"];    
+    
     if(is_array($menu_params["template"]) && count($menu_params["template"])) {
-    	$res["template"] 						= $menu_params["template"];
-    	$res["template"]["offcanvas"] 			= $tpl->rpparse("main", false);
-
-		$res["content"] 						= $res["template"]["content"];
-		$res["default"] 						= $res["template"]["content"];
+    	$res["template"] = $menu_params["template"];
+    	$res["template"]["offcanvas"] = $tpl->rpparse("main", false);
+    	$res["content"] = $res["template"]["content"];
     } else { 
-    	$res["content"] 						= $tpl->rpparse("main", false);
-		$res["default"] 						= $res["pre"] . $res["content"] . $res["post"];
+		$res["content"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
     }
 
 /*    if($layout_settings["AREA_STATIC_MENU_OFFCANVAS"])
@@ -962,7 +971,6 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	if(is_array($template) && count($template))
 		$res["template"] = $template;
      */   
-     
 	return $res;
 }
 

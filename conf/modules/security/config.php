@@ -16,11 +16,8 @@
 	define ("MOD_SEC_USER_LASTNAME"		, "surname");
 	define ("MOD_SEC_USER_COMPANY"		, "");    
     
-   
     /*firstname,lastname*/
     define("MOD_SEC_DEFAULT_FIELDS" , "ID,ID_domains,avatar,name,surname,username,username_slug,password,level,status,expiration,email,primary_gid,time_zone,role,created,password_generated_at,temp_password,password_used,ID_packages,shippingreference,shippingaddress,shippingcap,shippingtown,shippingprovince,shippingstate,public,billreference,billaddress,billcap,billtown,billprovince,billstate,billpiva,billcf,name,surname,tel,avatar");
     
    // define("MOD_SEC_CSS_PATH", false);
-   
-    define ("MOD_SEC_MULTIDOMAIN", true);
-    	
+

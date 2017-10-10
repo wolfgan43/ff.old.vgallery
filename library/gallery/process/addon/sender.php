@@ -24,7 +24,6 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 function process_addon_sender($user_path, $ID_node, $vgallery_name, $title, $data_source, $data_limit, $layout) {
-	$cm = cm::getInstance();
 	$db = ffDB_Sql::factory();
 	
 	$buffer = "";
@@ -180,10 +179,7 @@ function process_addon_sender($user_path, $ID_node, $vgallery_name, $title, $dat
 		$tpl->set_var("class_hidden", " hide");
 	}
 	
-	$cm->oPage->tplAddJs("ff.cms.addon.sender", array(
-		"path" => FF_THEME_DISK_PATH . "/" . THEME_INSET . "/javascript/addon"
-		, "file" => "sender.js"
-	));
+	setJsRequest("sender", "system");
 	
 	$buffer = $tpl->rpparse("main", false);
 	

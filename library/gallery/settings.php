@@ -24,15 +24,15 @@
  * @link https://github.com/wolfgan43/vgallery
  */
  	$schema["api"] = array();
-    $schema["api"]["oAuth"]["/"] = array(
+	$schema["api"]["oAuth"]["/"] = array(
         "scopes" => array(
             "get" => false
-        , "post" => "userinfo"
-        , "patch" => "userinfo"
-        , "delete" => "userinfo"
+            , "post" => "userinfo"
+            , "patch" => "userinfo"
+            , "delete" => "userinfo"
         )
-    );
-	 
+	);
+	
 	$schema["alias"] = array();
 	
 	$schema["rule"] = array();
@@ -57,7 +57,7 @@
 	);
 	$schema["request"]["/login/social"] = array(
 		"get" => true
-	);		
+	);	
 	$schema["request"]["user"] = array(
 		"get" => true
         , "post" => true
@@ -71,7 +71,22 @@
     $schema["request"]["/api"] = array(
 		"get" => true
 	);	
+	/*
+	$schema["request"]["/login/attivazione"] = array(
+		"get" => array(
+			"frmAction"
+			, "sid"
+		)
+	);
+	$schema["request"]["/login/recuperapassword"] = array(
+		"get" => array(
+			"frmAction"
+			, "sid"
+		)
+	);*/
+		
     $schema["locale"] = array();
+    $schema["locale"]["default"] = true;
     $schema["locale"]["lang"] = array();
     $schema["locale"]["lang"] = array(
     	"ITA" => array(
@@ -99,7 +114,7 @@
 		"1" => "ITA"
 		, "2" => "ENG"    
     );  
-    
+
   $schema["priority"] = array();
   $schema["priority"][] = "/";
   
@@ -126,7 +141,7 @@
 
   
   
-  $schema["page"]["/login"] = array(
+  $schema["page"]["/login"] = array(  
   	"name" => "login"
   	, "cache" => "user" 				
   	, "cache_path" => null
@@ -142,24 +157,12 @@
   	, "cache_path" => null				//null, Path start with /
   	, "primary" => true 				//true, false
   	, "restricted" => false 			//true, false
-  	, "api" => "login"					//ture, false, private, public, login
+  	, "api" => "login"					//ture, false, private, public
   	, "type" => "mixed"					//mixed, html, json, xml, media
   );  
   
   $schema["page"]["/admin/login"] = array(
   	"name" => "admin login"
-  	, "group" => "login"
-  	, "layer" => "empty"
-  	, "cache" => "user" 	
-  	, "cache_path" => null			
-  	, "primary" => true
-  	, "restricted" => true 			
-  	, "api" => false
-  	, "type" => "html"
-  	, "theme" => "admin"
-  ); 
-  $schema["page"]["/builder/login"] = array(
-  	"name" => "manage login"
   	, "group" => "login"
   	, "layer" => "empty"
   	, "cache" => "user" 	
@@ -182,7 +185,7 @@
   	, "type" => "html"
   	, "theme" => "admin"
   ); 
-  $schema["page"]["/ecommerce/login"] = array(
+  $schema["page"]["/manage/login"] = array(
   	"name" => "manage login"
   	, "group" => "login"
   	, "layer" => "empty"
@@ -193,8 +196,10 @@
   	, "api" => false
   	, "type" => "html"
   	, "theme" => "admin"
-  );
-
+  );   
+    
+    
+  
 /**
 *  Frontend Path
 */
@@ -215,7 +220,7 @@
   	, "cache" => true 	
   	, "cache_client" => "noxhr"
   	, "cache_path" => "/search"
-  	, "strip_path" => "/search"
+  	//, "strip_path" => "/search" //eredita i blochhi omonimi
   	, "primary" => true
   	, "restricted" => false 		
   	, "api" => false
@@ -246,23 +251,12 @@
   	, "type" => "html"
   	, "session" => false
   	, "exit" => true 
-  );
-
-  $schema["page"]["/dialog"] = array(
-        "name" => "dialog"
-        , "cache" => true
-        , "cache_path" => null
-        , "primary" => true
-        , "restricted" => true
-        , "api" => false
-        , "type" => "html"
-        , "seo" => false
-        , "theme" => "site"
-    );
-
-$schema["page"]["/"] = array(
+  ); 
+  
+  
+  $schema["page"]["/"] = array(
   	"name" => "public"
-  	, "cache" => true 	
+  	, "cache" => "guest" 	
   	, "cache_client" => "noxhr"			
   	, "primary" => true
   	, "restricted" => false 			
@@ -315,7 +309,6 @@ $schema["page"]["/"] = array(
   );
   $schema["page"]["/srv"] = array(
   	"name" => "service"
-  	, "group" => "services"
   	, "cache" => false 	
   	, "cache_path" => null			
   	, "primary" => false
@@ -324,8 +317,7 @@ $schema["page"]["/"] = array(
   	, "type" => "json"
   );  
   $schema["page"]["/api"] = array(
-  	"name" => "api"
-  	, "group" => "services"
+  	"name" => "service"
   	, "cache" => false 	
   	, "cache_path" => null			
   	, "primary" => false
@@ -488,18 +480,6 @@ $schema["page"]["/"] = array(
   	, "restricted" => true 			
   	, "api" => false
   	, "type" => "html"
-  	, "theme" => "admin"
-  ); 
-  $schema["page"]["/builder"] = array(
-  	"name" => "builder"
-  	, "group" => "console"
-  	, "cache" => false 	
-  	, "cache_path" => null			
-  	, "primary" => true
-  	, "restricted" => true 			
-  	, "api" => false
-  	, "type" => "html"
-  	, "theme" => "admin"
   ); 
   $schema["page"]["/restricted"] = array(
   	"name" => "restricted"
@@ -510,10 +490,9 @@ $schema["page"]["/"] = array(
   	, "restricted" => true 			
   	, "api" => false
   	, "type" => "html"
-  	, "theme" => "admin"
   ); 
-  $schema["page"]["/ecommerce"] = array(
-  	"name" => "ecommerce"
+  $schema["page"]["/manage"] = array(
+  	"name" => "manage"
   	, "group" => "console"
   	, "cache" => false 		
   	, "cache_path" => null		
@@ -521,7 +500,6 @@ $schema["page"]["/"] = array(
   	, "restricted" => true 			
   	, "api" => false
   	, "type" => "html"
-  	, "theme" => "admin"
   );
 
 $schema["error"] = array();

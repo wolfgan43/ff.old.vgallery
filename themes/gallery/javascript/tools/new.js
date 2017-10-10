@@ -278,7 +278,7 @@ function cssInspector(firstElem) {
                 if($(newEl).getHeight() <= 1 || $(newEl).getWidth() <= 1) {
                     $(newEl).style.height = "16px";
                     $(newEl).style.width = "16px";
-                    $(newEl).style.backgroundImage = "url(http://" + ff.domain + ff.base_path + "/themes/gallery/images/edit.gif)";
+                    $(newEl).style.backgroundImage = "url(http://" + ff.domain + ff.site_path + "/themes/gallery/images/edit.gif)";
                     $(newEl).style.backgroundColor =  "rgb(" + "255" + ", " + "255" + ", " + "255" + ")";
                     $(newEl).style.opacity = "1";
                 } else {

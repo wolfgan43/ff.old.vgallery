@@ -111,12 +111,12 @@ if(!$disable_service_process) {
             $params = $_REQUEST["params"];
         }
 
+		if(basename($service_path_info))
+			$params["category"] = basename($service_path_info);
+
         $limit_data = (isset($_REQUEST["limit"]) && isset($_REQUEST["limit"]["key"]) && isset($_REQUEST["limit"]["value"])
 	                    ? $_REQUEST["limit"]
-	                    : (basename($service_path_info)
-	                    	? array("ID" => basename($service_path_info))
-	                    	: null
-	                    )
+	                    : null
                     );
     } else {
     	if($parent_schema["relationship"][$service_name]["multi"]) 
@@ -289,8 +289,8 @@ if(!$disable_service_process) {
 	            $index = $i;
 	        }
 
-	        /*if($index === null)
-	            continue;*/
+	        if($index === null)
+	            continue;
 
 	        $service_schema["ID"][$db->getField("ID", "Number", true)] = $i;
 	        if(array_key_exists("relationship", $service_schema) && is_array($service_schema["relationship"]) && count($service_schema["relationship"])) {

@@ -48,19 +48,7 @@
 	font-size: 16px !important;
 	line-height: 18px;
 }
-#Anagraph .qrcode, 
-#Anagraph .address,
-#Anagraph .province,
-#Anagraph .town,
-#Anagraph .state,
-#Anagraph .piva,
-#Anagraph .email,
-#Anagraph .cf,
-#Anagraph .cognome,
-#Anagraph .ragionesociale,
-#Anagraph .cap {
-	display: none;
-}
+
 
 #Anagraph .actions .ffButton {
 	float: left;

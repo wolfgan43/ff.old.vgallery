@@ -313,7 +313,7 @@ function system_write_cache_page($user_path, $contents) {
 
 function system_write_cache_error_document($cache_file = null, $expires = null)
 {
-    $cm = cm::getInstance();
+   // $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
 
     if(!$cache_file)

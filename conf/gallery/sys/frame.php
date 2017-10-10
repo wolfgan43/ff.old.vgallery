@@ -1,30 +1,6 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+require(FF_DISK_PATH . "/conf/index.php");
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
- $globals = ffGlobals::getInstance("gallery");
- 
 if($_REQUEST["out"] == "html") {
 	$cm->oPage->use_own_form = true;
 	$cm->oPage->template_file = "ffPage.html";
@@ -116,9 +92,9 @@ if(is_array($sys["module"]) && count($sys["module"]))
                     $admin_menu["admin"]["module"]["value"] = strtolower($module_key);
                     $admin_menu["admin"]["module"]["params"] = $module_value["layout"]["ID"];
 
-                } 
-	            if(is_file(FF_DISK_PATH . VG_ADDONS_PATH . "/" . strtolower($module_key) . "/fields." . FF_PHP_EXT))
-                    $admin_menu["admin"]["module"]["extra"] = get_path_by_rule("addons") . "/". strtolower($module_key) . "/" .$module_value["layout"]["ID"] . "/fields";
+                }
+	            if(is_dir(FF_DISK_PATH . "/conf/gallery/modules/" . strtolower($module_key) . "/extra"))
+                    $admin_menu["admin"]["module"]["extra"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/modules/" . strtolower($module_key) . "/extra/" . $module_value["layout"]["ID"];
 	            else
                     $admin_menu["admin"]["module"]["extra"] = "";
 
@@ -280,7 +256,7 @@ elseif(strlen($settings_path))
                     	? get_layout_by_block("publishing", basename($settings_path))
                     	: null
                     );
-			$publish = explode("_", $layout["db"]["value"]);
+            $publish = explode("_", $layout["db"]["value"]);
             if(is_array($publish) && count($publish) == 2) {
                 $publishing = array();
                 $publishing["ID"] = $publish[1];
@@ -452,37 +428,27 @@ elseif(strlen($settings_path))
 					
 				$db->query($sSQL);
 				if($db->nextRecord() && check_function("system_layer_gallery")) {
+					if(check_function("get_layout_settings"))
+						$layout_settings_popup = get_layout_settings(NULL, "ADMIN"); 
+
 					//do {
-						$ID_layout 														= $db->getField("ID", "Number", true);
-						$type 															= $db->getField("type", "Text", true);
-						$layout["ID"] 													= $ID_layout;
-						$layout["ID_type"] 												= $db->getField("ID_type", "Number", true);
-						$layout["ID_section"] 											= null;
-						$layout["prefix"] 												= "L";
-						$layout["smart_url"] 											= $db->getField("smart_url", "Text", true);
-						$layout["title"] 												= $db->getField("name", "Text", true);
-						$layout["type_class"] 											= $db->getField("type_class", "Text", true);
-						$layout["type_group"] 											= $db->getField("type_group", "Text", true);
-						$layout["multi_id"] 											= $db->getField("multi_id", "Text", true);
-						$layout["type"] 												= $type;
-						$layout["location"] 											= $db->getField("location", "Text", true);
-						$layout["template"] 											= $db->getField("template", "Text", true);
-						$layout["template_detail"] 										= $db->getField("template_detail", "Text", true);
-						$layout["tpl_path"] 											= $db->getField("tpl_path", "Text", true);
-						$layout["value"] 												= $db->getField("value", "Text", true);
-						$layout["params"] 												= $db->getField("params", "Text", true);
-						$layout["last_update"] 											= $db->getField("last_update", "Text", true);
-						$layout["frequency"] 											= $db->getField("frequency", "Text", true);
-						$layout["use_in_content"] 										= $db->getField("use_in_content", "Number", true);
-						$layout["ajax"] 												= $db->getField("use_ajax", "Number", true);
-						$layout["ajax_on_ready"] 										= $db->getField("ajax_on_ready", "Text", true);
-						$layout["ajax_on_event"] 										= $db->getField("ajax_on_event", "Text", true);
-						$layout["content"] 												= "";
-						$layout["settings"] 											= null;
-						$layout["plugins"] 												= $db->getField("js_lib", "Text", true);
-						$layout["js"] 													= $db->getField("js", "Text", true);
-						$layout["css"] 													= $db->getField("css", "Text", true);
-						$layout["visible"] 												= $db->getField("visible", "Text", true);
+						$ID_layout = $db->getField("ID", "Number", true);
+						$type = $db->getField("type", "Text", true);
+						$layout["prefix"] = "L";
+						$layout["ID"] = $ID_layout;
+						$layout["title"] = $db->getField("name", "Text", true);
+						$layout["class"] = $db->getField("class", "Text", true);
+						$layout["type_class"] = $db->getField("type_class", "Text", true);
+						$layout["type_group"] = $db->getField("type_group", "Text", true);
+						$layout["type_description"] = $db->getField("type_description", "Text", true);
+						$layout["type"] = $type;
+						$layout["ID_type"] = $db->getField("ID_type", "Number", true);
+						$layout["location"] = $db->getField("location", "Text", true);
+						$layout["visible"] = $db->getField("visible", "Text", true);
+						$layout["value"] = $db->getField("value", "Text", true);
+						$layout["params"] = $db->getField("params", "Text", true);
+						$layout["last_update"] = $db->getField("last_update", "Text", true);
+						$layout["frequency"] = $db->getField("frequency", "Text", true);
 						if($layout["visible"]) {
 							if(check_function("get_layout_settings"))
 								$layout["settings"] = get_layout_settings($ID_layout, $type);
@@ -491,7 +457,8 @@ elseif(strlen($settings_path))
 							$layout["db"]["params"] = $layout["params"];
 							$layout["db"]["real_path"] = $db->getField("real_path", "Text", true);
 						}
-						//$main_section_params["js_custom_is_set"] = true;
+
+						$main_section_params["js_custom_is_set"] = true;
 						
 						$main_section_params["search"] = $globals->search;
 						$main_section_params["navigation"] = $globals->navigation;
@@ -499,12 +466,12 @@ elseif(strlen($settings_path))
 						$main_section_params["user_path"] = $layout["db"]["real_path"];
 						$main_section_params["settings_path"] = $layout["db"]["real_path"];						
 						
-						$buffer = system_block_process($layout, $main_section_params);
+						$buffer = system_block_process($layout, $main_section_params, $layout_settings_popup);
 
 						$main_section_params = $buffer["params"];
 						$main_section_params["count_block"]++;
 						
-						$frame_buffer = $buffer["default"];
+						$frame_buffer = $buffer["content"];
 					//} while($db->nextRecord());
 				}
 			}
@@ -515,8 +482,11 @@ elseif(strlen($settings_path))
 		//$globals->cache["data_blocks"] = array(); // x cache_page
 
 		if(check_function("system_layer_gallery")) {
+			if(check_function("get_layout_settings"))
+				$layout_settings_popup = get_layout_settings(NULL, "ADMIN"); 
+
 			$main_section_params["count_block"] = 0;
-			//$main_section_params["js_custom_is_set"] = true;
+			$main_section_params["js_custom_is_set"] = true;
 			//$main_section_params["js_custom_module_is_set"] = false;
 			
 			$main_section_params["search"] = $globals->search;
@@ -533,7 +503,7 @@ elseif(strlen($settings_path))
 				$res = array();
 				$res["content"] = "";
 
-				$buffer = system_block_process($layout_value, $main_section_params);
+				$buffer = system_block_process($layout_value, $main_section_params, $layout_settings_popup);
 
 				$main_section_params = $buffer["params"];
 				$main_section_params["count_block"]++;
@@ -541,7 +511,7 @@ elseif(strlen($settings_path))
 					$cache_page["data_blocks"] = array_merge($cache_page["data_blocks"], $buffer["data_blocks"]);
 				} */
 				
-				$layout_value["content"] = $buffer["default"];
+				$layout_value["content"] = $buffer["content"];
 				$frame_buffer .= $layout_value["content"];
 			}
 			reset($layouts);
@@ -605,7 +575,7 @@ if(strlen($globals->frame_smart_url)) {
 			$cm->oPage->use_own_js = true;
 
 			$js_struct = '
-				ff.load("ff.ajax", function() {
+				ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {
 					if(ff.fn.frame === undefined) {
 						ff.fn.frame = function (params, data) {
 							if(params.component !== undefined 
@@ -624,9 +594,7 @@ if(strlen($globals->frame_smart_url)) {
 						});			
 					}			
 				});';
-			$cm->oPage->tplAddJs("ff.cms.frame", array(
-				"embed" => $js_struct
-			));				
+			$cm->oPage->tplAddJs("ff.fn.frame", null, null, false, false, $js_struct);
 		} else {
 			$cm->oPage->page_css = array();
 			$cm->oPage->page_js = array();
@@ -646,8 +614,8 @@ if(strlen($globals->frame_smart_url)) {
 //}
 
 if(!defined("DISABLE_CACHE") && $frame_buffer && check_function("system_set_cache_page")) {
-	//system_write_cache_page($globals->user_path, $main_section_params["count_block"]);
-	system_set_cache_page($frame_buffer, $main_section_params["count_block"]);
+	system_write_cache_page($globals->user_path, $main_section_params["count_block"]);
+	system_set_cache_page($frame_buffer);
 } elseif($_REQUEST["XHR_data"]) {
 	header("Content-type: text/javascript");
 

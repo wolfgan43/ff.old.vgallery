@@ -1,0 +1,52 @@
+{name_title}
+<!--BeginSezVGallerys-->
+    <!--BeginSezSort-->
+    <div class="vgs">
+        <h4>{sort_title}</h4>
+        {sort_fields}
+    </div>
+    <!--EndSezSort-->
+    <!--BeginSezPageNavigatorTop-->
+    <div class="pagenavigator top"> {PageNavigator} </div>
+    <!--EndSezPageNavigatorTop-->
+        <div class="vgallery_container"> 
+        <!--BeginSezVGalleryRow-->
+	    <!--BeginSezVGallery-->
+ 			<div class="vgallery_item {class_col} {vg_switch_style}" id="{real_name}" >
+                {admin}
+
+                <!--BeginSezGroup-->
+                <!--BeginSezGroupContainerStart-->
+                <div class="{group_class}">
+                <!--EndSezGroupContainerStart-->
+                
+                <!--BeginSezVGalleryImage-->
+                <div class="vgallery_image">
+                <!--BeginSezVGalleryImageNode-->
+                {content}
+                <!--EndSezVGalleryImageNode-->
+                </div>
+                <!--EndSezVGalleryImage-->
+                <!--BeginSezVGalleryDescription-->
+                <div class="vgallery_description {class_plugin}">
+                <!--BeginSezVGalleryDescriptionNode-->
+                {content}
+                <!--EndSezVGalleryDescriptionNode-->
+                </div>
+                <!--EndSezVGalleryDescription-->
+
+                <!--BeginSezGroupContainerEnd-->
+                </div>
+                <!--EndSezGroupContainerEnd-->
+                <!--EndSezGroup-->
+			</div>
+        <!--EndSezVGallery-->
+        <!--EndSezVGalleryRow-->
+	</div>
+<!--BeginSezPageNavigatorBottom-->
+<div class="pagenavigator bottom"> {PageNavigator} </div>
+<!--EndSezPageNavigatorBottom-->
+<!--EndSezVGallerys-->
+<!--BeginSezError-->
+<p class="error">{strError}</p>
+<!--EndSezError-->

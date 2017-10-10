@@ -48,8 +48,7 @@ function process_vgallery_menu_group($user_path, $group_menu, $search_param = ""
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"]);
     
-	//$tpl_data["custom"] = "menu_group.html";
-	$tpl_data["custom"] = $layout["smart_url"] . ".html";		
+	$tpl_data["custom"] = "menu_group.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
@@ -236,18 +235,13 @@ function process_vgallery_menu_group($user_path, $group_menu, $search_param = ""
     }
 
     
-	$res["pre"] 								= $block["tpl"]["header"];
-	$res["post"] 								= $block["tpl"]["footer"];    
     if(is_array($menu_params["template"]) && count($menu_params["template"])) {
-    	$res["template"] 						= $menu_params["template"];
-    	$res["template"]["offcanvas"] 			= $tpl->rpparse("main", false);
-
-		$res["content"] 						= $res["template"]["content"];
-		$res["default"] 						= $res["template"]["content"];
+    	$res["template"] = $menu_params["template"];
+    	$res["template"]["offcanvas"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
+    	$res["content"] = $res["template"]["content"];
     } else { 
-    	$res["content"] 						= $tpl->rpparse("main", false);
-		$res["default"] 						= $res["pre"] . $res["content"] . $res["post"];
-    }
+		$res["content"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
+    }      
     
     return $res;
 }

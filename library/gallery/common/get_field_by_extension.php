@@ -235,8 +235,7 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
                     $obj_page_field->actex_update_from_db = true;
                     $obj_page_field->actex_autocomp = true;
                     $obj_page_field->actex_multi = false;
-                
-/*
+/*                                    
                     $obj_page_field->control_type = "";
                     $obj_page_field->extended_type = "String";
                     $obj_page_field->actex_update_from_db = true;
@@ -1892,8 +1891,8 @@ function get_field_by_extension_search($obj_page_field, $params = array()) {
                     $obj_page_field->actex_update_from_db = true;
                     $obj_page_field->actex_autocomp = true;
                     $obj_page_field->actex_multi = false;
-                
-/*                    $obj_page_field->control_type = "";
+/*                                    
+                    $obj_page_field->control_type = "";
                     $obj_page_field->extended_type = "String";
                     $obj_page_field->actex_update_from_db = true;
 
@@ -1908,7 +1907,7 @@ function get_field_by_extension_search($obj_page_field, $params = array()) {
                         $obj_page_field->autocomplete_compare_having = $params["compare_having"];
                     else
                         $obj_page_field->autocomplete_compare = "name";
-*/
+                        */
                 /*} elseif ($params["extended_type"] == "AutocompleteMulti") {
                     $obj_page_field->control_type = "";
                     // $obj_page_field->extended_type = "Selection";

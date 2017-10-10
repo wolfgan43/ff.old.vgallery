@@ -25,7 +25,7 @@
  */
   function check_user_request(&$user, $old_session_id = null, $permanent_session = null) {
   	$cm = cm::getInstance();
-    //i globals qui nn sono valorizzati
+    //i global qui nn sono valorizzati
 	if(/*global_settings("ENABLE_ECOMMERCE") &&*/ check_function("ecommerce_cart_merge"))
 		ecommerce_cart_merge($user, $old_session_id, $permanent_session);
 

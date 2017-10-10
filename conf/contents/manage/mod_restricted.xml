@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+<menu>
+	<default path="/" hide="true" />
+</menu>
+<sections>
+	<top>
+		<topbar default="true" />
+		<admin />
+		<account />
+	</top>
+	<nav>
+		<navbar default="true" />
+	</nav>
+</sections>
+<layout>
+    <layer>manage</layer>
+    <topbar>manage</topbar>
+    <navbar>manage</navbar>
+</layout>
+</configdata>

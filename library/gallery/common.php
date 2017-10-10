@@ -57,14 +57,14 @@ function check_function($name, $module = null) {
 				return false;
 			}
 		} elseif(strpos($name, "MD_general_") === 0) {
-			require_once(FF_DISK_PATH . "/conf/gallery/addons." . FF_PHP_EXT);
+			require_once(FF_DISK_PATH . "/conf/gallery/modules/common" . "." . FF_PHP_EXT);
 			if(function_exists($name)) {
 				return true;
 			} else {
 				return false;
 			}
 		} elseif(strpos($name, "MD_") === 0) {
-			require_once(FF_DISK_PATH . "/" . VG_UI_PATH . "/addons/" . substr($name, 3, strpos($name, "_", 4) - 3) . "/common" . "." . FF_PHP_EXT);
+			require_once(FF_DISK_PATH . "/conf/gallery/modules/" . substr($name, 3, strpos($name, "_", 4) - 3) . "/common" . "." . FF_PHP_EXT);
 			if(function_exists($name)) {
 				return true;
 			} else {
@@ -158,16 +158,16 @@ function check_function($name, $module = null) {
 	        } else {
 	            return false;
 	        }
-        } elseif(ucfirst($name) == $name) {
+	    } elseif(ucfirst($name) == $name) {
             if(file_exists(FF_DISK_PATH . "/library/gallery/classes/" . strtolower($name) . "/" . $name . "." . FF_PHP_EXT)) {
-                require_once(FF_DISK_PATH . "/library/gallery/classes/" . strtolower($name) . "/" . $name . "." . FF_PHP_EXT);
+				require_once(FF_DISK_PATH . "/library/gallery/classes/" . strtolower($name) . "/" . $name . "." . FF_PHP_EXT);
             }
             
             if(class_exists($name)) {
-                return true;
-            } else {
-                return false;
-            }
+	            return true;
+	        } else {
+	            return false;
+	        }
         } else {
 			if(strlen($name) && file_exists(FF_DISK_PATH . "/library/gallery/common/" . $name . "." . FF_PHP_EXT)) {
 				require_once(FF_DISK_PATH . "/library/gallery/common/" . $name . "." . FF_PHP_EXT);
@@ -180,6 +180,27 @@ function check_function($name, $module = null) {
 		}
 	}	
 }
+
+function get_pathinfo($strip_virtual_path = true) {
+    $cm = cm::getInstance();
+//ffErrorHandler::raise("as", E_USER_ERROR, null,get_defined_vars());
+    if($strip_virtual_path) {
+        if(!strlen($cm->real_path_info) && basename($cm->path_info) != "index")
+            $path = $cm->path_info;
+        else                
+            $path = $cm->real_path_info;
+        
+        if($path == "")
+            $path = "/";
+    } else {
+        $path = $cm->path_info;
+        if($path == "/index")
+            $path = "/";
+    }
+
+    return $path;
+}
+
 
 function get_global($type, $key = null) {
 	$globals = ffGlobals::getInstance("gallery");
@@ -211,106 +232,6 @@ function global_settings($key = null, $settings_path = null) {
 	
 	return get_global("settings", $key);
 }
-
-function get_path_by_rule($name, $area = "admin") 
-{
-	$prefix = constant("VG_WS_" . strtoupper($area));
-	switch($name) {
-		case "pages":
-			$res = $prefix . "/pages";
-			break;
-		case "pages-structure":
-			$res = $prefix . "/pages/structure";
-			break;
-		case "blocks":
-			$res = $prefix . "/pages/blocks";
-			break;
-		case "blocks-appearance":
-			$res = $prefix . "/pages/appearance";
-			break;			
-		case "contents":
-			$res = $prefix . "/contents";
-			break;
-		case "contents-structure":
-			$res = $prefix . "/contents/structure";
-			break;
-		case "seo":
-			$res = $prefix . "/seo";
-			break;
-		case "widgets":
-			$res = $prefix . "/widgets";
-			break;			
-		case "landing-pages":
-			$res = $prefix . "/landing-pages";
-			break;			
-		case "addons":
-			$res = $prefix . "/addons";
-			break;
-		case "services":
-			$res = ($area == "restricted"
-					? $prefix
-					: ""
-				) . "/srv";
-			break;
-		default:
-			$cm = cm::getInstance();
-			switch($area) {
-				case "restricted":
-					$prefix = "mod_sec_";
-				default:
-			}
-
-			$res = (string) $cm->router->named_rules[$prefix . $name]->reverse;
-			if(!$res)
-				$res = VG_WS_ADMIN . "/" . $name;
-	}
-	
-	
-	return FF_SITE_PATH . $res;
-}
-
-/*
-function get_path_by_rule($name, $area = "restricted") 
-{
-	switch($name) {
-		case "pages":
-			$res = VG_WS_ADMIN . "/pages";
-			break;
-		case "pages-structure":
-			$res = VG_WS_ADMIN . "/pages/structure";
-			break;
-		case "blocks":
-			$res = VG_WS_ADMIN . "/pages/blocks";
-			break;
-		case "contents-structure":
-			$res = VG_WS_ADMIN . "/contents/structure";
-			break;
-		case "seo":
-			$res = VG_WS_ADMIN . "/seo";
-			break;
-		case "addons":
-			$res = VG_WS_ADMIN . "/addons";
-			break;
-		case "services":
-			$res = "/srv";
-			break;
-		default:
-			$cm = cm::getInstance();
-			switch($area) {
-				case "restricted":
-					$prefix = "mod_sec_";
-				default:
-			}
-
-			$res = (string) $cm->router->named_rules[$prefix . $name]->reverse;
-			if(!$res)
-				$res = VG_WS_ADMIN . "/" . $name;
-	}
-	
-	
-	return FF_SITE_PATH . $res;
-}
-*/
 
 //per rendere i percorsi senza doppi / dove serve
 function stripslash($temp) {
@@ -435,6 +356,17 @@ function get_vgallery_is_dir($name, $parent, $ID_category = null) {
 
 
 
+
+
+
+function escape_string_x_regexp($value) {
+    $value = str_replace("/", "", $value);
+    $value = str_replace("(", "", $value);
+    $value = str_replace(")", "", $value);
+
+    return $value;
+}
+
 function use_cache($value = NULL) {
     $globals = ffGlobals::getInstance("gallery");
         
@@ -542,6 +474,7 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
 	$file = FF_DISK_PATH . "/cache/sid.php";
     $sid_error = false;
 
+    clearstatcache();
     if(@filesize($file))
         $sid_content = "";
     else

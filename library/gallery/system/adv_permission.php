@@ -29,7 +29,7 @@ function system_adv_permission($settings_path) {
     $user_permission = get_session("user_permission");
     if(is_array($user_permission) && count($user_permission)) {
         if(basename($settings_path) != "login") {
-            $db = ffDB_Sql::factory();
+            $db_gallery = ffDB_Sql::factory();
 
             $src_path = $settings_path;
             do {
@@ -37,7 +37,7 @@ function system_adv_permission($settings_path) {
                 $src_folder_path = ffCommon_dirname($src_path);
                 if (strlen($sWhere))
                     $sWhere .= " OR ";
-                $sWhere .= " (static_pages.parent = " . $db->toSql($src_folder_path, "Text") . " AND static_pages.name = " . $db->toSql($src_folder_name, "Text") . " )";
+                $sWhere .= " (static_pages.parent = " . $db_gallery->toSql($src_folder_path, "Text") . " AND static_pages.name = " . $db_gallery->toSql($src_folder_name, "Text") . " )";
             } while($src_folder_name != "" && $src_path = ffCommon_dirname($src_path));
 
             $sSQL = "SELECT IF(static_pages_rel_groups.mod & 1 = 0, 0, 1) AS result
@@ -46,15 +46,15 @@ function system_adv_permission($settings_path) {
                     WHERE 
                         static_pages_rel_groups.gid IN (" . implode("," , $user_permission["groups"]) . ")
                         " . ($globals->ID_domain > 0
-                            ? " AND static_pages.ID_domain = " . $db->toSql($globals->ID_domain, "Number")
+                            ? " AND static_pages.ID_domain = " . $db_gallery->toSql($globals->ID_domain, "Number")
                             : ""
                         ) . "
                         AND (" . $sWhere . ")
                         AND (
-                                (static_pages.parent =  " . $db->toSql(ffCommon_dirname($settings_path), "Text") . " AND static_pages.name =  " . $db->toSql(basename($settings_path), "Text") . ") 
+                                (static_pages.parent =  " . $db_gallery->toSql(ffCommon_dirname($settings_path), "Text") . " AND static_pages.name =  " . $db_gallery->toSql(basename($settings_path), "Text") . ") 
                             OR
                                 (
-                                    (static_pages.parent <> " . $db->toSql(ffCommon_dirname($settings_path), "Text") . " OR static_pages.name <>  " . $db->toSql(basename($settings_path), "Text") . ") 
+                                    (static_pages.parent <> " . $db_gallery->toSql(ffCommon_dirname($settings_path), "Text") . " OR static_pages.name <>  " . $db_gallery->toSql(basename($settings_path), "Text") . ") 
                                 AND
                                     (static_pages_rel_groups.mod & 4 = 0)
                                 )
@@ -65,9 +65,9 @@ function system_adv_permission($settings_path) {
                         , static_pages_rel_groups.mod DESC
 
                     LIMIT 1 ";
-            $db->query($sSQL);
-            if($db->nextRecord()) {
-                if($db->getField("result", "Number", true) > 0) {
+            $db_gallery->query($sSQL);
+            if($db_gallery->nextRecord()) {
+                if($db_gallery->getField("result", "Number", true) > 0) {
                     
                 } else {
                     ffRedirect(stripslash($settings_path) . "/login?ret_url=" . urlencode($_SERVER["REQUEST_URI"]) . "&relogin");
