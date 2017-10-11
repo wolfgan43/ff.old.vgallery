@@ -1,4 +1,12 @@
-<?php 
+<?php
+
+    function dd($array) {
+        echo "<pre>";
+        print_r($array);
+        die("END");
+    }
+    //dd($_SERVER);
+
 	require_once(__DIR__ . "/conf/gallery/config/other.php");
 	
 	function cache_writeLog($string, $filename = "log") {
@@ -115,9 +123,10 @@
         define("FF_ERROR_HANDLER_CUSTOM_TPL", "/themes/gallery/contents/error_handler.html");
         define("FF_ERROR_HANDLER_MINIMAL", "/themes/gallery/contents/error_handler.html");
     }
-    if (isset($_ENV["FF_TOP_DIR"]))
-        define("__TOP_DIR__", $_ENV["FF_TOP_DIR"]);
-    else
+    if (!empty($_SERVER["FF_TOP_DIR"])) {
+        define("__TOP_DIR__", $_SERVER["FF_TOP_DIR"]);
+    } else {
         define("__TOP_DIR__", __DIR__);
+    }
 
     require_once(__TOP_DIR__ . "/cm/main.php");
