@@ -2102,7 +2102,7 @@
 	        } else {
 
 			    do {
-			    	$request_path = dirname(dirname($request_path));
+			    	$request_path = dirname($request_path);
 			        if(isset($schema["request"][$request_path])) {
 			            $rule["match"] = $schema["request"][$request_path];
 			            break;
