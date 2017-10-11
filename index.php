@@ -110,11 +110,14 @@
    */
     cache_writeLog($path_info);             
   // die();    
-   if(!defined("DISABLE_CACHE")) {
+    if(!defined("DISABLE_CACHE")) {
         define("FF_ERROR_HANDLER_HIDE", true);
         define("FF_ERROR_HANDLER_CUSTOM_TPL", "/themes/gallery/contents/error_handler.html");
         define("FF_ERROR_HANDLER_MINIMAL", "/themes/gallery/contents/error_handler.html");
-   }
+    }
+    if (isset($_ENV["FF_TOP_DIR"]))
+        define("__TOP_DIR__", $_ENV["FF_TOP_DIR"]);
+    else
+        define("__TOP_DIR__", __DIR__);
 
-    require_once(__DIR__ . "/cm/main.php");
-?>
+    require_once(__TOP_DIR__ . "/cm/main.php");
