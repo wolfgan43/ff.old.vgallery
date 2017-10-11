@@ -2100,13 +2100,14 @@
 		    } elseif(isset($schema["request"][$rule["split_path"][count($rule["split_path"]) - 1]])) {
 		        $rule["match"] = $schema["request"][$rule["split_path"][count($rule["split_path"]) - 1]];
 	        } else {
+
 			    do {
-			    	$request_path = dirname($request_path);
+			    	$request_path = dirname(dirname($request_path));
 			        if(isset($schema["request"][$request_path])) {
 			            $rule["match"] = $schema["request"][$request_path];
 			            break;
 			        }
-			    } while($request_path != "/");
+			    } while($request_path != DIRECTORY_SEPARATOR);
 			}
 
 			if($rule["match"]["ext"] && is_array($schema["request"][$rule["match"]["ext"]]))
