@@ -1,4 +1,5 @@
-<?php  
+<?php
+    define("DS", DIRECTORY_SEPARATOR);
 	define("HIDE_EXT"               , true);
 	define("GALLERY_PATH"           , "/gallery");
 	define("GALLERY_PATH_SYSTEM"    , GALLERY_PATH . "/sys");
