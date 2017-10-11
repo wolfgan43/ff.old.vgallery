@@ -73,5 +73,9 @@ if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest")
 if(defined("DEBUG_MODE"))
     cache_writeLog($path_info);
 
+if (isset($_ENV["FF_TOP_DIR"]))
+    define("__TOP_DIR__", $_ENV["FF_TOP_DIR"]);
+else
+    define("__TOP_DIR__", __DIR__);
 
-require_once(__DIR__ . "/cm/main.php");
+require_once(__TOP_DIR__ . "/cm/main.php");
