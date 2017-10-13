@@ -1,7 +1,7 @@
 <?php
-if ($_SERVER["HTTP_HOST"] === "vgallery.alex")
+if ($_SERVER["HTTP_HOST"] === "dev.ffcmsmaster.local")
 {
-    define("SESSION_SAVE_PATH", 'c:/windows/temp');
+    define("SESSION_SAVE_PATH", 'C:\xampp\tmp');
 
 } else {
         define("SESSION_SAVE_PATH", '/tmp');
