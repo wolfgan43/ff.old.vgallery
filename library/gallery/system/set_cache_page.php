@@ -321,7 +321,7 @@ function system_write_cache_error_document($cache_file = null, $expires = null)
 
     $arrUserPath = explode("/", $globals->user_path);
 
-    $errorDocumentFile = $cache_file["error_path"] . "/" . $arrUserPath[1] . ".php";
+    $errorDocumentFile = $cache_file["error_path"] . "/" . $arrUserPath[1];
     $user_path = str_replace(FF_DISK_PATH . "/cache", "", $cache_file["cache_path"]);
 
     check_function("Filemanager");

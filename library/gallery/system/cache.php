@@ -170,7 +170,7 @@
                     $page_key                                   = $settings_user_path;
                     break;
                 }
-            } while($settings_user_path != "/" && ($settings_user_path = dirname($settings_user_path)));
+            } while($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path)));
         }
 
         if(strpos($user_path, $res["strip_path"]) === 0) {

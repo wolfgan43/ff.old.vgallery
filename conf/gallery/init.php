@@ -1,5 +1,6 @@
 <?php
-    define("DS", DIRECTORY_SEPARATOR);
+
+    define("DS"                     , DIRECTORY_SEPARATOR);
 	define("HIDE_EXT"               , true);
 	define("GALLERY_PATH"           , "/gallery");
 	define("GALLERY_PATH_SYSTEM"    , GALLERY_PATH . "/sys");
@@ -16,7 +17,7 @@
 	define("FRONTEND_THEME"			, "site");
 	define("USER_RESTRICTED_PATH"	, "/user");
 
-define("VG_ADDONS_PATH" 									, "/conf/gallery/modules");
+    define("VG_ADDONS_PATH" 									, "/conf/gallery/modules");
 
 	define("DOMAIN_INSET"           , $_SERVER["HTTP_HOST"]);
    

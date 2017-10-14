@@ -26,6 +26,7 @@
 function system_init_permission($user_permission = null) {
     $globals = ffGlobals::getInstance("gallery");
 
+    $store_in_session = 0;
 	if($user_permission === null)
 		$user_permission = get_session("user_permission");
 
@@ -33,7 +34,7 @@ function system_init_permission($user_permission = null) {
 		cache_session_share_for_subdomains();
 
 		$permissioins = $user_permission["permissions"];
-		$user_permission = mod_security_create_session($user_permission["username_slug"], $user_permission["ID"], null, null, SESSION_PERMANENT, null, true, LANGUAGE_DEFAULT);
+		$user_permission = mod_security_create_session($user_permission["username_slug"], $user_permission["ID"], null, null, MOD_SECURITY_SESSION_PERMANENT, true);
 		$user_permission["permissions"] = $permissioins;
 		
 		$store_in_session++;
