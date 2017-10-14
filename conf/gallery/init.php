@@ -1,6 +1,7 @@
 <?php
-    define("__CMS_DIR__"            , ffCommon_dirname(ffCommon_dirname(__DIR__)));
-    define("DS"                     , DIRECTORY_SEPARATOR);
+
+    define("__CMS_DIR__", ffCommon_dirname(ffCommon_dirname(__DIR__)));
+    define("DS", DIRECTORY_SEPARATOR);
 	define("HIDE_EXT"               , true);
 	define("GALLERY_PATH"           , "/gallery");
 	define("GALLERY_PATH_SYSTEM"    , GALLERY_PATH . "/sys");
