@@ -180,10 +180,10 @@
 		
 		if($resAlias) {
 			$res["alias"]                                       = $resAlias["alias"];
-			if($resAlias["redirect"] === false) {
+			if($resAlias["redirect"] === false && $_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]) {
 				$alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
 				if($alias_flip["/" . $arrSettings_path[0]]) {
-					//$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0])); @todo Fix redirect
+					$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
 				}		
 			}
 			
