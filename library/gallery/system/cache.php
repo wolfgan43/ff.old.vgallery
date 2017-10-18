@@ -183,7 +183,7 @@
 			if($resAlias["redirect"] === false) {
 				$alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
 				if($alias_flip["/" . $arrSettings_path[0]]) {
-					$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
+					//$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0])); @todo Fix redirect
 				}		
 			}
 			
