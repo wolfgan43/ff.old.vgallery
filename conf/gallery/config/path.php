@@ -4,7 +4,7 @@ if ($_SERVER["HTTP_HOST"] === "dev.ffcmsmaster.local")
     define("FF_DISK_PATH", __TOP_DIR__);
     define("FF_SITE_PATH", '');
 
-    define("DISK_UPDIR", __TOP_DIR__ . DS . 'uploads');
+    define("DISK_UPDIR", __TOP_DIR__ . DIRECTORY_SEPARATOR . 'uploads');
     define("SITE_UPDIR", '/uploads');
 }
 else
