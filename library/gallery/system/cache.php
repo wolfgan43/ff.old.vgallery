@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-	define("CACHE_DISK_PATH", dirname(dirname(dirname(__DIR__))));
+	//define("CACHE_DISK_PATH", dirname(dirname(dirname(__DIR__))));
 	define("CACHE_LAST_VERSION", 0);
 
     if(!function_exists("sys_getloadavg"))
@@ -84,18 +84,17 @@
     	static $schema = null;
     	
     	if(!$schema) {
-    		require(CACHE_DISK_PATH . "/library/gallery/settings.php");
+    		require(FF_DISK_PATH . "/library/gallery/settings.php");
     		
-    		if(is_file(CACHE_DISK_PATH . "/themes/site/settings.php")) {
-    			require(CACHE_DISK_PATH . "/themes/site/settings.php");
+    		if(is_file(FF_DISK_PATH . "/themes/site/settings.php")) {
+    			require(FF_DISK_PATH . "/themes/site/settings.php");
     		}
-    		if(is_file(CACHE_DISK_PATH . "/cache/locale.php")) {
-    			require(CACHE_DISK_PATH . "/cache/locale.php");
+    		if(is_file(FF_DISK_PATH . "/cache/locale.php")) {
+    			require(FF_DISK_PATH . "/cache/locale.php");
 
                 /** @var include $locale */
                 $schema["locale"] = $locale;
     		}
-    		
     	}
     
     	if(is_array($default) && count($default)) {
@@ -283,7 +282,7 @@
 		$token_user = "t";
 		
 		if(!$user_permission) {
-            require_once(CACHE_DISK_PATH . "/conf/gallery/config/session.php");
+            require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
 
 			$user_permission = $_SESSION[APPID . "user_permission"];
 		}
@@ -371,7 +370,7 @@
     }
     
 	function cache_token_get_file_token($public_token, $type = null, $create_dir = false) {
-		$dir_token = CACHE_DISK_PATH . "/cache/token";
+		$dir_token = FF_DISK_PATH . "/cache/token";
 		switch($type) {
 			case "t":
 				$step = "/" . substr($public_token, 0, 3);
@@ -390,7 +389,7 @@
 	
 	function cache_check_session_by_token($token = null) {
 		static $user = null;
-		//$dir_token = CACHE_DISK_PATH . "/cache/token";
+		//$dir_token = FF_DISK_PATH . "/cache/token";
         $token_user = "t";
 		
 		if(!$user) {
@@ -522,7 +521,7 @@
 	} 
 	
 	function cache_get_permission($username, $type = "perm") {
-		$file_permission = CACHE_DISK_PATH . "/cache/cfg/" . $type . "/" . $username . ".php";
+		$file_permission = FF_DISK_PATH . "/cache/cfg/" . $type . "/" . $username . ".php";
 
 		if(is_file($file_permission)) {
 			require($file_permission);
@@ -564,7 +563,7 @@
 				define("IS_LOGGED", $user_permission["ID"]);
 
 				if($start_session) {
-					require_once(CACHE_DISK_PATH . "/conf/gallery/config/session.php");
+					require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
 					@session_unset();
 	                @session_destroy();				
 					
@@ -610,7 +609,7 @@
         if($user_permission === null) {
             $user_permission = array();
 
-			require_once(CACHE_DISK_PATH . "/conf/gallery/config/session.php");
+			require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
             if($_REQUEST[SESSION_NAME])
                 $sessid = $_REQUEST[SESSION_NAME];
             if(!$sessid)
@@ -649,7 +648,7 @@
 					define("IS_LOGGED", $_SESSION[APPID . "UserNID"]);
 
 				if($superadmin_user === null) {
-					require_once(CACHE_DISK_PATH . "/conf/gallery/config/admin.php");
+					require_once(FF_DISK_PATH . "/conf/gallery/config/admin.php");
 
 					$superadmin_user = SUPERADMIN_USERNAME;
 				}
@@ -696,7 +695,7 @@
         if($localeLoaded) {
             $locale = $localeLoaded;
         } else {
-            require_once(CACHE_DISK_PATH . "/conf/gallery/config/other.php");
+            require_once(FF_DISK_PATH . "/conf/gallery/config/other.php");
 
             $locale = cache_get_locale_settings($page["session"]);
 
@@ -782,8 +781,8 @@
             if($lang) {
                 //if(!defined("FF_DEFAULT_CHARSET"))
                 //    define("FF_DEFAULT_CHARSET", "UTF-8");
-                require_once(CACHE_DISK_PATH . "/ff/main.php");
-                require_once(CACHE_DISK_PATH . "/conf/gallery/init.php");        
+                require_once(FF_DISK_PATH . "/ff/main.php");
+                require_once(FF_DISK_PATH . "/conf/gallery/init.php");
 
                 $path_info = $_SERVER["PATH_INFO"];
                 if($path_info == "/index")
@@ -794,10 +793,10 @@
                             : "/" . $page["locale"]["lang"][$lang]["tiny_code"]
                 );
 
-                require_once(CACHE_DISK_PATH . "/library/gallery/common/get_international_settings_path.php");
-                require_once(CACHE_DISK_PATH . "/library/gallery/common/normalize_url.php");
-                require_once(CACHE_DISK_PATH . "/library/gallery/common/write_notification.php");
-                require_once(CACHE_DISK_PATH . "/library/gallery/process/html_page_error.php");
+                require_once(FF_DISK_PATH . "/library/gallery/common/get_international_settings_path.php");
+                require_once(FF_DISK_PATH . "/library/gallery/common/normalize_url.php");
+                require_once(FF_DISK_PATH . "/library/gallery/common/write_notification.php");
+                require_once(FF_DISK_PATH . "/library/gallery/process/html_page_error.php");
                 
                 $res = get_international_settings_path($page["user_path"], FF_LOCALE);
                 
@@ -821,12 +820,12 @@
         
     function cache_check_ff_contents($user_path, $last_update = null) {
         $res = array();
-        if(is_file(CACHE_DISK_PATH . "/contents" . $user_path)) {
+        if(is_file(FF_DISK_PATH . "/contents" . $user_path)) {
              $res["count"]++;
-             if($last_update && filemtime(CACHE_DISK_PATH . "/contents" . $user_path) > $last_update)
+             if($last_update && filemtime(FF_DISK_PATH . "/contents" . $user_path) > $last_update)
                  $res["cache_invalid"] = true;
-        } elseif(is_dir(CACHE_DISK_PATH . "/contents" . $user_path)) {
-            $fs_contents = glob(CACHE_DISK_PATH . "/contents" . $user_path . "/*");
+        } elseif(is_dir(FF_DISK_PATH . "/contents" . $user_path)) {
+            $fs_contents = glob(FF_DISK_PATH . "/contents" . $user_path . "/*");
             if(is_array($fs_contents) && count($fs_contents)) {
                 foreach($fs_contents AS $file) {
                     $file_name = pathinfo($file, PATHINFO_BASENAME);
@@ -1404,7 +1403,7 @@
         $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1] . ".php";
         $key = str_replace("/cache", "", $params["path"]) . "/" . $cache_filename;
 
-        require_once (CACHE_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
+        require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
         $fs = new Filemanager("php");
 
         $page = $fs->read($key, $errorDocumentFile);
@@ -1418,7 +1417,7 @@
         $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1] . ".php";
         $key = $params["user_path"];
 
-        require_once (CACHE_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
+        require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
         $fs = new Filemanager("php");
 
         return $fs->delete($key, $errorDocumentFile, Filemanager::SEARCH_IN_VALUE);
@@ -1426,17 +1425,17 @@
 
     function cache_get_page_stats($page_cache_path)
     {
-        require_once (CACHE_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
+        require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
         $fs = new Filemanager("php", $page_cache_path . "/stats.php");
 
         return $fs->read();
     }
 
     function cache_get_filename($params, $request = array()) {
-        //require_once(CACHE_DISK_PATH . "/conf/gallery/config/path.php");
+        //require_once(FF_DISK_PATH . "/conf/gallery/config/path.php");
 
         $cache_valid = false;
-        $cache_base_path = CACHE_DISK_PATH . $params["path"];
+        $cache_base_path = FF_DISK_PATH . $params["path"];
         $cache_filename = "index";
 
         $random = $params["settings"]["page"][$params["user_path"]]["rnd"];
@@ -1501,7 +1500,7 @@
             // $cache_error_path = $params["user_path"];
             if(!$cache_file_exist) {
                 $arrUserPath = explode("/", $params["user_path"]);
-                $cache_error_path = CACHE_DISK_PATH . $params["base"] . $params["settings"]["page"]["/error"]["cache_path"];
+                $cache_error_path = FF_DISK_PATH . $params["base"] . $params["settings"]["page"]["/error"]["cache_path"];
                 $cache_file_error_exist = is_file($cache_error_path . "/". $arrUserPath[1] . ".php");
                 $is_error_document = cache_get_error_document($cache_error_path, $cache_filename, $params);
             }
@@ -1659,7 +1658,7 @@
             //define("CACHE_PAGE_STORING_PATH", $cache_file["cache_path"] . "/" . $cache_file["filename"]);
 
             if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && defined("TRACE_VISITOR")) {
-                require_once(CACHE_DISK_PATH . "/library/gallery/system/trace.php");
+                require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
                 system_trace("pageview");
             }
 
@@ -1813,7 +1812,7 @@
     }
     
     function cache_sem_get_params($namespace = null, $xhr = null) {
-    	require_once(CACHE_DISK_PATH . "/conf/gallery/config/session.php");
+    	require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
     	if(!defined("APPID_SEM")) 
     		define("APPID_SEM", substr(preg_replace("/[^0-9 ]/", '', APPID), 0, 4));
 		
@@ -1958,9 +1957,6 @@
     {
         if (!function_exists("http_response_code"))
         {
-            if (!defined("FF_DISK_PATH"))
-                define("FF_DISK_PATH", CACHE_DISK_PATH);
-
             require_once(FF_DISK_PATH . "/ff/common.php");
         }
 
@@ -2249,7 +2245,7 @@
                 cache_send_header_content(null, false, false, false);
                 cache_http_response_code(503);
 
-                readfile(CACHE_DISK_PATH . "/themes/gallery/contents/error_cache.html");
+                readfile(FF_DISK_PATH . "/themes/gallery/contents/error_cache.html");
                 exit;
             } else {
                 if(!count($arrSem))
@@ -2268,7 +2264,7 @@
             {
                 //redirect
                 if(!defined("FF_DISK_PATH"))
-                    define("FF_DISK_PATH", CACHE_DISK_PATH);
+                    define("FF_DISK_PATH", FF_DISK_PATH);
 
                 require_once(FF_DISK_PATH . "/conf/gallery/config/db.php");
                 require_once(FF_DISK_PATH . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
