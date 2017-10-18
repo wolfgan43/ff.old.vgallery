@@ -131,7 +131,7 @@ function request_info($cm) {
 	        &&
 	        strpos($actual_path, VG_SITE_VGALLERY) === false
 	        &&
-	        strpos($actual_path, $request_info) === false
+	        strpos($actual_path, $request) === false
 	    )   
 	    {
 	        ffRedirect(FF_SITE_PATH . $request . "?ret_url=" . urlencode($actual_path));
@@ -247,10 +247,6 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 			}
 			$tpl_type = "base";
 		}
-    }
-
-    if (basename($path) == "listdiv.html"){
-	   // dd($real_path);
     }
 
     if(is_array($tpl_data))
