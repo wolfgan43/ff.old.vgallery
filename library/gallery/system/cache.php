@@ -180,7 +180,7 @@
 		
 		if($resAlias) {
 			$res["alias"]                                       = $resAlias["alias"];
-			if($resAlias["redirect"] === false && $_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]) {
+			if($resAlias["redirect"] === false && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
 				$alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
 				if($alias_flip["/" . $arrSettings_path[0]]) {
 					$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
@@ -1400,7 +1400,7 @@
     function cache_get_error_document($cache_error_path, $cache_filename, $params)
     {
         $arrUserPath = explode("/", $params["user_path"]);
-        $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1] . ".php";
+        $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1]; // . ".php";
         $key = str_replace("/cache", "", $params["path"]) . "/" . $cache_filename;
 
         require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
@@ -1414,7 +1414,7 @@
     function cache_set_error_document($cache_error_path, $params)
     {
         $arrUserPath = explode("/", $params["user_path"]);
-        $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1] . ".php";
+        $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1]; // . ".php";
         $key = $params["user_path"];
 
         require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
@@ -1501,7 +1501,7 @@
             if(!$cache_file_exist) {
                 $arrUserPath = explode("/", $params["user_path"]);
                 $cache_error_path = FF_DISK_PATH . $params["base"] . $params["settings"]["page"]["/error"]["cache_path"];
-                $cache_file_error_exist = is_file($cache_error_path . "/". $arrUserPath[1] . ".php");
+                $cache_file_error_exist = is_file($cache_error_path . "/". $arrUserPath[1]); // . ".php");
                 $is_error_document = cache_get_error_document($cache_error_path, $cache_filename, $params);
             }
         }
