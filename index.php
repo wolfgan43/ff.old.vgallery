@@ -31,6 +31,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 function profiling_stats($start = true) {
 	static $res;
 
+	if (!function_exists("getrusage")) {
+	    return [];
+    }
+
 	$ru = getrusage();
 	if($start) {
 		$res["mem"] = memory_get_usage(true);
@@ -53,6 +57,7 @@ require_once("config.php");
 /**
  * Performance Profiling
  */
+
 if(defined("DEBUG_PROFILING") && DEBUG_PROFILING === true)
 	profiling_stats();
 
