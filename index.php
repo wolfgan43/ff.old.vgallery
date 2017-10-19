@@ -53,7 +53,7 @@ require_once("config.php");
 /**
  * Performance Profiling
  */
-if(defined("DEBUG_PROFILING"))
+if(defined("DEBUG_PROFILING") && DEBUG_PROFILING === true)
 	profiling_stats();
 
 /**
