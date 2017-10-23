@@ -7,6 +7,7 @@ if($_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"])
 else
 	require_once("themes/" . FRONTEND_THEME . "/conf/config.remote.php");
 
+define("__TOP_DIR__"												, FF_DISK_PATH);
 /**********************************************************************************************************************
  * Config Framework and VGallery
  **********************************************************************************************************************/

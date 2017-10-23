@@ -26,7 +26,9 @@
 
 
     check_function("Notifier");
-check_function("Mailer");
+	check_function("Mailer");
+
+//todo: ffCommon_crossDomains
 
    $mail = Mailer::getInstance("account registration");
    echo $mail->send("asd", "wolfgan@gmail.com");

@@ -1,6 +1,6 @@
 <?php
  $user_path = $cm->real_path_info;
-
+//todo: ffCommon_crossDomains
  require FF_DISK_PATH . "/library/OAuth2/Autoloader.php";
  OAuth2\Autoloader::register();  
   

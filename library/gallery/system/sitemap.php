@@ -473,15 +473,23 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 		    				) . " LIKE " . $db->toSql($user_path . "/%");
 			//$arrLimitPath[] = "`" . $schema["seo"]["permalink"] . "` = " . $db->toSql($user_path);
             if(!$channel["title"] || !$channel["description"]) {
-                $sSQL = "SELECT `" . $schema["seo"]["title"] . "` 		AS title
-                            , `" . $schema["seo"]["description"] . "` 	AS description
+				$sSQL = "SELECT `" . ($lang != LANGUAGE_DEFAULT
+									? $schema["seo"]["table"]
+									: $schema["seo"]["primary_table"]
+								)
+								. "`.`" . $schema["seo"]["title"] . "` 		AS title
+                            , `" . ($lang != LANGUAGE_DEFAULT
+									? $schema["seo"]["table"]
+									: $schema["seo"]["primary_table"]
+								)
+								. "`.`" . $schema["seo"]["description"] . "` AS description
                             , " . (strpos($schema["field"]["last_update"], " AS") === false
-                                ? "`" . $schema["field"]["last_update"] . "` AS last_update"
+                                ? "`" . $schema["seo"]["primary_table"] . "`.`" . $schema["field"]["last_update"] . "` AS last_update"
                                 : $schema["field"]["last_update"]
                             ) . "
                             , " . ($schema["field"]["published_at"]
                                     ? (strpos($schema["field"]["published_at"], " AS") === false
-                                        ? "`" . $schema["field"]["published_at"] . "` AS published_at"
+                                        ? "`" . $schema["seo"]["primary_table"] . "`.`" . $schema["field"]["published_at"] . "` AS published_at"
                                         : $schema["field"]["published_at"]
                                     )
                                     : "'' AS published_at"
@@ -489,10 +497,17 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
                         FROM " . ($lang == LANGUAGE_DEFAULT
                                 ? "`" . $schema["seo"]["primary_table"] . "`"
                                 : "`" . $schema["seo"]["table"] . "`"
-                            ) . " 
+                            )
+							. ($lang != LANGUAGE_DEFAULT && $schema["seo"]["table"] != $schema["seo"]["primary_table"]
+								? " INNER JOIN `" . $schema["seo"]["primary_table"] . "` ON `" . $schema["seo"]["primary_table"] . "`.ID = `" . $schema["seo"]["table"] . "`.`" . $schema["seo"]["rel_key"] . "`"
+								: ""
+							) . " 
                         WHERE " . (strpos($schema["seo"]["permalink"], " AS") === false
-                                ? $schema["seo"]["permalink"] 
-                                : substr($schema["seo"]["permalink"], 0, strpos($schema["seo"]["permalink"], " AS"))
+									? "`" . ($lang != LANGUAGE_DEFAULT
+										? $schema["seo"]["table"]
+										: $schema["seo"]["primary_table"]
+									) . "`.`" . $schema["field"]["permalink"] . "`"
+									: substr($schema["seo"]["permalink"], 0, strpos($schema["seo"]["permalink"], " AS"))
                                 ) . " = " . $db->toSql($user_path);
                 $db->query($sSQL);
                 if($db->nextRecord()) {
@@ -545,56 +560,50 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 											: "cache_page"
 										);
 
-        $sSQL = "SELECT DISTINCT 
+		$sSQL = "SELECT DISTINCT 
 		    		" . $schema["seo"]["primary_table"] . ".ID AS ID
 		    		, " . (strpos($schema["seo"]["permalink"], " AS") === false
-		    			? ($lang != LANGUAGE_DEFAULT
-							? "`" . $schema["seo"]["table"] . "`"
-							: "`" . $schema["seo"]["primary_table"] . "`"
-						) . ".`" . $schema["seo"]["permalink"] . "` AS permalink"
+		    			? "`" . ($lang != LANGUAGE_DEFAULT
+							? $schema["seo"]["table"]
+							: $schema["seo"]["primary_table"]
+						) . "`.`" . $schema["seo"]["permalink"] . "` AS permalink"
 		    			: $schema["seo"]["permalink"]
 		    		) . "
 		    		, " . (strpos($schema["field"]["last_update"], " AS") === false
-		    			? ($lang != LANGUAGE_DEFAULT
-							? "`" . $schema["seo"]["table"] . "`"
-							: "`" . $schema["seo"]["primary_table"] . "`"
-						) . ".`" . $schema["field"]["last_update"] . "` AS last_update"
+		    			? "`" . $schema["seo"]["primary_table"] . "`.`" . $schema["field"]["last_update"] . "` AS last_update"
 		    			: $schema["field"]["last_update"]
 		    		) . "
 		    		, " . ($schema["field"]["published_at"]
 		    				? (strpos($schema["field"]["published_at"], " AS") === false
-		    					? ($lang != LANGUAGE_DEFAULT
-									? "`" . $schema["seo"]["table"] . "`"
-									: "`" . $schema["seo"]["primary_table"] . "`"
-								) . ".`" . $schema["field"]["published_at"] . "` AS published_at"
+		    					? "`" . $schema["seo"]["primary_table"] . "`.`" . $schema["field"]["published_at"] . "` AS published_at"
 		    					: $schema["field"]["published_at"]
 		    				)
 		    				: "'' AS published_at"
 		    		) . "
 					, " . (strpos($schema["seo"]["title"], " AS") === false
-		    			? ($lang != LANGUAGE_DEFAULT
-							? "`" . $schema["seo"]["table"] . "`"
-							: "`" . $schema["seo"]["primary_table"] . "`"
-						) . ".`" . $schema["seo"]["title"] . "` AS title"
+		    			? "`" . ($lang != LANGUAGE_DEFAULT
+							? $schema["seo"]["table"]
+							: $schema["seo"]["primary_table"]
+						) . "`.`" . $schema["seo"]["title"] . "` AS title"
 		    			: $schema["seo"]["title"]
 		    		) . "		    				
 					, " . (strpos($schema["seo"]["description"], " AS") === false
-		    			? ($lang != LANGUAGE_DEFAULT
-							? "`" . $schema["seo"]["table"] . "`"
-							: "`" . $schema["seo"]["primary_table"] . "`"
-						) . ".`" . $schema["seo"]["description"] . "` AS description"
+		    			? "`" . ($lang != LANGUAGE_DEFAULT
+							? $schema["seo"]["table"]
+							: $schema["seo"]["primary_table"]
+						) . "`.`" . $schema["seo"]["description"] . "` AS description"
 		    			: $schema["seo"]["description"]
 		    		) . "		    				
 				FROM " . ($lang != LANGUAGE_DEFAULT
 			        ?  "`" . $schema["seo"]["table"] . "`"
 			        :  "`" . $schema["seo"]["primary_table"] . "`"
-				) 
+				)
 				. ($lang != LANGUAGE_DEFAULT && $schema["seo"]["table"] != $schema["seo"]["primary_table"]
 			        ? " INNER JOIN `" . $schema["seo"]["primary_table"] . "` ON `" . $schema["seo"]["primary_table"] . "`.ID = `" . $schema["seo"]["table"] . "`.`" . $schema["seo"]["rel_key"] . "`"
 			        : ""
-			    ) 
+			    )
 				. ($schema["field"]["ID_category"]
-			        ? " INNER JOIN `" . $schema["type"] . "` ON `" . $schema["type"] . "`.ID = " . "`" . $schema["seo"]["primary_table"] . "`.`" . $schema["field"]["ID_category"] . "`" 
+			        ? " INNER JOIN `" . $schema["type"] . "` ON `" . $schema["type"] . "`.ID = " . "`" . $schema["seo"]["primary_table"] . "`.`" . $schema["field"]["ID_category"] . "`"
 			        	. ($target
 			        		? "AND  `" . $schema["type"] . "`.`name` = " . $db->toSql($target)
 			        		: ""
@@ -610,14 +619,14 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 								. "`.`" . $schema["field"]["permalink"] . "`"
 		    				: substr($schema["field"]["permalink"], 0, strpos($schema["field"]["permalink"], " AS"))
 		    			) . " <> '' "
-                    . ($schema["field"]["robots"] 
+                    . ($schema["field"]["robots"]
 			        	? " AND `" . ($lang != LANGUAGE_DEFAULT
 								? $schema["seo"]["table"]
 								: $schema["seo"]["primary_table"]
 							) . "`.`" . $schema["field"]["robots"] . "` NOT LIKE '%noindex%'"
 			        	: ""
 			        )
-			        . ($schema["field"]["visible"] 
+			        . ($schema["field"]["visible"]
 			        	? " AND `" . ($lang != LANGUAGE_DEFAULT
 								? $schema["seo"]["table"]
 								: $schema["seo"]["primary_table"]
@@ -631,28 +640,28 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 			        . ($lang != LANGUAGE_DEFAULT
 			        	? " AND `" . $schema["seo"]["rel_lang"] . "` = " . $db->toSql($ID_lang, "Number")
 			        	: ""
-			        ) 
+			        )
 			        . ($arrLimitPath
 			        	? " AND (" . implode(" OR ", $arrLimitPath) . ")"
 			        	: ""
-			        ) 
+			        )
 			        . ($arrExcludePath
 			        	? " AND (" . implode(" AND ", $arrExcludePath) . ")"
 			        	: ""
-			        ) 
+			        )
                     . ($q
                         ? " AND " . (strpos($schema["seo"]["title"], " AS") === false
-                            ? ($lang != LANGUAGE_DEFAULT
-                                ? "`" . $schema["seo"]["table"] . "`"
-                                : "`" . $schema["seo"]["primary_table"] . "`"
-                            ) . ".`" . $schema["seo"]["title"] . "`"
+                            ? "`" . ($lang != LANGUAGE_DEFAULT
+                                ? $schema["seo"]["table"]
+                                : $schema["seo"]["primary_table"]
+                            ) . "`.`" . $schema["seo"]["title"] . "`"
                             : $schema["seo"]["title"]
                         ) . " LIKE " . $db->toSql("%" . str_replace(" ", "%", $q) . "%")
                         . " AND " . (strpos($schema["seo"]["description"], " AS") === false
-                            ? ($lang != LANGUAGE_DEFAULT
-                                ? "`" . $schema["seo"]["table"] . "`"
-                                : "`" . $schema["seo"]["primary_table"] . "`"
-                            ) . ".`" . $schema["seo"]["description"] . "`"
+                            ? "`" . ($lang != LANGUAGE_DEFAULT
+                                ? $schema["seo"]["table"]
+                                : $schema["seo"]["primary_table"]
+                            ) . "`.`" . $schema["seo"]["description"] . "`"
                             : $schema["seo"]["description"]
                         ) . " LIKE " . $db->toSql("%" . str_replace(" ", "%", $q) . "%")
                         : ""
@@ -661,7 +670,7 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 					" . ($sort
                         ? $sort . " " . $dir . ", "
                         : ""
-                    ) 
+                    )
                     . ($lang != LANGUAGE_DEFAULT
 						? 	"`" . $schema["seo"]["table"] . "`.`ID`"
 						: 	"`" . $schema["seo"]["primary_table"] . "`.`ID`"

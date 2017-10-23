@@ -503,7 +503,7 @@ function process_vgallery_father($params, $mode = "thumb") {
 				}
 				if (array_key_exists("keywords", $father)) {
 				    $vg_father["nodes"][$unic_id_node]["meta"]["keywords"] 						= $father["keywords"];
-				    $vg_father["seo"]["meta"]["keywords"][] 									= $father["keywords"];
+						$vg_father["seo"]["meta"]["keywords"][] 									= $father["keywords"];
 				}
                 
                 if ($father["meta"]) {

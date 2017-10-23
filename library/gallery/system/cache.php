@@ -1426,7 +1426,7 @@
     function cache_get_page_stats($page_cache_path)
     {
         require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
-        $fs = new Filemanager("php", $page_cache_path . "/stats.php");
+        $fs = new Filemanager("php", $page_cache_path . "/stats");
 
         return $fs->read();
     }
@@ -1501,7 +1501,7 @@
             if(!$cache_file_exist) {
                 $arrUserPath = explode("/", $params["user_path"]);
                 $cache_error_path = FF_DISK_PATH . $params["base"] . $params["settings"]["page"]["/error"]["cache_path"];
-                $cache_file_error_exist = is_file($cache_error_path . "/". $arrUserPath[1]); // . ".php");
+                $cache_file_error_exist = is_file($cache_error_path . "/". $arrUserPath[1] . ".php");
                 $is_error_document = cache_get_error_document($cache_error_path, $cache_filename, $params);
             }
         }
@@ -1710,7 +1710,7 @@
             cache_send_header($target_file, $cache_file["type"], $compress, $max_age, $expires, $enable_etag);
             readfile($target_file);
 
-            if(defined("DEBUG_PROFILING"))
+			if(DEBUG_PROFILING === true)
                 profiling_stats("Cache lvl 1 (in cache) ");
 
             exit;
@@ -1812,7 +1812,7 @@
     }
     
     function cache_sem_get_params($namespace = null, $xhr = null) {
-    	require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
+    	//require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
     	if(!defined("APPID_SEM")) 
     		define("APPID_SEM", substr(preg_replace("/[^0-9 ]/", '', APPID), 0, 4));
 		
@@ -2010,9 +2010,7 @@ function cache_do_redirect($destination, $http_response_code = null, $request_ur
 		$request_uri = $_SERVER["REQUEST_URI"];
 
 	//system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
-	if(defined("DEBUG_MODE")) {
-		cache_writeLog(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
-	}
+	cache_writeLog(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
 
 	cache_send_header_content(false, false, false, false);
 
@@ -2320,7 +2318,7 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
                 if(!defined("FF_DISK_PATH"))
                     define("FF_DISK_PATH", FF_DISK_PATH);
 
-                require_once(FF_DISK_PATH . "/conf/gallery/config/db.php");
+                //require_once(FF_DISK_PATH . "/conf/gallery/config/db.php");
                 require_once(FF_DISK_PATH . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
                 require_once(FF_DISK_PATH . "/library/gallery/system/gallery_redirect.php");
 
@@ -2340,21 +2338,22 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 
 function cache_writeLog($string, $filename = "log")
 {
-	clearstatcache();
-
-	$file = FF_DISK_PATH . '/cache/' . $filename . '.txt';
-	if(!is_file($file)) {
-		$set_mod = true;
-	}
-	if($handle = @fopen($file, 'a'))
+	if(DEBUG_LOG === true)
 	{
-		if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
-		{
-			$i18n_error = true;
-		}
-		@fclose($handle);
+		clearstatcache();
 
-		if($set_mod)
-			chmod($file, 0777);
+		$file = FF_DISK_PATH . '/cache/' . $filename . '.txt';
+		if (!is_file($file)) {
+			$set_mod = true;
+		}
+		if ($handle = @fopen($file, 'a')) {
+			if (@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE) {
+				$i18n_error = true;
+			}
+			@fclose($handle);
+
+			if ($set_mod)
+				chmod($file, 0777);
+		}
 	}
 }

@@ -31,21 +31,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 function profiling_stats($start = true) {
 	static $res;
 
-	if (!function_exists("getrusage")) {
-	    return [];
-    }
+	if(function_exists("getrusage"))
+	{
+		$ru = getrusage();
+		if ($start) {
+			$res["mem"] = memory_get_usage(true);
+			$res["mem_peak"] = memory_get_peak_usage(true);
+			$res["cpu"] = $ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec'];
+		} else {
+			$res["mem"] = number_format(memory_get_usage(true) - $res["mem"], 0, ',', '.');
+			$res["mem_peak"] = number_format(memory_get_peak_usage(true) - $res["mem_peak"], 0, ',', '.');
+			$res["cpu"] = number_format(abs(($ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec']) - $res["cpu"]), 0, ',', '.');
 
-	$ru = getrusage();
-	if($start) {
-		$res["mem"] = memory_get_usage(true);
-		$res["mem_peak"]= memory_get_peak_usage(true);
-		$res["cpu"] = $ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec'];
-	} else {
-		$res["mem"] = number_format(memory_get_usage(true) - $res["mem"], 0, ',', '.');
-		$res["mem_peak"] = number_format(memory_get_peak_usage(true) - $res["mem_peak"], 0, ',', '.');
-		$res["cpu"] = number_format(abs(($ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec']) - $res["cpu"]), 0, ',', '.');
-
-		return $res;
+			return $res;
+		}
 	}
 }
 
@@ -57,8 +56,7 @@ require_once("config.php");
 /**
  * Performance Profiling
  */
-
-if(defined("DEBUG_PROFILING") && DEBUG_PROFILING === true)
+if(DEBUG_PROFILING === true)
 	profiling_stats();
 
 /**
@@ -82,8 +80,7 @@ if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest")
 /**
  * Log File Without Cache
  */
-if(defined("DEBUG_MODE"))
-	cache_writeLog($path_info);
+cache_writeLog($path_info);
 
 /**
  * Run page Without Cache

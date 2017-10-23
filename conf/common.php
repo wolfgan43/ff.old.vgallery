@@ -82,14 +82,24 @@
 	$globals->services                  = null;    //facebook api mailchimp api ecc
 	$globals->data_storage				= array();
 
-    $globals->setSeo = function($params = array(), $priority = "user") {
-         $globals = ffGlobals::getInstance("gallery");
-         if(is_array($params) && count($params)) {
-             if(is_array($globals->seo[$priority]))
-                 $globals->seo[$priority] = array_replace($globals->seo[$priority], $params);
-             else
-                 $globals->seo[$priority] = $params;
-         }
-         $globals->seo["current"] = $priority;
-    };
+	 //generic meta valid for all situation
+	 $globals->setMeta = function($name = "", $content = "", $type = "name") { //todo: eliminare l'intermedio e usare direttametne page_meta
+		 $globals = ffGlobals::getInstance("gallery");
+
+		 $globals->meta[$name] = array(
+			 "content" => $content
+		 	, "type" => $type
+		 );
+	 };
+	 //seo params divided in type
+	 $globals->setSeo = function($params = array(), $priority = "user") {
+		 $globals = ffGlobals::getInstance("gallery");
+		 if(is_array($params) && count($params)) {
+			 if(is_array($globals->seo[$priority]))
+				 $globals->seo[$priority] = array_replace($globals->seo[$priority], $params);
+			 else
+				 $globals->seo[$priority] = $params;
+		 }
+		 $globals->seo["current"] = $priority;
+	 };
 }

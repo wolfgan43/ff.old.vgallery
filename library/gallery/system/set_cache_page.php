@@ -83,7 +83,7 @@ function system_set_cache_page($content) {
     else
         cache_send_header_content(false, false);
 
-    if(defined("DEBUG_PROFILING"))
+	if(DEBUG_PROFILING === true)
         profiling_stats((defined("DISABLE_CACHE")
         	? "Cache lvl 2 (no cache) "
         	: "Cache lvl 3 (gen cache)"
