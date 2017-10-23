@@ -89,9 +89,9 @@ function get_check_fs($absolute_path, $fs_exclude = NULL, $reset = true, $perm =
         }
 
         if($addit_perm || substr(decoct( @fileperms($absolute_path)), 3) == (is_array($perm) ? $perm["file"] : $perm)) {
-            $fs[$relative_path . "/" . $file] = filesize($relative_path . "/" . $file);
+            $fs[$relative_path] = filesize($relative_path);
         } else {
-            $fs[$relative_path . "/" . $file] = 0;
+            $fs[$relative_path] = 0;
         }
     }
     return $fs;
@@ -322,7 +322,7 @@ function check_config($show_info = true) {
     $check["status"] = false;
 
     check_function("get_literal_size");
-	
+/*
 	if(is_dir(FF_DISK_PATH . "/conf/gallery/config")) {
 		$fs = get_check_fs(FF_DISK_PATH . "/conf/gallery/config", null, true, array("file" => '0644', "dir" => "0755"));
 		
@@ -340,7 +340,7 @@ function check_config($show_info = true) {
 		} 
 	} else {
 		$check["status"] = ffTemplate::_get_word_by_code("directory_not_exist") . " /conf/gallery/config";
-	}
+	}*/
 	
 	return $check;
 }
@@ -399,7 +399,7 @@ function set_cache_clear_all() {
 	$db = ffDB_Sql::factory();
 
 	$arrFtpMkDir = NULL;
-	
+    $strError = "";
     if(!@is_dir(FF_DISK_PATH . "/cache")) {
         if(@mkdir(FF_DISK_PATH . "/cache")) {
         	@chmod(FF_DISK_PATH . "/cache", 0777);
@@ -440,7 +440,7 @@ function set_cache_clear_all() {
 }
 function set_cache_repair() {
 	$arrFtpMkDir = NULL;
-
+    $strError = "";
     if(!@is_dir(FF_DISK_PATH . "/cache")) {
         if(@mkdir(FF_DISK_PATH . "/cache")) {
         	@chmod(FF_DISK_PATH . "/cache", 0777);
@@ -459,7 +459,7 @@ function set_cache_repair() {
 
 function set_cache_clear() {
 	$arrFtpMkDir = NULL;
-	
+    $strError = "";
     if(!@is_dir(FF_DISK_PATH . "/cache")) {
         if(@mkdir(FF_DISK_PATH . "/cache")) {
         	@chmod(FF_DISK_PATH . "/cache", 0777);
@@ -490,6 +490,7 @@ function set_cache_clear() {
 }
 function set_cache_clear_db() {
 	$db = ffDB_Sql::factory();
+    $strError = "";
 
 	$sSQL = "DELETE FROM `cache_page` WHERE force_visualization = ''";
 	$db->execute($sSQL);
@@ -510,13 +511,13 @@ function set_cache_clear_sid() {
 	$db = ffDB_Sql::factory();
 
 	$arrFtpMkDir = NULL;
-	
+    $strError = "";
     if(!@is_dir(FF_DISK_PATH . "/cache/sid")) {
         if(@mkdir(FF_DISK_PATH . "/cache/sid")) {
         	@chmod(FF_DISK_PATH . "/cache/sid", 0777);
 		} else {
 			$arrFtpMkDir[] = "/cache/sid";
-			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /cache/sid";
+            $strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /cache/sid";
 		}
 	} else {
 		@chmod(FF_DISK_PATH . "/cache/sid", 0777);
@@ -557,7 +558,7 @@ function set_international_repair() {
 					GROUP BY `ID_lang`, `word_code`
 				)";
 	//$db->execute($sSQL);
-	
+    $strError = "";
     if(!@is_dir(FF_DISK_PATH . "/cache")) {
         if(@mkdir(FF_DISK_PATH . "/cache")) {
         	@chmod(FF_DISK_PATH . "/cache", 0777);
@@ -586,6 +587,7 @@ function set_international_repair() {
 }
 function set_international_reset() {
 	$db = ffDB_Sql::factory();
+    $strError = "";
 
 	$sSQL = "UPDATE 
 		        `layout` 
@@ -632,7 +634,8 @@ function set_international_reset() {
 }
 function set_config_repair() {
 	$arrFtpMkDir = NULL;
-	
+    $strError = "";
+/*
     if(!@is_dir(FF_DISK_PATH . "/conf/gallery/config")) {
         if(@mkdir(FF_DISK_PATH . "/conf/gallery/config")) {
         	@chmod(FF_DISK_PATH . "/conf/gallery/config", 0644);
@@ -644,11 +647,12 @@ function set_config_repair() {
 		@chmod(FF_DISK_PATH . "/conf/gallery/config", 0644);
 	}
 	$strError .= set_fs("/conf/gallery/config", "chmod", NULL, $arrFtpMkDir, array("file" => '0644', "dir" => "0755"));
-	
+	*/
 	return $strError;
 }
 function set_uploads_repair() {
 	$arrFtpMkDir = NULL;
+    $strError = "";
 
 	if(!@is_dir(DISK_UPDIR)) {
 	    /*if(@mkdir(DISK_UPDIR)) {

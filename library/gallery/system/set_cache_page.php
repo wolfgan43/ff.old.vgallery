@@ -26,7 +26,7 @@
 function system_set_cache_page($content) {
     $globals = ffGlobals::getInstance("gallery");
     $cache_file = $globals->cache["file"];
-    
+
     if(!defined("DISABLE_CACHE") && $globals->cache["enabled"] !== false) {
         $expires = time() + (60 * 60 * 24 * 1);
 
@@ -83,7 +83,7 @@ function system_set_cache_page($content) {
     else
         cache_send_header_content(false, false);
 
-    if(defined("DEBUG_PROFILING"))
+	if(DEBUG_PROFILING === true)
         profiling_stats((defined("DISABLE_CACHE")
         	? "Cache lvl 2 (no cache) "
         	: "Cache lvl 3 (gen cache)"
@@ -321,7 +321,7 @@ function system_write_cache_error_document($cache_file = null, $expires = null)
 
     $arrUserPath = explode("/", $globals->user_path);
 
-    $errorDocumentFile = $cache_file["error_path"] . "/" . $arrUserPath[1] . ".php";
+    $errorDocumentFile = $cache_file["error_path"] . "/" . $arrUserPath[1];
     $user_path = str_replace(FF_DISK_PATH . "/cache", "", $cache_file["cache_path"]);
 
     check_function("Filemanager");
@@ -405,8 +405,8 @@ function system_write_cache_stats($buffer, $page = null, $expires = null) {
     return $buffer;
 }
 
-function system_write_cache_token_session($UserID, $UserNID, $Domain, $DomainID, $old_session_id, $permanent_session) {
-	if($UserID == MOD_SEC_GUEST_USER_ID)
+function system_write_cache_token_session($user, $old_session_id, $permanent_session = MOD_SECURITY_SESSION_PERMANENT) {
+	if($user["username"] == MOD_SEC_GUEST_USER_ID)
 		return false;
 	if(!$permanent_session)
 		return false;
@@ -452,8 +452,8 @@ function system_write_cache_token_session($UserID, $UserNID, $Domain, $DomainID,
 
 	    //$u["logs"][$_SERVER["REMOTE_ADDR"]]++;
 	    $u = array( 
-			"account" => $UserID
-			, "uid" => $UserNID
+			"account" => $user["username"]
+			, "uid" => $user["ID"]
 			, "group" => $gid
 			, "uniqid" => $objToken["new"]["private"]
 			, "expire" => $objToken["new"]["expire"]

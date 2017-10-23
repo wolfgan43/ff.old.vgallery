@@ -591,16 +591,6 @@
 		    else
 	    		$safe_mode = false;
 
-       /* if(!is_writable($disk_path . "/conf/gallery/config/path." . FF_PHP_EXT))
-            $strError .= "Unable write file: " . $disk_path . "/conf/gallery/config/path." . FF_PHP_EXT . "<br />";
-
-        if(!is_writable($disk_path . "/conf/gallery/config/db." . FF_PHP_EXT))
-            $strError .= "Unable write file: " . $disk_path . "/conf/gallery/config/db." . FF_PHP_EXT . "<br />";
-
-        if(!is_writable($disk_path . "/conf/gallery/config/other." . FF_PHP_EXT))
-            $strError .= "Unable write file: " . $disk_path . "/conf/gallery/config/other." . FF_PHP_EXT . "<br />";
-        */
-
         if(!$strError) {
             $dirname_relative = "/conf/gallery/config";
             @ftp_chmod($conn_id, 0755, $ftp_path . $dirname_relative);
@@ -1632,8 +1622,6 @@ FileETag None';
         $language_default   = (defined("LANGUAGE_DEFAULT") ? LANGUAGE_DEFAULT : "");
         $language_default_id= (defined("LANGUAGE_DEFAULT_ID") ? LANGUAGE_DEFAULT_ID : "");
 
-//        $trace_path   		= (defined("MOD_SEC_ENABLE_USER_TRACE") ? MOD_SEC_ENABLE_USER_TRACE : "");
-        
         $debug_mode   		= (defined("DEBUG_MODE") ? DEBUG_MODE : "");
         $debug_profiling   	= (defined("DEBUG_PROFILING") ? DEBUG_PROFILING : "");
         $debug_log   		= (defined("DEBUG_LOG") ? DEBUG_LOG : "");

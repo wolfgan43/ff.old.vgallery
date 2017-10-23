@@ -35,6 +35,7 @@ $service_module 	= $schema_def["module_available"];
 $service_schema 	= $schema_def["schema"];
 
 $return = false;
+//todo: ffCommon_crossDomains
 /*
 if(is_file(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT)) {
 	require(FF_DISK_PATH . "/library/" . THEME_INSET . "/schema." . FF_PHP_EXT);	

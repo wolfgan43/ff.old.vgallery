@@ -7742,8 +7742,8 @@ function process_vgallery_data_by_type(&$vg_father, $data, $field_params, $vg_pa
 		else
 			$tmp_data_field["text"] = $data;
 			
-	    if (is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/images/vgallery/" . $vg_father["vgallery_name"] . "/" . $field_params["name"] . "." . THUMB_ICO_EXTENSION)) {
-			$tmp_data_field["src"] = FF_SITE_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/images/vgallery/" . $vg_father["vgallery_name"] . "/" . $field_params["name"] . "." . THUMB_ICO_EXTENSION;
+	    if (is_file(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/images/vgallery/" . $vg_father["vgallery_name"] . "/" . $field_params["name"] . "." . THUMB_ICO_EXTENSION)) {
+			$tmp_data_field["src"] = __CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/images/vgallery/" . $vg_father["vgallery_name"] . "/" . $field_params["name"] . "." . THUMB_ICO_EXTENSION;
 	    } else {
 			if ($field_params["enable_label"]) {
 			    $tmp_data_field["content"] = $data;

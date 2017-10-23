@@ -472,7 +472,7 @@
     $operation_fixed["2016-06-10-a"]["than"] = "ALTER TABLE  `module_search_vgallery` CHANGE  `ID_module_search`  `ID_module` INT( 11 ) NOT NULL"; 
 
     if(!defined("SUPERADMIN_USERNAME"))
-    	require_once(FF_DISK_PATH . "/conf/gallery/config/admin.php");
+    	require_once(FF_DISK_PATH . "/config.php");
     	
 	if(defined("SUPERADMIN_USERNAME") && SUPERADMIN_USERNAME) {
 	    $operation_fixed["2016-03-22"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'cm_mod_security_users' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     

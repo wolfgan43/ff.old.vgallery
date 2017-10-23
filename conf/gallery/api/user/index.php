@@ -2,7 +2,7 @@
 $user_path = $cm->real_path_info;
 
 check_function("Anagraph");
-
+//todo: ffCommon_crossDomains
 switch(basename($user_path))
 {
     case "verify":

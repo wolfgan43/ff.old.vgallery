@@ -25,6 +25,7 @@
  */
 function system_init_permission($user_permission = null) {
     $globals = ffGlobals::getInstance("gallery");
+    $store_in_session = 0;
 
 	if($user_permission === null)
 		$user_permission = get_session("user_permission");
@@ -33,7 +34,7 @@ function system_init_permission($user_permission = null) {
 		cache_session_share_for_subdomains();
 
 		$permissioins = $user_permission["permissions"];
-		$user_permission = mod_security_create_session($user_permission["username_slug"], $user_permission["ID"], null, null, SESSION_PERMANENT, null, true, LANGUAGE_DEFAULT);
+		$user_permission = mod_security_create_session($user_permission["username_slug"], $user_permission["ID"], MOD_SECURITY_SESSION_PERMANENT, true);
 		$user_permission["permissions"] = $permissioins;
 		
 		$store_in_session++;
@@ -219,6 +220,7 @@ function system_get_permission_advanced($uid = NULL, $gid = NULL, $settings = ar
 		$db->query($sSQL);
 		if ($db->nextRecord())
 		{
+            $user_groups = "";
 			do
 			{
 				$user_permission["groups"][] = $db->getField("rel_gid", "Number", true);
@@ -254,6 +256,7 @@ function system_get_permission_advanced($uid = NULL, $gid = NULL, $settings = ar
 	}
 
 	if(is_array($settings) && count($settings)) {
+        $sWhere_settings = "";
 		foreach ($settings as $settings_key => $settings_value) {
 			if (strlen($sWhere_settings))
 				$sWhere_settings .= " OR ";
@@ -267,6 +270,7 @@ function system_get_permission_advanced($uid = NULL, $gid = NULL, $settings = ar
 	}
 
     if(is_array($areas) && count($areas)) {
+        $sWhere_areas = "";
         foreach ($areas as $areas_key => $areas_value) {
             if (strlen($sWhere_areas))
                 $sWhere_areas .= " OR ";
@@ -512,6 +516,7 @@ function get_configuration_by_path($user_path, $uid = NULL, $gid = NULL, $settin
 		    $db->query($sSQL);
 		    if ($db->nextRecord())
 		    {
+                $user_groups = "";
 			    do
 			    {
 				    $user_permission["groups"][] = $db->getField("rel_gid")->getValue();
@@ -547,6 +552,7 @@ function get_configuration_by_path($user_path, $uid = NULL, $gid = NULL, $settin
 	    }
 
 	    if(is_array($settings) && count($settings)) {
+            $sWhere_settings = "";
 		    foreach ($settings as $settings_key => $settings_value) {
 			    if (strlen($sWhere_settings))
 				    $sWhere_settings .= " OR ";
@@ -560,6 +566,7 @@ function get_configuration_by_path($user_path, $uid = NULL, $gid = NULL, $settin
 	    }
 
         if(is_array($areas) && count($areas)) {
+            $sWhere_areas = "";
             foreach ($areas as $areas_key => $areas_value) {
                 if (strlen($sWhere_areas))
                     $sWhere_areas .= " OR ";

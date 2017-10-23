@@ -89,7 +89,8 @@ function system_redirect_get_destination($hostname, $request_uri) {
 			@ini_set("memory_limit", $memory_limit . 'M');
 	
 		require(FF_DISK_PATH . "/cache/redirect/" . $hostname . ".php");
-		
+
+		/** @var include $r */
 		if(array_key_exists($request_uri, $r)) {
 			return $r[$request_uri];
 		}
@@ -237,7 +238,8 @@ function system_redirect_get_rule_old($hostname, $write_cache = false) {
 		$loaded_redirect[$hostname] = array();
 		if(is_file(FF_DISK_PATH . "/cache/redirect/" . $hostname . ".rule.php")) {
 			require_once(FF_DISK_PATH . "/cache/redirect/" . $hostname . ".rule.php");
-			
+
+			/** @var include $redir */
 			$loaded_redirect[$hostname] = $redir;
 		} else {
 			 $db = ffDB_Sql::factory();

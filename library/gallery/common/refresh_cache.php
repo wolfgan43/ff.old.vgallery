@@ -263,7 +263,7 @@ function update_cache_file($last_update, $path = null) {
 
                 $arrUserPath = explode("/", $cache_user_path);
                 $cache_error_path = substr($cache_file, 0, strpos($cache_file, $cache_user_path));
-                $arrErrorDocument[$cache_error_path . $error_document_path . "/" . $arrUserPath[1] . ".php"][substr(ffCommon_dirname($cache_file), strlen($base_path))] = true;
+                $arrErrorDocument[$cache_error_path . $error_document_path . "/" . $arrUserPath[1]][substr(ffCommon_dirname($cache_file), strlen($base_path))] = true;
 
                 $cache[$cache_file . "." . $cache_ext] = "updated";
             } else {

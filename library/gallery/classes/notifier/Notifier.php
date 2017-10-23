@@ -281,7 +281,7 @@ class Notifier extends vgCommon
         switch($this->type) {
             case "pool":
                 if(!$this->actions)
-                    $this->isError("trace_notify_action_required");
+                    $this->isError("notify_action_required");
                 break;
             default:
         }
@@ -617,8 +617,8 @@ class Notifier extends vgCommon
         require_once($this->getAbsPathPHP("/storage/Storage", true));
         require_once($this->getAbsPathPHP("/mailer/Mailer", true));
 
-        if(is_file($this->getAbsPathPHP("/conf/gallery/config/notifier"))) {
-            require_once($this->getAbsPathPHP("/conf/gallery/config/notifier"));
+        if(is_file($this->getAbsPathPHP("/config"))) {
+            require_once($this->getAbsPathPHP("/config"));
             
             if(defined("NOTIFY_SQL_NAME") && NOTIFY_SQL_NAME)
             {

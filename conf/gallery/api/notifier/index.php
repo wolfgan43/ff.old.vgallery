@@ -26,7 +26,7 @@
 
 
     check_function("Notifier");
-
+//todo: ffCommon_crossDomains
    
     $notifier = Notifier::getInstance();
     $notifier->setFields(array(

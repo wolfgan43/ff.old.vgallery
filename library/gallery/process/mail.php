@@ -1503,8 +1503,8 @@ function clone_template_mail($email_name) {
             $img_source = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.gif";
         } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.jpg")) {
             $img_source = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.jpg";
-        } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png")) {
-            $img_source = FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png";    
+        } elseif(is_file(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png")) {
+            $img_source = __CMS_DIR__ . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png";
         }
 
          if($img_source) {

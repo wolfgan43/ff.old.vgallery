@@ -19,9 +19,9 @@ AddType text/cache-manifest .manifest
 
 SetEnvIf Host "blueocarina.local" FF_TOP_DIR=C:\xampp\htdocs\blueocarina
 SetEnvIf Host "blueocarina.local" FF_PROJECT_DIR=
+SetEnvIf Host "blueocarina.local" DISK_PATH=C:\xampp\htdocs\blueocarina
+SetEnvIf Host "blueocarina.local" SITE_PATH=
 
-SetEnvIf Host "blueocarina.net" FF_TOP_DIR=/var/www/vhosts/blueocarina.net/subdomains/dev/httpdocs
-SetEnvIf Host "blueocarina.net" FF_PROJECT_DIR=
 
 ErrorDocument 404 /error/notfound
 ErrorDocument 403 /error/forbidden

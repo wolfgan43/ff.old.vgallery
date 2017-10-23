@@ -23,14 +23,14 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-  function check_user_request(&$user, $old_session_id = null, $permanent_session = null) {
+  function check_user_request(&$user, $old_session_id = null, $permanent_session = MOD_SECURITY_SESSION_PERMANENT) {
   	$cm = cm::getInstance();
     //i globals qui nn sono valorizzati
 	if(/*global_settings("ENABLE_ECOMMERCE") &&*/ check_function("ecommerce_cart_merge"))
-		ecommerce_cart_merge($user, $old_session_id, $permanent_session);
+		ecommerce_cart_merge($user);
 
-  	check_user_form_request($user, $old_session_id, $permanent_session);
-  	check_user_vgallery_request($user, $old_session_id, $permanent_session);
+  	check_user_form_request($user);
+  	check_user_vgallery_request($user);
     $arrRetUrl = explode("?", $cm->oPage->ret_url);
   	if($arrRetUrl[0] == "/" || $arrRetUrl[0] == "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/") {  	
 		$mod_sec_dashboard = $cm->router->getRuleById("mod_sec_dashboard");
@@ -40,7 +40,7 @@
 
   }
 
-function check_user_form_request($user, $old_session_id = null, $permanent_session = null, $exclude_form = null) {
+function check_user_form_request($user, $exclude_form = null) {
     $db_data = ffDB_Sql::factory();
     
     $sSQL_exclude_form = "";
@@ -79,7 +79,7 @@ function check_user_form_request($user, $old_session_id = null, $permanent_sessi
 }
 
 
-function check_user_vgallery_request($user, $old_session_id = null, $permanent_session = null, $exclude_vgallery = null, $return = "link") {
+function check_user_vgallery_request($user, $return = "link", $exclude_vgallery = null) {
 	$db_data = ffDB_Sql::factory();
 
 	$redirect = null;

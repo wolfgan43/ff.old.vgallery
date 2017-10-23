@@ -279,7 +279,7 @@ function make_routing_table_file() {
 		            } 
 		        }
 				if($real_ftp_path !== NULL) {
-					$tpl = ffTemplate::factory(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents");
+					$tpl = ffTemplate::factory(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents");
 					$tpl->load_file("routing_table.tpl", "main");
 
 					$tpl->set_var("site_path", FF_SITE_PATH);

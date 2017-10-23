@@ -87,7 +87,7 @@
 			else
 				$globals->meta = $seo["meta"];
 
-		$owner = null; //da implementare
+		$owner = null; //todo: da implementare owner o autor
 		$domain_abs_path = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . DOMAIN_INSET . FF_SITE_PATH;
 /*
 		$domain_path = "http" . ($_SERVER["HTTPS"] ? "s": "");

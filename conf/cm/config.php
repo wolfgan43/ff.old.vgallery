@@ -64,7 +64,7 @@
   define("CM_CACHE_IMG_LAZY_LOAD", true);
 
   //define("CM_SHOWFILES_MODULES", true);
-  define("CM_SHOWFILES_OPTIMIZE", true);
+  //define("CM_SHOWFILES_OPTIMIZE", true);
   
   define("CM_CACHE_STORAGE_SAVING_MODE", 3);
   define("CM_CSSCACHE_SHOWPATH", FF_SITE_PATH . "/asset/css");

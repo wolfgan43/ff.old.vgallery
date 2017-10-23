@@ -3602,7 +3602,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
 			);
         
        if(check_function("check_user_request"))
-           $request_vgallery = check_user_vgallery_request(array("name" => get_session("UserID"), "ID" => get_session("UserNID")), null, null, null, "rel");
+           $request_vgallery = check_user_vgallery_request(array("name" => get_session("UserID"), "ID" => get_session("UserNID")), "rel");
         
         if($check_rel_user && is_array($request_vgallery) && count($request_vgallery)) {
             foreach($request_vgallery AS $request_vgallery_key => $request_vgallery_value) {

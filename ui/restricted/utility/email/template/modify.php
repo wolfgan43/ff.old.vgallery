@@ -39,7 +39,7 @@ if(defined("FTP_USERNAME") && strlen(FTP_USERNAME) && defined("FTP_PASSWORD") &&
 		$content = file_get_contents($base_path . $_REQUEST["keys"]["path"]);
 		$name = basename(ffcommon_dirname($_REQUEST["keys"]["path"]));
 	} else {
-		$content = file_get_contents(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents/mail/email.tpl");
+		$content = file_get_contents(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents/mail/email.tpl");
 		$name = $_REQUEST["name"];
 	}
 	$is_valid = true;

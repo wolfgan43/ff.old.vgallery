@@ -275,7 +275,7 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 				$tpl->set_var("theme_inset", THEME_INSET);
 				$tpl->set_var("theme", FRONTEND_THEME);
 				
-				switch ($display) {
+				switch ($loginConfig["display"]) {
 					case "popup":
 						$tpl->set_var("url", $loginUrl);
 						$tpl->set_var("app_name", $app["name"]);
@@ -296,7 +296,7 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 
 function facebook_api($type, $params, $target = null) {
 	$globals = ffGlobals::getInstance("gallery");
-	if($user === null) {
+	if($target === null) {
 		$target = "me";
 	}
 	$sError = system_lib_facebook(true);

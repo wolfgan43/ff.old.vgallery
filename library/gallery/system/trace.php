@@ -106,8 +106,8 @@ function system_trace($action, $url = null, $get = null, $action_value = null, $
                     , "created" => time()
                 );
 				
-                if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
-                    require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
+                if(is_file(TRACE_DISK_PATH . "/config.php")) {
+                    require_once(TRACE_DISK_PATH . "/config.php");
 
                     if(defined("TRACE_MONGO_DATABASE_NAME")) 
                     {
@@ -459,8 +459,8 @@ function system_trace_notify_via_push($message, $to, $params) {
     $response = curl_exec($ch);
     curl_close($ch);
     
-	if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
-        require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
+	if(is_file(TRACE_DISK_PATH . "/config.php")) {
+        require_once(TRACE_DISK_PATH . "/config.php");
         
         $notify = array(
             "uid"       => $to["uid"]
@@ -540,8 +540,8 @@ function system_trace_notify_via_mail($message, $to) {
 }
 
 function system_trace_notify_via_server($message, $to, $params) {
-	if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
-        require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
+	if(is_file(TRACE_DISK_PATH . "/config.php")) {
+        require_once(TRACE_DISK_PATH . "/config.php");
 
         if(isset($to["uid"])) {
             $dest = system_trace_notify_get_user($dest, $to, array("ID"));
@@ -682,8 +682,8 @@ function system_trace_notify_via_server($message, $to, $params) {
 }
 
 function system_trace_get_notify($path = "", $exclude = array()) {
-	if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
-		require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
+	if(is_file(TRACE_DISK_PATH . "/config.php")) {
+		require_once(TRACE_DISK_PATH . "/config.php");
 		if(!class_exists("ffDB_Sql"))
 			require_once(TRACE_DISK_PATH . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
 

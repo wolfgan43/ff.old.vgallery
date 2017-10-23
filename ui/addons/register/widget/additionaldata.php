@@ -163,7 +163,7 @@ if($db->nextRecord()) {
 	}
 
     if(check_function("check_user_form_request"))
-    	$additionaldata = check_user_form_request(array("ID" => $uid), null, null, $form_name);
+    	$additionaldata = check_user_form_request(array("ID" => $uid), $form_name);
     if($additionaldata && $additionaldata != $form_name) {
         $oRecord->ret_url =  VG_SITE_NOTIFY . "/register/additionaldata/" . $additionaldata . "?ret_url=" . urlencode($ret_url);
     } else {

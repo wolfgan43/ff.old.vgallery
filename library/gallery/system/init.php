@@ -23,50 +23,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */ 
-/*function system_set_language($selected_lang, $user_permission = null, $alt_selected_lang = null) {
-	if($user_permission === null)
-  		$user_permission = cache_get_session();
-
-	$arrLang = $user_permission["lang"];
-	$language_inset = $user_permission["lang"]["current"];
-
-	if(is_array($arrLang) && count($arrLang)) {
-		if(strlen($selected_lang) && array_key_exists(strtoupper($selected_lang), $arrLang)) {
-			$real_selected_lang = $selected_lang;
-			$real_selected_lang_ID = $arrLang[strtoupper($selected_lang)]["ID"];
-		} elseif(is_array($language_inset) && array_key_exists("code", $language_inset) && strlen($language_inset["code"])) {
-			$real_selected_lang = $language_inset["code"];
-			$real_selected_lang_ID = $language_inset["ID"];
-		} elseif(strlen($alt_selected_lang) && array_key_exists(strtoupper($alt_selected_lang), $arrLang)) {
-			$real_selected_lang = $alt_selected_lang;
-			$real_selected_lang_ID = $arrLang[strtoupper($alt_selected_lang)]["ID"];
-		} else {
-			$real_selected_lang = "";
-			$real_selected_lang_ID = "";
-		}
-	} else {
-		
-	}
-		
-	if(!strlen($real_selected_lang)) {
-		$real_selected_lang = get_session("language_default");
-		$real_selected_lang_ID = get_session("ID_lang_default");
-	}
-	if(!strlen($real_selected_lang)) {
-		$real_selected_lang = LANGUAGE_DEFAULT;
-		$real_selected_lang_ID = $arrLang[LANGUAGE_DEFAULT]["ID"];
-	}
-
-	if(!defined("LANGUAGE_DEFAULT_TINY"))   
-	    define("LANGUAGE_DEFAULT_TINY", strtolower(substr(LANGUAGE_DEFAULT, 0, 2)));
-
-	define("LANGUAGE_INSET_TINY", strtolower(substr($real_selected_lang, 0, 2)));
-	define("LANGUAGE_INSET", $real_selected_lang);
-	define("LANGUAGE_INSET_ID", $real_selected_lang_ID);
-	define("FF_LOCALE", $real_selected_lang);
-
-	return $real_selected_lang;
-}*/
 
 function system_init($cm) {
 	$globals = ffGlobals::getInstance("gallery");
@@ -137,7 +93,7 @@ function system_init($cm) {
 	cm::getInstance()->layout_vars = $cm_layout_vars;
 	
 	if($cm_layout_vars["layer"] === null && $cm_layout_vars["theme"] == FRONTEND_THEME) {
-		cm::getInstance()->layout_vars["layer"] = THEME_INSET;
+		cm::getInstance()->layout_vars["layer"] = "empty";
 	}
 	if($cm_layout_vars["layer"] == THEME_INSET && $cm_layout_vars["theme"] != FRONTEND_THEME)
 		cm::getInstance()->layout_vars["theme"] = FRONTEND_THEME;
@@ -372,24 +328,13 @@ function system_init($cm) {
 		        
 		}
 
-		//condivide la sessione per ai sottodomini
+		if(check_function("check_user_request"))
+            cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_request", ffEvent::PRIORITY_DEFAULT);
+
+        //condivide la sessione per ai sottodomini
 	    cm::getInstance()->addEvent("mod_security_on_create_session", "cache_session_share_for_subdomains", ffEvent::PRIORITY_DEFAULT);
 		cm::getInstance()->addEvent("mod_security_on_destroy_session", "cache_session_share_for_subdomains", ffEvent::PRIORITY_DEFAULT);
 
-	    if(check_function("check_user_request"))
-	         cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_request", ffEvent::PRIORITY_DEFAULT);		
-
-/*	    //check required fields on form
-	    if(check_function("check_user_form_request"))
-	         cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_form_request", ffEvent::PRIORITY_DEFAULT);
-	    //check required fields on vgallery
-	    if(check_function("check_user_vgallery_request"))
-	         cm::getInstance()->addEvent("mod_security_on_created_session", "check_user_vgallery_request", ffEvent::PRIORITY_DEFAULT);
-	    //merge ecommerce cart (guest + user)
-	    if(check_function("ecommerce_cart_merge"))
-	         cm::getInstance()->addEvent("mod_security_on_created_session", "ecommerce_cart_merge", ffEvent::PRIORITY_DEFAULT);
-*/
-	    
 	    if(/*!defined("DISABLE_CACHE") &&*/ check_function("system_set_cache_page")) {
 	         cm::getInstance()->addEvent("mod_security_on_created_session", "system_write_cache_token_session", ffEvent::PRIORITY_DEFAULT);
 	         cm::getInstance()->addEvent("mod_security_on_destroyed_session", "system_destroy_cache_token_session", ffEvent::PRIORITY_DEFAULT);
@@ -1227,7 +1172,6 @@ function system_init_on_before_cm($cm)
 			&& check_function("system_lib_facebook")
 			//&& get_session("UserID") == MOD_SEC_GUEST_USER_NAME
 		) {        
-			//$cm->addEvent("mod_security_on_create_session", "system_lib_facebook", ffEvent::PRIORITY_DEFAULT);
 			$user_error = system_lib_facebook(LANGUAGE_INSET);
 			if($user_error && check_function("write_notification")) {
 				write_notification("_facebook_app", $user_error, "warning", "", $globals->page["user_path"]);
@@ -1529,7 +1473,7 @@ function system_init_on_before_routing($cm)
     	default:
 			rewrite_request($globals->page["strip_path"]); //imposta user_path e settings_path togliendo eventuali parametri
 	        $cm->oPage->page_path = $globals->user_path;
-			
+
             if(!$cm->oPage->isXHR() && check_function("get_webservices")) 
                 $services_params = get_webservices(null, $cm->oPage);
 
@@ -1538,6 +1482,7 @@ function system_init_on_before_routing($cm)
                 && strpos(basename($globals->settings_path), "feed") === false
                 && strpos(basename($globals->settings_path), "manifest.") === false
                 && check_function("system_layer_gallery")
+                && check_function("system_set_cache_page")
             ) {
                 system_load_resources();
 
@@ -1566,7 +1511,7 @@ function system_init_on_before_routing($cm)
 
                         //da cachare il contenuto generato via ajax e applicare tutte le compressioni del caso
                         $buffer = system_layer_gallery($cm->oPage);
-                        if($buffer["content"] && check_function("system_set_cache_page")) {
+                        if($buffer["content"]) {
 	                        $frame_buffer = $buffer["content"] . $buffer["media"];
                             system_set_cache_page($frame_buffer);  
 
@@ -1576,7 +1521,7 @@ function system_init_on_before_routing($cm)
                     } else {
                         $globals->tpl = system_pre_process_page();
                         $cm->oPage->addEvent("on_after_process_components", "system_layer_gallery" /*, ffEvent::PRIORITY_HIGH*/);
-                        $cm->oPage->addEvent("on_tpl_parsed", "system_set_cache_page" , ffEvent::PRIORITY_FINAL);	                
+                        $cm->oPage->addEvent("on_tpl_parsed", "system_set_cache_page" , ffEvent::PRIORITY_FINAL);
                     }
                 }
             }

@@ -220,7 +220,7 @@ function LayoutSettingsDetail_on_before_process_row($component, $record) {
     		return true;
 		
 		$sSQL_template_file = array();
-		$tpl_file = glob(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . $tpl_path . "/*");
+		$tpl_file = glob(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . $tpl_path . "/*");
 		if(is_array($tpl_file) && count($tpl_file)) {
 		    foreach($tpl_file AS $real_file) {
 		        if(is_file($real_file)) {

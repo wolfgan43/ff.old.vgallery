@@ -254,8 +254,7 @@ function system_layer_gallery($oPage = null)
             }
         }
         if($oPage->tpl_layer)
-            $oPage->tpl_layer[0]->set_var("contents", system_parse_page($template));
-
+			$oPage->output_buffer = system_parse_page($template);
     } else {
         check_function("system_set_media");
 
@@ -409,7 +408,6 @@ function system_process_page_blocks($blocks, $params, &$template)
 			}
 	    }
 	}
-
 	return $params;
 }
 

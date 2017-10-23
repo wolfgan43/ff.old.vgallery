@@ -23,89 +23,150 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
- if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
-     if(check_function("system_init"))     
+if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
+    if(check_function("system_init"))
         cm::getInstance()->addEvent("on_after_init", "system_init", ffEvent::PRIORITY_HIGH);
 
-    if(is_file(FF_DISK_PATH . "/themes/site/common.php"))
-        require(FF_DISK_PATH . "/themes/site/common.php");
-	 
-  	$globals = ffGlobals::getInstance("gallery");
-  	//$globals->is_primary_page           = false;
-  	//$globals->is_restricted_page        = false;
-	$globals->user_path                 = null;
-	$globals->request          			= null;
-	$globals->user_path_params          = "";
-	$globals->user_path_shard           = "";
+    if(is_file(FF_DISK_PATH . "/themes/" . FRONTEND_THEME . "/common." . FF_PHP_EXT))
+        require(FF_DISK_PATH . "/themes/" . FRONTEND_THEME . "/common." . FF_PHP_EXT);
+
+    $globals = ffGlobals::getInstance("gallery");
+    //$globals->is_primary_page           = false;
+    //$globals->is_restricted_page        = false;
+    $globals->user_path                 = null;
+    $globals->request          			= null;
+    $globals->user_path_params          = "";
+    $globals->user_path_shard           = "";
     //$globals->frame_path                = null;
     //$globals->error_path                = null;
     //$globals->services_path             = null;
     //$globals->updater_path              = null;
-	$globals->settings_path             = null;
-	$globals->selected_lang             = null;
-	//$globals->lang_alt                  = null;
-	$globals->locale                  	= null;
-	$globals->ecommerce                 = array();
-	$globals->permissions               = array();
-	$globals->custom_data               = array();
-	$globals->ID_domain                 = null;
-	$globals->frame_smart_url           = null;
-	$globals->sid                       = null;
-	$globals->params                    = array();
-	$globals->cache                     = array(
-											"enabled" => null
-											, "file" => null
-											, "section_blocks" => array()
-											, "layout_blocks" => array()
-											, "data_blocks" => array()
-											, "ff_blocks" => array()
-										);
-	//$globals->cache_file                = null;
-	$globals->strip_user_path           = null;
-	$globals->media_exception           = array();
-	$globals->js                        = array();
-	$globals->css                       = array();
-	$globals->meta                      = array();
-	$globals->html                      = array();  
-	$globals->template                  = array();
-	$globals->manage                    = array();
-	$globals->page               		= null;
-	$globals->page_title                = null;
-	$globals->canonical                 = null;
-	$globals->favicon               	= null;
+    $globals->settings_path             = null;
+    $globals->selected_lang             = null;
+    //$globals->lang_alt                  = null;
+    $globals->locale                  	= null;
+    $globals->ecommerce                 = array();
+    $globals->permissions               = array();
+    $globals->custom_data               = array();
+    $globals->ID_domain                 = null;
+    $globals->frame_smart_url           = null;
+    $globals->sid                       = null;
+    $globals->params                    = array();
+    $globals->cache                     = array(
+        "enabled" => null
+    , "file" => null
+    , "section_blocks" => array()
+    , "layout_blocks" => array()
+    , "data_blocks" => array()
+    , "ff_blocks" => array()
+    );
+    //$globals->cache_file                = null;
+    $globals->strip_user_path           = null;
+    $globals->media_exception           = array();
+    $globals->js                        = array();
+    $globals->css                       = array();
+    $globals->meta                      = array();
+    $globals->html                      = array();
+    $globals->template                  = array();
+    $globals->manage                    = array();
+    $globals->page               		= null;
+    $globals->page_title                = null;
+    $globals->canonical                 = null;
+    $globals->favicon               	= null;
     $globals->manifest               	= null;
-	$globals->user						= array(
-											"menu" => null
-											, "pages" => null
-										);
-	$globals->settings                  = array();
+    $globals->user						= array(
+        "menu" => null
+    , "pages" => null
+    );
+    $globals->settings                  = array();
     $globals->fixed_pre                 = array(
-                                            "body" => null
-                                            , "content" => null
-                                        );
-	$globals->fixed_post                = array(
-                                            "body" => null
-                                            , "content" => null
-                                        );
-	$globals->seo                       = array();
-	$globals->search                    = null;
+        "body" => null
+    , "content" => null
+    );
+    $globals->fixed_post                = array(
+        "body" => null
+    , "content" => null
+    );
+    $globals->seo                       = array();
+    $globals->search                    = null;
     $globals->navigation                = null;
     $globals->sort                      = null;
     $globals->filter                    = null;
-	$globals->services                  = null;    //facebook api mailchimp api ecc
-	$globals->tpl                  		= null;    //array associativo con tutte le info sulla struttura della pagina
-	$globals->data_storage              = array();    //array associativo con tutte le info sulla struttura della pagina
+    $globals->services                  = null;    //facebook api mailchimp api ecc
+    $globals->tpl                  		= null;    //array associativo con tutte le info sulla struttura della pagina
+    $globals->data_storage              = array();    //array associativo con tutte le info sulla struttura della pagina
 
+	//generic meta valid for all situation
+	$globals->setMeta = function($name = "", $content = "", $type = "name") { //todo: eliminare l'intermedio e usare direttametne page_meta
+		$globals = ffGlobals::getInstance("gallery");
 
+		$globals->meta[$name] = array(
+			"content" => $content
+		, "type" => $type
+		);
+	};
+	//seo params divided in type
     $globals->setSeo = function($params = array(), $priority = "user") {
-         $globals = ffGlobals::getInstance("gallery");
-         if(is_array($params) && count($params)) {
-             if(is_array($globals->seo[$priority]))
-                 $globals->seo[$priority] = array_replace($globals->seo[$priority], $params);
-             else
-                 $globals->seo[$priority] = $params;
-         }
-         $globals->seo["current"] = $priority;
+        $globals = ffGlobals::getInstance("gallery");
+        if(is_array($params) && count($params)) {
+            if(is_array($globals->seo[$priority]))
+                $globals->seo[$priority] = array_replace($globals->seo[$priority], $params);
+            else
+                $globals->seo[$priority] = $params;
+        }
+        $globals->seo["current"] = $priority;
     };
 
+    if(1)//todo: da togliere
+    {
+        global $ff_global_setting;
+
+        $ff_global_setting["ffRecord"]["widget_discl_enable"] = false;
+        $ff_global_setting["ffGrid"]["widget_discl_enable"] = false;
+        $ff_global_setting["ffGrid_html"]["reset_page_on_search"] = true;
+
+        /*
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["component"]["class"] = "pagenav";
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["pagination"]["class"] = "pagenav__pages";
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["pagination"]["col"] = null;
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["choice"]["class"] = "pagenav__choice";
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["choice"]["col"] = null;
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["totelem"]["class"] = "pagenav__totEl";
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["totelem"]["col"] = null;
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["perPage"]["class"] = "pagenav__perPage";
+            $ff_global_setting["ffPageNavigator"]["framework_css"]["perPage"]["col"] = null;*/
+
+
+
+        $ff_global_setting["ffPageNavigator"]["with_choice"] = true;
+        $ff_global_setting["ffPageNavigator"]["with_totelem"] = true;
+        $ff_global_setting["ffPageNavigator"]["PagePerFrame"] = 7;
+        $ff_global_setting["ffPageNavigator"]["nav_selector_elements_all"] = true;
+
+        $ff_global_setting["ffField"]["file_check_exist"] = true;
+        $ff_global_setting["ffField"]["placeholder"] = true;
+        $ff_global_setting["ffField"]["multi_select_one_label"] = ffTemplate::_get_word_by_code("multi_select_one_label");
+
+
+        $ff_global_setting["ffField_html"]["encode_label"] = false;
+
+        $ff_global_setting["ffGrid"]["symbol_valuta"] = "";
+        $ff_global_setting["ffGrid"]["switch_row_class"]["display"] = true;
+
+        $ff_global_setting["ffGrid"]["open_adv_search"] = "never";
+        $ff_global_setting["ffGrid"]["buttons_options"]["search"] = array(
+            "display"     => true
+        , "label"		=> false
+        );
+        $ff_global_setting["ffGrid"]["buttons_options"]["export"] = array(
+            "display"        => true
+        );
+        $ff_global_setting["ffGrid_dialog"]["buttons_options"]["export"] = array(
+            "display"		=> false
+        );
+
+
+        $ff_global_setting["ffDetails_horiz"]["switch_row_class"]["display"] = true;
+    }
 }
+

@@ -69,9 +69,9 @@ class storageMysql
 
         if (!$this->config["name"])
         {
-            if (is_file($this->storage->getAbsPathPHP("/conf/gallery/config/db")))
+            if (is_file($this->storage->getAbsPathPHP("/config")))
             {
-                require_once($this->storage->getAbsPathPHP("/conf/gallery/config/db"));
+                require_once($this->storage->getAbsPathPHP("/config"));
 
                 $this->config["host"] = (defined("FF_DATABASE_HOST")
                     ? FF_DATABASE_HOST

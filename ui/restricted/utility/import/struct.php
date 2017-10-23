@@ -31,7 +31,7 @@
  		$import_file = "empty";
  	} elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/xml/struct" . $user_path . ".xml")) {
  		$import_file = FF_THEME_DIR . "/" . FRONTEND_THEME . "/xml/struct" . $user_path . ".xml";
- 	} elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/xml/struct" . $user_path . ".xml")) {
+ 	} elseif(is_file(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/xml/struct" . $user_path . ".xml")) {
  		$import_file = FF_THEME_DIR . "/" . THEME_INSET . "/xml/struct" . $user_path . ".xml";
  	}
 	if($import_file && check_function("import")) {
@@ -58,13 +58,13 @@
 	}
 	else
 	{
- 		$tpl = ffTemplate::factory(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents/import");
+ 		$tpl = ffTemplate::factory(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents/import");
 		$tpl->load_file("struct.html", "main");
 		$tpl->set_var("container_class", cm_getClassByFrameworkCss("wizard-struct", "row"));
 
 		$tpl->set_var("item_class", cm_getClassByFrameworkCss(array(12,12,4,4), "col")); 
 		
-		$res = glob(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/xml/struct/*");
+		$res = glob(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/xml/struct/*");
 		if(is_array($res) && count($res)) {
 			foreach($res AS $file) {
 				$arrStruct[basename($file)] = xml2array(new SimpleXMLElement($file, null, true));

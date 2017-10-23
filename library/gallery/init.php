@@ -104,7 +104,6 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 	if(strlen($tpl_custom_name)) {
 		if($tpl_prefix) {
 			if($globals->html["frontend"]["/" . $tpl_prefix . "_" . $tpl_custom_name]) {
-			//if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents/" . $tpl_prefix . "_" . $tpl_custom_name)) {
 				$real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents";
 				$real_prefix = $tpl_prefix . "_";
 			}
@@ -112,10 +111,8 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 		if($real_path === NULL) {
 			do {
 		         if($location && $globals->html["frontend"][stripslash($tmp_path) . $location . "/" . $tpl_custom_name]) {
-		         //if($location && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . $location . "/" . $tpl_custom_name)) {
 		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path) . $location;
 		         } elseif($globals->html["frontend"][stripslash($tmp_path) . "/" . $tpl_custom_name]) {
-		         //} elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . "/" . $tpl_custom_name)) {
 		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path);
 				 }
 		     } while($tmp_path != ffCommon_dirname($tmp_path) && $real_path === NULL && $tmp_path = ffCommon_dirname($tmp_path));
@@ -128,16 +125,9 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 			if(strlen($force_base_path)) {
 				$real_path = $force_base_path;
 			} else {
-				$real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
+				$real_path = __CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
 			}
     	
-    		/*
-			if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path) . "/" . $tpl_base_name)) {
-			    $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
-			} elseif(strlen($force_base_path) && is_file($force_base_path . "/" . $tpl_base_name)) {
-			    $real_path = $force_base_path;
-			}*/
-
 			$tpl_type = "base";
 		}
     }
@@ -213,8 +203,8 @@ function get_template_cascading_old($path, $tpl_data, $sub_path = "", $force_bas
     if($real_path === NULL) {
     	if(strlen($tpl_base_name)) 
     	{
-			if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path) . "/" . $tpl_base_name)) {
-			    $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
+			if(is_file(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path) . "/" . $tpl_base_name)) {
+			    $real_path = __CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
 			} elseif(strlen($force_base_path) && is_file($force_base_path . "/" . $tpl_base_name)) {
 			    $real_path = $force_base_path;
 			}

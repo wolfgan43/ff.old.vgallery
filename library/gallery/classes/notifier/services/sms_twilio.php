@@ -61,9 +61,9 @@ class notifierTwilio
 
         if (!$this->config["app_id"] || $this->config["app_key"])
         {
-            if (is_file($this->notifier->getAbsPathPHP("/conf/gallery/config/other")))
+            if (is_file($this->notifier->getAbsPathPHP("/config")))
             {
-                require_once($this->notifier->getAbsPathPHP("/conf/gallery/config/other"));
+                require_once($this->notifier->getAbsPathPHP("/config"));
 
                 $this->config["app_id"] = (defined("NOTIFY_PUSH_ONESIGNAL_APP_ID")
                     ? NOTIFY_PUSH_ONESIGNAL_APP_ID

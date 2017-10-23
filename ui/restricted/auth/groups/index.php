@@ -28,13 +28,6 @@ if(!AREA_GROUPS_SHOW_MODIFY) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
-/*$oGrid = ffGrid::factory($cm->oPage, null, null, array("name" => "ffGrid_div"));
-
-if(file_exists(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents/auth/groups/ffGrid_div.html")) {
-    $oGrid->template_dir = FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents/auth/groups";
-} elseif(file_exists(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents/auth/groups/ffGrid_div.html")) {
-    $oGrid->template_dir = FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/contents/auth/groups";
-}*/
 $oGrid = ffGrid::factory($cm->oPage);
 $oGrid->full_ajax = true;
 $oGrid->id = "Groups";

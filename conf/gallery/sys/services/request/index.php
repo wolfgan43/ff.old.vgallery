@@ -64,24 +64,8 @@ function get_response_by_service($service, $params = array()) {
     $data["locale"]             = get_locale();
     $data["ip"]                 = $_SERVER["REMOTE_ADDR"];
 
-    $postdata = http_build_query(
-        $data
-    );
-
-    $opts = array(
-        "ssl"       => array(
-            "verify_peer" => false,
-            "verify_peer_name" => false
-        ),
-        'http'      => array(
-            'method'  => 'POST',
-            'header'  => 'Content-type: application/x-www-form-urlencoded',
-            'content' => $postdata
-        )
-    );
-
-    $context  = stream_context_create($opts);
-	$res = file_get_contents("http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/srv/" . $service, false, $context);
+	check_function("file_post_contents");
+	$res = file_post_contents("http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/srv/" . $service, $data);
 	$return = json_decode($res, true);
     return (!$return
     			? $res
@@ -127,6 +111,9 @@ function get_response_by_service_async($service, $params = array())
 		    $out = "POST ".$url_info['path']." HTTP/1.1\r\n";
 		    $out.= "Host: ".$url_info['host']."\r\n";
 		    $out.= "Content-Type: application/x-www-form-urlencoded\r\n";
+			if(defined("AUTH_USERNAME") && AUTH_USERNAME)
+				$out.= "Authorization: Basic " . base64_encode(AUTH_USERNAME . ":" . AUTH_PASSWORD) . "\r\n";
+
 		    $out.= "Content-Length: ".strlen($postdata)."\r\n";
 		    $out.= "Connection: Close\r\n\r\n";
 		    if (isset($postdata)) $out.= $postdata;

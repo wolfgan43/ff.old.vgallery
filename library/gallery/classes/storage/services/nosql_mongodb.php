@@ -67,9 +67,9 @@ class storageMongodb {
 
         if (!$this->config["name"])
         {
-            if (is_file($this->storage->getAbsPathPHP("/conf/gallery/config/db")))
+            if (is_file($this->storage->getAbsPathPHP("/config")))
             {
-                require_once($this->storage->getAbsPathPHP("/conf/gallery/config/db"));
+                require_once($this->storage->getAbsPathPHP("/config"));
 
                 $this->config["host"] = (defined("FF_NOSQL_HOST")
                     ? FF_NOSQL_HOST

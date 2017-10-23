@@ -1,35 +1,14 @@
 <?php
-// activecomboex
-$plgCfg_ActiveComboEX_UseOwnSession = false;	/* set to true to bypass session check.
-													NB: ActiveComboEX require a session. If you disable session
-														check, ActiveComboEX do a session_start() by itself. */
+define("__CMS_DIR__"			                                    , __DIR__);
+define("FRONTEND_THEME"			                                    , "site");
 
-/* DEFAULT FORMS SETTINGS
-	this is a default array used by Forms classes to set user defined global default settings.
-	the format is:
-		$ff_global_setting[class_name][parameter_name] = value;
- */
+if($_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"])
+	require_once("themes/" . FRONTEND_THEME . "/conf/config.local.php");
+else
+	require_once("themes/" . FRONTEND_THEME . "/conf/config.remote.php");
 
-/**
-*  ERROR HANDLING
-*/
-define("FF_ERRORS_HANDLED", E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE);
-if(!defined("DISABLE_CACHE"))
-{
-    define("FF_ERROR_HANDLER_HIDE", true);
-    define("FF_ERROR_HANDLER_CUSTOM_TPL", "/themes/gallery/contents/error_handler.html");
-    define("FF_ERROR_HANDLER_MINIMAL", "/themes/gallery/contents/error_handler.html");
-}
-
-define("FF_ERRORS_MAXRECURSION", NULL);
-define("FF_URLREWRITE_REMOVEHYPENS", true);
-
-define("FF_PREFIX", "ff_");
-
-/**
-*  INTERNAZIONALIZATION*
-*/
-define("FF_SYSTEM_LOCALE", "ISO9075"); /* Default Locale */
-define("FF_DEFAULT_CHARSET", "UTF-8");  /* Charset Default */
-
-require(ffCommon_dirname(__FILE__) . "/conf/gallery/init.php");
+define("__TOP_DIR__"												, FF_DISK_PATH);
+/**********************************************************************************************************************
+ * Config Framework and VGallery
+ **********************************************************************************************************************/
+require_once("conf/gallery/config.php");
