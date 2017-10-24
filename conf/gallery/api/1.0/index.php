@@ -126,7 +126,7 @@ if($service_api["oAuth"])
 		    $server["rules"] = $service_api["oAuth"][$settings_path];
 		    break;
 		}
-	} while($settings_path != "/" && ($settings_path = dirname($settings_path)));
+	} while($settings_path != DIRECTORY_SEPARATOR && ($settings_path = dirname($settings_path)));
 
 	if($server["rules"]["scopes"][$request_method]) 
 	{	
