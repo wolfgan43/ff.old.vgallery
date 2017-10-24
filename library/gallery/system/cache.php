@@ -377,7 +377,7 @@
                     $page_key                                   = $settings_user_path;
                     break;
                 }
-            } while($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path)));
+            } while($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path))); //todo: DS check
         }
 
         if(strpos($user_path, $res["strip_path"]) === 0) {
@@ -2203,7 +2203,7 @@
 			            $rule["match"] = $schema["request"][$request_path];
 			            break;
 			        }
-			    } while($request_path != DIRECTORY_SEPARATOR);
+			    } while($request_path != DIRECTORY_SEPARATOR); //todo: DS check
 			}
 
 			if($rule["match"]["ext"] && is_array($schema["request"][$rule["match"]["ext"]]))

@@ -126,7 +126,7 @@ if($service_api["oAuth"])
 		    $server["rules"] = $service_api["oAuth"][$settings_path];
 		    break;
 		}
-	} while($settings_path != "/" && ($settings_path = dirname($settings_path)));
+	} while($settings_path != DIRECTORY_SEPARATOR && ($settings_path = dirname($settings_path))); //todo: DS check
 
 	if($server["rules"]["scopes"][$request_method]) 
 	{	
@@ -190,7 +190,7 @@ switch($request_method) {
 		$arrPath = explode("/", trim($service_path_info, "/"));
 		$target = $arrPath[0];
 		check_function("get_schema_fields_by_type");
-		$relative_api_path = str_replace(FF_DISK_PATH . "/conf/gallery", "", __DIR__);
+		$relative_api_path = str_replace(__CMS_DIR__ . "/conf/gallery", "", __DIR__);
 
 		if(/*preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info &&*/ is_file(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
 			$cm->real_path_info = $service_path_info;

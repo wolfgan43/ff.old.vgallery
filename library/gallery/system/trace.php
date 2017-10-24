@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
   
-define("TRACE_DISK_PATH", dirname(dirname(dirname(__DIR__))));
+define("TRACE_DISK_PATH", FF_DISK_PATH); // dirname(dirname(dirname(__DIR__))));
   
 function system_trace($action, $url = null, $get = null, $action_value = null, $visitor = null) {
     if(!$visitor)
