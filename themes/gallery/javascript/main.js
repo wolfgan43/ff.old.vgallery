@@ -503,6 +503,37 @@ ff.cms = (function () {
 						var result = null;
 						if(!service[name]) service[name] = {};
 
+                        if(service[name]["tpl"] && service[name]["tpl"]["target"]) {
+                            var target = service[name]["tpl"]["target"];
+                            var tplVars = response[name][service[name]["tpl"]["vars"]] || response[name]["vars"];
+                            var html = response[name]["html"];
+                            if(!html && tplVars && jQuery(service[name]["tpl"]["target"]).length)
+                                html = jQuery(service[name]["tpl"]["target"]).html();
+
+                            if(tplVars && html) {
+								if(typeof tplVars == "object") {
+                                    for (var property in tplVars) {
+                                        if (tplVars.hasOwnProperty(property)) {
+                                            html = html.replaceAll("[" + property + "]", tplVars[property]);
+                                        }
+                                    }
+                                    response[name]["output"] = html;
+                                }
+                            }
+							if(target) {
+                                var header = response[name]["header"] || "";
+                                var footer = response[name]["footer"] || "";
+                                var output = header + html + footer;
+                                if(output) {
+                                    if (jQuery(target, html).length > 0) {
+                                        jQuery(target).replaceWith(output);
+                                    } else {
+                                        jQuery(target).html(output);
+                                    }
+                                }
+							}
+                        }
+
 						if(service[name]["callback"])
 							service[name]["callback"](response[name], service[name]["params"]);
 
@@ -736,11 +767,29 @@ ff.cms = (function () {
 					if(!service[name]) service[name] = {};
 
 					if(callback) {
-						service[name]["callback"] = callback;
+                        if(jQuery.isFunction(callback)) {
+                            service[name]["callback"] = callback;
+                        } else {
+                            var tpl = {};
+
+                            if(typeof(callback) == "object") {
+                                var tpl = {};
+
+                                tpl["target"] = callback["target"];
+                                tpl["vars"] = callback["vars"];
+                                if (callback["callback"])
+                                    service[name]["callback"] = callback;
+                            } else {
+                                tpl["target"] = callback;
+                            }
+                        }
 					} else {
 						if(!opt) opt = {};
-						service[name]["opt"]["async"] = true;
+                            opt["async"] = true;
 					}
+
+                    if(tpl)
+                        service[name]["tpl"] = tpl;
 
 					if(params)
 						service[name]["params"] = params;
@@ -823,19 +872,6 @@ ff.cms = (function () {
                         return false;
                     }
                 }
-            },
-            "addReq" : function(name, params, callback, opt) {
-            	if(!service) service = {};
-				if(!callback) {
-					if(!opt) opt = {};
-
-					opt["async"] = true;
-				}
-                service[name] = {
-                    "params"    : params,
-                    "opt"        : opt,
-                    "callback"  : callback
-                };
             }
 	};
 	if(!debug)

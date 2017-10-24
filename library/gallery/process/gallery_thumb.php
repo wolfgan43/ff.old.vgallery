@@ -768,7 +768,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 			$frame["sys"]["layouts"] = preg_replace('/[^a-zA-Z0-9]/', '', $layout["unic_id"]);
 			$serial_frame = json_encode($frame);
 
-			if ($source_user_path === NULL) {
+			if ($source_user_path === NULL) { //todo: da fixare
 			    $tpl->set_var("show_file", FF_SITE_PATH . VG_SITE_FRAME . $file . "?sid=" . set_sid($serial_frame));
 			} else {
 			    $tpl->set_var("show_file", FF_SITE_PATH . VG_SITE_FRAME . stripslash($source_user_path) . "/" . basename($file) . "?sid=" . set_sid($serial_frame));

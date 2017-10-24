@@ -98,7 +98,7 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
                             : ""
                         )
                     );
-            $relative_name = ffCommon_url_rewrite(ffGetFilename(stripslash($absolute_path) . "/" . $file)) 
+            $relative_name = ffCommon_url_rewrite(ffGetFilename(stripslash($absolute_path) . "/" . $file))  //todo: da fixare
                     . (pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION)
                         ? "." . ffCommon_url_rewrite(pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION))
                         : ""
@@ -123,7 +123,7 @@ function check_fs_closest_db($strFile) {
 			if(!$is_dir)
 				$is_dir = true;
 
-		} while($strFile != "/"); 
+		} while($strFile != "/");
 	}
 }
 
@@ -268,27 +268,27 @@ function normalize_fs_db($user_path)
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'à', 'a')         
+                description = REPLACE(description, 'ï¿½', 'a')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'è', 'e')         
+                description = REPLACE(description, 'ï¿½', 'e')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'ì', 'i')         
+                description = REPLACE(description, 'ï¿½', 'i')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'ò', 'o')         
+                description = REPLACE(description, 'ï¿½', 'o')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'ù', 'u')         
+                description = REPLACE(description, 'ï¿½', 'u')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);

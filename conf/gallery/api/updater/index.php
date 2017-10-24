@@ -113,7 +113,7 @@ if(check_function("get_schema_def")) {
 		$target = $arrPath[0];
 
 		check_function("get_schema_fields_by_type");
-		$relative_api_path = str_replace(FF_DISK_PATH, "", __DIR__);
+		$relative_api_path = str_replace(__CMS_DIR__ . "/conf/gallery", "", __DIR__);
 		
 		if(is_file(FF_DISK_PATH . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
 			require_once(FF_DISK_PATH . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);

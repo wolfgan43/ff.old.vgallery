@@ -289,8 +289,8 @@ if(!$disable_service_process) {
 	            $index = $i;
 	        }
 
-	        if($index === null)
-	            continue;
+	        /*if($index === null)
+	            continue;*/
 
 	        $service_schema["ID"][$db->getField("ID", "Number", true)] = $i;
 	        if(array_key_exists("relationship", $service_schema) && is_array($service_schema["relationship"]) && count($service_schema["relationship"])) {
@@ -298,7 +298,7 @@ if(!$disable_service_process) {
 		            $service_schema["relationship"][$relationship_key]["value"][$db->getField($service_schema["relationship"][$relationship_key]["rel_key"], "Number", true)][] = $i;
 		        }
 			}
-	        if(is_array($db->fields) && count($db->fields)) {  
+	        if(is_array($db->fields) && count($db->fields)) {
 	            $tmp_php_array = array();
 
 				if(is_array($service["prototype"]))	{
@@ -313,7 +313,7 @@ if(!$disable_service_process) {
 			        });
 				} else {
 		            foreach($db->fields AS $field_data) {
-		                $field_value = api_parse_field_by_type($service_schema["field"][$field_data->name], $db->getField($field_data->name, "Text", true), $field_data->name, $custom_template); 
+		                $field_value = api_parse_field_by_type($service_schema["field"][$field_data->name], $db->getField($field_data->name, "Text", true), $field_data->name, $custom_template);
 			            if(strpos($field_data->name, ".") !== false) {
 			                $str_sub_field = "";
 			                $arrSubField = explode(".", $field_data->name);
@@ -366,7 +366,7 @@ if(!$disable_service_process) {
 			            }
 		            }
 				}
-					            
+
 	            if($internal_service && is_array($index)) {
 	                foreach($index AS $index_value) {
 	                    if(array_key_exists($index_value, $php_array)) {

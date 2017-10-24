@@ -36,7 +36,7 @@ abstract class vgCommon
         static $this_path = __DIR__;
         
         if(!$this->disk_path) {
-            $this->disk_path = str_replace("/library/gallery/classes", "", __DIR__);
+            $this->disk_path = FF_DISK_PATH; //str_replace("/library/gallery/classes", "", __DIR__);
         }
         
         return ($use_class_path

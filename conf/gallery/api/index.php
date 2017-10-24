@@ -54,7 +54,7 @@
 			if($internal_service)
             	return $php_array;
             else
-            	return $return;
+            	return $return; //todo: da fixare
         }
 
         return false;

@@ -2731,7 +2731,7 @@ function process_vgallery_node_relationship_data($src_table, $sSQL, $vg_father, 
 		        $vg_father_rel[$vgallery_name]["permission"]["owner"] = $db->getField("owner", "Number", true);
 		        
 		        $vg_father_rel[$vgallery_name]["layout"] = $layouts[$vg_father_rel[$vgallery_name]["parent"]];
-		    } elseif($vg_father_rel[$vgallery_name]["parent"] != "/" && $vg_father_rel[$vgallery_name]["parent"] != "/" . ffCommon_url_rewrite($vgallery_name)) {
+		    } elseif($vg_father_rel[$vgallery_name]["parent"] != "/" && $vg_father_rel[$vgallery_name]["parent"] != "/" . ffCommon_url_rewrite($vgallery_name)) { //todo: da fixare
 		    	$vg_father_rel[$vgallery_name]["parent"] = "/";
 		    	$vg_father_rel[$vgallery_name]["layout"] = $layouts[$vg_father_rel[$vgallery_name]["parent"]];
 		    }
