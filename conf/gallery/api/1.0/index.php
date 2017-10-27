@@ -187,11 +187,15 @@ switch($request_method) {
 	case "post":
 	case "get":
 	default:
+
+
 		$arrPath = explode("/", trim($service_path_info, "/"));
 		$target = $arrPath[0];
 
 		check_function("get_schema_fields_by_type");
+
 		$relative_api_path = str_replace(__CMS_DIR__ . "/conf/gallery", "", __DIR__);
+
 
 		if(preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info && is_file(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
 			$cm->real_path_info = $service_path_info;
@@ -201,8 +205,11 @@ switch($request_method) {
 			$cm->real_path_info = substr($service_path_info, strlen($target) + 1);
 
 			require_once(FF_DISK_PATH . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
+
 		} elseif(is_array($service_module) && count($service_module)) {
+
 			foreach($service_module AS $module_name) {
+
 				if(preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info && is_file(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
 					$cm->real_path_info = $service_path_info;
 
@@ -216,9 +223,9 @@ switch($request_method) {
 			}
 		}
 		
-		
 		if(!isset($return) && is_file(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
 			$cm->real_path_info = substr($service_path_info, strlen($target) + 1);
+
 
 			require_once(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
 		}
