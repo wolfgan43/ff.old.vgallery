@@ -35,7 +35,7 @@ class filemanagerPhp
     public function __construct($filemanager, $data = null, $config = null)
     {
         $path = $filemanager->getParam("path");
-        $filemanager->setParam("path", dirname($path) . "/" . basename($path, "." . $this::EXT));
+        $filemanager->setParam("path", dirname($path) . "/" . basename($path, "." . $this::EXT) . "." . $this::EXT);
 
         $this->filemanager                                      = $filemanager;
         $this->setConfig($config);

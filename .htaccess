@@ -65,8 +65,7 @@ RewriteCond   %{REQUEST_URI}  	!^/robots\.txt
 RewriteCond   %{REQUEST_URI}  	!^/favicon
 RewriteCond   %{REQUEST_URI}  	!^/conf/gallery/install
 RewriteCond   %{REQUEST_URI}  	!^/conf/gallery/updater
-RewriteCond   %{REQUEST_URI}  	!^/conf/gallery/ajaxplorer 
-RewriteCond   %{REQUEST_URI}  	!^/router\.php 
+RewriteCond   %{REQUEST_URI}  	!^/router\.php
 RewriteRule   ^(.*)    /index\.php/$0 [L,QSA]
 
 <IfModule mod_deflate.c>

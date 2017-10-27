@@ -102,16 +102,16 @@ define("DS"                                                     , DIRECTORY_SEPA
 /**
  * Vgallery Settings
  */
+define("THEME_INSET"			                               	, "gallery");
+//define("FRONTEND_THEME"			                            , "site");
+
 if(!defined("SHOWFILES_IS_RUNNING"))
 {
-	define("THEME_INSET"			                                    , "gallery");
-	//define("FRONTEND_THEME"			                                    , "site");
-
-	define("DOMAIN_INSET"                                               , $_SERVER["HTTP_HOST"]);
+	define("DOMAIN_INSET"                                       , $_SERVER["HTTP_HOST"]);
 	if(strpos(strtolower(DOMAIN_INSET), "www.") === 0) {
-		define("DOMAIN_NAME"                                            , substr(DOMAIN_INSET, 4));
+		define("DOMAIN_NAME"                                    , substr(DOMAIN_INSET, 4));
 	} else {
-		define("DOMAIN_NAME"                                            , DOMAIN_INSET);
+		define("DOMAIN_NAME"                                    , DOMAIN_INSET);
 	}
 
     define("OLD_VGALLERY", false);
@@ -136,21 +136,21 @@ if(!defined("SHOWFILES_IS_RUNNING"))
     $_ENV["VG_RULE"]["ECOMMERCE"] 								= "/admin/ecommerce";
 
     define("VG_WEBSERVICES" 									, "/admin/services");
-    define("VG_WEBSERVICES_PATH" 								, VG_UI_PATH . "/services");
+    define("VG_WEBSERVICES_PATH" 								, FF_DISK_PATH . VG_UI_PATH . "/services");
     define("VG_ADDONS" 											, "/admin/addons");
     define("VG_ADDONS_PATH" 									, VG_UI_PATH . "/addons");
 
-    define("HIDE_EXT"               , true);
-    define("GALLERY_PATH"           , "/gallery");
-    define("GALLERY_PATH_SYSTEM"    , GALLERY_PATH . "/sys");
-    define("GALLERY_PATH_ECOMMERCE" , GALLERY_PATH . "/ecommerce");
-    define("GALLERY_PATH_MANAGE"    , GALLERY_PATH . "/manage");
-    define("GALLERY_PATH_JOB"    	, GALLERY_PATH . "/job");
+    define("HIDE_EXT"               							, true);
+    define("GALLERY_PATH"           							, "/gallery");
+    define("GALLERY_PATH_SYSTEM"    							, GALLERY_PATH . "/sys");
+    define("GALLERY_PATH_ECOMMERCE" 							, GALLERY_PATH . "/ecommerce");
+    define("GALLERY_PATH_MANAGE"    							, GALLERY_PATH . "/manage");
+    define("GALLERY_PATH_JOB"    								, GALLERY_PATH . "/job");
 
-    define("GALLERY_PATH_AUTH"      , GALLERY_PATH . "/auth");
+    define("GALLERY_PATH_AUTH"      							, GALLERY_PATH . "/auth");
 
-    define("GALLERY_TPL_PATH"       , "contents");  //_sys
-    define("USER_RESTRICTED_PATH"	, "/user");
+    define("GALLERY_TPL_PATH"       							, "contents");  //_sys
+    define("USER_RESTRICTED_PATH"								, "/user");
 
     if(defined("MEMORY_LIMIT") && ini_get("memory_limit") != MEMORY_LIMIT)
         @ini_set("memory_limit", MEMORY_LIMIT);
@@ -204,7 +204,7 @@ if(!defined("SHOWFILES_IS_RUNNING"))
         }
     } else {
         define("FF_ERROR_HANDLER_LOG", true);
-        define("FF_ERROR_HANDLER_LOG_PATH", FF_DISK_PATH . "/cache/errors");
+        define("FF_ERROR_HANDLER_LOG_PATH", CM_CACHE_PATH . "/errors");
 
         if(basename($_SERVER["PATH_INFO"]) == "install"
             && strpos($_SERVER["HTTP_REFERER"], "://" . MASTER_SITE . "/admin/system/domains") !== false

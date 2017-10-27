@@ -48,7 +48,39 @@ if(!function_exists("ffCommon_dirname")) {
 		return $res;
 	}
 }
+if(!function_exists("file_post_contents")) {
+	function file_post_contents($url, $data = null, $username = null, $password = null, $method = "POST", $timeout = 60) {
+		if(!$username && defined("AUTH_USERNAME"))
+			$username 				= AUTH_USERNAME;
+		if(!$password && defined("AUTH_PASSWORD"))
+			$password 				= AUTH_PASSWORD;
 
+		if($data)
+			$postdata 				= http_build_query($data);
+
+		$headers = array();
+		if($method == "POST")
+			$headers[] 				= "Content-type: application/x-www-form-urlencoded";
+		if($username)
+			$headers[] 				= "Authorization: Basic " . base64_encode($username . ":" . $password);
+
+		$opts = array(
+			'ssl' => array(
+				"verify_peer" 		=> false,
+				"verify_peer_name" 	=> false
+			),
+			'http' => array(
+				'method'  			=> $method,
+				'timeout'  			=> $timeout,
+				'header'  			=> implode("\r\n", $headers),
+				'content' 			=> $postdata
+			)
+		);
+
+		$context = stream_context_create($opts);
+		return @file_get_contents($url, false, $context);
+	}
+}
 if(!function_exists("ftp_purge_dir")) { 
     function ftp_purge_dir($conn_id, $ftp_disk_path, $relative_path, $local_disk_path = null) {
         $absolute_path = $ftp_disk_path . $relative_path;  
@@ -548,38 +580,35 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
             $arr_master = json_decode($json_master, true);
 
         if(is_array($arr_master) /*&& count($arr_master)*/) {
-			if(defined("AUTH_USERNAME") && strlen(AUTH_USERNAME) && defined("AUTH_PASSWORD") && strlen(AUTH_PASSWORD)) {
-				$context = stream_context_create(array(
-					"ssl"=>array(
-						"verify_peer" => false,
-						"verify_peer_name" => false,
-					)
-					, 'http' => array(
-						'header'  => "Authorization: Basic " . base64_encode(AUTH_USERNAME . ":" . AUTH_PASSWORD)
-						, 'method' => 'GET'
-						, 'timeout' => 120 //<---- Here (That is in seconds)						
-					)
-				));
-
-	            $json_slave = @file_get_contents("http://" . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/file.php" . $strContestPath . "?s=" . urlencode(DOMAIN_INSET), false, $context);
-	            if($json_slave === false && strpos(DOMAIN_INSET, "www.") === false) {
-	                $json_slave = @file_get_contents("http://www." . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/file.php" . $strContestPath . "?s=" . urlencode("www." . DOMAIN_INSET), false, $context);
-	            }
-			} else {
-				$context = stream_context_create(array(
-					"ssl"=>array(
-						"verify_peer" => false,
-						"verify_peer_name" => false,
-					)
-					, 'http' => array(
-						'method' => 'GET'
-						, 'timeout' => 120 //<---- Here (That is in seconds)
-					)
-				));				
-	            $json_slave = @file_get_contents("http://" . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/file.php" . $strContestPath . "?s=" . urlencode(DOMAIN_INSET), false, $context);
-	            if($json_slave === false && strpos(DOMAIN_INSET, "www.") === false) {
-	                $json_slave = @file_get_contents("http://www." . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/file.php" . $strContestPath . "?s=" . urlencode("www." . DOMAIN_INSET), false, $context);
-	            }
+			$json_slave = file_post_contents(
+				"http://" . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/file.php" . $strContestPath . "?s=" . urlencode(DOMAIN_INSET)
+				, null
+				, (defined("AUTH_USERNAME")
+				? AUTH_USERNAME
+				: null
+			)
+				, (defined("AUTH_PASSWORD")
+				? AUTH_PASSWORD
+				: null
+			)
+				, "GET"
+				, "120"
+			);
+			if($json_slave === false && strpos(DOMAIN_INSET, "www.") === false) {
+				$json_slave = file_post_contents(
+					"http://www." . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/file.php" . $strContestPath . "?s=" . urlencode("www." . DOMAIN_INSET)
+					, null
+					, (defined("AUTH_USERNAME")
+					? AUTH_USERNAME
+					: null
+				)
+					, (defined("AUTH_PASSWORD")
+					? AUTH_PASSWORD
+					: null
+				)
+					, "GET"
+					, "120"
+				);
 			}				
  
             if(strlen($json_slave))
@@ -1091,6 +1120,7 @@ if($strError) {
 }
  
 function UpdaterCheck_on_do_action($component, $action) {
+	$strError = "";
     $operations = $component->user_vars["operations"];
     
     if(defined("FTP_USERNAME") && strlen(FTP_USERNAME) && defined("FTP_PASSWORD") && strlen(FTP_PASSWORD)) {

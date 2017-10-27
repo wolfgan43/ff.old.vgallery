@@ -1995,7 +1995,7 @@ if($display_account) {
 	}
 } else {
 	if(check_function("process_html_page_error")) {
-    	$cm->oPage->addContent(process_html_page_error(404, false, $cm->path_info));
+    	$cm->oPage->addContent(process_html_page_error(404));
     }
 }
 }

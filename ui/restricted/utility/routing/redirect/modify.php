@@ -226,8 +226,8 @@ function RedirectModify_on_done_action($component, $action) {
     			if(!$src_host)
     				$src_host == DOMAIN_INSET;
     		
-    			@unlink(FF_DISK_PATH . "/cache/redirect/" . $src_host . ".php");
-    			@unlink(FF_DISK_PATH . "/cache/redirect/" . $src_host . ".rule.php");
+    			@unlink(CM_CACHE_PATH . "/redirect/" . $src_host . ".php");
+    			@unlink(CM_CACHE_PATH . "/redirect/" . $src_host . ".rule.php");
     			break;
     			//$strError = make_routing_table_file();
     			break;
@@ -293,6 +293,7 @@ function make_routing_table_file() {
 							ORDER BY cache_page_redirect.source_path";
 					$db->query($sSQL);
 					if($db->nextRecord()) {
+						$count_user_agent = 0;
 						do {
 							$source_path = $db->getField("source_path", "Text", true);
 							if(strpos($source_path, "?") !== false) {

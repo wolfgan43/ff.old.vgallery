@@ -322,7 +322,7 @@ function system_write_cache_error_document($cache_file = null, $expires = null)
     $arrUserPath = explode("/", $globals->user_path);
 
     $errorDocumentFile = $cache_file["error_path"] . "/" . $arrUserPath[1];
-    $user_path = str_replace(FF_DISK_PATH . "/cache", "", $cache_file["cache_path"]);
+    $user_path = str_replace(CM_CACHE_PATH, "", $cache_file["cache_path"]);
 
     check_function("Filemanager");
 
@@ -381,9 +381,9 @@ function system_write_cache_stats($buffer, $page = null, $expires = null) {
         $s[$page]["css"] = $cm->oPage->page_defer["css"];
         
         $link_path = $globals->cache["file"]["cache_path"] . "/" . basename($globals->cache["file"]["cache_path"]);
-        $res_path = str_replace(FF_DISK_PATH . "/cache", "/asset", $link_path);
+        $res_path = str_replace(CM_CACHE_PATH, "/asset", $link_path);
         if(is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"]) == 1) {
-            $real_file = str_replace("/asset", FF_DISK_PATH . "/cache", $cm->oPage->page_defer["css"][0]);
+            $real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["css"][0]);
             
             //symlink($real_file, $link_path . ".css");
             //symlink(str_replace(".css", ".css.gz", $real_file), $link_path . ".css.gz");
@@ -391,7 +391,7 @@ function system_write_cache_stats($buffer, $page = null, $expires = null) {
            // $buffer = str_replace($cm->oPage->page_defer["css"][0], $res_path . ".css", $buffer);
         }
         if(is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"]) == 1) {
-            $real_file = str_replace("/asset", FF_DISK_PATH . "/cache", $cm->oPage->page_defer["js"][0]);
+            $real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["js"][0]);
             
             //symlink($real_file, $link_path . ".js");
             //symlink(str_replace(".js", ".js.gz", $cm->oPage->page_defer["js"][0]), $link_path . ".js.gz");
@@ -427,7 +427,7 @@ function system_write_cache_token_session($user, $old_session_id, $permanent_ses
 
 	
 	//$precision = 8;
-	$file_token_dir = FF_DISK_PATH . "/cache/token";
+	$file_token_dir = CM_CACHE_PATH . "/token";
 
     $token = cache_token_get_session_cookie();
     if($token) {
@@ -481,13 +481,13 @@ function system_write_cache_token_session($user, $old_session_id, $permanent_ses
 function system_destroy_cache_token_session() {
 	//$precision = 8;
     //$cookie_name = "_ut";
-    $file_token = FF_DISK_PATH . "/cache/token.php";
+    $file_token = CM_CACHE_PATH . "/token.php";
 
 	$token = cache_token_get_session_cookie();
 	if($token) {
 		$objToken = cache_token_resolve($token);
 
-		$file_token = FF_DISK_PATH . "/cache/token/" . $objToken["public"] . ".php";
+		$file_token = CM_CACHE_PATH . "/token/" . $objToken["public"] . ".php";
 		if(is_file($file_token)) {
 			require($file_token);
 
@@ -503,7 +503,7 @@ function system_destroy_cache_token_session() {
 		$public = substr($token, 0, strlen($token) - strlen($new_private));
 		$private = substr($token, strlen($public));
 
-		$file_token_dir = FF_DISK_PATH . "/cache/token";
+		$file_token_dir = CM_CACHE_PATH . "/token";
 	    $file_token = $file_token_dir . "/" . $public . ".php";
 
 		if(is_file($file_token)) {

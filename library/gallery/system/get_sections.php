@@ -370,7 +370,6 @@ function system_get_blocks($template, $settings_path = null, $navadmin = AREA_SH
 	if(defined("SKIP_VG_CONTENT"))
 		return $template;
 
-    $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
 
@@ -657,7 +656,7 @@ function system_get_block_type($name = null)
     if(!$blocktype) {
         check_function("Filemanager");
 
-        $fs = new Filemanager("php", FF_DISK_PATH . "/cache" . "/block-type" . "." . FF_PHP_EXT, "blocktype");
+        $fs = new Filemanager("php", CM_CACHE_PATH . "/block-type", "blocktype");
 
         $blocktype = $fs->read();
         if(!$blocktype) {

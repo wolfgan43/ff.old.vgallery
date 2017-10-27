@@ -361,46 +361,49 @@ function system_process_page_blocks($blocks, $params, &$template)
 						if(array_key_exists("template", $buffer))
 							$template = array_replace_recursive ($template, $buffer["template"]);                                            
 		            }
+					if(strlen($buffer["content"])) {
+						if($template["blocks"][$ID_block]["ajax"]) {
+							$params["count_block"]++;
 
-			        if(strlen($buffer["content"]) || $template["blocks"][$ID_block]["ajax"]) {
-			            $params["count_block"]++;
-			            
-			            if($params["main_content"]
-			                && strlen($buffer["content"]) 
-			                && (count($template["stats"]["main_section"]) > 1 || $template["blocks"][$ID_block]["use_in_content"] > 0)
-			            ) {
-			                $params["count_block_content"]++;
-			                $params["reset_content_by_user"] = false;
-			            }
+							if($params["main_content"]
+								&& strlen($buffer["content"])
+								&& (count($template["stats"]["main_section"]) > 1 || $template["blocks"][$ID_block]["use_in_content"] > 0)
+							) {
+								$params["count_block_content"]++;
+								$params["reset_content_by_user"] = false;
+							}
 
-		                if(!defined("SKIP_VG_LAYOUT")) 
-		                {
-							$template["buffer"]["blocks"][$block_key]["pre"] 														= $buffer["pre"];
-							$template["buffer"]["blocks"][$block_key]["post"] 														= $buffer["post"];
-						}			            
-			            
-						$template["buffer"]["blocks"][$block_key]["ID"]																= $template["blocks"][$ID_block]["ID"];
-						$template["buffer"]["blocks"][$block_key]["type"]															= $template["blocks"][$ID_block]["type_class"];
-						$template["buffer"]["blocks"][$block_key]["group"]															= $template["blocks"][$ID_block]["type_group"];
-						$template["buffer"]["blocks"][$block_key]["plugins"]														= $template["blocks"][$ID_block]["plugins"];
-						$template["buffer"]["blocks"][$block_key]["class"]															= $template["blocks"][$ID_block]["class"];
-			            if(!$params["no_content"]) {
-							$template["buffer"]["blocks"][$block_key]["content"]													= $template["blocks"][$ID_block]["fixed_pre_content"] . $buffer["content"] . $template["blocks"][$ID_block]["fixed_post_content"];
-							//Append Blocks into Section
-							if($params["section_key"])
-								$template["buffer"]["sections"][$params["section_key"]]["content"] 									.= $template["buffer"]["blocks"][$block_key]["pre"] 
-																																		. $template["buffer"]["blocks"][$block_key]["content"]
-																																		. $template["buffer"]["blocks"][$block_key]["post"];
+							if(!defined("SKIP_VG_LAYOUT"))
+							{
+								$template["buffer"]["blocks"][$block_key]["pre"] 														= $buffer["pre"];
+								$template["buffer"]["blocks"][$block_key]["post"] 														= $buffer["post"];
+							}
+
+							$template["buffer"]["blocks"][$block_key]["ID"]																= $template["blocks"][$ID_block]["ID"];
+							$template["buffer"]["blocks"][$block_key]["type"]															= $template["blocks"][$ID_block]["type_class"];
+							$template["buffer"]["blocks"][$block_key]["group"]															= $template["blocks"][$ID_block]["type_group"];
+							$template["buffer"]["blocks"][$block_key]["plugins"]														= $template["blocks"][$ID_block]["plugins"];
+							$template["buffer"]["blocks"][$block_key]["class"]															= $template["blocks"][$ID_block]["class"];
+							if(!$params["no_content"]) {
+								$template["buffer"]["blocks"][$block_key]["content"]													= $template["blocks"][$ID_block]["fixed_pre_content"] . $buffer["content"] . $template["blocks"][$ID_block]["fixed_post_content"];
+								//Append Blocks into Section
+								if($params["section_key"])
+									$template["buffer"]["sections"][$params["section_key"]]["content"] 									.= $template["buffer"]["blocks"][$block_key]["pre"]
+																																			. $template["buffer"]["blocks"][$block_key]["content"]
+																																			. $template["buffer"]["blocks"][$block_key]["post"];
+							}
+
+							//Section block count++
+							if($params["ID_section"])
+								$template["sections"][$params["ID_section"]]["processed_block"]++;
+
+							//Page Shard count++
+							$template["stats"]["processed_shard"]++;
 						}
+					} else {
+						cache_writeLog("Block: " . $template["blocks"][$ID_block]["smart_url"] . " (ID: " . $ID_block . ") URL: " . $globals->user_path, "error_block_notfound");
+					}
 
-					    //Section block count++	
-					    if($params["ID_section"]) 
-							$template["sections"][$params["ID_section"]]["processed_block"]++;
-						
-						//Page Shard count++
-						$template["stats"]["processed_shard"]++;
-						
-			        }
 				}
 
 				//store key in buffer and prevend rerender blocks
@@ -524,7 +527,7 @@ function system_process_page_sections($sections = null, $params, &$template)
 							$template["stats"]["notfound"]++;
 							if(!$params["no_content_block"]) {
 								//Append Landing Page into Section
-								$template["buffer"]["sections"][$section_key]["content"] .= process_html_page_error(null, false, $params["user_path"]);
+								$template["buffer"]["sections"][$section_key]["content"] .= process_html_page_error();
 							}
 							//Section block count++	
 		                    $template["sections"][$ID_section]["processed_block"]++;
@@ -849,7 +852,7 @@ function system_process_page($params, $template = null) {
 				//da inserire il wizard
 			} else {
      			if(check_function("process_html_page_error")) {
-            		$template["buffer"]["container"]["content"] = process_html_page_error(404, false, $params["user_path"]);
+            		$template["buffer"]["container"]["content"] = process_html_page_error(404);
 				}
 	        }		
 		}

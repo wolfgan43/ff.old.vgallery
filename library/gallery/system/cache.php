@@ -297,8 +297,8 @@
         if(is_file(FF_DISK_PATH . "/themes/site/settings.php")) {
             require(FF_DISK_PATH . "/themes/site/settings.php");
         }
-        if(is_file(FF_DISK_PATH . "/cache/locale.php")) {
-            require(FF_DISK_PATH . "/cache/locale.php");
+        if(is_file(CM_CACHE_PATH . "/locale.php")) {
+            require(CM_CACHE_PATH . "/locale.php");
 
             /** @var include $locale */
             $schema["locale"] = $locale;
@@ -1065,7 +1065,7 @@
  * TOKEN
  *****************************************************************/
     function cache_token_write($u, $objToken = null, $type = null) {
-        //$file_token_dir = FF_DISK_PATH . "/cache/token";
+        //$file_token_dir = CM_CACHE_PATH . "/token";
 
         if(is_array($objToken)) {
             cache_token_set_session_cookie($objToken);
@@ -1189,7 +1189,7 @@
         setcookie($name, false, $sessionCookie["lifetime"], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure'], $sessionCookie["httponly"]);
     }
     function cache_token_get_file_token($public_token, $type = null, $create_dir = false) {
-        $dir_token = FF_DISK_PATH . "/cache/token";
+        $dir_token = CM_CACHE_PATH . "/token";
         switch($type) {
             case "t":
                 $step = "/" . substr($public_token, 0, 3);
@@ -1208,7 +1208,7 @@
 
     function cache_check_session_by_token($token = null) {
         static $user = null;
-        //$dir_token = FF_DISK_PATH . "/cache/token";
+        //$dir_token = CM_CACHE_PATH . "/token";
         $token_user = "t";
 
         if(!$user) {
@@ -1419,7 +1419,7 @@
     return $domain;
 }
     function cache_get_permission($username, $type = "perm") {
-        $file_permission = FF_DISK_PATH . "/cache/cfg/" . $type . "/" . $username . ".php";
+        $file_permission = CM_CACHE_PATH . "/cfg/" . $type . "/" . $username . ".php";
 
         if(is_file($file_permission)) {
             require($file_permission);
@@ -1549,7 +1549,7 @@
             return array("acquired" => true); //nn funziona
 
         if(function_exists("sem_get")) {
-            if(defined("DEBUG_MODE") && isset($_REQUEST["__nocache__"])) {
+            if(/*defined("DEBUG_MODE") &&*/ isset($_REQUEST["__nocache__"])) {
                 cache_sem_remove($namespace);
             } else {
                 $params = cache_sem_get_params($namespace);
@@ -1716,8 +1716,8 @@
         if(strlen($query))
             $request_uri .= "?" . $query;
 
-        if(is_file(FF_DISK_PATH . "/cache/redirect/" . $hostname . ".php")) {
-            require(FF_DISK_PATH . "/cache/redirect/" . $hostname . ".php");
+        if(is_file(CM_CACHE_PATH . "/redirect/" . $hostname . ".php")) {
+            require(CM_CACHE_PATH . "/redirect/" . $hostname . ".php");
 
             /** @var include $r */
             if($r[$request_uri]) {
@@ -2062,27 +2062,31 @@
      * @param $string
      * @param string $filename
      */
-    function cache_writeLog($string, $filename = "log")
-    {
-        if(DEBUG_LOG === true)
-        {
-			clearstatcache();
+function cache_writeLog($string, $filename = "log") {
+	//require_once(__DIR__ . "/conf/gallery/config/other.php");
 
-			$file = FF_DISK_PATH . '/cache/' . $filename . '.txt';
-			if (!is_file($file)) {
-				$set_mod = true;
-			}
-			if ($handle = @fopen($file, 'a')) {
-				if (@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE) {
-					$i18n_error = true;
-				}
-				@fclose($handle);
+	if(DEBUG_LOG === true) {
+		$log_path = FF_DISK_PATH . '/cache/logs';
+		if(!is_dir($log_path))
+			mkdir($log_path, 0777, true);
 
-				if ($set_mod)
-					chmod($file, 0777);
-			}
+		$file = $log_path . '/' . date("Y-m-d") . "_" . $filename . '.txt';
+		if(!is_file($file)) {
+			$set_mod = true;
 		}
-    }
+		if($handle = @fopen($file, 'a'))
+		{
+			if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
+			{
+				$i18n_error = true;
+			}
+			@fclose($handle);
+
+			if($set_mod)
+				chmod($file, 0777);
+		}
+	}
+}
 
 
 

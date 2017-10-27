@@ -26,8 +26,8 @@ This program is free software: you can redistribute it and/or modify
 
 function system_load_menu($type = "admin") 
 {
-	if(is_file(FF_DISK_PATH . "/cache/menu/" . $type . "." . FF_PHP_EXT))
-		require FF_DISK_PATH . "/cache/menu/" . $type . "." . FF_PHP_EXT;
+	if(is_file(CM_CACHE_PATH . "/menu/" . $type . "." . FF_PHP_EXT))
+		require CM_CACHE_PATH . "/menu/" . $type . "." . FF_PHP_EXT;
 
     /** @var include $menu */
     if(!is_array($menu))

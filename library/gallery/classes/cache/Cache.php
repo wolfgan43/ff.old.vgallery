@@ -354,7 +354,7 @@ class Cache extends vgCommon
     public function get_page_stats($page_cache_path)
     {
         require_once ($this->getAbsPathPHP("/library/" . $this->getTheme("cms") . "/classes/filemanager/Filemanager"));
-        $fs = new Filemanager("php", $page_cache_path . "/stats.php");
+        $fs = new Filemanager("php", $page_cache_path . "/stats");
 
         return $fs->read();
     }
@@ -1970,7 +1970,7 @@ class Cache extends vgCommon
             return array("acquired" => true); //nn funziona
 
         if(function_exists("sem_get")) {
-            if(defined("DEBUG_MODE") && isset($_REQUEST["__nocache__"])) {
+            if(/*defined("DEBUG_MODE") &&*/ isset($_REQUEST["__nocache__"])) {
                 $this->sem_remove($namespace);
             } else {
                 $params = $this->sem_get_params($namespace);
@@ -2617,8 +2617,6 @@ class Cache extends vgCommon
     public function writeLog($string, $filename = "log")
     {
         //todo: da migliorare integrandolo con la classe filemanager
-        clearstatcache();
-
         $file = $this->getAbsPathCache("/log/" . $filename . '.txt');
         if(!is_file($file)) {
             $set_mod = true;
@@ -2952,7 +2950,7 @@ class Cache extends vgCommon
 		$arrUserPath = explode("/", $globals->user_path);
 
 		$errorDocumentFile = $cache_file["error_path"] . "/" . $arrUserPath[1];
-		$user_path = str_replace(FF_DISK_PATH . "/cache", "", $cache_file["cache_path"]);
+		$user_path = str_replace(CM_CACHE_PATH, "", $cache_file["cache_path"]);
 
 		check_function("Filemanager");
 
@@ -3017,9 +3015,9 @@ class Cache extends vgCommon
 			$s[$page]["css"] = $cm->oPage->page_defer["css"];
 
 			$link_path = $globals->cache["file"]["cache_path"] . "/" . basename($globals->cache["file"]["cache_path"]);
-			$res_path = str_replace(FF_DISK_PATH . "/cache", "/asset", $link_path);
+			$res_path = str_replace(CM_CACHE_PATH, "/asset", $link_path);
 			if(is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"]) == 1) {
-				$real_file = str_replace("/asset", FF_DISK_PATH . "/cache", $cm->oPage->page_defer["css"][0]);
+				$real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["css"][0]);
 
 				//symlink($real_file, $link_path . ".css");
 				//symlink(str_replace(".css", ".css.gz", $real_file), $link_path . ".css.gz");
@@ -3027,7 +3025,7 @@ class Cache extends vgCommon
 				// $buffer = str_replace($cm->oPage->page_defer["css"][0], $res_path . ".css", $buffer);
 			}
 			if(is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"]) == 1) {
-				$real_file = str_replace("/asset", FF_DISK_PATH . "/cache", $cm->oPage->page_defer["js"][0]);
+				$real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["js"][0]);
 
 				//symlink($real_file, $link_path . ".js");
 				//symlink(str_replace(".js", ".js.gz", $cm->oPage->page_defer["js"][0]), $link_path . ".js.gz");
@@ -3069,7 +3067,7 @@ class Cache extends vgCommon
 
 
 		//$precision = 8;
-		$file_token_dir = FF_DISK_PATH . "/cache/token";
+		$file_token_dir = CM_CACHE_PATH . "/token";
 
 		$token = $this->token_get_session_cookie();
 		if($token) {
@@ -3126,13 +3124,13 @@ class Cache extends vgCommon
 	function system_destroy_cache_token_session() {
 		//$precision = 8;
 		//$cookie_name = "_ut";
-		$file_token = FF_DISK_PATH . "/cache/token.php";
+		$file_token = CM_CACHE_PATH . "/token.php";
 
 		$token = $this->token_get_session_cookie();
 		if($token) {
 			$objToken = $this->token_resolve($token);
 
-			$file_token = FF_DISK_PATH . "/cache/token/" . $objToken["public"] . ".php";
+			$file_token = CM_CACHE_PATH . "/token/" . $objToken["public"] . ".php";
 			if(is_file($file_token)) {
 				require($file_token);
 
@@ -3148,7 +3146,7 @@ class Cache extends vgCommon
 			$public = substr($token, 0, strlen($token) - strlen($new_private));
 			$private = substr($token, strlen($public));
 
-			$file_token_dir = FF_DISK_PATH . "/cache/token";
+			$file_token_dir = CM_CACHE_PATH . "/token";
 			$file_token = $file_token_dir . "/" . $public . ".php";
 
 			if(is_file($file_token)) {

@@ -474,11 +474,11 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
     if($reset) {
 		unset($cache["sid"][$key]);
 		
-		if(is_file(FF_DISK_PATH . "/cache/sid/" . strtolower(get_session("UserID")) . "/" . $key . ".html")) {
-			@unlink(FF_DISK_PATH . "/cache/sid/" . strtolower(get_session("UserID")) . "/" . $key . ".html");
+		if(is_file(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/" . $key . ".html")) {
+			@unlink(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/" . $key . ".html");
 		}
-		if(is_file(FF_DISK_PATH . "/cache/sid/" . strtolower(get_session("UserID")) . "/gzip/" . $key . ".html.gz")) {
-			@unlink(FF_DISK_PATH . "/cache/sid/" . strtolower(get_session("UserID")) . "/gzip/" . $key . ".html.gz");
+		if(is_file(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/gzip/" . $key . ".html.gz")) {
+			@unlink(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/gzip/" . $key . ".html.gz");
 		}
 	    $sSQL = "DELETE FROM cache_sid WHERE sid = " . $db->toSql($key) . " AND uid = " . $db->toSql($uid);
 		$db->query($sSQL);
@@ -539,7 +539,7 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
 	
 	
 /*	
-	$file = FF_DISK_PATH . "/cache/sid.php";
+	$file = CM_CACHE_PATH . "/sid.php";
     $sid_error = false;
 
     if(@filesize($file))
@@ -616,7 +616,7 @@ function get_sid($id, $smart_url = null, $return_key = false) {
 	
 	
 	/*
-	$file = FF_DISK_PATH . "/cache/sid.php";
+	$file = CM_CACHE_PATH . "/sid.php";
 	
 	if(is_file($file)) {
     	require($file);	
