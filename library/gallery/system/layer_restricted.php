@@ -667,12 +667,6 @@ function system_layer_admin($cm)
         }
     }
     
-    if(is_dir(FF_DISK_PATH . "/conf/gallery/ajaxplorer")) {
-        $cm->modules["restricted"]["menu"]["layout"]["elements"]["explore"]["hide"] = false;
-    } else {
-        $cm->modules["restricted"]["menu"]["layout"]["elements"]["explore"]["hide"] = true;
-    }
-    
     $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_administration");
     $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_notify");
     $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_quickpanel");

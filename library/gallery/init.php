@@ -144,6 +144,7 @@ function ffTemplate_applets_on_loaded_file($tpl) {
 
 	$cm->preloadApplets($tpl);
 	$cm->parseApplets($tpl);
+
 }
 
 

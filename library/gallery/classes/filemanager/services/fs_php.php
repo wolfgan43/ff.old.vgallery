@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class filemanagerPhp
 {
-    const TYPE                                                  = "fs";
+    const EXT                                                   = "php";
 
     private $device                                             = null;
     private $config                                             = null;
@@ -34,6 +34,9 @@ class filemanagerPhp
 
     public function __construct($filemanager, $data = null, $config = null)
     {
+        $path = $filemanager->getParam("path");
+        $filemanager->setParam("path", dirname($path) . "/" . basename($path, "." . $this::EXT) . "." . $this::EXT);
+
         $this->filemanager                                      = $filemanager;
         $this->setConfig($config);
     }

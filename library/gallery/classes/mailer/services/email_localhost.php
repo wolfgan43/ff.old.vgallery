@@ -52,9 +52,9 @@ class mailerLocalhost
         $this->config = $this->mailer->getConfig($this::TYPE);
         if (!$this->config["username"])
         {
-            if (is_file($this->mailer->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT)))
+            if (is_file($this->mailer->getAbsPathPHP("/config")))
             {
-                require_once($this->mailer->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT));
+                require_once($this->mailer->getAbsPathPHP("/config"));
 
                 $this->config["host"] = (defined("A_SMTP_HOST")
                     ? A_SMTP_HOST

@@ -27,7 +27,7 @@ function system_set_cache_sid($sid, $data, $selected_lang) {
     if(use_cache() !== false) {
         if(strlen($sid) && strlen($data)) {
             $actual_user = strtolower(get_session("UserID"));
-            $actual_user_path = FF_DISK_PATH . "/cache/sid/" . strtolower($selected_lang) . "/" . $actual_user . "/gzip";
+            $actual_user_path = CM_CACHE_PATH . "/sid/" . strtolower($selected_lang) . "/" . $actual_user . "/gzip";
             if(!is_dir($actual_user_path)) {
                 $res = @mkdir($actual_user_path, 0777, true);
                 if($res)
@@ -35,7 +35,7 @@ function system_set_cache_sid($sid, $data, $selected_lang) {
             }
             
             //normal 
-            $cache_sid_path = FF_DISK_PATH . "/cache/sid/" . strtolower($selected_lang) . "/" . $actual_user . "/" . $sid . ".html";
+            $cache_sid_path = CM_CACHE_PATH . "/sid/" . strtolower($selected_lang) . "/" . $actual_user . "/" . $sid . ".html";
            /* if (!$handle = @fopen($cache_sid_path, "w")) {
                 $strError .= "Unable write file: " . $cache_sid_path;
             } else {
@@ -47,7 +47,7 @@ function system_set_cache_sid($sid, $data, $selected_lang) {
             }*/
             
             //compressed
-            $cache_sid_gzip_path = FF_DISK_PATH . "/cache/sid/" . strtolower($selected_lang) . "/" . $actual_user . "/gzip/" . $sid . ".html.gz";
+            $cache_sid_gzip_path = CM_CACHE_PATH . "/sid/" . strtolower($selected_lang) . "/" . $actual_user . "/gzip/" . $sid . ".html.gz";
            /* if (!$handle = @fopen($cache_sid_gzip_path, "w")) {
                 $strError .= "Unable write file: " . $cache_sid_gzip_path;
             } else {
@@ -67,5 +67,4 @@ function system_set_cache_sid($sid, $data, $selected_lang) {
 
         }    
     }
-    return $strError;
 }

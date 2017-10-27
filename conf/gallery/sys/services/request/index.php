@@ -47,6 +47,7 @@ if(is_array($req) && count($req)) {
 				}
 		}
     }
+
 }
 
 if(!$req["notify"] && check_function("system_trace")) {

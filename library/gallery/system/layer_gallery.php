@@ -80,7 +80,6 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
     	$template = system_get_blocks($template); 
     }
 
-
     if(!$template["primary_section"])
         $template["primary_section"] = $template["main_section"][0];      
 
@@ -438,7 +437,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 */											
 											$buffer = system_block_process($layout_value, $section_params);
                                            	$section_params = $buffer["params"];
-                                           
+
 //											$sections[$section_key]["layouts"][$layout_key]["content"] = $wrap["prefix"] . $buffer["content"] . $wrap["postfix"];
 											
 											$layout_value["content"] = $buffer["content"];
@@ -451,40 +450,42 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 												$template = array_replace_recursive ($template, $buffer["template"]);
                                                                                         
                                         }
+										if(strlen($layout_value["content"])) {
+											if ($layout_value["visible"] == true || $layout_value["visible"] == null) {
+												$section_params["count_block"]++;
+												/*if(isset($buffer["data_blocks"]) && is_array($buffer["data_blocks"]) && count($buffer["data_blocks"])) {
+													$cache_page["data_blocks"] = array_merge($cache_page["data_blocks"], $buffer["data_blocks"]);
+												} */
 
-                                        if(($layout_value["visible"] == true || $layout_value["visible"] == null) && strlen($layout_value["content"])) {
-                                            $section_params["count_block"]++;
-                                            /*if(isset($buffer["data_blocks"]) && is_array($buffer["data_blocks"]) && count($buffer["data_blocks"])) {
-                                                $cache_page["data_blocks"] = array_merge($cache_page["data_blocks"], $buffer["data_blocks"]);
-                                            } */
-                                            
-                                            if($section_params["main_content"]
-                                                && strlen($layout_value["content"]) 
-                                                && (count($template["main_section"]) > 1 || $layout_value["use_in_content"] > 0)
-                                            ) {
-                                                $section_params["count_block_content"]++;
-                                                $section_params["reset_content_by_user"] = false;
-                                            }
+												if ($section_params["main_content"]
+													&& strlen($layout_value["content"])
+													&& (count($template["main_section"]) > 1 || $layout_value["use_in_content"] > 0)
+												) {
+													$section_params["count_block_content"]++;
+													$section_params["reset_content_by_user"] = false;
+												}
 
-                                            if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
-                                                $template["sections"][$section_key]["processed_block"]++;
+												if (is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
+													$template["sections"][$section_key]["processed_block"]++;
 
-                                                //parte per il templating custom
-												if(!$tpl_layer->isset_var("block_" . $layout_value["smart_url"])) {
-                                                    if(array_key_exists("Sez" . $section_key, $tpl_layer->DBlocks) !== false) {
-                                                        $tmp_arrSection[$section_key] = $tmp_arrSection[$section_key] . $layout_value["content"];
-                                                    } else {
-                                                        $tpl_layer->set_var("layout", $layout_value["fixed_pre_content"] . $layout_value["content"] . $layout_value["fixed_post_content"]);
-                                                        $tpl_layer->parse("SezSectionLayout", true);
-                                                    }
-                                                } else {
-                                                    $tpl_layer->set_var("block_" . $layout_value["smart_url"], $layout_value["content"]);
-                                                }
-                                            } else {
-                                                $frame_buffer .= $layout_value["content"];
-                                            }                                        
-                                        }
-										
+													//parte per il templating custom
+													if (!$tpl_layer->isset_var("block_" . $layout_value["smart_url"])) {
+														if (array_key_exists("Sez" . $section_key, $tpl_layer->DBlocks) !== false) {
+															$tmp_arrSection[$section_key] = $tmp_arrSection[$section_key] . $layout_value["content"];
+														} else {
+															$tpl_layer->set_var("layout", $layout_value["fixed_pre_content"] . $layout_value["content"] . $layout_value["fixed_post_content"]);
+															$tpl_layer->parse("SezSectionLayout", true);
+														}
+													} else {
+														$tpl_layer->set_var("block_" . $layout_value["smart_url"], $layout_value["content"]);
+													}
+												} else {
+													$frame_buffer .= $layout_value["content"];
+												}
+											}
+										} else {
+											cache_writeLog("Block: " . $layout_value["smart_url"] . " (ID: " . $layout_value["ID"] . ") URL: " . $user_path, "error_block_notfound");
+										}
                                     }
                                 }
 
@@ -523,7 +524,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 									} elseif($section_params["page_invalid"] === true) {
                                         $section_params["content_block"] = 0;
                                     } else {
-	                                    if($section_params["reset_content_by_user"] !== false 
+	                                    if($section_params["reset_content_by_user"] !== false
 	                                    	&& !$section_params["count_block_content"]
 	                                    )
 	                                        $section_params["content_block"] = 0;
@@ -541,7 +542,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 										} else {
 											$count_notfound++;
 											if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
-												$tpl_layer->set_var("layout", process_html_page_error(null, false, $user_path));
+												$tpl_layer->set_var("layout", process_html_page_error());
                                                 $tpl_layer->parse("SezSectionLayout", true);											
 		                                        $template["sections"][$section_key]["processed_block"]++;
 											}
@@ -758,7 +759,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 				//da inserire il wizard
 			} else {
      			if(check_function("process_html_page_error")) {
-            		$tpl_layer->set_var("layout", process_html_page_error(404, false, $user_path));
+            		$tpl_layer->set_var("layout", process_html_page_error(404));
 				}
 	        }
 

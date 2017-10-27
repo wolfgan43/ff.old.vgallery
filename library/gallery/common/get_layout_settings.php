@@ -258,10 +258,16 @@ function get_layout_by_block($type, $ctx = null, $out = null) {
 			$setting_type = "VIRTUAL_GALLERY";
 			if(is_array($ctx)) {
 				foreach($ctx AS $ctx_value) {
-					$arrWhere[] = "CONCAT('/', IF(layout.value = '/', '', layout.value), IF(layout.params = '/', '', layout.params)) = " . $db->toSql($ctx_value);
+					if(strpos($ctx_value, "/") === 0)
+						$arrWhere[] = "CONCAT('/', IF(layout.value = '/', '', layout.value), IF(layout.params = '/', '', layout.params)) = " . $db->toSql($ctx_value);
+					else
+						$arrWhere[] = "layout.smart_url = " . $db->toSql($ctx_value);
 				}
 			} elseif(strlen($ctx)) {
-				$arrWhere[] = "CONCAT('/', IF(layout.value = '/', '', layout.value), IF(layout.params = '/', '', layout.params)) = " . $db->toSql($ctx);
+				if(strpos($ctx, "/") === 0)
+					$arrWhere[] = "CONCAT('/', IF(layout.value = '/', '', layout.value), IF(layout.params = '/', '', layout.params)) = " . $db->toSql($ctx);
+				else
+					$arrWhere[] = "layout.smart_url = " . $db->toSql($ctx);
 			}
 			$sSQL = "SELECT layout.*
 						, (" . (is_array($arrWhere) && count($arrWhere)

@@ -149,7 +149,7 @@ function system_init($cm) {
         //|| isset($_REQUEST["XHR_COMPONENT"])
     ) {
     	if($_SERVER["REMOTE_ADDR"] != $_SERVER["SERVER_ADDR"]) {
-			require_once(CACHE_DISK_PATH . "/library/gallery/system/trace.php");
+			require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
     		if(system_trace_isCrawler()) {
     			http_response_code("401");
     			echo '<html>
@@ -1156,6 +1156,8 @@ function system_cache_on_tpl_parse($oPage, $tpl)
         $oPage->compact_css = false;
 		$oPage->compact_js = false;	
     }
+
+
     //$oPage->minify = "strip";
     if(defined("DISABLE_CACHE"))
     	$oPage->compress = false;

@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function process_html_page_error($http_response = null, $redirect = null, $clear_cache = null) {
+function process_html_page_error($http_response = null, $redirect = null, $error = null) {
 
 	if($redirect && check_function("system_gallery_redirect"))
 		system_gallery_redirect($redirect);
@@ -37,18 +37,13 @@ function process_html_page_error($http_response = null, $redirect = null, $clear
                             )
 							: ffTemplate::_get_word_by_code("http_response_empty_title")
 						);
-	if($clear_cache) {
-		$db = ffDB_Sql::factory();
-		
-		$sSQL = "DELETE FROM cache_page WHERE cache_page.user_path = " . $db->toSql($clear_cache);
-		$db->execute($sSQL);
-
-		use_cache(false);
+	if($error) {
+		cache_writeLog((is_array($error) ? implode(", ", $error) : $error), "error_block_notfound");
 	}
 	if($http_response && is_numeric($http_response)) {
 		$params["icon"] = false;
 	}
-	
+
 	return process_html_notify("info", $http_response_label, ffTemplate::_get_word_by_code("http_response_description"), $params);
 }
 

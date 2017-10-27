@@ -246,7 +246,7 @@ function update_cache_file($last_update, $path = null) {
         //$count_page = $db->numRows();
         $max_page = 100;
         $page = 0;
-        $base_path = FF_DISK_PATH . "/cache";
+        $base_path = CM_CACHE_PATH;
         $error_document_path = $schema["page"]["/error"]["cache_path"];
 
         do {

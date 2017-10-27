@@ -145,6 +145,7 @@ ff.cms = (function () {
 			        //itemElem = jQuery(elem);
 			}
 			jQuery("head").append(jQuery(data).nextAll("LINK"));
+            jQuery("head").append(jQuery(data).nextAll("STYLE"));
 			jQuery("head").append(jQuery(data).nextAll("SCRIPT"));
 
 			//jQuery(itemID).attr("id"			, itemAttr["id"]);
@@ -382,11 +383,14 @@ ff.cms = (function () {
 
 	        switch(arrAjaxOnReady[0]) {
             	case "inview":
-            		lazyBlock.push(id);
-            		break;
+            	    if(!ff.inView("#" + id, 0.5)) {
+                        lazyBlock.push(id);
+                        break;
+                    }
             	case "load":
             	case "reload":
-            		loadAjax(link, jQuery(this), arrAjaxOnReady[1], "replace", eventName);
+            	    ff.cms.get(link, "#" + id);
+             		loadAjax(link, jQuery(this), arrAjaxOnReady[1], "replace", eventName);
 					break;
             	case "preload":
             		if(!jQuery(this).is(":visible"))
@@ -412,71 +416,6 @@ ff.cms = (function () {
 					e.preventDefault();
 
 					loadAjaxLink(this, link, undefined, ajaxOnEvent, eventName);
-					/*
-                    var targetID = "";
-
-                    if(jQuery(this).attr("rel")) {
-                        targetID = "#" + jQuery(this).attr("rel");
-                    } else if(jQuery(this).attr("href").indexOf("#") == 0) {
-                        targetID = jQuery(this).attr("href");
-                    }
-
-                    var callback = jQuery(this).attr("data-callback");
-                    var effect = jQuery(this).attr("data-effect");
-
-                    if(ajaxOnEvent) {
-                        arrAjaxOnEvent = ajaxOnEvent.split(" ");
-                    }
-                    if(effect)
-                        arrAjaxOnEvent[1] = effect;
-
-                    if(callback) {
-                        try {
-                            eval("ff.cms.e." + id.replace(/[^a-zA-Z 0-9]+/g, "") + " = function() { " + callback + " }");
-                        } catch(err) {
-                            console.err(err + ": " + callback);
-                        }
-                    }
-                    if(!jQuery(this).hasClass("selected")) {
-                        jQuery(this).closest(".block").find("a").each(function() {
-                            var relContent = "";
-                            if(jQuery(this).attr("rel")) {
-                                relContent = "#" + jQuery(this).attr("rel");
-                            } else if(jQuery(this).attr("href").indexOf("#") == 0) {
-                                relContent = jQuery(this).attr("href");
-                            }
-                            if(relContent && jQuery(relContent).length && jQuery(relContent).hasClass("block")) {
-                                jQuery(relContent).hide();
-                            }
-                            jQuery(this).removeClass("selected");
-
-                        });
-                        //jQuery(this).closest("div").find("a").removeClass("selected");
-                        jQuery(this).addClass("selected");
-                    }
-                    if(targetID) {
-                        if(jQuery(targetID).length) {
-                            if(arrAjaxOnEvent[0] == "reload") {
-                                loadAjax(link, jQuery(targetID), arrAjaxOnEvent[1], "replace", eventName);
-                            } else if(arrAjaxOnEvent[0] == "load") {
-                                if(jQuery(targetID).children().length > 0) {
-                                    try {
-                                        eval('jQuery(targetID).' + arrAjaxOnEvent[1] + '();');
-                                    } catch(err) {
-                                        console.err(arrAjaxOnEvent[1] + " is not a Valid Method(Effect)");
-                                    }
-                                } else {
-                                    loadAjax(link, jQuery(targetID), arrAjaxOnEvent[1], "replace", eventName);
-                                }
-                            } else {
-                                try{
-                                    eval('jQuery(targetID).' + arrAjaxOnEvent[1] + '();');
-                                } catch(err) {
-                                    console.err(arrAjaxOnEvent[1] + " is not a Valid Method(Effect)");
-                                }
-                            }
-                        }
-                    }*/
                 });
             }
 		});
@@ -506,32 +445,44 @@ ff.cms = (function () {
                         if(service[name]["tpl"] && service[name]["tpl"]["target"]) {
                             var target = service[name]["tpl"]["target"];
                             var tplVars = response[name][service[name]["tpl"]["vars"]] || response[name]["vars"];
-                            var html = response[name]["html"];
-                            if(!html && tplVars && jQuery(service[name]["tpl"]["target"]).length)
+                            var tplProperties = response[name][service[name]["tpl"]["properties"]] || response[name]["properties"];
+                            var html = response[name]["html"] || "";
+                            if(!html && jQuery(service[name]["tpl"]["target"]).length)
                                 html = jQuery(service[name]["tpl"]["target"]).html();
 
-                            if(tplVars && html) {
-								if(typeof tplVars == "object") {
-                                    for (var property in tplVars) {
-                                        if (tplVars.hasOwnProperty(property)) {
-                                            html = html.replaceAll("[" + property + "]", tplVars[property]);
+                            if(html) {
+                                if (typeof tplProperties == "object") {
+                                    for (var propType in tplProperties) {
+                                        if (tplProperties.hasOwnProperty(propType)) {
+                                            for (var property in tplProperties[propType]) {
+                                                if (tplProperties[propType].hasOwnProperty(property)) {
+                                                    html = html.replaceAll('data-'+ propType + '="<!--' + property + '-->"', propType + '="' + tplProperties[propType][property] + '"');
+                                                }
+                                            }
                                         }
                                     }
-                                    response[name]["output"] = html;
                                 }
-                            }
-							if(target) {
-                                var header = response[name]["header"] || "";
-                                var footer = response[name]["footer"] || "";
-                                var output = header + html + footer;
-                                if(output) {
-                                    if (jQuery(target, html).length > 0) {
-                                        jQuery(target).replaceWith(output);
-                                    } else {
-                                        jQuery(target).html(output);
+								if (typeof tplVars == "object") {
+									for (var property in tplVars) {
+										if (tplVars.hasOwnProperty(property)) {
+											html = html.replaceAll('<!--' + property + '-->', tplVars[property]);
+										}
+									}
+								}
+
+                                if(target) {
+                                    var header = response[name]["header"] || "";
+                                    var footer = response[name]["footer"] || "";
+                                    var output = header + html + footer;
+                                    if(output) {
+                                        if (jQuery(target, html).length > 0) {
+                                            jQuery(target).replaceWith(output);
+                                        } else {
+                                            jQuery(target).html(output);
+                                        }
                                     }
                                 }
-							}
+                            }
                         }
 
 						if(service[name]["callback"])
@@ -756,17 +707,17 @@ ff.cms = (function () {
             "loadReq" : function(target) {
             	loadReq(target);
             },
-			"get" : function(name, callback, params, opt) {
-				var res = null;
+            "get" : function(name, callback, params, opt) {
+                var res = null;
 
-				if(!name) {
-					res = service;
-				} else {
-					if(!service) service = {};
+                if(!name) {
+                    res = service;
+                } else {
+                    if(!service) service = {};
 
-					if(!service[name]) service[name] = {};
+                    if(!service[name]) service[name] = {};
 
-					if(callback) {
+                    if(callback) {
                         if(jQuery.isFunction(callback)) {
                             service[name]["callback"] = callback;
                         } else {
@@ -783,27 +734,27 @@ ff.cms = (function () {
                                 tpl["target"] = callback;
                             }
                         }
-					} else {
-						if(!opt) opt = {};
-                            opt["async"] = true;
-					}
+                    } else {
+                        if(!opt) opt = {};
+                        opt["async"] = true;
+                    }
 
                     if(tpl)
                         service[name]["tpl"] = tpl;
 
-					if(params)
-						service[name]["params"] = params;
+                    if(params)
+                        service[name]["params"] = params;
 
-					if(opt)
-						service[name]["opt"] = opt;
+                    if(opt)
+                        service[name]["opt"] = opt;
 
-					if(service[name]["response"])
-						res = service[name]["response"];
-					else
-						res = service[name];
-				}
-				return res;
-			},
+                    if(service[name]["response"])
+                        res = service[name]["response"];
+                    else
+                        res = service[name];
+                }
+                return res;
+            },
             "getBlock" : function(id, params, callback) {
                 if(id) {
                     var elem = jQuery("#" + id);

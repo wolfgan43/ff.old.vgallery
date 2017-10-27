@@ -95,9 +95,9 @@ class notifierOnesignal
 
         if (!$this->config["app_id"] || $this->config["app_key"])
         {
-            if (is_file($this->notifier->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT)))
+            if (is_file($this->notifier->getAbsPathPHP("/config")))
             {
-                require_once($this->notifier->getAbsPath("/conf/gallery/config/other." . FF_PHP_EXT));
+                require_once($this->notifier->getAbsPathPHP("/config"));
 
                 $this->config["app_id"] = (defined("NOTIFY_PUSH_ONESIGNAL_APP_ID")
                     ? NOTIFY_PUSH_ONESIGNAL_APP_ID

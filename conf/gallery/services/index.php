@@ -13,7 +13,7 @@
     }
     
     $sSQL = "";
-	$arraydir = glob(FF_DISK_PATH . "/conf" . GALLERY_PATH_SERVICES . "/*", GLOB_ONLYDIR);
+	$arraydir = glob(VG_WEBSERVICES_PATH . "/*", GLOB_ONLYDIR);
 	
 	if (is_array($arraydir) && count($arraydir)) {
 		foreach ($arraydir as $dirvalue) {

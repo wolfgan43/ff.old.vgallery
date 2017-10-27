@@ -64,7 +64,41 @@
             }
         }
     }
-    
+
+    if(!function_exists("file_post_contents")) {
+		function file_post_contents($url, $data = null, $username = null, $password = null, $method = "POST", $timeout = 60) {
+			if(!$username && defined("AUTH_USERNAME"))
+				$username 				= AUTH_USERNAME;
+			if(!$password && defined("AUTH_PASSWORD"))
+				$password 				= AUTH_PASSWORD;
+
+			if($data)
+				$postdata 				= http_build_query($data);
+
+			$headers = array();
+			if($method == "POST")
+				$headers[] 				= "Content-type: application/x-www-form-urlencoded";
+			if($username)
+				$headers[] 				= "Authorization: Basic " . base64_encode($username . ":" . $password);
+
+			$opts = array(
+				'ssl' => array(
+					"verify_peer" 		=> false,
+					"verify_peer_name" 	=> false
+				),
+				'http' => array(
+					'method'  			=> $method,
+					'timeout'  			=> $timeout,
+					'header'  			=> implode("\r\n", $headers),
+					'content' 			=> $postdata
+				)
+			);
+
+			$context = stream_context_create($opts);
+			return @file_get_contents($url, false, $context);
+		}
+	}
+
 	if(defined("BLOCK_INSTALL") || isset($_REQUEST["complete"])) {
 			echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
 			echo '<html>';
@@ -1009,33 +1043,16 @@
                         do {
                             
                             $count_limit++;
-							if(strlen($auth_username) && strlen($auth_password)) {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-								        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-										, 'method' => 'GET'
-						    			, 'timeout' => 120 //<---- Here (That is in seconds)								        
-								    )
-								));
 
-	                            $json = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/structure.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							} else {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-									    'method' => 'GET'
-									    , 'timeout' => 120 //<---- Here (That is in seconds)
-									)
-								));							
-								$json = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/structure.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							}
+							$json = file_post_contents(
+								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/structure.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
+								, null
+								, $auth_username
+								, $auth_password
+								, "GET"
+								, "120"
+							);
+
                             $arr_json = json_decode($json, true);
                             if(is_array($arr_json)) {
                                 if(count($arr_json)) {
@@ -1222,7 +1239,6 @@ RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'robots\.txt
 RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'favicon
 RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'conf/gallery/install
 RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'conf/gallery/updater
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'conf/gallery/ajaxplorer
 RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'router\.php';
                     if($PHP_fastCGI) {
                         $htaccess_content .=' 
@@ -1359,33 +1375,17 @@ FileETag None';
                         // Tenta di sincronizzare la INDICI DB con il MASTER SITE
                          $count_limit = 0;
                         do {
-                            $count_limit++; 
-							if(strlen($auth_username) && strlen($auth_password)) {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-								        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-								        , 'method' => 'GET'
-						    			, 'timeout' => 120 //<---- Here (That is in seconds)
-								    )
-								));
-                            	$json = file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/indexes.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							} else {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-									    'method' => 'GET'
-									    , 'timeout' => 120 //<---- Here (That is in seconds)
-									)
-								));								
-                            	$json = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/indexes.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							}
+                            $count_limit++;
+
+							$json = file_post_contents(
+								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/indexes.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
+								, null
+								, $auth_username
+								, $auth_password
+								, "GET"
+								, "120"
+							);
+
                             $arr_json = json_decode($json, true);
                             if(is_array($arr_json)) {
                                 if(count($arr_json)) {
@@ -1423,34 +1423,17 @@ FileETag None';
                         // Tenta di sincronizzare la DATI BASE DB con il MASTER SITE
                          $count_limit = 0;
                         do {
-                            $count_limit++; 
-							if(strlen($auth_username) && strlen($auth_password)) {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-								        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-								        , 'method' => 'GET'
-									    , 'timeout' => 120 //<---- Here (That is in seconds)
-								    )
-								));
+                            $count_limit++;
 
-	                            $json = file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/basic?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							} else {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-									    'method' => 'GET'
-									    , 'timeout' => 120 //<---- Here (That is in seconds)
-									)
-								));								
-								$json = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/basic?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							}
+							$json = file_post_contents(
+								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/basic?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
+								, null
+								, $auth_username
+								, $auth_password
+								, "GET"
+								, "120"
+							);
+
                             $arr_json = json_decode($json, true);
                             if(is_array($arr_json)) {
                                 if(count($arr_json)) {
@@ -1471,33 +1454,15 @@ FileETag None';
                         do {
                             $count_limit++;
                             // Tenta di sincronizzare i DATI INTERNATIONAL DB con il MASTER SITE
-							if(strlen($auth_username) && strlen($auth_password)) {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-								        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-									    , 'method' => 'GET'
-									    , 'timeout' => 120 //<---- Here (That is in seconds)								        
-								    )
-								));
+							$json = file_post_contents(
+								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/international?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
+								, null
+								, $auth_username
+								, $auth_password
+								, "GET"
+								, "120"
+							);
 
-	                            $json = file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/international?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							} else {
-								$context = stream_context_create(array(
-								    "ssl"=>array(
-								        "verify_peer" => false,
-								        "verify_peer_name" => false,
-								    )
-								    , 'http' => array(
-									    'method' => 'GET'
-									    , 'timeout' => 120 //<---- Here (That is in seconds)
-									)
-								));								
-	                            $json = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/international?json=1&exec=1&nowarning=1&lo=" . urlencode("-1"), false, $context);
-							}
                             $arr_json = json_decode($json, true);
                             if(is_array($arr_json)) {
                                 if(count($arr_json)) {
@@ -1517,21 +1482,23 @@ FileETag None';
             }                
         }            
 		
-        $arrPathNeed = array("/applets" => "readable"
-                            , "/cache" => "writable"
-                            , "/cache/international" => "writable"
-                            , "/cache/css" => "writable"
-                            , "/cache/js" => "writable"
-                            , "/contents" => "readable"
-                            , $site_updir => "writable"
-                            , "/themes/site/contents" => "readable"
-                            , "/themes/site/css" => "readable"
-                            , "/themes/site/fonts" => "readable"
-                            , "/themes/site/images" => "readable"
-                            , "/themes/site/javascript" => "readable"
-                            , "/themes/site/swf" => "readable"
-                            , "/themes/site/xml" => "readable"
-                        );
+        $arrPathNeed = array(
+        	"/applets" 							=> "readable"
+			, "/cache" 							=> "writable"
+			, "/cache/international" 			=> "writable"
+			, "/cache/css" 						=> "writable"
+			, "/cache/js" 						=> "writable"
+			, "/contents" 						=> "readable"
+			, $site_updir 						=> "writable"
+			, "/themes/site/conf" 				=> "readable"
+			, "/themes/site/contents" 			=> "readable"
+			, "/themes/site/css" 				=> "readable"
+			, "/themes/site/fonts" 				=> "readable"
+			, "/themes/site/images" 			=> "readable"
+			, "/themes/site/javascript" 		=> "readable"
+			, "/themes/site/swf" 				=> "readable"
+			, "/themes/site/xml" 				=> "readable"
+		);
         
         if(is_array($arrPathNeed) && count($arrPathNeed)) {
             foreach($arrPathNeed AS $arrPathNeed_key => $arrPathNeed_value) {
@@ -1546,7 +1513,7 @@ FileETag None';
             }
         }
 
-        $arrFileNeed = array("/themes/site/css/main.css" => "readable"
+        $arrFileNeed = array("/themes/site/css/root.css" => "readable"
                         );
 
         if(is_array($arrFileNeed) && count($arrFileNeed)) {
@@ -2062,20 +2029,22 @@ Options -Indexes
 Options -ExecCGI
 AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi';
 
-							$arrPathNeed = array("/applets" => "readable"
-		                                        , "/cache" => "writable"
-		                                        , "/contents" => "readable"
-		                                        , "/themes" => "readable"
-		                                        , "/themes/site" => "readable"
-		                                        , "/themes/site/contents" => "readable"
-		                                        , "/themes/site/css" => "readable"
-		                                        , "/themes/site/fonts" => "readable"
-		                                        , "/themes/site/images" => "readable"
-		                                        , "/themes/site/javascript" => "readable"
-		                                        , "/themes/site/swf" => "readable"
-		                                        , "/themes/site/xml" => "readable"
-		                                        , "/uploads" => "writable"
-		                                    );
+							$arrPathNeed = array(
+								"/applets" 							=> "readable"
+								, "/cache"							=> "writable"
+								, "/contents" 						=> "readable"
+								, "/themes" 						=> "readable"
+								, "/themes/site" 					=> "readable"
+								, "/themes/site/conf" 				=> "readable"
+								, "/themes/site/contents" 			=> "readable"
+								, "/themes/site/css" 				=> "readable"
+								, "/themes/site/fonts" 				=> "readable"
+								, "/themes/site/images" 			=> "readable"
+								, "/themes/site/javascript" 		=> "readable"
+								, "/themes/site/swf" 				=> "readable"
+								, "/themes/site/xml" 				=> "readable"
+								, "/uploads" 						=> "writable"
+							);
 		                    
 		                    if(is_array($arrPathNeed) && count($arrPathNeed)) {
 		                        foreach($arrPathNeed AS $arrPathNeed_key => $arrPathNeed_value) {
@@ -2144,21 +2113,17 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
 				}
 				if($strError)
 					die($strError);
-				
-				if(strlen($auth_username) && strlen($auth_password)) {
-					$context = stream_context_create(array(
-					    "ssl"=>array(
-							"verify_peer" => false,
-							"verify_peer_name" => false,
-						)
-						, 'http' => array(
-					        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-					    )
-					));                               
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1", false, $context);
-				} else {
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1");
-				}				
+
+				$restore_file = file_post_contents(
+					(strlen($auth_username) && strlen($auth_password)
+						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1"
+						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1"
+					)
+					, null
+					, $auth_username
+					, $auth_password
+					, "GET"
+				);
 
 				if($restore_file === false) {
 					die("Missing File... Please reload all Updater file");
@@ -2180,21 +2145,17 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
 						die("Error: " . $restore_file);
 					}
 				}
-				if(strlen($auth_username) && strlen($auth_password)) {
-					$context = stream_context_create(array(
-					    "ssl"=>array(
-							"verify_peer" => false,
-							"verify_peer_name" => false,
-						)
-						, 'http' => array(
-					        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-					    )
-					));
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path. "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1", false, $context);
-				} else {
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path. "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1");
-				}
-				
+				$restore_file = file_post_contents(
+					(strlen($auth_username) && strlen($auth_password)
+						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path. "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1"
+						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path. "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1"
+					)
+					, null
+					, $auth_username
+					, $auth_password
+					, "GET"
+				);
+
 				if($restore_file === false) {
 					die("Missing File... Please reload all CMS file");
 				} else {
@@ -2229,32 +2190,18 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
 	    if($allow_load_file) {
 			//$check_files = false;
 			//do {
-				if(strlen($auth_username) && strlen($auth_password)) {
-					$context = stream_context_create(array(
-					    "ssl"=>array(
-							"verify_peer" => false,
-							"verify_peer_name" => false,
-						)
-						, 'http' => array(
-					        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-						    , 'method' => 'GET'
-						    , 'timeout' => 60 //<---- Here (That is in seconds)					        
-					    )
-					));
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1&exec=1", false, $context);
-				} else {
-					$context = stream_context_create(array(
-					    "ssl"=>array(
-							"verify_peer" => false,
-							"verify_peer_name" => false,
-						)
-						, 'http' => array(
-						    'method' => 'GET'
-						    , 'timeout' => 60 //<---- Here (That is in seconds)
-						)
-					));				
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1&exec=1", false, $context);
-				}
+				$restore_file = file_post_contents(
+					(strlen($auth_username) && strlen($auth_password)
+						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1&exec=1"
+						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1&exec=1"
+					)
+					, null
+					, $auth_username
+					, $auth_password
+					, "GET"
+					, "120"
+				);
+
 				if(!$restore_file) {
 					die("Critical Error... Please reload all Updater file");
 				} else {
@@ -2282,35 +2229,29 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
 			
 			//$check_files = false;
 			//do {
-				if(strlen($auth_username) && strlen($auth_password)) {
-					$context = stream_context_create(array(
-					    "ssl"=>array(
-							"verify_peer" => false,
-							"verify_peer_name" => false,
+				$restore_file = file_post_contents(
+					(strlen($auth_username) && strlen($auth_password)
+						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1&exec=1"
+						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1&exec=1"
+					)
+					, null
+					, $auth_username
+					, $auth_password
+					, "GET"
+					, "120"
+				);
+				if($restore_file !== false && !strlen($restore_file)) {
+					$restore_file = file_post_contents(
+						(strlen($auth_username) && strlen($auth_password)
+							? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1"
+							: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1"
 						)
-						, 'http' => array(
-					        'header'  => "Authorization: Basic " . base64_encode("$auth_username:$auth_password")
-						    , 'method' => 'GET'
-						    , 'timeout' => 120 //<---- Here (That is in seconds)
-					    )
-					));
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1&exec=1", false, $context);
-					if($restore_file !== false && !strlen($restore_file)) 
-						$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1", false, $context);
-				} else {
-					$context = stream_context_create(array(
-					    "ssl"=>array(
-							"verify_peer" => false,
-							"verify_peer_name" => false,
-						)
-						, 'http' => array(
-						    'method' => 'GET'
-						    , 'timeout' => 120 //<---- Here (That is in seconds)
-						)
-					));
-					$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1&exec=1", false, $context);
-					if($restore_file !== false && !strlen($restore_file)) 
-						$restore_file = @file_get_contents("http://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1", false, $context);
+						, null
+						, $auth_username
+						, $auth_password
+						, "GET"
+						, "120"
+					);
 				}
 
 				if(!$restore_file) {

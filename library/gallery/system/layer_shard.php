@@ -144,6 +144,7 @@
 			}
     		break;    		
         case "marker":
+			$frame_buffer = "";
             if(check_function("process_vgallery_thumb")) {
             	$arrMap = explode("_", basename($settings_path));
                 if(strlen($arrMap[0]))
@@ -286,10 +287,31 @@
 		                );	
 					}
 				}
-			} else {      
+			} else {
+				check_function("system_get_sections");
+				check_function("system_layer_gallery");
+				if(check_function("get_layout_settings"))
+					$layout_settings_popup = get_layout_settings(NULL, "ADMIN");
+
+				$template = system_get_blocks(array("where" => array("smart_url" => basename($settings_path))));
+				$layouts = array_values($template["blocks"]);
+				$layout = $layouts[0];
+
+				$main_section_params["js_custom_is_set"] = true;
+				$main_section_params["search"] = $globals->search;
+				$main_section_params["navigation"] = $globals->navigation;
+				$main_section_params["user_path"] = $layout["db"]["real_path"];
+				$main_section_params["settings_path"] = $layout["db"]["real_path"];
+				$buffer = system_block_process($layout, $main_section_params, $layout_settings_popup);
+
+				$main_section_params = $buffer["params"];
+				$main_section_params["count_block"]++;
+
+				$frame_buffer = $buffer["content"];
+/*
 				if(check_function("query_layout"))
 					$sSQL = query_layout_by_smart_url(basename($settings_path));
-					
+
 				$db->query($sSQL);
 				if($db->nextRecord() && check_function("system_layer_gallery")) {
 					if(check_function("get_layout_settings"))
@@ -340,6 +362,9 @@
 						$frame_buffer = $buffer["content"];
 					//} while($db->nextRecord());
 				}
+*/
+
+
 			}
     }  
 

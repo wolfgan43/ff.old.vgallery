@@ -95,16 +95,6 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
         $tpl->set_var("tools_class", "");
         $tpl->set_var("tools_icon", cm_getClassByFrameworkCss("eraser", "icon-tag", "2x"));
 
-        if(is_dir(FF_DISK_PATH . "/conf/gallery/ajaxplorer")) {
-            $tpl->set_var("fs_class", "");
-            $tpl->set_var("fs_icon", cm_getClassByFrameworkCss("hdd-o", "icon-tag"));
-
-            $tpl->set_var("file_system_path", FF_SITE_PATH . "/conf/gallery/ajaxplorer");
-            $tpl->parse("SezAdminPanelToolsAjaxplorer", false);
-        } else {
-            $tpl->set_var("SezAdminPanelToolsAjaxplorer", "");
-        }
-        
         if(AREA_CHECKER_SHOW_MODIFY) {
             $tpl->set_var("cache_class", "");
             $tpl->set_var("cache_icon", cm_getClassByFrameworkCss("eraser", "icon-tag"));

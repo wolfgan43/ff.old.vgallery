@@ -201,8 +201,8 @@ function RedirectModify_on_done_action($component, $action) {
     			if(!$src_host)
     				$src_host == DOMAIN_INSET;
     		
-    			@unlink(FF_DISK_PATH . "/cache/redirect/" . $src_host . ".php");
-    			@unlink(FF_DISK_PATH . "/cache/redirect/" . $src_host . ".rule.php");
+    			@unlink(CM_CACHE_PATH . "/redirect/" . $src_host . ".php");
+    			@unlink(CM_CACHE_PATH . "/redirect/" . $src_host . ".rule.php");
     			break;
     			//$strError = make_routing_table_file();
     			break;

@@ -421,7 +421,6 @@ elseif(strlen($settings_path))
         	break;
 		default:          
 			//$globals->cache["data_blocks"] = array(); // x cache_page
-			
 			if(!$request_type && basename($settings_path)) {
 				if(check_function("query_layout"))
 					$sSQL = query_layout_by_smart_url(basename($settings_path));

@@ -59,14 +59,14 @@
     $globals = ffGlobals::getInstance("gallery");
 
   	foreach($webservices AS $service_name => $actual_srv) {
-  		if($actual_srv["enable"] && is_file(FF_DISK_PATH . "/conf" . GALLERY_PATH_SERVICES . "/" . $service_name . "/index." . FF_PHP_EXT) && filesize(FF_DISK_PATH . "/conf" . GALLERY_PATH_SERVICES . "/" . $service_name . "/index." . FF_PHP_EXT)) {
+  		if($actual_srv["enable"] && is_file(VG_WEBSERVICES_PATH . "/" . $service_name . "/index." . FF_PHP_EXT) && filesize(VG_WEBSERVICES_PATH . "/" . $service_name . "/index." . FF_PHP_EXT)) {
             
             $res = $cm->doEvent("vg_on_webservices", array($service_name, $actual_srv));
             $rc = end($res);
 			if ($rc !== null)
                 $actual_srv = $rc;
             
-  			require_once(FF_DISK_PATH . "/conf" . GALLERY_PATH_SERVICES . "/" . $service_name . "/index." . FF_PHP_EXT);
+  			require_once(VG_WEBSERVICES_PATH . "/" . $service_name . "/index." . FF_PHP_EXT);
 		}
   	}
   }

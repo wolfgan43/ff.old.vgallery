@@ -36,8 +36,8 @@
 	}
   	
 	if(!$locale_loaded[$target]) {
-		if(is_file(FF_DISK_PATH . "/cache" . "/locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT)) {
-			require(FF_DISK_PATH . "/cache" . "/locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT);
+		if(is_file(CM_CACHE_PATH . "/locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT)) {
+			require(CM_CACHE_PATH . "/locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT);
             /** @var include $locale */
             $locale_loaded[$target] = $locale;
 		} else {
@@ -47,7 +47,7 @@
 			$content = "<?php\n";
 			$content .= '$locale = ' . var_export($locale_loaded[$target], true) . ";";
 
-			cm_filecache_write(FF_DISK_PATH . "/cache", "locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT, $content, $expires);
+			cm_filecache_write(CM_CACHE_PATH, "locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT, $content, $expires);
 		}
 	}
 	
@@ -60,8 +60,8 @@
 function translate($words, $toLang, $fromLang = LANGUAGE_DEFAULT, $webservice = null) {
     static $t = null;
     
-    if(!$t && is_file(FF_DISK_PATH . "/cache" . "/translation." . FF_PHP_EXT)) {
-        require(FF_DISK_PATH . "/cache" . "/translation." . FF_PHP_EXT);
+    if(!$t && is_file(CM_CACHE_PATH . "/translation." . FF_PHP_EXT)) {
+        require(CM_CACHE_PATH . "/translation." . FF_PHP_EXT);
     }
     
     $fromto = $fromLang . "|" . $toLang;
@@ -111,7 +111,7 @@ function translate($words, $toLang, $fromLang = LANGUAGE_DEFAULT, $webservice = 
             $content = "<?php\n";
             $content .= '$t = ' . var_export($t, true) . ";";
 
-            cm_filecache_write(FF_DISK_PATH . "/cache", "translation." . FF_PHP_EXT, $content, $expires);                    
+            cm_filecache_write(CM_CACHE_PATH, "translation." . FF_PHP_EXT, $content, $expires);
         }
     }
 

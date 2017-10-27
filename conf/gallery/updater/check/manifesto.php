@@ -275,15 +275,7 @@
             }
         }
     }
-    if(is_dir(FF_DISK_PATH . "/conf/gallery/ajaxplorer")) {
-        $manifesto["external_app/ajaxplorer"]["enable"] = false;
-        $manifesto["external_app/ajaxplorer"]["type"] = "External Application";
-        $manifesto["external_app/ajaxplorer"]["path"] = array(
-            "/conf/gallery/ajaxplorer"
-            , "/conf/gallery/manage/explore"
-        );
-        $manifesto["external_app/ajaxplorer"]["db"] = array();
-    }
+
     //EXTERNAL APPLICATIONS FIX
     if(array_key_exists("external_app/ckfinder", $manifesto)) 
         $manifesto["external_app/ckfinder"]["path"][] = "/themes/responsive/ff/ffField/widgets/ckuploadify";

@@ -161,6 +161,7 @@ function get_thumb($path, $params = array(), $res = null)
 	    $params["fake_name"] = ffCommon_url_rewrite(normalize_code_word($params["fake_name"]));
 
 		if(is_array($thumb_settings) && count($thumb_settings)) {
+			$ID = "";
 		    foreach($thumb_settings AS $thumb_key => $thumb_params) {
 				if($thumb_key == "key")
 					continue;

@@ -262,8 +262,9 @@
   	, "restricted" => false 			
   	, "api" => false
   	, "type" => "html"
-  ); 
-
+    , "rnd" => 0
+    , "compress" => true
+  );
 /**
 * System Services
 */  

@@ -23,10 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if(!defined("FF_PHP_EXT"))
-    define("FF_PHP_EXT", "php");
-
-require_once(__DIR__ . "/../vgCommon." . FF_PHP_EXT);
+require_once(__DIR__ . "/../vgCommon.php");
 
 class Filemanager extends vgCommon
 {
@@ -283,7 +280,7 @@ class Filemanager extends vgCommon
         {
             $type                                                       = "fs";
             $controller                                                 = "filemanager" . ucfirst($service);
-            require_once($this->getAbsPath("/filemanager/services/" . $type . "_" . $service . "." . FF_PHP_EXT, true));
+            require_once($this->getAbsPathPHP("/filemanager/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             //$db                                                         = $driver->getDevice();

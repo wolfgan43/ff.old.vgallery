@@ -286,79 +286,125 @@ function system_get_sections($selective = NULL) {
 }
 
 function system_get_blocks($template) {
-    $cm = cm::getInstance();
+	$db = ffDB_Sql::factory();
     $globals = ffGlobals::getInstance("gallery");
-    $db = ffDB_Sql::factory();
 
-    $userNID = get_session("UserNID");
-    $is_guest = (!$userNID || $userNID == MOD_SEC_GUEST_USER_ID) && $globals->page["cache"] != "guest"; 
-    
-    $settings_path = $globals->settings_path;
-    $section_set = $db->toSql(implode(",", array_keys($template["sections"])), "Text", false);
+	check_function("get_class_by_grid_system");
 
-    if($section_set) {
+	$userNID 													= get_session("UserNID");
+	$params = array(
+		"is_guest" 												=> (!$userNID || $userNID == MOD_SEC_GUEST_USER_ID) && $globals->page["cache"] != "guest"
+		, "settings_path" 										=> $globals->settings_path
+		, "flags" => array(
+			"ajax" 												=> true
+			, "path" 											=> true
+			, "visible" 										=> true
+		)
+	);
+
+    if(is_array($template["where"]) && count($template["where"])) {
+		foreach ($template["where"] AS $key => $value) {
+			switch ($key) {
+				case "smart_url":
+					$query["where"]["smart_url"] 				=  (is_array($value)
+																	? "layout.smart_url IN('" . implode("','", $value) . "')"
+																	: "layout.smart_url = " . $db->toSql($value)
+																);
+					$query["group"][] 							= "layout.ID";
+					$params["flags"]["ajax"]					= false;
+					$params["flags"]["path"] 					= false;
+					$params["flags"]["visible"]					= false;
+					break;
+				case "path":
+					$query["where"]["path"] 					= $db->toSql($value, "Text") . " LIKE CONCAT(layout_path.ereg_path, IF(layout_path.cascading, '%', ''))";
+					$query["join"]["path"] 						= "INNER JOIN layout_path ON layout_path.ID_layout = layout.ID";
+					$params["flags"]["visible"]					= false;
+					break;
+				default:
+			}
+		}
+	}
+
+	if(!$query) {
+		$query["where"]["path"] 								= $db->toSql($params["settings_path"]) . " LIKE CONCAT(layout_path.ereg_path, IF(layout_path.cascading, '%', ''))";
+	}
+
+	if ($template["sections"]) {
+		$section_set = $db->toSql(implode(",", array_keys($template["sections"])), "Text", false);
+
+		$query["where"]["location"] 							= "layout.ID_location IN(" . $section_set . ")";
+		$query["order"][] 										= "FIELD(layout.ID_location, " . $section_set . ")";
+	}
+
+    if($query) {
+		$block_type_loaded 										= system_get_block_type();
+		$query["select"][] 										= "layout.*";
+		$query["order"][] 										= "layout.`order`";
+		$query["order"][] 										= "layout.ID";
+
+		if($params["flags"]["path"]) {
+			$query["select"][] = "layout_path.class 			AS block_class";
+			$query["select"][] = "layout_path.default_grid 		AS block_default_grid";
+			$query["select"][] = "layout_path.grid_md 			AS block_grid_md";
+			$query["select"][] = "layout_path.grid_sm 			AS block_grid_sm";
+			$query["select"][] = "layout_path.grid_xs 			AS block_grid_xs";
+			$query["select"][] = "layout_path.fluid 			AS block_fluid";
+			$query["select"][] = "layout_path.wrap 				AS block_wrap";
+			$query["select"][] = "layout_path.ereg_path			AS path";
+			$query["select"][] = "layout_path.visible 			AS visible";
+
+			$query["join"]["path"] 								= "INNER JOIN layout_path ON layout_path.ID_layout = layout.ID";
+			$query["order"][] 									= "layout_path.ID";
+
+		}
+
+
 		$sSQL = "
-		        SELECT layout.*
-	                    , layout_path.class 												AS block_class
-	                    , layout_path.default_grid 											AS block_default_grid
-	                    , layout_path.grid_md 												AS block_grid_md
-	                    , layout_path.grid_sm 												AS block_grid_sm
-	                    , layout_path.grid_xs 												AS block_grid_xs
-	                    , layout_path.fluid 												AS block_fluid
-	                    , layout_path.wrap 													AS block_wrap
-	                    , " . LAYOUT_TYPE_TABLE_NAME . ".name 								AS type
-	                    , " . LAYOUT_TYPE_TABLE_NAME . ".description 						AS type_description
-	                    , IF(" . LAYOUT_TYPE_TABLE_NAME . ".`class` = ''
-	                        , layout.value
-	                        , " . LAYOUT_TYPE_TABLE_NAME . ".`class`
-	                    ) 	                                                                AS type_class
-	                    , " . LAYOUT_TYPE_TABLE_NAME . ".`group` 							AS type_group
-	                    , " . LAYOUT_TYPE_TABLE_NAME . ".`multi_id` 					    AS multi_id
-	                    , " . LAYOUT_TYPE_TABLE_NAME . ".`tpl_path` 					    AS tpl_path
-			            , " . LAYOUT_TYPE_TABLE_NAME . ".frequency 							AS frequency
-			            , layout_path.ereg_path												AS path
-			            , layout_path.visible 												AS visible
+		        SELECT " . implode(", ", $query["select"]) . "
 		        FROM layout
-	                INNER JOIN " . LAYOUT_TYPE_TABLE_NAME . " ON " . LAYOUT_TYPE_TABLE_NAME . ".ID = layout.ID_type 
-	                INNER JOIN layout_path ON layout_path.ID_layout = layout.ID
-		        WHERE 1
-	        		AND " . $db->toSql($settings_path, "Text") . " LIKE CONCAT(layout_path.ereg_path, IF(layout_path.cascading, '%', ''))
-					AND layout.ID_location IN(" . $section_set . ")
+					" . ($query["join"]
+						? " " . implode("", $query["join"])
+						: ""
+					). "
+		        WHERE " . implode(" AND ", $query["where"]). " 
+		        " . ($query["group"]
+					? "GROUP BY " . implode(", ", $query["group"])
+					: ""
+				). "
 		        ORDER BY 
-	        		FIELD(layout.ID_location, " . $section_set . ")
-		            , layout.`order`
-	                , layout.ID
-		            , layout_path.ID";
+		        	" . implode(", ", $query["order"]);
 		$db->query($sSQL);
 	    if($db->nextRecord()) {
-    		$template["blocks"] = array();
-	        $arrLayoutSettings = array();
+    		$template["blocks"] 												= array();
+	        $arrLayoutSettings 													= array();
 	        
 			do {
-				$path 															= $db->getField("path", "Text", true);
-				$block_jolly 													= substr_count($path, "%");
-				//$block_path 													= preg_replace('/\/+/', '/', str_replace("%", "", $path));
-				$block_path 													= str_replace(array("//", "%"), array("/", ""), $path);
-				if(!$block_path)
-					$block_path 												= "/";
-			
 				$ID_block														= $db->getField("ID", "Number", true);
 				$ID_block_type													= $db->getField("ID_type", "Number", true);
-	            $ID_section 													= $db->getField("ID_location", "Number", true);
-	            $block_type 													= $db->getField("type", "Text", true);
+				$block_type_smart_url 											= $block_type_loaded["rev"][$ID_block_type];
+				$ID_section 													= $db->getField("ID_location", "Number", true);
+	            $block_type 													= $block_type_loaded[$block_type_smart_url]["name"]; //$db->getField("type", "Text", true);
 				$block_value 													= $db->getField("value", "Text", true);
 				$block_params 													= $db->getField("params", "Text", true);
 				$block_smart_url 												= $db->getField("smart_url", "Text", true);
-	            $block_visible 													= $db->getField("visible", "Number", true);
-				$block_relevance 												= ($block_path == $settings_path
-																					? -999
-																					: substr_count($settings_path, "/") - substr_count($block_path, "/")
-																				);
-				$block_diff 													= (strlen($settings_path) - strlen($block_path));
 
-	            if($block_type == "ECOMMERCE" && strpos($settings_path, VG_SITE_CART) === 0)
-	                continue;
-	            
+				if($block_type == "ECOMMERCE" && strpos($params["settings_path"], VG_SITE_CART) === 0)
+					continue;
+
+				if($params["flags"]["path"]) {
+					$path 														= $db->getField("path", "Text", true);
+					$block_jolly 												= substr_count($path, "%");
+					//$block_path 												= preg_replace('/\/+/', '/', str_replace("%", "", $path));
+					$block_path 												= str_replace(array("//", "%"), array("/", ""), $path);
+					if(!$block_path)
+						$block_path 											= "/";
+					$block_visible 												= $db->getField("visible", "Number", true);
+					$block_relevance 											= ($block_path == $params["settings_path"]
+																					? -999
+																					: substr_count($params["settings_path"], "/") - substr_count($block_path, "/")
+																				);
+					$block_diff 												= (strlen($params["settings_path"]) - strlen($block_path));
+				}
 				if(!array_key_exists($ID_block, $template["blocks"])) {
 					$arrLayoutSettings["ID_block"][] = $ID_block;
 	                $arrLayoutSettings["ID_type"][] = $ID_block_type;			
@@ -370,21 +416,21 @@ function system_get_blocks($template) {
 																					, "prefix" 					=> "L"
 																					, "smart_url" 				=> $block_smart_url
 																					, "title"					=> $db->getField("name", "Text", true)
-																					, "type_class"				=> $db->getField("type_class", "Text", true)
-																					, "type_group"				=> $db->getField("type_group", "Text", true)
-																					, "multi_id"				=> $db->getField("multi_id", "Text", true)
+																					, "type_class"				=> ($block_type_loaded[$block_type_smart_url]["class"]
+																													? $block_type_loaded[$block_type_smart_url]["class"]
+																													: $block_value
+																												) //$db->getField("type_class", "Text", true)
+																					, "type_group"				=> $block_type_loaded[$block_type_smart_url]["group"] //$db->getField("type_group", "Text", true)
+																					, "multi_id"				=> $block_type_loaded[$block_type_smart_url]["multi_id"] //$db->getField("multi_id", "Text", true)
 																					, "type"					=> $block_type
 																					, "location"				=> $template["sections"][$ID_section]["name"]
 																					, "template"				=> $db->getField("template", "Text", true)
-																					, "tpl_path"				=> $db->getField("tpl_path", "Text", true)
+																					, "tpl_path"				=> $block_type_loaded[$block_type_smart_url]["tpl_path"] //$db->getField("tpl_path", "Text", true)
 																					, "value"					=> $block_value
 																					, "params"					=> $block_params
 																					, "last_update"				=> $db->getField("last_update", "Number", true)
-																					, "frequency"				=> $db->getField("frequency", "Text", true)
+																					, "frequency"				=> $block_type_loaded[$block_type_smart_url]["frequency"] //$db->getField("frequency", "Text", true)
 																					, "use_in_content"			=> $db->getField("use_in_content", "Number", true)
-																					, "ajax"					=> $db->getField("use_ajax", "Number", true)
-																					, "ajax_on_ready"			=> $db->getField("ajax_on_ready", "Text", true)
-																					, "ajax_on_event"			=> $db->getField("ajax_on_event", "Text", true)
 																					, "content"					=> ""
 																					, "settings"				=> null
 																					, "db" 						=> array(
@@ -392,22 +438,29 @@ function system_get_blocks($template) {
 																													, "params" => $block_params
 																												)
 																				);
+					if($params["flags"]["ajax"]) {
+						$template["blocks"][$ID_block]["ajax"]					= $db->getField("use_ajax", "Number", true);
+						$template["blocks"][$ID_block]["ajax_on_ready"]			= $db->getField("ajax_on_ready", "Text", true);
+						$template["blocks"][$ID_block]["ajax_on_event"]			= $db->getField("ajax_on_event", "Text", true);
+					} else {
+						$template["blocks"][$ID_block]["ajax"] 					= false;
+					}
 
 					if($db->getField("js_lib", "Text", true)) {
-						$arrJsLibs = explode(",", $db->getField("js_lib", "Text", true));
+						$arrJsLibs 												= explode(",", $db->getField("js_lib", "Text", true));
 						foreach($arrJsLibs AS $js_name) {
-							$globals->js["request"][$js_name] = true;
+							$globals->js["request"][$js_name] 					= true;
 							//$template["resources"]["js"]["request"][$js_name] = true;
 						}
 					}
 					// Si presume che vengano caricati da file questi
 					if($db->getField("js", "Text", true)) {
-						$globals->js["embed"][$block_smart_url] = $db->getField("js", "Text", true); 
+						$globals->js["embed"][$block_smart_url] 				= $db->getField("js", "Text", true);
 						//$template["resources"]["js"]["embed"][$block_smart_url] = $db->getField("js", "Text", true);
 					}
 
 					if($db->getField("css", "Text", true)) {
-						$globals->css["embed"][$block_smart_url] = $db->getField("css", "Text", true);
+						$globals->css["embed"][$block_smart_url] 				= $db->getField("css", "Text", true);
 						//$template["resources"]["css"]["embed"][$block_smart_url] = $db->getField("css", "Text", true);
 					}
 
@@ -419,7 +472,7 @@ function system_get_blocks($template) {
 					//	$template["resources"]["css"]["embed"][$block_smart_url] = $db->getField("css", "Text", true);
 																									
 					if($block_type == "ECOMMERCE"
-	                    || (!$is_guest 
+	                    || (!$params["is_guest"]
 	                        && ($block_type == "LOGIN"
                         		||
                         		$block_type == "USER"
@@ -443,36 +496,38 @@ function system_get_blocks($template) {
 						}
 	                }																			
 				}
-				
-				if(!array_key_exists("relevance", $template["blocks"][$ID_block]) 
-					|| $template["blocks"][$ID_block]["relevance"] > $block_relevance
-					|| ($template["blocks"][$ID_block]["relevance"] == $block_relevance 
-						&& $template["blocks"][$ID_block]["diff"] > $block_diff 
-					)
-					|| ($template["blocks"][$ID_block]["relevance"] == $block_relevance 
-						&& $template["blocks"][$ID_block]["diff"] == $block_diff 
-						&& $template["blocks"][$ID_block]["jolly"] > $block_jolly 
-					)
-				) {
-					$template["blocks"][$ID_block] 								= get_class_layout_by_grid_system($template["blocks"][$ID_block]["type_class"]
-                    																						, $db->getField("block_class", "Text", true)
-                    																						, $db->getField("block_fluid", "Number", true)
-                    																						, array(
-                    																							$db->getField("block_grid_xs", "Number", true)
-                    																							, $db->getField("block_grid_sm", "Number", true)
-                    																							, $db->getField("block_grid_md", "Number", true)
-                    																							, $db->getField("block_default_grid", "Number", true)
-                    																						)
-                    																						, $db->getField("block_wrap", "Number", true)
-                    																						, false
-                    																						, $template["blocks"][$ID_block]
-                    																					);
-					$template["blocks"][$ID_block]["relevance"] 				= $block_relevance;
-					$template["blocks"][$ID_block]["diff"] 						= $block_diff;
-					$template["blocks"][$ID_block]["jolly"] 					= $block_jolly;
-					$template["blocks"][$ID_block]["visible"] 					= $block_visible;
-					$template["blocks"][$ID_block]["db"]["real_path"] 			= stripslash($block_path);
-								
+
+				if($params["flags"]["path"]) {
+					if(!array_key_exists("relevance", $template["blocks"][$ID_block])
+						|| $template["blocks"][$ID_block]["relevance"] > $block_relevance
+						|| ($template["blocks"][$ID_block]["relevance"] == $block_relevance
+							&& $template["blocks"][$ID_block]["diff"] > $block_diff
+						)
+						|| ($template["blocks"][$ID_block]["relevance"] == $block_relevance
+							&& $template["blocks"][$ID_block]["diff"] == $block_diff
+							&& $template["blocks"][$ID_block]["jolly"] > $block_jolly
+						)
+					) {
+						$template["blocks"][$ID_block] 							= get_class_layout_by_grid_system($template["blocks"][$ID_block]["type_class"]
+																					, $db->getField("block_class", "Text", true)
+																					, $db->getField("block_fluid", "Number", true)
+																					, array(
+																						$db->getField("block_grid_xs", "Number", true)
+																						, $db->getField("block_grid_sm", "Number", true)
+																						, $db->getField("block_grid_md", "Number", true)
+																						, $db->getField("block_default_grid", "Number", true)
+																					)
+																					, $db->getField("block_wrap", "Number", true)
+																					, false
+																					, $template["blocks"][$ID_block]
+																				);
+						$template["blocks"][$ID_block]["relevance"] 			= $block_relevance;
+						$template["blocks"][$ID_block]["diff"] 					= $block_diff;
+						$template["blocks"][$ID_block]["jolly"] 				= $block_jolly;
+						$template["blocks"][$ID_block]["visible"] 				= $block_visible;
+						$template["blocks"][$ID_block]["db"]["real_path"] 		= stripslash($block_path);
+
+					}
 				}
 	        } while($db->nextRecord());
 
@@ -480,24 +535,34 @@ function system_get_blocks($template) {
 	            $arrLayoutSettings["data"] = get_layout_settings($arrLayoutSettings["ID_block"], $arrLayoutSettings["ID_type"]);
 			}
 
-			$template["blocks"] = array_filter($template["blocks"], function(&$block) use (&$template, $arrLayoutSettings) { 
-				if($template["navadmin"])
-					$template["navadmin"][$block["ID_section"]]["layouts"][$block["ID"]] 	= $block;
+			if($params["flags"]["visible"]) {
+				$template["blocks"] = array_filter($template["blocks"], function(&$block) use (&$template, $arrLayoutSettings) {
+					if($template["navadmin"])
+						$template["navadmin"][$block["ID_section"]]["layouts"][$block["ID"]] 	= $block;
 
-				if($block["visible"]) {
-					$template["sections"][$block["ID_section"]]["layouts"][$block["ID"]] 	= null;
-	                if(!$template["primary_section"] && $template["sections"][$block["ID_section"]]["is_main"])
-	                    $template["primary_section"] = $block["ID_section"];
+					if($block["visible"]) {
+						if(!$template["primary_section"] && $template["sections"][$block["ID_section"]]["is_main"])
+							$template["primary_section"] 										= $block["ID_section"];
 
-					$block["settings"] 														= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"]) 
-																								? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]] 
-																								: $arrLayoutSettings["data"][$block["type"] . "-0"] 
-																							);	
-					return true;
+						$template["sections"][$block["ID_section"]]["layouts"][$block["ID"]] 	= null;
+						$block["settings"] 														= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
+																									? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
+																									: $arrLayoutSettings["data"][$block["type"] . "-0"]
+																								);
+						return true;
+					}
+				});
+			} else {
+				foreach($template["blocks"] AS $ID_block => $block) {
+					$template["blocks"][$ID_block]["settings"] 									= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
+																									? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
+																									: $arrLayoutSettings["data"][$block["type"] . "-0"]
+																								);
 				}
-			});	
-	    }             
+			}
+	    }
 	}
+
   	return $template;
 }
 
@@ -508,7 +573,7 @@ function system_get_block_type($name = null)
     if(!$blocktype) {
         check_function("Filemanager");
 
-        $fs = new Filemanager("php", FF_DISK_PATH . "/cache" . "/block-type" . "." . FF_PHP_EXT, "blocktype");
+        $fs = new Filemanager("php", CM_CACHE_PATH . "/block-type", "blocktype");
 
         $blocktype = $fs->read();
         if(!$blocktype) {

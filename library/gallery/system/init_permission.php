@@ -104,7 +104,7 @@ function system_write_cache_permission($user_permission) {
 	);	
 	
 	if($account) {
-		$file_permission = FF_DISK_PATH . "/cache/cfg/perm/" . $account . ".php";
+		$file_permission = CM_CACHE_PATH . "/cfg/perm/" . $account . ".php";
 		
 	    if(!is_dir(ffCommon_dirname($file_permission)))
 	        @mkdir(ffCommon_dirname($file_permission), 0777, true);
@@ -120,7 +120,7 @@ function system_write_cache_permission($user_permission) {
 }
 function system_write_cache_permission_group($group, $permissions) {
 	if(strlen($group) && is_array($permissions) && count($permissions)) {
-		$file_permission = FF_DISK_PATH . "/cache/cfg/gid/" . $group . ".php";
+		$file_permission = CM_CACHE_PATH . "/cfg/gid/" . $group . ".php";
 		
 	    if(!is_dir(ffCommon_dirname($file_permission)))
 	        @mkdir(ffCommon_dirname($file_permission), 0777, true);

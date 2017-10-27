@@ -156,7 +156,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
             , "is_html" => true
         );
         $tpl_data["result"] = get_template_cascading($vg_father["user_path"], $tpl_data, $vg_father["template"]["path"]);
-        
+
         $tpl_data["obj"] = ffTemplate::factory($tpl_data["result"]["path"]);
         $tpl_data["obj"]->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   	
 

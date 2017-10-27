@@ -39,7 +39,6 @@
     $fs_exclude["/cgi-bin"] = true;
     $fs_exclude["/plesk-stat"] = true;
     $fs_exclude["/conf/gallery/config"] = true;
-   // $fs_exclude["/conf/gallery/ajaxplorer/client/themes/oxygen/images/actions/16/player_play copy.png"] = true;
     $fs_exclude["/conf/modules"] = array("notifier" 	=> false
     									, "restricted" 	=> false
     									, "security" 	=> false
@@ -52,9 +51,6 @@
   //  $fs_exclude["/themes/admin/images/logo_login.jpg"] = true;
     
     
-    $fs_exclude["/conf/gallery/ajaxplorer/server/users"] = true;
-    $fs_exclude["/conf/gallery/ajaxplorer/server/logs"] = true;
-
 	$fs_exclude["/cache"] = true;
 	$fs_exclude["/themes/site/.htaccess"] = true;
 	$fs_exclude["/themes/site/theme_settings.xml"] = true;
@@ -75,22 +71,26 @@
     		|| (defined("DEVELOPMENT_SITE") && strlen(DEVELOPMENT_SITE))
     	)
     )) {
-	    $fs_exclude["/applets"] = true;
-	    $fs_exclude["/contents"] = true;
-	    $fs_exclude["/themes/site/applets"] = true;
-	    $fs_exclude["/themes/site/contents"] = true;
-	    $fs_exclude["/themes/site/css"] = true;
-	    $fs_exclude["/themes/site/favicons"] = true;
-	    $fs_exclude["/themes/site/fonts"] = true;
-	    $fs_exclude["/themes/site/images"] = true;
-	    $fs_exclude["/themes/site/layouts"]["layer_gallery.html"]["update"] = true;
-	    $fs_exclude["/themes/site/javascript"] = true;
-	    $fs_exclude["/themes/site/modules"] = true;
-	    $fs_exclude["/themes/site/swf"] = true;
-	    $fs_exclude["/themes/site/xml"] = true;
-	    $fs_exclude["/themes/site/routing_table.xml"] = true;
-	    $fs_exclude["/themes/site/manifesto.xml"] = true;
-        $fs_exclude["/themes/site/common.php"] = true;
+	    $fs_exclude["/applets"] 												= true;
+	    $fs_exclude["/contents"] 												= true;
+	    $fs_exclude["/themes/site/applets"] 									= true;
+		$fs_exclude["/themes/site/conf"] 										= true;
+	    $fs_exclude["/themes/site/contents"] 									= true;
+	    $fs_exclude["/themes/site/css"] 										= true;
+	    $fs_exclude["/themes/site/favicons"] 									= true;
+	    $fs_exclude["/themes/site/fonts"] 										= true;
+	    $fs_exclude["/themes/site/images"] 										= true;
+	    $fs_exclude["/themes/site/layouts"]["layer_gallery.html"]["update"] 	= true;
+	    $fs_exclude["/themes/site/javascript"] 									= true;
+	    $fs_exclude["/themes/site/modules"] 									= true;
+	    $fs_exclude["/themes/site/swf"] 										= true;
+	    $fs_exclude["/themes/site/xml"] 										= true;
+	    $fs_exclude["/themes/site/routing_table.xml"] 							= true;
+	    $fs_exclude["/themes/site/manifesto.xml"] 								= true;
+        $fs_exclude["/themes/site/common.php"] 									= true;
+		$fs_exclude["/themes/site/conf/common.php"] 							= true;
+		$fs_exclude["/themes/site/conf/config.local.php"] 						= true;
+		$fs_exclude["/themes/site/conf/config.remote.php"] 						= true;
 	}
 
     if(file_exists(ffCommon_dirname(__FILE__) . "/exclude_fs_custom.php"))

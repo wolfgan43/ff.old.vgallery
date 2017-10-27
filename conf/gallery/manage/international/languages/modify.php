@@ -13,8 +13,8 @@ if(isset($_REQUEST["frmAction"]) && isset($_REQUEST["setvisible"]) && isset($_RE
 				WHERE " . FF_PREFIX . "languages.ID = " . $db->toSql($_REQUEST["keys"]["ID"], "Number");
     $db->execute($sSQL);
     
-    @unlink(FF_DISK_PATH . "/cache/locale." . FF_PHP_EXT);
-    @unlink(FF_DISK_PATH . "/cache/locale-nocurrent." . FF_PHP_EXT);
+    @unlink(CM_CACHE_PATH . "/locale." . FF_PHP_EXT);
+    @unlink(CM_CACHE_PATH . "/locale-nocurrent." . FF_PHP_EXT);
     
 	die(ffCommon_jsonenc(array("close" => false, "refresh" => true, "resources" => array("LanguagesModify")), true));
    

@@ -41,7 +41,7 @@ class storagePhp
         $this->setData($data);
 
         if (!class_exists("Filemanager"))
-            require_once($this->storage->getAbsPath("/filemanager/Filemanager.php", true));
+            require_once($this->storage->getAbsPathPHP("/filemanager/Filemanager", true));
 
         $this->device = new Filemanager($this::TYPE);
     }
