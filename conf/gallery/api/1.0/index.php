@@ -187,15 +187,14 @@ switch($request_method) {
 	case "post":
 	case "get":
 	default:
-
-
+    
+	    
 		$arrPath = explode("/", trim($service_path_info, "/"));
 		$target = $arrPath[0];
 
 		check_function("get_schema_fields_by_type");
 
-		$relative_api_path = str_replace(__CMS_DIR__ . "/conf/gallery", "", __DIR__);
-
+		$relative_api_path = str_replace(realpath(__CMS_DIR__ . "/conf/gallery") , "", __DIR__);
 
 		if(preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info && is_file(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
 			$cm->real_path_info = $service_path_info;
