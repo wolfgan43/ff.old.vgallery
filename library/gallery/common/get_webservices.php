@@ -60,7 +60,7 @@
 
   	foreach($webservices AS $service_name => $actual_srv) {
   		if($actual_srv["enable"] && is_file(VG_WEBSERVICES_PATH . "/" . $service_name . "/index." . FF_PHP_EXT) && filesize(VG_WEBSERVICES_PATH . "/" . $service_name . "/index." . FF_PHP_EXT)) {
-            
+
             $res = $cm->doEvent("vg_on_webservices", array($service_name, $actual_srv));
             $rc = end($res);
 			if ($rc !== null)

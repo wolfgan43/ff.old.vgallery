@@ -5,15 +5,7 @@
     
     if($actual_srv["enable"]) 
     {
-        $js_content = $actual_srv["criteo_tag"] . "
-            var JADV_DFP_SEM='';
-            var JADV_JSON_SEM='';
-            
-            var e = document.createElement('script');
-            e.type = 'text/javascript'; 
-            e.src = 'https://sem.juiceadv.com/?refUrl='+encodeURIComponent(window.top.location.href);
-            document.head.appendChild(e);
-            
+        $js_content = "
             var googletag = googletag || {};
             googletag.cmd = googletag.cmd || [];
             (function() {
@@ -26,23 +18,27 @@
             var node = document.getElementsByTagName('script')[0];
             node.parentNode.insertBefore(gads, node);
             })();
-            var gptAdSlots = [];
-            var mapping = {};
-            var mapping1 = {};
             googletag.cmd.push(function() {
-			"   . ($_SERVER["ORIG_PATH_INFO"] == "/" 
-					? $actual_srv["params_home"]
-					: $actual_srv["params"]			
-				) . "
-				googletag.pubads().enableSingleRequest();
-				googletag.pubads().disableInitialLoad();
+                
+            });
+
             
-			" . $actual_srv["criteo_post_tag"] . " 
-
-            JADV_JSON_SEM && Object.keys(JADV_JSON_SEM).map(function(el){googletag.pubads().setTargeting(el,JADV_JSON_SEM[el]);});
-            googletag.pubads().setTargeting('key_topic','');
-
-            googletag.enableServices();
+            var gptAdSlots = [];
+            googletag.cmd.push(function() {
+            var mapping = googletag.sizeMapping().
+            addSize([0, 0], [ [1 , 3], [320, 50] ]).
+            addSize([760, 0],  [[1 , 3], [728, 90]] ).
+            addSize([1000, 0], [ [1 , 3], [728, 90] , [970, 250], [980, 30], [980, 60], [980, 250] ]).
+            build();
+            var mapping1 = googletag.sizeMapping().
+            addSize([0, 0], [300, 250]).
+            addSize([1000, 0], [[300, 250], [300, 600]]).
+            build();
+            var mapping2 = googletag.sizeMapping().
+            addSize([0, 0], [300, 250]).
+            addSize([1000, 0], [[300, 250], [300, 600]]).
+            build(); " . $actual_srv["params"] . " 
+			googletag.enableServices();
             });
             ";
         /*
@@ -63,9 +59,9 @@
 		
         */
         //$oPage->fixed_pre_content .= '<script defer="defer" charset="utf-8" type="text/javascript">' . $js_content . '</script>';
-        $oPage->tplAddJs("Leonardo", null, null, false, $oPage->isXHR(), $js_content, false, "bottom");  
-        
-        $oPage->tplAddCss("LeonardoCss", "leoadv.css", "https://img4.juiceadv.com/clienti/Traffic");
+        $oPage->tplAddJs("Leonardo", null, null, false, $oPage->isXHR(), $js_content, false, "bottom");
+
+        //$oPage->tplAddCss("LeonardoCss", "leoadv.css", "https://img4.juiceadv.com/clienti/Traffic");
          
         
 
