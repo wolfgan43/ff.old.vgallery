@@ -16,7 +16,6 @@
 	</sections>
 	<settings>
 		<general label="General">
-            <USE_ADMIN_AJAX extended_type="Boolean" label="Use Admin Ajax" default="1" />
 			<THEME_ICO label="Icon Theme" default="default" />
 			<THEME_ICO_EXTENSION label="Icons Extension (jpg, png)" default="png" />
 			<TRANSMUTE_ALIAS extended_type="Boolean" label="Convert text url in link html" default="1" /> 

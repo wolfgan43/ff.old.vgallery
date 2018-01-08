@@ -29,7 +29,7 @@
 
   $res = $tpl->rpparse("main", false);
   */
-  require_once(FF_DISK_PATH . "/conf/gallery/api/index." . FF_PHP_EXT);
+  //require_once(FF_DISK_PATH . "/conf/gallery/api/index." . FF_PHP_EXT);
   
   	if(check_function("get_schema_def"))
 		$schema_def = get_schema_def();

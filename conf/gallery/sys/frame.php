@@ -162,7 +162,7 @@ elseif(isset($sys["type"]))
     switch(strtoupper($sys["type"])) {
         case "ADMIN_MENU":
         	if(check_function("process_admin_toolbar"))
-                $frame_buffer = process_admin_toolbar($user_path, $settings_path, $admin["theme"], $admin["sections"], $admin["css"], $admin["js"], $admin["international"], $admin["seo"], $admin["option"]);
+                $frame_buffer = process_admin_toolbar($settings_path, $admin["theme"], $admin["sections"], $admin["css"], $admin["js"], $admin["international"], $admin["seo"]);
             break;
         case "ADMIN_POPUP":
             if(check_function("process_admin_menu"))
