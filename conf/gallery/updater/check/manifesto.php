@@ -48,6 +48,12 @@
                 } while($db->nextRecord());
             }
         }
+
+		$fs_exclude["/themes/restricted"] = true;
+		$fs_exclude["/themes/default"] = true;
+		$fs_exclude["/themes/dialog"] = true;
+
+
         return $fs_exclude;
     } 
     $fs_manifesto_exclude = get_exclude();
@@ -75,6 +81,8 @@
             , "/themes/library/jquery-ui"
             , "/themes/library/jquery-ui.themes"
             , "/themes/library/swfobject"
+			, "/themes/library/ckeditor"
+			, "/themes/library/kcfinder"
         );
         $manifesto["forms_framework"]["db"] = array(
         	"exclude" => array(
@@ -242,11 +250,14 @@
     
     //VGALLERY ECOMMERCE
     if(is_dir(FF_DISK_PATH . "/conf/gallery/ecommerce") && is_dir(FF_DISK_PATH . "/library/gallery/ecommerce")) { 
-        $manifesto["vgallery_ecommerce"]["enable"] = true;
+        $manifesto["vgallery_ecommerce"]["enable"] = false;
         $manifesto["vgallery_ecommerce"]["type"] = "VGallery Ecommerce";
         $manifesto["vgallery_ecommerce"]["path"] = array(
         	"/conf/gallery/ecommerce"
         	, "/library/gallery/ecommerce"
+			, "/themes/gallery/contents/ecommerce"
+			, "/themes/gallery/css/ecommerce"
+			, "/themes/gallery/javascript/ecommerce"
         );
         $manifesto["vgallery_ecommerce"]["db"]["table_prefix"] = "ecommerce_";
     }
@@ -325,11 +336,12 @@
     }
 
     //EXTERNAL APPLICATIONS FIX
-    if(array_key_exists("external_app/ckfinder", $manifesto)) 
+    /*if(array_key_exists("external_app/ckfinder", $manifesto))
         $manifesto["external_app/ckfinder"]["path"][] = "/themes/responsive/ff/ffField/widgets/ckuploadify";
     if(array_key_exists("external_app/kcfinder", $manifesto)) 
         $manifesto["external_app/kcfinder"]["path"][] = "/themes/responsive/ff/ffField/widgets/kcuploadify";
-    
+    */
+
     //JQUERY UI THEME
    /* $module_file = glob(FF_DISK_PATH . "/themes/library/jquery-ui.themes/*");
     if(is_array($module_file) && count($module_file)) {
@@ -361,12 +373,12 @@
                     && array_search($relative_path, $vgallery_core_path) === false
                 ) {
                     $fix_value = (isset($manifesto_dep["external_plugin/" . basename($relative_path)]) ? true : false);
-                    if(strpos($relative_path, "jquery") !== false && !file_exists($real_file . "/" . basename($real_file) . ".observe.js")) {
+                    if(file_exists($real_file . "/libs.php")) {
                         $is_addon = true;
                     } else {
                         $is_addon = false;
                     }
-                        
+
                     //|| strpos($relative_path, "jquery") !== false || strpos($relative_path, "swfobject") !== false
                     $manifesto["external_plugin/" . basename($relative_path)]["enable"] = ($fix_value || $is_addon ? true : false);
                     $manifesto["external_plugin/" . basename($relative_path)]["fix"] = $fix_value;

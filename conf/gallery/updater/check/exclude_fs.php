@@ -53,7 +53,7 @@
 	$fs_exclude["/.htaccess"] = true;
 	$fs_exclude["/.ftpquota"] = true;
 	$fs_exclude["/index.html"] = true;
-    $fs_exclude["/config.php"] = true;
+
     $fs_exclude["/favicon.ico"] = true;
     $fs_exclude["/favicon.png"] = true;
     $fs_exclude["/robots.txt"] = true;

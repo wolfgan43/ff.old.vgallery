@@ -23,144 +23,18 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-error_reporting((E_ALL ^ E_WARNING ^ E_NOTICE ^ E_DEPRECATED) | E_STRICT);
+require_once(__DIR__ . "/check/common.php");
 
-define("REAL_PATH", "/conf/gallery");
+$params = updater_get_params($cm);
 
 $limit_operation = (isset($_REQUEST["lo"]) && strlen($_REQUEST["lo"])
-						? $_REQUEST["lo"]
-						: 200
-					);
+	? $_REQUEST["lo"]
+	: 200
+);
 $nowarning = (isset($_REQUEST["nowarning"]) && strlen($_REQUEST["nowarning"])
-						? $_REQUEST["nowarning"]
-						: false
-					);
-if(!function_exists("ffCommon_dirname")) {
-	function ffCommon_dirname($path) 
-	{
-		$res = dirname($path);
-		if(dirname("/") == "\\")
-		    $res = str_replace("\\", "/", $res);
-		
-		if($res == ".")
-		    $res = "";
-		    
-		return $res;
-	}
-}
-if(!function_exists("file_post_contents")) {
-	function file_post_contents($url, $data = null, $username = null, $password = null, $method = "POST", $timeout = 60) {
-		if(!$username && defined("AUTH_USERNAME"))
-			$username 				= AUTH_USERNAME;
-		if(!$password && defined("AUTH_PASSWORD"))
-			$password 				= AUTH_PASSWORD;
-
-		if($data)
-			$postdata 				= http_build_query($data);
-
-		$headers = array();
-		if($method == "POST")
-			$headers[] 				= "Content-type: application/x-www-form-urlencoded";
-		if($username)
-			$headers[] 				= "Authorization: Basic " . base64_encode($username . ":" . $password);
-
-		$opts = array(
-			'ssl' => array(
-				"verify_peer" 		=> false,
-				"verify_peer_name" 	=> false
-			),
-			'http' => array(
-				'method'  			=> $method,
-				'timeout'  			=> $timeout,
-				'header'  			=> implode("\r\n", $headers),
-				'content' 			=> $postdata
-			)
-		);
-
-		$context = stream_context_create($opts);
-		return @file_get_contents($url, false, $context);
-	}
-}
-if(!defined("FF_SITE_PATH") || !defined("FF_DISK_PATH"))
-	require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/path.php");
-
-if(!defined("FF_SITE_PATH") || !defined("FF_DISK_PATH")) {
-    if (strpos(php_uname(), "Windows") !== false)
-        $tmp_file = str_replace("\\", "/", __FILE__);
-    else
-        $tmp_file = __FILE__;
-
-    if(strpos($tmp_file, $_SERVER["DOCUMENT_ROOT"]) !== false) {
-	    $st_document_root =  $_SERVER["DOCUMENT_ROOT"];
-		if (substr($st_document_root,-1) == "/")
-		    $st_document_root = substr($st_document_root,0,-1);
-
-		$st_site_path = str_replace($st_document_root, "", str_replace("/conf/gallery/updater/structure.php", "", $tmp_file));
-		$st_disk_path = $st_document_root . $st_site_path;
-	} elseif(strpos($tmp_file, $_SERVER["PHP_DOCUMENT_ROOT"]) !== false) {
-	    $st_document_root =  $_SERVER["PHP_DOCUMENT_ROOT"];
-		if (substr($st_document_root,-1) == "/")
-		    $st_document_root = substr($st_document_root,0,-1);
-
-		$st_site_path = str_replace($_SERVER["DOCUMENT_ROOT"], "", str_replace("/conf/gallery/updater/structure.php", "", $_SERVER["SCRIPT_FILENAME"]));
-		$st_disk_path = $st_document_root . str_replace($st_document_root, "", str_replace("/conf/gallery/updater/structure.php", "", $tmp_file));
-	} else {
-		$st_disk_path = str_replace("/conf/gallery/updater/structure.php", "", $tmp_file);
-		$st_site_path = str_replace("/conf/gallery/updater/structure.php", "", $_SERVER["SCRIPT_NAME"]);
-	}
-
-    define("FF_SITE_PATH", $st_site_path);
-    define("FF_DISK_PATH", $st_disk_path);
-}
-
-if(is_object($cm)) {
-	$pathInfo = $cm->path_info;
-	$realPathInfo = $cm->real_path_info;
-
-	if($pathInfo == VG_RULE_UPDATER) { 
-		if (!AREA_UPDATER_SHOW_MODIFY) {
-			ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
-		}
-	}
-	
-	$cm->oPage->form_method = "post";
-} else {
-	//$pathInfo = "";
-    $realPathInfo = $_SERVER['PATH_INFO'];
-    if(substr($realPathInfo, 0, 1) !== "/" && array_key_exists('REDIRECT_URL', $_SERVER)) {
-        $realPathInfo    = $_SERVER['REDIRECT_URL'];
-
-        $arr_query_string = explode("&", $_SERVER['REDIRECT_QUERY_STRING']);
-        if(is_array($arr_query_string) && count($arr_query_string)) {
-            foreach($arr_query_string AS $arr_query_string_value) {
-                $arr_query_string_data = explode("=", $arr_query_string_value);
-                if(is_array($arr_query_string_data) && count($arr_query_string_data)) {
-                    $_REQUEST[$arr_query_string_data[0]] = urldecode($arr_query_string_data[1]);
-                    $_GET[$arr_query_string_data[0]] = urldecode($arr_query_string_data[1]);
-                }
-            }
-        }
-    }
-}
-
-if(strpos($realPathInfo, $_SERVER["SCRIPT_NAME"]) === 0)
-	$realPathInfo = substr($realPathInfo, strlen($_SERVER["SCRIPT_NAME"]));
-
-if(!defined("MASTER_SITE"))
-	require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/updater.php");
-
-if(!defined("FF_DATABASE_NAME")) {
-	require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/db.php");
-	require_once(ffCommon_dirname(ffCommon_dirname(ffCommon_dirname(ffCommon_dirname(__FILE__)))) . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
-	$db =  new ffDB_Sql;
-} else {
-	$db = ffDB_Sql::factory();	
-}
-
-if(!defined("DOMAIN_INSET"))
-	define("DOMAIN_INSET", $_SERVER["HTTP_HOST"]);
-
-//require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/updater.php");		
+	? $_REQUEST["nowarning"]
+	: false
+);
 
 if ($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
 	$json = true;
@@ -168,6 +42,9 @@ if ($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
 	$json = $_REQUEST["json"];
 }
 $execute = $_REQUEST["exec"];
+
+$db = $params["db"];
+$realPathInfo = $params["user_path"];
 
 $file_get_contents_master_failed = array();
 $file_get_contents_slave_failed = array();
@@ -244,7 +121,7 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
         
         if(is_array($arr_master) && count($arr_master)) {
 			$json_slave = file_post_contents(
-				"http://" . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/file.php" . $strContestPath . "?s=" . urlencode(DOMAIN_INSET)
+				"http://" . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/db.php/structure" . $strContestPath . "?s=" . urlencode(DOMAIN_INSET)
 				, null
 				, (defined("AUTH_USERNAME")
 				? AUTH_USERNAME
@@ -276,7 +153,7 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
 
             if(strlen($json_slave))
                 $arr_slave = json_decode($json_slave, true);
-           
+
             if(is_array($arr_slave)) {
                 $operation = array();
                 require(ffCommon_dirname(__FILE__) . "/check/fixed_operations.php");    

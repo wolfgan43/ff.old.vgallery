@@ -471,12 +471,12 @@
     $operation_fixed["2016-06-10-a"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_module_search' AND COLUMN_NAME <> 'ID_module' AND TABLE_NAME = 'module_search_vgallery' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2016-06-10-a"]["than"] = "ALTER TABLE  `module_search_vgallery` CHANGE  `ID_module_search`  `ID_module` INT( 11 ) NOT NULL"; 
 
-    if(!defined("SUPERADMIN_USERNAME"))
-    	require_once(FF_DISK_PATH . "/config.php");
+    //if(!defined("SUPERADMIN_USERNAME"))
+    //	require_once(FF_DISK_PATH . "/config.php");
     	
 	if(defined("SUPERADMIN_USERNAME") && SUPERADMIN_USERNAME) {
 	    $operation_fixed["2016-03-22"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'cm_mod_security_users' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
-	    $operation_fixed["2016-03-22"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 0, 1 ) AS val FROM `cm_mod_security_users` WHERE ID = 1 AND username = '" . SUPERADMIN_USERNAME . "' AND `password` = PASSWORD('" . SUPERADMIN_PASSWORD . "')) AS val"; 
+	    $operation_fixed["2016-03-22"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 0, 1 ) AS val FROM `cm_mod_security_users` WHERE ID = 1 AND username = '" . SUPERADMIN_USERNAME . "' AND `password` = PASSWORD('" . SUPERADMIN_PASSWORD . "')) AS val";
 	    $operation_fixed["2016-03-22"]["than"][] = "DELETE FROM `cm_mod_security_users` WHERE ID = 1"; 
 	    $operation_fixed["2016-03-22"]["than"][] = "INSERT INTO `cm_mod_security_users` (`ID`, `level`, `status`, `username`, `password`, `primary_gid`) VALUES (1, 3, 1, '" . SUPERADMIN_USERNAME . "', PASSWORD('" . SUPERADMIN_PASSWORD . "'), 1)"; 
 
