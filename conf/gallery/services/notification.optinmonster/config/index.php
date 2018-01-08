@@ -8,7 +8,7 @@
     $type_field = array();
     $type_field["enable"] = "Boolean";
     $type_field["code"] = "String";   	
-    $type_field["client_id"] = "String";   	
+    $type_field["subcode"] = "String";   	
 
 	if(check_function("system_services_modify"))
 		system_services_modify(basename(ffCommon_dirname(ffCommon_dirname(__FILE__))), $type_field);

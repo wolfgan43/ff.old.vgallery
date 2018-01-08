@@ -103,7 +103,6 @@
     $oButton->aspect = "link";
     //$oButton->image = "edit.png";
 	$oButton->label = ffTemplate::_get_word_by_code("edit");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
     $oGrid->addGridButton($oButton);
 */
 
