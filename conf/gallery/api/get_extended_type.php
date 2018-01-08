@@ -31,7 +31,6 @@ function api_get_extended_type($limit_data = null, $params = null, $sort_field =
     $sSQL_add_field = "";
     $sSQL_add_field_empty = "";
 	if(is_array($schema["add_field"]) && count($schema["add_field"])) {
-        $sSQL_having = "";
 		foreach($schema["add_field"] AS $add_field_key => $add_field_value) {
 			$sSQL_add_field .= ", " . $add_field_value;
 			$sSQL_add_field_empty .= ", '' AS " . $add_field_key;
@@ -63,7 +62,6 @@ function api_get_extended_type($limit_data = null, $params = null, $sort_field =
         $db->query($sSQL);
         if(is_array($db->fields) && count($db->fields)) {
 		    if(is_array($params) && count($params)) {
-                $sSQL_Where_params = "";
     			foreach($params AS $param_key => $param_value) {
     				if(array_key_exists($param_key, $db->fields)) {
     					$sSQL_Where_params .= " AND `" . $param_key . "` = " . $db->toSql($param_value);
@@ -93,6 +91,7 @@ function api_get_extended_type($limit_data = null, $params = null, $sort_field =
 
 	$sSQL = "SELECT
                 extended_type.*
+                $sSQL_field
                 $sSQL_add_field
             FROM
                 extended_type

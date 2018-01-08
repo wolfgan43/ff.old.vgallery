@@ -1,35 +1,11 @@
 <?php
-/**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+    require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- * @package VGallery
- * @subpackage core
- * @author Alessandro Stucchi <wolfgan@gmail.com>
- * @copyright Copyright (c) 2004, Alessandro Stucchi
- * @license http://opensource.org/licenses/gpl-3.0.html
- * @link https://github.com/wolfgan43/vgallery
- */
     if (!(MASTER_SITE == DOMAIN_INSET || MASTER_CONTROL)) {
         ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
     }
-    
-    $db = ffDB_Sql::factory();
     //(is_array($externals) && count($externals) && array_search(DOMAIN_INSET, $externals) !== false)
-    $sSQL_where = " " . CM_TABLE_PREFIX . "mod_security_domains.nome <> " . $db->toSql(DOMAIN_NAME);
+    $sSQL_where = " " . CM_TABLE_PREFIX . "mod_security_domains.nome <> " . $db_gallery->toSql(DOMAIN_NAME);
 
     $cm->oPage->widgetLoad("dialog");
 
@@ -99,8 +75,8 @@
     $oButton->action_type = "submit";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("mc_edit");
-    //$oButton->image = "edit.png";
     $oButton->display_label = false;
+    //$oButton->image = "edit.png";
     $oGrid->addGridButton($oButton);
 
     $oButton = ffButton::factory($cm->oPage);
@@ -111,9 +87,9 @@
     $oButton->action_type = "submit";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("mc_install");
-    //$oButton->image = "edit.png";
     $oButton->display_label = false;
-    $oGrid->addGridButton($oButton);    
+    //$oButton->image = "edit.png";
+    $oGrid->addGridButton($oButton);
 
     
     $oButton = ffButton::factory($cm->oPage);
@@ -136,12 +112,6 @@
         
     $cm->oPage->addContent($oGrid); 
     
-    if(is_file(FF_DISK_PATH . "/conf/gallery/install/complete.css")) {
-	    $cm->oPage->tplAddCss("install", array(
-	        "embed" => file_get_contents(FF_DISK_PATH . "/conf/gallery/install/complete.css")
-	    ));
-	}
-    
     function UpdaterDomain_on_before_parse_row($component) {
         $cm = cm::getInstance();
 
@@ -154,7 +124,7 @@
                 );
                 if($ftp_ip === false && strpos($ftp_host, "www.") === false)
                     $ftp_ip = gethostbyname("www." . $ftp_host);
-
+                
                 $server_ip = gethostbyname($_SERVER["HTTP_HOST"]);
                 if($ftp_ip == $server_ip)
                     $ftp_host = "localhost";
@@ -165,7 +135,9 @@
                 $installable = false;
 
                 if(strlen($ftp_host) && strlen($ftp_user) && strlen($ftp_password) && strlen($ftp_path)) {
-                    if($ftp_ip)
+					$installable = true;
+/*
+                     if($ftp_ip)
                         $conn_id = @ftp_connect($ftp_ip);
                     if($conn_id === false)
                         $conn_id = @ftp_connect($ftp_host, 21, 3);
@@ -195,51 +167,28 @@
                         }
                     }
                     @ftp_close($conn_id);
+ */
                 }
 
                 if($installable) {
-                    $component->grid_buttons["install"]->form_action_url = FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/force/" . urlencode($component->db[0]->getField("nome")->getValue());
-                    if($_REQUEST["XHR_CTX_ID"]) {
-                        $component->grid_buttons["install"]->jsaction = "ff.ajax.ctxDoRequest('[[XHR_CTX_ID]]', {'action': 'install', 'url' : '[[frmAction_url]]'});";
-                    } else {
-                    	if($real_ftp_path) {
-                    		/*$arrFtpPath = explode("/", trim($real_ftp_path, "/"));
-                    		unset($arrFtpPath[0]);
-                    		if(count($arrFtpPath))
-                    			$iframe_path = "/" . implode("/", $arrFtpPath);*/
-                    			
-                    		$iframe_path = str_replace(array("/public_html", "/httpdocs", "/httpsdocs"), "", $real_ftp_path);
-						}
-						$iframe = "<iframe src=\'http://" . $component->db[0]->getField("nome")->getValue() . $iframe_path . "/conf/gallery/install\' onload=\'ff.cms.admin.checkiFrame(this);\' style=\'width:500px; height:470px;\' />";
-						$js_open_updater_window = " ff.ffPage.dialog.doOpen('" . $iframe . "', undefined, 'Installation for: " . $component->db[0]->getField("nome")->getValue() . "')";
-
-/*						$framework_css = cm_getFrameworkCss();
-						
-						switch($framework_css["name"]) {
-							case "bootstrap":
-		                        $js_open_updater_window = " ff.ffPage.dialog.doOpen('" . $iframe . "')";
-								break;
-							case "foundation":
-								$js_open_updater_window = " jQuery('" . $iframe . "').modal().width(500).height(470);";	
-								break;
-							default:
-		                        $js_open_updater_window = "ff.load('jquery.ui', function() { jQuery('" . $iframe . "').dialog({ 
-                        			resizable: true
-                        			, modal: false
-                        			, width: 500
-                        			, height: 470
-                        			, title: '" . ffTemplate::_get_word_by_code("install_title") . ": " . $component->db[0]->getField("nome")->getValue() . "'
-                        		}).width(500).height(470);
-                        	});	";
-						}*/
-						
-                        $component->grid_buttons["install"]->jsaction = "ff.ajax.doRequest({'action': 'install', fields: [], 'url' : '[[frmAction_url]]', 'callback' : function() {" . $js_open_updater_window . "}});";
-//                        $component->grid_buttons["install"]->action_type = "gotourl";
-//                        $component->grid_buttons["install"]->url = FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/force/" . $component->db[0]->getField("nome")->getValue() . "?frmAction=install&ret_url=" . urlencode($component->parent[0]->getRequestUri());
-                    }
-                    $component->grid_buttons["install"]->display = true;
+                    $cm->oPage->widgetLoad("dialog");
+                    $cm->oPage->widgets["dialog"]->process(
+                        $component->id . "_install_" . $component->key_fields["ID"]->getValue()
+                        , array(
+                            "tpl_id" => $component->id
+                            //"name" => "myTitle"
+                        , "url" => FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/installer/" . urlencode($component->db[0]->getField("nome")->getValue())
+                        , "title" => ffTemplate::_get_word_by_code("mc_installer_title") . ": " . $component->db[0]->getField("nome")->getValue()
+                        , "callback" => ""
+                        , "class" => "ff-modal-small"
+                        , "params" => array()
+                        )
+                        , $cm->oPage
+                    );
+                    $component->grid_buttons["install"]->jsaction = "ff.ffPage.dialog.doOpen('" . $component->id . "_install_" . $component->key_fields["ID"]->getValue() . "')";
+                    $component->grid_buttons["install"]->visible = true;
                 } else {
-                    $component->grid_buttons["install"]->display = false;
+                    $component->grid_buttons["install"]->visible = false;
                 }
             }
         }
@@ -253,16 +202,16 @@
                         "tpl_id" => $component->id
                         //"name" => "myTitle"
                         , "url" => FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/force/" . urlencode($component->db[0]->getField("nome")->getValue())
-                                . "?ret_url=" . urlencode($component->parent[0]->getRequestUri())
                         , "title" => ffTemplate::_get_word_by_code("mc_force_install_title")
                         , "callback" => ""
-                        , "class" => ""
+                        , "class" => "ff-modal-small"
                         , "params" => array()
                     )
                     , $cm->oPage
                 );
                 $component->grid_buttons["force"]->jsaction = "ff.ffPage.dialog.doOpen('" . $component->id . "_force_" . $component->key_fields["ID"]->getValue() . "')";
             }
-            $component->grid_buttons["force"]->display = true;
+            $component->grid_buttons["force"]->visible = true;
         }
     }
+?>

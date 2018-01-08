@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `anagraph_fields` (
   PRIMARY KEY  (`ID`),
   KEY `ID_module` (`ID_type`),
   KEY `ID_extended_type` (`ID_extended_type`),
-  KEY `ID_selection` (`ID_selection`),
+  KEY `ID_group_backoffice` (`ID_group_backoffice`),
   KEY `ID_check_control` (`ID_check_control`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -146,9 +146,9 @@ CREATE TABLE IF NOT EXISTS `anagraph_rel_nodes_fields` (
   `ID_nodes` int(11) NOT NULL default '0',
   PRIMARY KEY  (`ID`),
   KEY `ID_fields` (`ID_fields`),
-  KEY `ID_nodes` (`ID_anagraph`),
-  KEY `fields_nodes_lang` (`ID_fields`,`ID_anagraph`),
-  FULLTEXT KEY `description` (`value`)
+  KEY `ID_nodes` (`ID_nodes`),
+  KEY `fields_nodes_lang` (`ID_fields`,`ID_nodes`),
+  FULLTEXT KEY `description` (`description`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -2490,7 +2490,8 @@ CREATE TABLE IF NOT EXISTS `users_rel_vgallery` (
   `request` char(1) collate utf8_unicode_ci NOT NULL,
   `order` int(11) NOT NULL,
   PRIMARY KEY  (`ID`),
-  KEY `ID_form` (`ID_vgallery_nodes`)
+  KEY `uid` (`uid`),
+  KEY `ID_nodes` (`ID_nodes`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------

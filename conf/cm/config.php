@@ -57,10 +57,9 @@
 
 	  define("CM_CACHE_PURGE_JS", true);
 	  define("CM_CACHE_IMG_SET_DIMENSION", true);
-	  define("CM_CACHE_PATH_CONVERT_SHOWFILES", true);
-	  define("CM_CACHE_CSS_INLINE_TO_STYLE", true); 
+	  define("CM_CACHE_CSS_INLINE_TO_STYLE", true);
   }
-  
+  define("CM_CACHE_PATH_CONVERT_SHOWFILES", true);
   define("CM_CACHE_IMG_LAZY_LOAD", true);
 
   //define("CM_SHOWFILES_MODULES", true);

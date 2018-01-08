@@ -1,9 +1,9 @@
 <?php
-  $user_path = $cm->real_path_info;
+ $user_path = $cm->real_path_info;
 //todo: ffCommon_crossDomains
  require FF_DISK_PATH . "/library/OAuth2/Autoloader.php";
  OAuth2\Autoloader::register();  
-
+  
   switch(basename($user_path))
   {
   	case "user":
@@ -22,6 +22,13 @@
   	case "web":
   		require FF_DISK_PATH . "/modules/security/contents/oauth2/webauth." . FF_PHP_EXT;
   		break;
-  		
   	default:
+        if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest")
+            http_response_code(500);
+        else
+            http_response_code(404);        
+
+        echo ffCommon_jsonenc(array(), true);
+        exit;
+        
   }

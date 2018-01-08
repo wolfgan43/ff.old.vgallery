@@ -26,18 +26,37 @@
 
 
     check_function("Notifier");
-//todo: ffCommon_crossDomains
-   
-    $notifier = Notifier::getInstance();
-    $notifier->setFields(array(
-       "users" => "ID_dest"
-       , "attach" => "media" 
-       , "service" => "reader"         
-       , "schedule" => "time_from" 
-    ));
-    $res = $notifier->send("ci55555ao", array(22,22,22));
-    print_R($res);
+	check_function("Mailer");
 
+//todo: ffCommon_crossDomains
+/*
+   $mail = Mailer::getInstance("User Registration", "sparkpost");
+   echo $mail->send("Ciaone!", "ASD", array("wolfgan@gmail.com", "tukulka@gmail.com"));
+die();*/
+
+    $notifier = Notifier::getInstance(null, array(
+    	"unique" => true
+		, "display_in" => "/"
+	));
+	$res = $notifier->send(array(
+	"title" => "titolo"
+	, "description" => "desc"
+	, "media" => array(
+		"cover" => "/img"
+		, "video" => "asdad.avi"
+	)
+	), "9");
+
+	print_r($res);
+die();
+
+
+
+
+
+    $res = $notifier->sendMail("ci55555ao", array(22,22,22));
+    print_R($res);
+    
     /*$res = $notifier->read(array(
         "users" => array(22,22,22)
         , "expire" => "0"

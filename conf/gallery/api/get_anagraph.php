@@ -25,7 +25,7 @@
  */
 function api_get_anagraph($limit_data = null, $params = null, $sort_field = null, $sort_dir = null, $search = null) {
     $db = ffDB_Sql::factory();
-
+    
     $sort = null;
     $schema = array("add_field" => array(
     	"avatar" => " IF(anagraph.uid > 0 AND " . CM_TABLE_PREFIX . "mod_security_users.avatar <> ''

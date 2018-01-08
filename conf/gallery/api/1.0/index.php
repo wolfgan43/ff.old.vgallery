@@ -85,23 +85,23 @@ $request_method = strtolower($_SERVER["REQUEST_METHOD"]);
  * Get hearder Authorization
  * */
 function getAuthorizationHeader(){
-        $headers = null;
-        if (isset($_SERVER['Authorization'])) {
-            $headers = trim($_SERVER["Authorization"]);
-        }
-        else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
-            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
-        } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-            // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            //print_r($requestHeaders);
-            if (isset($requestHeaders['Authorization'])) {
-                $headers = trim($requestHeaders['Authorization']);
-            }
-        }
-        return $headers;
-    }
+	$headers = null;
+	if (isset($_SERVER['Authorization'])) {
+		$headers = trim($_SERVER["Authorization"]);
+	}
+	else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
+		$headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+	} elseif (function_exists('apache_request_headers')) {
+		$requestHeaders = apache_request_headers();
+		// Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
+		$requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+		//print_r($requestHeaders);
+		if (isset($requestHeaders['Authorization'])) {
+			$headers = trim($requestHeaders['Authorization']);
+		}
+	}
+	return $headers;
+}
 /**
  * get access token from header
  * */
@@ -187,50 +187,17 @@ switch($request_method) {
 	case "post":
 	case "get":
 	default:
-		$arrPath = explode("/", trim($service_path_info, "/"));
-		$target = $arrPath[0];
-		check_function("get_schema_fields_by_type");
-		$relative_api_path = str_replace(__CMS_DIR__ . "/conf/gallery", "", __DIR__);
+		$relative_api_path = str_replace(realpath(__CMS_DIR__ . "/conf/gallery") , "", __DIR__);
+		$res = resolve_include_api($service_path_info, $relative_api_path, $schema_def);
 
-		if(/*preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info &&*/ is_file(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
-			$cm->real_path_info = $service_path_info;
-
-			require_once(FF_DISK_PATH . $relative_api_path . $service_path_info . "." . FF_PHP_EXT);
-		} elseif(is_file(FF_DISK_PATH . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
-			$cm->real_path_info = substr($service_path_info, strlen($target) + 1);
-
-			require_once(FF_DISK_PATH . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
-		} elseif(is_array($service_module) && count($service_module)) {
-			foreach($service_module AS $module_name) {
-				if(/*preg_replace("/[^a-z0-9\/-]+/i", "", $service_path_info) == $service_path_info &&*/ is_file(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . $service_path_info . "." . FF_PHP_EXT)) {
-					$cm->real_path_info = $service_path_info;
-
-					require_once(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . $service_path_info . "." . FF_PHP_EXT);
-				} elseif(is_file(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
-					$cm->real_path_info = substr($service_path_info, strlen($target) + 1);
-
-					require_once(FF_DISK_PATH . "/modules/" . $module_name . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
-					break;
-				}
-			}
+		if($res["include"]) {
+			$cm->real_path_info = $res["real_path_info"];
+			require_once($res["include"]);
 		}
 
-		if($return === false && is_file(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
-			$cm->real_path_info = substr($service_path_info, strlen($target) + 1);
-
-			require_once(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
-		}
-
-		
-
-/*			
-		if($return === false && is_file(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT)) {
-			$cm->real_path_info = "/" . $target;
-			
-			require_once(FF_DISK_PATH . "/conf/gallery" . $relative_api_path . "/" . $target . "." . FF_PHP_EXT);
-		}
-*/
 		if($return === false) {
+			check_function("get_schema_fields_by_type");
+
 			if(!$service) {
 				if($target == "pages") {
 					$schema 				= get_schema_fields_by_type("page"); //da fare
@@ -241,53 +208,53 @@ switch($request_method) {
 				} elseif($target == "search") {
 	    			$schema 				= get_schema_fields_by_type("search"); //da fare
 				} elseif(isset($service_schema[$target])) {
-					$service["name"] = $target;
+					$service["name"] 		= $target;
 				} elseif($target) {
 					$schema_target			= get_schema_fields_by_type("/" . $target, "vgallery");
 
 					if(isset($service_schema[$schema_target["table"]])) {
-						$service["name"] = $schema_target["table"];
-						$service["schema"] = $service_schema[$schema_target["table"]];
+						$service["name"] 	= $schema_target["table"];
+						$service["schema"] 	= $service_schema[$schema_target["table"]];
 					}
 				}
 			}
 
 			if($service) {
-				$service["module"] = $service_module;
-				$service["internal"] = true;
+				$service["module"] 			= $service_module;
+				$service["internal"] 		= true;
 				if(!$service["path_info"])
-					$service["path_info"] = $cm->real_path_info;
+					$service["path_info"] 	= $cm->real_path_info;
 				if(!$service["schema"])
-					$service["schema"] = $service_schema[$service["name"]];
+					$service["schema"] 		= $service_schema[$service["name"]];
 
 				if(!$service["type"]) {
 					if(count($arrPath) > 1)
-						$service["type"] = "detail";
+						$service["type"] 	= "detail";
 					else
-						$service["type"] = "list";
+						$service["type"] 	= "list";
 				}
 				if($service["type"] == "detail") {
 					if(!$service["ID"])
-						$service["ID"] = $arrPath[count($arrPath) - 1];
+						$service["ID"] 		= $arrPath[count($arrPath) - 1];
 					
 					if(!(is_numeric($service["ID"]) && $service["ID"] > 0))
-						$error = ffTemplate::_get_word_by_code("missing_key");
+						$error 				= ffTemplate::_get_word_by_code("missing_key");
 				}
 
 				if(!$error)
-					$return = api_get_code($service);
+					$return 				= api_get_code($service);
 			}
 		}
 		//print_r($return);
 		//die();
 		
-		if(!isset($return)) {
+		if($return === false) {
+			$return = array();
+
 			if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest")
 				http_response_code(500);
 			else
 				http_response_code(404);
-			
-			exit;
 		}
 
 		echo ffCommon_jsonenc($return, true);

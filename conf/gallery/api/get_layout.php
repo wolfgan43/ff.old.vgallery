@@ -270,4 +270,3 @@ function api_get_layout($limit_data = null, $params = null, $sort_field = null, 
                 , "sql" => $sSQL
         );
 }
-

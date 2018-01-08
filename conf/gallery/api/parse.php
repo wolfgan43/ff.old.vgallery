@@ -235,11 +235,12 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 							$real_def_source = explode(":", $arrDefSource[1]);
 		                    if(array_key_exists($real_def_source[0], $arrDef)) {
 	                    		if(is_array($arrDef[$real_def_source[0]]) && count($arrDef[$real_def_source[0]])) {
+									$res = "";
 									foreach($arrDef[$real_def_source[0]] AS $arrDef_key => $arrDef_value) {
 										if(!is_numeric($arrDef_key) && strlen($arrDef_value)) {
 											eval('$res .= ' . str_replace("[RES]", date($arrDef_key, $data), $arrDef_value) . ";");
 										} else {
-											$res .= date($arrDef_value, $data);
+											 $res .= date($arrDef_value, $data);
 										}
 									}
 	                    		} else {
@@ -263,7 +264,7 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 								if(isset($real_def_source) && $real_def_source[1] == "nolink") {
 			                        $res = '<span class="found">' . $res . '</span>';
 								} else {
-			                        $res = '<a href="' . cm_showfiles_get_abs_url(CM_SHOWFILES . $data) . '" target="_blank">' . $res . '</a>';    
+			                        $res = '<a href="' . cm_showfiles_get_abs_url($data) . '" target="_blank">' . $res . '</a>';    
 			                    }
 							}
 		                } else {
@@ -277,6 +278,7 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 		                    if(array_key_exists($arrDefSource[0], $arrDef)) {
 		                        $arrRes = explode($arrDef[$arrDefSource[0]], $data);
 		                        if(is_array($arrRes) && count($arrRes)) {
+									$res = "";
 		                            foreach($arrRes AS $arrRes_key => $arrRes_value) {
 		                                if(strlen($arrRes_value)) {
 		                                    $res .= '<' . $arrDef[$arrDefSource[1]] . ($data_key ? ' class="' . ffCommon_url_rewrite($data_key) . '"' : '') . '>' . ffTemplate::_get_word_by_code($arrRes_value) . "</" . $arrDef[$arrDefSource[1]] . ">";
