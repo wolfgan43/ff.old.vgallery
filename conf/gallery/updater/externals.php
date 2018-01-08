@@ -1,277 +1,49 @@
 <?php
-error_reporting((E_ALL ^ E_NOTICE) | E_STRICT);
+/**
+*   VGallery: CMS based on FormsFramework
+    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
 
-define("REAL_PATH", "/conf/gallery");
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ * @package VGallery
+ * @subpackage updater
+ * @author Alessandro Stucchi <wolfgan@gmail.com>
+ * @copyright Copyright (c) 2004, Alessandro Stucchi
+ * @license http://opensource.org/licenses/gpl-3.0.html
+ * @link https://github.com/wolfgan43/vgallery
+ */
+require_once(__DIR__ . "/check/common.php");
+
+$params = updater_get_params($cm);
 
 $limit_operation = (isset($_REQUEST["lo"]) && strlen($_REQUEST["lo"])
-						? $_REQUEST["lo"]
-						: 200
-					);
+	? $_REQUEST["lo"]
+	: 200
+);
 $nowarning = (isset($_REQUEST["nowarning"]) && strlen($_REQUEST["nowarning"])
-						? $_REQUEST["nowarning"]
-						: false
-					);
-if(!function_exists("ffCommon_dirname")) {
-	function ffCommon_dirname($path) 
-	{
-		$res = dirname($path);
-		if(dirname("/") == "\\")
-		    $res = str_replace("\\", "/", $res);
-		
-		if($res == ".")
-		    $res = "";
-		    
-		return $res;
-	}
-}
-if(!function_exists("file_post_contents")) {
-	function file_post_contents($url, $data = null, $username = null, $password = null, $method = "POST", $timeout = 60) {
-		if(!$username && defined("AUTH_USERNAME"))
-			$username 				= AUTH_USERNAME;
-		if(!$password && defined("AUTH_PASSWORD"))
-			$password 				= AUTH_PASSWORD;
-
-		if($data)
-			$postdata 				= http_build_query($data);
-
-		$headers = array();
-		if($method == "POST")
-			$headers[] 				= "Content-type: application/x-www-form-urlencoded";
-		if($username)
-			$headers[] 				= "Authorization: Basic " . base64_encode($username . ":" . $password);
-
-		$opts = array(
-			'ssl' => array(
-				"verify_peer" 		=> false,
-				"verify_peer_name" 	=> false
-			),
-			'http' => array(
-				'method'  			=> $method,
-				'timeout'  			=> $timeout,
-				'header'  			=> implode("\r\n", $headers),
-				'content' 			=> $postdata
-			)
-		);
-
-		$context = stream_context_create($opts);
-		return @file_get_contents($url, false, $context);
-	}
-}
-if(!function_exists("ftp_purge_dir")) {
-    function ftp_purge_dir($conn_id, $ftp_disk_path, $relative_path, $local_disk_path = null) {
-        $absolute_path = $ftp_disk_path . $relative_path;  
-
-        $res = true;
-        if (@ftp_chdir($conn_id, $absolute_path)) {
-            $handle = @ftp_nlist($conn_id, "-la " . $absolute_path);
-            if (is_array($handle) && count($handle)) {
-                foreach($handle AS $file) {
-                    if(basename($file) != "." && basename($file) != "..") {
-                        if(strlen($ftp_disk_path))
-                            $real_file = substr($file, strlen($ftp_disk_path));
-                        else
-                            $real_file = $file;
-
-                        if (@ftp_chdir($conn_id, $file)) {
-                            $res = ($res and ftp_purge_dir($conn_id, $ftp_disk_path, $real_file, $local_disk_path));
-                            @ftp_rmdir($conn_id, $file);
-                            if($local_disk_path !== null)
-                                @rmdir($local_disk_path . $real_file);
-                        } else {
-                            if(!@ftp_delete($conn_id, $file)) {
-                                if($local_disk_path === null) {
-                                    $res = false;
-                                } else {
-                                    if(!@unlink($local_disk_path . $real_file)) {
-                                        $res = false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if(!@ftp_rmdir($conn_id, $absolute_path)) {
-                if($local_disk_path === null) {
-                    $res = false;
-                } else {
-                    if(!@rmdir($local_disk_path . $relative_path)) {
-                        $res = false;
-                    }
-                }
-            }
-        } else {
-            if(!@ftp_delete($conn_id, $absolute_path)) {
-                if($local_disk_path === null) {
-                    $res = false;
-                } else {
-                    if(!@unlink($local_disk_path . $relative_path)) { 
-                        $res = false;
-                    }
-                }
-            }
-        }
-        return $res;
-    }
-}
-
-if(!defined("FF_SITE_PATH") || !defined("FF_DISK_PATH"))
-	require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/path.php");
-
-if(!defined("FF_SITE_PATH") || !defined("FF_DISK_PATH")) {
-    if (strpos(php_uname(), "Windows") !== false)
-        $tmp_file = str_replace("\\", "/", __FILE__);
-    else
-        $tmp_file = __FILE__;
-
-    if(strpos($tmp_file, $_SERVER["DOCUMENT_ROOT"]) !== false) {
-	    $st_document_root =  $_SERVER["DOCUMENT_ROOT"];
-		if (substr($st_document_root,-1) == "/")
-		    $st_document_root = substr($st_document_root,0,-1);
-
-		$st_site_path = str_replace($st_document_root, "", str_replace("/conf/gallery/updater/externals.php", "", $tmp_file));
-		$st_disk_path = $st_document_root . $st_site_path;
-	} elseif(strpos($tmp_file, $_SERVER["PHP_DOCUMENT_ROOT"]) !== false) {
-	    $st_document_root =  $_SERVER["PHP_DOCUMENT_ROOT"];
-		if (substr($st_document_root,-1) == "/")
-		    $st_document_root = substr($st_document_root,0,-1);
-
-		$st_site_path = str_replace($_SERVER["DOCUMENT_ROOT"], "", str_replace("/conf/gallery/updater/externals.php", "", $_SERVER["SCRIPT_FILENAME"]));
-		$st_disk_path = $st_document_root . str_replace($st_document_root, "", str_replace("/conf/gallery/updater/externals.php", "", $tmp_file));
-	} else {
-		$st_disk_path = str_replace("/conf/gallery/updater/externals.php", "", $tmp_file);
-		$st_site_path = str_replace("/conf/gallery/updater/externals.php", "", $_SERVER["SCRIPT_NAME"]);
-	}
-
-    define("FF_SITE_PATH", $st_site_path);
-    define("FF_DISK_PATH", $st_disk_path);
-}
-
-if(is_object($cm)) {
-	$pathInfo = $cm->path_info;
-	$realPathInfo = $cm->real_path_info;
-
-	if($pathInfo == VG_SITE_ADMINUPDATER) { 
-		if (!AREA_UPDATER_SHOW_MODIFY) {
-			ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
-		}
-	}
-	
-	$cm->oPage->form_method = "post";
-} else {
-	$fftmp_ffq = false;
-	if (isset($_REQUEST["_ffq_"])) // used to manage .htaccess [QSA] option, this overwhelm other options
-	{
-		$fftmp_ffq = true;
-		$_SERVER["PATH_INFO"] = $_REQUEST["_ffq_"];
-		$_SERVER["ORIG_PATH_INFO"] = $_REQUEST["_ffq_"];
-	}
-	else if (isset($_SERVER["ORIG_PATH_INFO"]))
-		$_SERVER["PATH_INFO"] = $_SERVER["ORIG_PATH_INFO"];
-
-	if (strlen($_SERVER["QUERY_STRING"]))
-	{
-		$fftmp_new_querystring = "";
-		$fftmp_parts = explode("&", rtrim($_SERVER["QUERY_STRING"], "&"));
-		foreach ($fftmp_parts as $fftmp_value)
-		{
-			$fftmp_subparts = explode("=", $fftmp_value);
-			if ($fftmp_subparts[0] == "_ffq_")
-				continue;
-			if (!isset($_REQUEST[$fftmp_subparts[0]]))
-				$_REQUEST[$fftmp_subparts[0]] = (count($fftmp_subparts) == 2 ? rawurldecode($fftmp_subparts[1]) : "");
-			$fftmp_new_querystring .= $fftmp_subparts[0] . (count($fftmp_subparts) == 2 ? "=" . $fftmp_subparts[1] : "") . "&";
-		}
-		if ($fftmp_ffq)
-		{
-			$_SERVER["QUERY_STRING"] = $fftmp_new_querystring;
-			unset($_REQUEST["_ffq_"]);
-			unset($_GET["_ffq_"]);
-		}
-		unset($fftmp_new_querystring);
-		unset($fftmp_parts);
-		unset($fftmp_value);
-		unset($fftmp_subparts);
-	}
-
-	// fix request_uri. can't use code above due to multiple redirects (es.: R=401 and ErrorDocument in .htaccess)
-	if (strpos($_SERVER["REQUEST_URI"], "?") !== false)
-	{
-		$fftmp_requri_parts = explode("?", $_SERVER["REQUEST_URI"]);
-		if (strlen($fftmp_requri_parts[1]))
-		{
-			$fftmp_new_querystring = "";
-			$fftmp_parts = explode("&", rtrim($fftmp_requri_parts[1], "&"));
-			foreach ($fftmp_parts as $fftmp_value)
-			{
-				$fftmp_subparts = explode("=", $fftmp_value);
-				if ($fftmp_subparts[0] == "_ffq_")
-					continue;
-				$fftmp_new_querystring .= $fftmp_subparts[0] . (count($fftmp_subparts) == 2 ? "=" . $fftmp_subparts[1] : "") . "&";
-			}
-			
-			$_SERVER["REQUEST_URI"] = $fftmp_requri_parts[0] . "?" . $fftmp_new_querystring;
-			
-			unset($fftmp_new_querystring);
-			unset($fftmp_parts);
-			unset($fftmp_value);
-			unset($fftmp_subparts);
-		}
-		unset($fftmp_requri_parts);
-	}
-	
-    $realPathInfo = $_SERVER['PATH_INFO'];
-	if(substr($realPathInfo, 0, 1) !== "/" 
-		&& array_key_exists('REDIRECT_URL', $_SERVER)
-		&& FF_DISK_PATH . $_SERVER['REDIRECT_URL'] != __FILE__
-	) {
-        if(strpos(FF_DISK_PATH . $_SERVER['REDIRECT_URL'], __FILE__) === 0) {
-			$realPathInfo    = substr(FF_DISK_PATH . $_SERVER['REDIRECT_URL'], strlen(__FILE__));
-        } else {
-			$realPathInfo    = $_SERVER['REDIRECT_URL'];
-        }
-
-        $arr_query_string = explode("&", $_SERVER['REDIRECT_QUERY_STRING']);
-        if(is_array($arr_query_string) && count($arr_query_string)) {
-            foreach($arr_query_string AS $arr_query_string_value) {
-                $arr_query_string_data = explode("=", $arr_query_string_value);
-                if(is_array($arr_query_string_data) && count($arr_query_string_data)) {
-                    $_REQUEST[$arr_query_string_data[0]] = urldecode($arr_query_string_data[1]);
-                    $_GET[$arr_query_string_data[0]] = urldecode($arr_query_string_data[1]);
-                }
-            }
-        }
-    }
-	//$page_path = "/conf/gallery/updater/check";
-}
-
-if(strpos($realPathInfo, $_SERVER["SCRIPT_NAME"]) === 0)
-	$realPathInfo = substr($realPathInfo, strlen($_SERVER["SCRIPT_NAME"]));
-
-	
-if(!defined("MASTER_SITE"))
-	require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/updater.php");
-
-if(!defined("FF_DATABASE_NAME")) {
-	require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/db.php");
-	require_once(ffCommon_dirname(ffCommon_dirname(ffCommon_dirname(ffCommon_dirname(__FILE__)))) . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
-	$db =  new ffDB_Sql;
-} else {
-	$db = ffDB_Sql::factory();	
-}
-
-if(!defined("DOMAIN_INSET"))
-	define("DOMAIN_INSET", $_SERVER["HTTP_HOST"]);
-
-//require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/updater.php");		
-
+	? $_REQUEST["nowarning"]
+	: false
+);
 if ($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
 	$json = true;
 } else {
 	$json = $_REQUEST["json"];
 }
 $execute = $_REQUEST["exec"];
+
+$db = $params["db"];
+$realPathInfo = $params["user_path"];
 
 $file_get_contents_master_failed = array();
 $file_get_contents_slave_failed = array();
@@ -365,13 +137,13 @@ if(is_array($external) && count($external)) {
 				"http://" . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/external.php" . $external_path . "?s=" . urlencode(DOMAIN_INSET)
 				, null
 				, (defined("AUTH_USERNAME")
-					? AUTH_USERNAME
-					: null
-				)
-					, (defined("AUTH_PASSWORD")
-					? AUTH_PASSWORD
-					: null
-				)
+				? AUTH_USERNAME
+				: null
+			)
+				, (defined("AUTH_PASSWORD")
+				? AUTH_PASSWORD
+				: null
+			)
 				, "GET"
 				, "120"
 			);
@@ -380,13 +152,13 @@ if(is_array($external) && count($external)) {
 					"http://www." . DOMAIN_INSET . FF_SITE_PATH . REAL_PATH . "/updater/check/external.php" . $external_path . "?s=" . urlencode("www." . DOMAIN_INSET)
 					, null
 					, (defined("AUTH_USERNAME")
-						? AUTH_USERNAME
-						: null
-					)
-						, (defined("AUTH_PASSWORD")
-						? AUTH_PASSWORD
-						: null
-					)
+					? AUTH_USERNAME
+					: null
+				)
+					, (defined("AUTH_PASSWORD")
+					? AUTH_PASSWORD
+					: null
+				)
 					, "GET"
 					, "120"
 				);
@@ -620,7 +392,7 @@ if(is_array($external) && count($external)) {
 		                $oGrid->addEvent("on_do_action", "UpdaterCheck_on_do_action");
 		                $oGrid->use_paging = true;
 		                $oGrid->default_records_per_page = 200;
-		                $oGrid->user_vars["operations"] = $operation;
+						$oGrid->user_vars["operations"] = $operation;
 						$oGrid->user_vars["master_site"] = $master_site;
 						$oGrid->user_vars["creation_dir_label"] = $creation_dir_label;
 						$oGrid->user_vars["upload_file_label"] = $upload_file_label;
@@ -863,4 +635,3 @@ function check_external($path, $db) {
 	}
 	return false;
 }
-?>

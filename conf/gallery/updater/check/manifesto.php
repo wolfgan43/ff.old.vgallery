@@ -1,4 +1,28 @@
 <?php
+/**
+*   VGallery: CMS based on FormsFramework
+    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ * @package VGallery
+ * @subpackage updater
+ * @author Alessandro Stucchi <wolfgan@gmail.com>
+ * @copyright Copyright (c) 2004, Alessandro Stucchi
+ * @license http://opensource.org/licenses/gpl-3.0.html
+ * @link https://github.com/wolfgan43/vgallery
+ */
     $manifesto      = array();
     $manifesto_dep  = array();
     
@@ -24,6 +48,12 @@
                 } while($db->nextRecord());
             }
         }
+
+		$fs_exclude["/themes/restricted"] = true;
+		$fs_exclude["/themes/default"] = true;
+		$fs_exclude["/themes/dialog"] = true;
+
+
         return $fs_exclude;
     } 
     $fs_manifesto_exclude = get_exclude();
@@ -43,14 +73,27 @@
             , "/library/jsmin"
             , "/library/phpmailer"
             , "/themes/responsive"
-            , "/themes/restricted"
+            //, "/themes/restricted"
+            //, "/themes/default"
+            //, "/themes/dialog"
             , "/themes/library/ff"
             , "/themes/library/jquery"
-            , "/themes/library/jquery.ui"
             , "/themes/library/jquery-ui"
+            , "/themes/library/jquery-ui.themes"
             , "/themes/library/swfobject"
+			, "/themes/library/ckeditor"
+			, "/themes/library/kcfinder"
         );
-        $manifesto["forms_framework"]["db"] = array(); 
+        $manifesto["forms_framework"]["db"] = array(
+        	"exclude" => array(
+        		"cm_layout"
+  				, "cm_layout_cdn"
+  				, "cm_layout_css"
+  				, "cm_layout_js"
+  				, "cm_layout_meta"
+  				, "cm_layout_sect"
+        	)
+        ); 
 
         $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.blockui";
         $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.uploadify";
@@ -66,10 +109,9 @@
     $vgallery_core_path = array(
         "/conf/gallery"
         , "/library/gallery"
+        , "/themes/admin"
         , "/themes/gallery"
         , "/themes/site"
-        , "/themes/admin"
-        , "/themes/admin_v2"
         , "/themes/library/codemirror"
     );
 
@@ -191,18 +233,35 @@
         $manifesto["vgallery_cms"]["db"] = array();
 
         $manifesto["vgallery_cms"]["dep"][] = "external_plugin/jquery.cluetip";
+        $manifesto["vgallery_cms"]["dep"][] = "external_plugin/jquery.nicescroll";
         $manifesto["vgallery_cms"]["dep"][] = "external_plugin/jquery.pngfix";
         $manifesto["vgallery_cms"]["dep"][] = "external_plugin/jquery.printelement";
         $manifesto["vgallery_cms"]["dep"][] = "external_plugin/jquery.checkbox";
         $manifesto["vgallery_cms"]["dep"][] = "external_plugin/respond";
         $manifesto["vgallery_cms"]["dep"][] = "external_plugin/freewall";
         $manifesto_dep["external_plugin/jquery.cluetip"] = true;
+        $manifesto_dep["external_plugin/jquery.nicescroll"] = true;
         $manifesto_dep["external_plugin/jquery.pngfix"] = true;
         $manifesto_dep["external_plugin/jquery.printelement"] = true;
         $manifesto_dep["external_plugin/jquery.checkbox"] = true;
         $manifesto_dep["external_plugin/respond"] = true;
         $manifesto_dep["external_plugin/freewall"] = true;
     }
+    
+    //VGALLERY ECOMMERCE
+    if(is_dir(FF_DISK_PATH . "/conf/gallery/ecommerce") && is_dir(FF_DISK_PATH . "/library/gallery/ecommerce")) { 
+        $manifesto["vgallery_ecommerce"]["enable"] = false;
+        $manifesto["vgallery_ecommerce"]["type"] = "VGallery Ecommerce";
+        $manifesto["vgallery_ecommerce"]["path"] = array(
+        	"/conf/gallery/ecommerce"
+        	, "/library/gallery/ecommerce"
+			, "/themes/gallery/contents/ecommerce"
+			, "/themes/gallery/css/ecommerce"
+			, "/themes/gallery/javascript/ecommerce"
+        );
+        $manifesto["vgallery_ecommerce"]["db"]["table_prefix"] = "ecommerce_";
+    }
+    
     //VGALLERY MASTER CONTROL
     if(is_dir(FF_DISK_PATH . "/conf/gallery/mc")) {
         $manifesto["vgallery_master_control"]["enable"] = false;
@@ -237,7 +296,7 @@
 
     
     //VGALLERY MODULE
-    $module_file = glob(FF_DISK_PATH . "/conf/gallery/modules/*");
+    $module_file = glob(FF_DISK_PATH . VG_ADDONS_PATH . "/*" /*"/conf/gallery/modules/*"*/);
     if(is_array($module_file) && count($module_file)) {
         foreach($module_file AS $real_file) {
             if(is_dir($real_file)) {
@@ -277,13 +336,14 @@
     }
 
     //EXTERNAL APPLICATIONS FIX
-    if(array_key_exists("external_app/ckfinder", $manifesto)) 
+    /*if(array_key_exists("external_app/ckfinder", $manifesto))
         $manifesto["external_app/ckfinder"]["path"][] = "/themes/responsive/ff/ffField/widgets/ckuploadify";
     if(array_key_exists("external_app/kcfinder", $manifesto)) 
         $manifesto["external_app/kcfinder"]["path"][] = "/themes/responsive/ff/ffField/widgets/kcuploadify";
-    
+    */
+
     //JQUERY UI THEME
-    $module_file = glob(FF_DISK_PATH . "/themes/library/jquery.ui/themes/*");
+   /* $module_file = glob(FF_DISK_PATH . "/themes/library/jquery-ui.themes/*");
     if(is_array($module_file) && count($module_file)) {
         foreach($module_file AS $real_file) {
             if(is_dir($real_file)) {
@@ -300,7 +360,7 @@
 				}
             }
         }
-    }   
+    } */  
 
     //EXTERNAL PLUGINS
     $module_file = glob(FF_DISK_PATH . "/themes/library/plugins/*");
@@ -313,12 +373,12 @@
                     && array_search($relative_path, $vgallery_core_path) === false
                 ) {
                     $fix_value = (isset($manifesto_dep["external_plugin/" . basename($relative_path)]) ? true : false);
-                    if(strpos($relative_path, "jquery") !== false && !file_exists($real_file . "/" . basename($real_file) . ".observe.js")) {
+                    if(file_exists($real_file . "/libs.php")) {
                         $is_addon = true;
                     } else {
                         $is_addon = false;
                     }
-                        
+
                     //|| strpos($relative_path, "jquery") !== false || strpos($relative_path, "swfobject") !== false
                     $manifesto["external_plugin/" . basename($relative_path)]["enable"] = ($fix_value || $is_addon ? true : false);
                     $manifesto["external_plugin/" . basename($relative_path)]["fix"] = $fix_value;
@@ -343,4 +403,3 @@
             }
         }
     }
-?>

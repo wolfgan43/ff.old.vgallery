@@ -1,4 +1,28 @@
 <?php
+/**
+*   VGallery: CMS based on FormsFramework
+    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ * @package VGallery
+ * @subpackage updater
+ * @author Alessandro Stucchi <wolfgan@gmail.com>
+ * @copyright Copyright (c) 2004, Alessandro Stucchi
+ * @license http://opensource.org/licenses/gpl-3.0.html
+ * @link https://github.com/wolfgan43/vgallery
+ */
     $operation_fixed = array(); 
     $operation_fixed["2009-10-25"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_static' AND COLUMN_NAME <> 'ID_static_pages' AND TABLE_NAME = 'static_pages_rel_languages' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2009-10-25"]["than"] = "ALTER TABLE `static_pages_rel_languages` CHANGE `ID_static` `ID_static_pages` INT( 11 ) NOT NULL DEFAULT '0'";
@@ -7,23 +31,23 @@
 //   $operation_fixed["2010-08-25"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'is_dir' AND TABLE_NAME = 'vgallery_nodes' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
 //   $operation_fixed["2010-08-25"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `vgallery_nodes` WHERE is_dir = '') AS val"; 
 //   $operation_fixed["2010-08-25"]["than"] = "UPDATE `vgallery_nodes` SET is_dir = IF(vgallery_nodes.ID_type = (SELECT vgallery_type.ID FROM vgallery_type WHERE vgallery_type.name = 'Directory'), 1, 0) WHERE is_dir = ''";
-    $operation_fixed["2010-10-27"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'layout_settings_rel' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
-    $operation_fixed["2010-10-27"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `layout_settings_rel` WHERE value = 'toolbar.admin') AS val"; 
-    $operation_fixed["2010-10-27"]["than"] = "UPDATE `layout_settings_rel` SET value = 'toolbaradmin' WHERE value = 'toolbar.admin'";
+  //  $operation_fixed["2010-10-27"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'layout_settings_rel' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+ //   $operation_fixed["2010-10-27"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `layout_settings_rel` WHERE value = 'toolbar.admin') AS val"; 
+//    $operation_fixed["2010-10-27"]["than"] = "UPDATE `layout_settings_rel` SET value = 'toolbaradmin' WHERE value = 'toolbar.admin'";
     
-//    $operation_fixed["2011-01-21"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'data_blocks' AND TABLE_NAME = 'cache_page' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
-//    $operation_fixed["2011-01-21"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `cache_page` WHERE data_blocks = '' AND ff_blocks = '' AND user_path <> '/' AND force_visualization = '') AS val"; 
-//    $operation_fixed["2011-01-21"]["than"][] = "DELETE FROM `cache_page` WHERE `cache_page`.`data_blocks` = '' AND user_path <> '/' AND force_visualization = ''";
-//    $operation_fixed["2011-01-21"]["than"][] = "TRUNCATE TABLE `cache_sid`";
+    //$operation_fixed["2011-01-21"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'data_blocks' AND TABLE_NAME = 'cache_page' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+    //$operation_fixed["2011-01-21"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `cache_page` WHERE data_blocks = '' AND ff_blocks = '' AND user_path <> '/' AND force_visualization = '') AS val"; 
+    //$operation_fixed["2011-01-21"]["than"][] = "DELETE FROM `cache_page` WHERE `cache_page`.`data_blocks` = '' AND user_path <> '/' AND force_visualization = ''";
+    //$operation_fixed["2011-01-21"]["than"][] = "TRUNCATE TABLE `cache_sid`";
 
-    $operation_fixed["2011-03-08"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'enable_multilang_visible' AND TABLE_NAME = 'vgallery' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
-    $operation_fixed["2011-03-08"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `vgallery` WHERE enable_multilang_visible = '') AS val"; 
-    $operation_fixed["2011-03-08"]["than"][] = "UPDATE `vgallery` SET enable_multilang_visible = '1' WHERE enable_multilang_visible = ''";
+//    $operation_fixed["2011-03-08"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'enable_multilang_visible' AND TABLE_NAME = 'vgallery' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+//    $operation_fixed["2011-03-08"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `vgallery` WHERE enable_multilang_visible = '') AS val"; 
+//    $operation_fixed["2011-03-08"]["than"][] = "UPDATE `vgallery` SET enable_multilang_visible = '1' WHERE enable_multilang_visible = ''";
     
-    $operation_fixed["2011-04-26"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'settings_thumb_mode' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
-    $operation_fixed["2011-04-26"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'public' AND TABLE_NAME = 'settings_thumb_mode' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 0, 1 ) AS val"; 
-    $operation_fixed["2011-04-26"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `settings_thumb_mode` WHERE 1) AS val"; 
-    $operation_fixed["2011-04-26"]["than"][] = "TRUNCATE TABLE `settings_thumb_mode`"; 
+//    $operation_fixed["2011-04-26"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'settings_thumb_mode' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
+//    $operation_fixed["2011-04-26"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'public' AND TABLE_NAME = 'settings_thumb_mode' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 0, 1 ) AS val"; 
+//    $operation_fixed["2011-04-26"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `settings_thumb_mode` WHERE 1) AS val"; 
+//    $operation_fixed["2011-04-26"]["than"][] = "TRUNCATE TABLE `settings_thumb_mode`"; 
 
     $operation_fixed["2011-07-16"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_zone' AND TABLE_NAME = 'ecommerce_shipping_price' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2011-07-16"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `ecommerce_shipping_price` WHERE ID_zone = 0) AS val"; 
@@ -51,7 +75,7 @@
 
     $operation_fixed["2013-10-17"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'layout_location' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
     $operation_fixed["2013-10-17"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `layout_location` WHERE layout_location.ID NOT IN ( SELECT compare_layout_location_path.ID_layout_location FROM layout_location_path AS compare_layout_location_path) ) AS val";
-    $operation_fixed["2013-10-17"]["than"][] = "INSERT INTO layout_location_path ( ID, `ID_layout_location`, `path`, `visible`, `cascading` ) SELECT null, layout_location.ID , '(.*)', '1', '1' FROM  `layout_location` WHERE ID NOT IN ( SELECT compare_layout_location_path.ID_layout_location FROM layout_location_path AS compare_layout_location_path )";
+    $operation_fixed["2013-10-17"]["than"][] = "INSERT INTO layout_location_path ( ID, `ID_layout_location`, `path`, `visible`, `cascading` ) SELECT null, layout_location.ID , '%', '1', '1' FROM  `layout_location` WHERE ID NOT IN ( SELECT compare_layout_location_path.ID_layout_location FROM layout_location_path AS compare_layout_location_path )";
     
     $operation_fixed["2013-10-23"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'uid' AND TABLE_NAME = 'vgallery_rel_nodes_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2013-10-23"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `vgallery_rel_nodes_fields` WHERE vgallery_rel_nodes_fields.`description` LIKE '%<input class=\"toolbar\" type=\"hidden\"%' AND vgallery_rel_nodes_fields.`uid` = 0) AS val";
@@ -254,7 +278,7 @@
     
     $operation_fixed["2014-12-01"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'value' AND COLUMN_NAME <> 'description' AND TABLE_NAME = 'anagraph_rel_nodes_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2014-12-01"]["than"] = "ALTER TABLE `anagraph_rel_nodes_fields` CHANGE `value` `description` TEXT NOT NULL";
- 
+
     $operation_fixed["2014-12-02"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_anagraph' AND COLUMN_NAME <> 'ID_nodes' AND TABLE_NAME = 'anagraph_rel_nodes_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2014-12-02"]["than"] = "ALTER TABLE `anagraph_rel_nodes_fields` CHANGE `ID_anagraph` `ID_nodes` INT( 11 ) NOT NULL DEFAULT '0'";
 	
@@ -264,7 +288,7 @@
 
     $operation_fixed["2014-12-09"]["if"] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'anagraph_fields_group' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2014-12-09"]["than"] = "RENAME TABLE `anagraph_fields_group`  TO `anagraph_type_group`";
-
+    
     $operation_fixed["2014-12-10"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'parent' AND COLUMN_NAME <> 'parent_detail' AND TABLE_NAME = 'anagraph_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2014-12-10"]["than"] = "ALTER TABLE `anagraph_fields` CHANGE `parent` `parent_detail` VARCHAR( 255 ) NOT NULL";
 
@@ -325,14 +349,14 @@
     $operation_fixed["2015-01-13"]["than"][] = "ALTER TABLE `settings_thumb` DROP `thumb_item_md`";
     $operation_fixed["2015-01-13"]["than"][] = "ALTER TABLE `settings_thumb` DROP `thumb_item_sm`";
     $operation_fixed["2015-01-13"]["than"][] = "ALTER TABLE `settings_thumb` DROP `thumb_item_xs`";
-
+    
     $operation_fixed["2015-01-21"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'publishing_vgallery' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2015-01-21"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'publishing_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2015-01-21"]["than"] = "DROP TABLE `publishing_fields`";
 
     $operation_fixed["2015-01-22"]["if"] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'publishing_vgallery' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2015-01-22"]["than"] = "RENAME TABLE `publishing_vgallery`  TO `publishing_fields`";
-    
+
     $operation_fixed["2015-01-23"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'publishing_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2015-01-23"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_vgallery_fields' AND COLUMN_NAME <> 'ID_fields' AND TABLE_NAME = 'publishing_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2015-01-23"]["than"] = "ALTER TABLE `publishing_fields` CHANGE `ID_vgallery_fields` `ID_fields` INT( 11 ) NOT NULL DEFAULT '0'";
@@ -421,9 +445,6 @@
     $operation_fixed["2015-06-21-o"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_form' AND COLUMN_NAME <> 'ID_module' AND TABLE_NAME = 'module_register_rel_form' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
     $operation_fixed["2015-06-21-o"]["than"] = "ALTER TABLE  `module_register_rel_form` CHANGE `ID_form`  `ID_module` INT( 11 ) NOT NULL";   
     
-    $operation_fixed["2015-06-21-p"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_form' AND COLUMN_NAME <> 'ID_module' AND TABLE_NAME = 'comment_rel_module_form' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
-    $operation_fixed["2015-06-21-p"]["than"] = "ALTER TABLE  `comment_rel_module_form` CHANGE `ID_form`  `ID_module` INT( 11 ) NOT NULL";   
-
     $operation_fixed["2015-06-22"]["if"] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'layout_location' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ) AND NOT(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'is_main' AND TABLE_NAME = 'layout_location' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' )), 1, 0 ) AS val"; 
     $operation_fixed["2015-06-22"]["than"] = "ALTER TABLE  `layout_location` ADD  `is_main` INT( 1 ) NOT NULL";    
     
@@ -434,5 +455,43 @@
    	$operation_fixed["2015-09-17"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'main_theme' AND TABLE_NAME = 'cm_layout' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
    	$operation_fixed["2015-09-17"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `cm_layout` WHERE main_theme = 'restricted') AS val"; 
    	$operation_fixed["2015-09-17"]["than"] = "UPDATE `cm_layout` SET main_theme = 'responsive' WHERE main_theme = 'restricted'";
+
+    $operation_fixed["2016-01-14"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'layout_layer_path' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
+    $operation_fixed["2016-01-14"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `layout_layer` WHERE layout_layer.ID NOT IN ( SELECT compare_layout_layer_path.ID_layout_layer FROM layout_layer_path AS compare_layout_layer_path) ) AS val";
+    $operation_fixed["2016-01-14"]["than"][] = "INSERT INTO layout_layer_path ( ID, `ID_layout_layer`, `path`, `visible`, `cascading`, `class`, `fluid`, `wrap`, `width` ) SELECT null, layout_layer.ID , '%', '1', '1', layout_layer.`class`, layout_layer.`fluid`, layout_layer.`wrap`, layout_layer.`width` FROM  `layout_layer` WHERE ID NOT IN ( SELECT compare_layout_layer_path.ID_layout_layer FROM layout_layer_path AS compare_layout_layer_path )";
+
+    $operation_fixed["2016-01-15"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'layout_layer_path' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
+    $operation_fixed["2016-01-15"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `layout_layer_path` WHERE layout_layer_path.path LIKE '%(.*)%' OR layout_layer_path.path LIKE '%(.+)%' ) AS val";
+    $operation_fixed["2016-01-15"]["than"][] = "UPDATE `layout_layer_path` SET `path` = REPLACE(REPLACE(layout_layer_path.path, '(.+)', '%'), '(.*)', '%') WHERE layout_layer_path.path LIKE '%(.*)%' OR layout_layer_path.path LIKE '%(.+)%'";
+
+    $operation_fixed["2016-01-29"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ereg_path' AND TABLE_NAME = 'layout_path' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+    $operation_fixed["2016-01-29"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `layout_path` WHERE `ereg_path` = '') AS val"; 
+    $operation_fixed["2016-01-29"]["than"] = "UPDATE `layout_path` SET `ereg_path` = IF(`path` = '/' AND `cascading` > 0, '%', CONCAT(`path`, IF(`cascading` > 0, '%', '')))  WHERE `layout_path`.`ereg_path` = ''";
     
-?>
+    $operation_fixed["2016-06-10-a"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_module_search' AND COLUMN_NAME <> 'ID_module' AND TABLE_NAME = 'module_search_vgallery' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+    $operation_fixed["2016-06-10-a"]["than"] = "ALTER TABLE  `module_search_vgallery` CHANGE  `ID_module_search`  `ID_module` INT( 11 ) NOT NULL"; 
+
+    //if(!defined("SUPERADMIN_USERNAME"))
+    //	require_once(FF_DISK_PATH . "/config.php");
+    	
+	if(defined("SUPERADMIN_USERNAME") && SUPERADMIN_USERNAME) {
+	    $operation_fixed["2016-03-22"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'cm_mod_security_users' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
+	    $operation_fixed["2016-03-22"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 0, 1 ) AS val FROM `cm_mod_security_users` WHERE ID = 1 AND username = '" . SUPERADMIN_USERNAME . "' AND `password` = PASSWORD('" . SUPERADMIN_PASSWORD . "')) AS val";
+	    $operation_fixed["2016-03-22"]["than"][] = "DELETE FROM `cm_mod_security_users` WHERE ID = 1"; 
+	    $operation_fixed["2016-03-22"]["than"][] = "INSERT INTO `cm_mod_security_users` (`ID`, `level`, `status`, `username`, `password`, `primary_gid`) VALUES (1, 3, 1, '" . SUPERADMIN_USERNAME . "', PASSWORD('" . SUPERADMIN_PASSWORD . "'), 1)"; 
+
+	    $operation_fixed["2016-03-23"]["if"][] = "SELECT IF(EXISTS(SELECT Table_Name FROM information_schema.TABLES WHERE Table_Name = 'cm_mod_security_users' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val";                                     
+	    $operation_fixed["2016-03-23"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 0, 1 ) AS val FROM `cm_mod_security_users` WHERE ID = 2 AND username = 'guest' AND `password` = 'guest') AS val"; 
+	    $operation_fixed["2016-03-23"]["than"][] = "DELETE FROM `cm_mod_security_users` WHERE ID = 2"; 
+	    $operation_fixed["2016-03-23"]["than"][] = "INSERT INTO `cm_mod_security_users` (`ID`, `level`, `status`, `username`, `password`, `primary_gid`) VALUES (2, 0, 1, 'guest', 'guest', 2)"; 
+	}
+    
+    $operation_fixed["2016-05-05"]["if"][] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'display_name' AND TABLE_NAME = 'drafts' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+    $operation_fixed["2016-05-05"]["if"][] = "SELECT (SELECT IF(COUNT( * ) > 0, 1, 0 ) AS val FROM `drafts` WHERE `display_name` = '') AS val"; 
+    $operation_fixed["2016-05-05"]["than"] = "UPDATE `drafts` SET `display_name` = REPLACE(`name`, '-', ' ')  WHERE `display_name` = ''";
+    
+    $operation_fixed["2016-06-10-a"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_module_search' AND COLUMN_NAME <> 'ID_module' AND TABLE_NAME = 'module_search_vgallery' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+    $operation_fixed["2016-06-10-a"]["than"] = "ALTER TABLE  `module_search_vgallery` CHANGE  `ID_module_search`  `ID_module` INT( 11 ) NOT NULL"; 
+
+    $operation_fixed["2016-06-10-b"]["if"] = "SELECT IF(EXISTS(SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE COLUMN_NAME = 'ID_module_search' AND COLUMN_NAME <> 'ID_module' AND TABLE_NAME = 'module_search_fields' AND TABLE_SCHEMA = '" . FF_DATABASE_NAME . "' ), 1, 0 ) AS val"; 
+    $operation_fixed["2016-06-10-b"]["than"] = "ALTER TABLE  `module_search_fields` CHANGE  `ID_module_search`  `ID_module` INT( 11 ) NOT NULL"; 
