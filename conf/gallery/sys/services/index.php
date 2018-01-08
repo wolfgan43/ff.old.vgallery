@@ -1,6 +1,13 @@
 <?php
+$globals = ffGlobals::getInstance("gallery");
+if(check_function("system_gallery_error_document")) {
+	system_gallery_error_document($globals->page["user_path"]);
+}
+exit;
+
 //da fare l'autenticazione
-if(check_function("service_get_code_by_service") && check_function("get_schema_def")) {
+$cm = cm::getInstance();
+if(check_function("get_schema_def")) {
 	$res = get_schema_def();
 
 	$service_module = $res["module_available"];
@@ -44,6 +51,7 @@ if(check_function("service_get_code_by_service") && check_function("get_schema_d
 					$real_service_path_info = substr($cm->real_path_info, strlen($real_service_path));
 	        	}
 */
+
 
 	exit;
 	
@@ -122,4 +130,3 @@ if(check_function("service_get_code_by_service") && check_function("get_schema_d
 		}
 	}*/
 }
-?>

@@ -12,11 +12,11 @@ if($cm->oPage->isXHR() && $cm->oPage->getXHRComponent()) {
 	exit;
 }
 
-if(is_array($globals->params) && count($globals->params)) {
+/*if(is_array($globals->params) && count($globals->params)) {
     foreach($globals->params AS $params_key => $params_value) {
         ${$params_key} = $params_value;
     }
-}
+}*/
 
 $old_request_uri = $_SERVER["REQUEST_URI"];
 
@@ -110,7 +110,7 @@ if(is_array($sys["module"]) && count($sys["module"]))
 			if(check_function("set_template_var"))
 				$block = get_template_header($settings_path, $admin_menu, $layout_value);
 			
-			$tmp_buffer = $block["tpl"]["header"] . $tmp_buffer .  $block["tpl"]["footer"];
+			$tmp_buffer = $block["tpl"]["pre"] . $tmp_buffer .  $block["tpl"]["post"];
 		}
 		
 		$res["content"] .= $tmp_buffer;
@@ -138,7 +138,7 @@ elseif(isset($sys["type"]))
     switch(strtoupper($sys["type"])) {
         case "ADMIN_MENU":
         	if(check_function("process_admin_toolbar"))
-                $frame_buffer = process_admin_toolbar($user_path, $settings_path, $admin["theme"], $admin["sections"], $admin["css"], $admin["js"], $admin["international"], $admin["seo"], $admin["option"]);
+                $frame_buffer = process_admin_toolbar($settings_path, $admin["theme"], $admin["sections"], $admin["css"], $admin["js"], $admin["international"], $admin["seo"]);
             break;
         case "ADMIN_POPUP":
             if(check_function("process_admin_menu"))
@@ -457,7 +457,7 @@ elseif(strlen($settings_path))
 							$layout["db"]["real_path"] = $db->getField("real_path", "Text", true);
 						}
 
-						$main_section_params["js_custom_is_set"] = true;
+						//$main_section_params["js_custom_is_set"] = true;
 						
 						$main_section_params["search"] = $globals->search;
 						$main_section_params["navigation"] = $globals->navigation;
@@ -465,7 +465,7 @@ elseif(strlen($settings_path))
 						$main_section_params["user_path"] = $layout["db"]["real_path"];
 						$main_section_params["settings_path"] = $layout["db"]["real_path"];						
 						
-						$buffer = system_block_process($layout, $main_section_params, $layout_settings_popup);
+						$buffer = system_block_process($layout, $main_section_params);
 
 						$main_section_params = $buffer["params"];
 						$main_section_params["count_block"]++;
@@ -485,7 +485,7 @@ elseif(strlen($settings_path))
 				$layout_settings_popup = get_layout_settings(NULL, "ADMIN"); 
 
 			$main_section_params["count_block"] = 0;
-			$main_section_params["js_custom_is_set"] = true;
+			//$main_section_params["js_custom_is_set"] = true;
 			//$main_section_params["js_custom_module_is_set"] = false;
 			
 			$main_section_params["search"] = $globals->search;
@@ -502,7 +502,7 @@ elseif(strlen($settings_path))
 				$res = array();
 				$res["content"] = "";
 
-				$buffer = system_block_process($layout_value, $main_section_params, $layout_settings_popup);
+				$buffer = system_block_process($layout_value, $main_section_params);
 
 				$main_section_params = $buffer["params"];
 				$main_section_params["count_block"]++;
@@ -568,7 +568,7 @@ elseif(strlen($settings_path))
 }
 
 // da sistemare. Quando il componente viene recuperato senza struttura html fare in modo che vada o nel secondo caso senza form che lo generi
-if(strlen($globals->frame_smart_url)) {
+if(0) { //strlen($globals->frame_smart_url)
 	if($_REQUEST["out"] == "html") {
 		if($is_framework) {
 			$cm->oPage->use_own_js = true;

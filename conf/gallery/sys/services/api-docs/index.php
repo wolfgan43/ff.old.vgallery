@@ -5,7 +5,7 @@
 
   $res = $tpl->rpparse("main", false);
   */
-  	if(check_function("service_get_code_by_service") && check_function("get_schema_def"))
+  	if(check_function("get_schema_def"))
 		$schema_def = get_schema_def();
 
 	$service_module = $schema_def["module_available"];
