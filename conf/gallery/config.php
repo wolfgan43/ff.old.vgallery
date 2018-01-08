@@ -45,6 +45,7 @@ date_default_timezone_set(TIMEZONE);
 /**
  * Cache Settings
  */
+define("FF_TEMPLATE_ENABLE_TPL_JS", true);
 define("FF_URLREWRITE_REMOVEHYPENS", true);
 define("CM_CSSCACHE_RENDER_THEME_PATH", (!defined("APACHE_MODULE_EXPIRES") || APACHE_MODULE_EXPIRES ? false : true));
 define("CM_CACHE_ADAPTER", (PHP_EXT_MEMCACHE
@@ -67,7 +68,7 @@ define("FF_ENABLE_MEM_SHOWFILES_CACHING", CM_CACHE_ADAPTER == "memcached" /* que
  */
 if(MYSQLI_EXTENSIONS) {
     define("FF_DB_INTERFACE", "mysqli");
-    define("FF_ORM_ENABLE", true);
+    define("FF_ORM_ENABLE", false);
 } else {
     define("FF_DB_INTERFACE", "mysql");
     define("FF_ORM_ENABLE", false);
@@ -157,8 +158,37 @@ if(!defined("SHOWFILES_IS_RUNNING"))
     /**
      * Check configuration or goto Installer
      */
-    if(!(defined("FF_DISK_PATH") && defined("FF_DATABASE_NAME") && defined("SUPERADMIN_USERNAME")))
-    {
+	if(defined("FF_DISK_PATH")
+		&& defined("SESSION_NAME")
+		&& defined("FF_DATABASE_NAME")
+		&& defined("SUPERADMIN_PASSWORD")
+		&& defined("MASTER_SITE")
+		&& defined("FTP_PASSWORD")
+		&& defined("APPID")
+		&& defined("LANGUAGE_DEFAULT")
+		&& defined("ADMIN_THEME")
+		&& defined("FRAMEWORK_CSS")
+		&& defined("FONT_ICON")
+	) {
+
+		define("FF_ERROR_HANDLER_LOG", true);
+		define("FF_ERROR_HANDLER_LOG_PATH", CM_CACHE_PATH . "/errors");
+
+		if (basename($_SERVER["PATH_INFO"]) == "install"
+			&& strpos($_SERVER["HTTP_REFERER"], "://" . MASTER_SITE . "/admin/system/domains") !== false
+		) {
+			//define("BLOCK_INSTALL", true);
+			require(FF_DISK_PATH . VG_SYS_PATH . "/install/index.php");
+			exit;
+		}
+		/*if($_SERVER["PATH_INFO"] == "/install") {
+			if(isset($_REQUEST["complete"]))
+				$complete = "?complete";
+
+			//header("Location: " . FF_SITE_PATH . "/admin/system/install" . $complete);
+			//exit;
+		}*/
+	} else {
         //|| !isset($config_check["admin"]) || !isset($config_check["updater"])
         $host_name = $_SERVER["HTTP_HOST"];
         if (strpos(php_uname(), "Windows") !== false)
@@ -166,7 +196,7 @@ if(!defined("SHOWFILES_IS_RUNNING"))
         else
             $tmp_file = __FILE__;
 
-        $this_relative_file = "/index.php";
+        $this_relative_file = "/conf/gallery/config.php";
 
         if(strpos($tmp_file, $_SERVER["DOCUMENT_ROOT"]) !== false) {
             $document_root =  $_SERVER["DOCUMENT_ROOT"];
@@ -200,23 +230,5 @@ if(!defined("SHOWFILES_IS_RUNNING"))
             header("Location: " . $site_path . VG_SYS_PATH . "/install");
             exit;
         }
-    } else {
-        define("FF_ERROR_HANDLER_LOG", true);
-        define("FF_ERROR_HANDLER_LOG_PATH", CM_CACHE_PATH . "/errors");
-
-        if(basename($_SERVER["PATH_INFO"]) == "install"
-            && strpos($_SERVER["HTTP_REFERER"], "://" . MASTER_SITE . "/admin/system/domains") !== false
-        ) {
-            define("BLOCK_INSTALL", true);
-            require(FF_DISK_PATH . VG_SYS_PATH . "/install/index.php");
-            exit;
-        }
-        if($_SERVER["PATH_INFO"] == "/install") {
-            if(isset($_REQUEST["complete"]))
-                $complete = "?complete";
-
-            //header("Location: " . FF_SITE_PATH . "/admin/system/install" . $complete);
-            //exit;
-        }
-    }
+	}
 }

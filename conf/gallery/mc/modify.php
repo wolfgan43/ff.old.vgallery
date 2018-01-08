@@ -25,6 +25,7 @@ $oField = ffField::factory($cm->oPage);
 $oField->id = "nome";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_name"); 
 $oField->required = true;
+$oField->setWidthComponent(7);
 $oRecord->addContent($oField);
 
 $oField = ffField::factory($cm->oPage);
@@ -33,45 +34,40 @@ $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_status");
 $oField->base_type = "Number";
 $oField->extended_type = "Selection";
 $oField->multi_pairs = array(
-    array(new ffData("0"), new ffData(ffTemplate::_get_word_by_code("status_disactive")))
-    , array(new ffData("1"), new ffData(ffTemplate::_get_word_by_code("status_active")))
+    array(new ffData("0", "Number"), new ffData(ffTemplate::_get_word_by_code("status_disactive")))
+    , array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("status_active")))
 );
-$oField->default_value = new ffData("1");
+$oField->default_value = new ffData("1", "Number");
+$oField->setWidthComponent(3);
 $oRecord->addContent($oField);
 
 $oField = ffField::factory($cm->oPage);
 $oField->id = "version";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_version");
-$oField->control_type = "label";
-$oField->default_value = new ffData("7");
+//$oField->control_type = "label";
+$oField->base_type = "Number";
+$oField->extended_type = "Selection";
+$oField->multi_pairs = array(
+	array(new ffData("1", "Number"), new ffData("1.7.35"))
+	, array(new ffData("2", "Number"), new ffData("2.0 Alpha"))
+);
+$oField->default_value = new ffData("1", "Number");
 $oField->data_type = ""; 
 $oField->store_in_db = false;
+$oField->setWidthComponent(2);
 $oRecord->addContent($oField);
 
-$oRecord->addContent(null, true, "whois"); 
+$oRecord->addContent(null, true, "whois");
 $oRecord->groups["whois"] = array(
-                                         "title" => ffTemplate::_get_word_by_code("mc_domain_modify_whois")
-                                         , "cols" => 1
-                                      );
+								"title" => ffTemplate::_get_word_by_code("mc_domain_modify_whois")
+							);
 
 $oField = ffField::factory($cm->oPage);
-$oField->id = "registrar_name";
-$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_registrar_name");
-$oField->control_type = "label";
-$oRecord->addContent($oField, "whois");
-                                      
-$oField = ffField::factory($cm->oPage);
-$oField->id = "creation_date";
-$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_creation_date");
-$oField->base_type = "Date";
-$oField->control_type = "label";
-$oRecord->addContent($oField, "whois");
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "update_date";
-$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_update_date");
-$oField->base_type = "Date";
-$oField->control_type = "label";
+$oField->id = "ip_address";
+$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_ip_address");
+//if(isset($_REQUEST["keys"]["ID"]))
+//    $oField->required = true;
+$oField->setWidthComponent(6);
 $oRecord->addContent($oField, "whois");
 
 $oField = ffField::factory($cm->oPage);
@@ -81,14 +77,33 @@ $oField->base_type = "Date";
 $oField->widget = "datechooser";
 $oField->default_value = new ffdata((date("Y", time()) + 1) . "-" . date("m-d", time()), "Date", FF_SYSTEM_LOCALE);
 $oField->required = true;
+$oField->setWidthComponent(6);
 $oRecord->addContent($oField, "whois");
 
 $oField = ffField::factory($cm->oPage);
-$oField->id = "ip_address";
-$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_ip_address");
-if(isset($_REQUEST["keys"]["ID"]))
-    $oField->required = true;
+$oField->id = "registrar_name";
+$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_registrar_name");
+$oField->control_type = "label";
+$oField->setWidthComponent(6);
 $oRecord->addContent($oField, "whois");
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "creation_date";
+$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_creation_date");
+$oField->base_type = "Date";
+$oField->control_type = "label";
+$oField->setWidthComponent(3);
+$oRecord->addContent($oField, "whois");
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "update_date";
+$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_update_date");
+$oField->base_type = "Date";
+$oField->control_type = "label";
+$oField->setWidthComponent(3);
+$oRecord->addContent($oField, "whois");
+
+
 
 
 $oRecord->addContent(null, true, "access"); 
@@ -100,12 +115,20 @@ $oRecord->groups["access"] = array(
 $oField = ffField::factory($cm->oPage);
 $oField->id = "ftp_user";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_ftp_user");
+$oField->setWidthComponent(7);
+$oRecord->addContent($oField, "access");
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "ftp_path";
+$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_ftp_path");
+$oField->setWidthComponent(5);
 $oRecord->addContent($oField, "access");
 
 $oField = ffField::factory($cm->oPage);
 $oField->id = "ftp_password";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_ftp_password");
 $oField->extended_type = "Password";
+$oField->setWidthComponent(6);
 $oRecord->addContent($oField, "access");
 
 $oField = ffField::factory($cm->oPage);
@@ -113,12 +136,17 @@ $oField->id = "confirmpassword";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_ftp_password_confirm");
 $oField->extended_type = "Password";
 $oField->compare = "ftp_password";
-$oRecord->addContent($oField, "access"); 
+$oField->setWidthComponent(6);
+$oRecord->addContent($oField, "access");
 
 $oField = ffField::factory($cm->oPage);
-$oField->id = "ftp_path";
-$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_ftp_path");
+$oField->id = "token";
+$oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_token");
+$oField->control_type = "label";
+$oField->default_value = new ffData("FFCMS-" . time());
 $oRecord->addContent($oField, "access");
+
+
 
 
 $oRecord->addContent(null, true, "billing"); 
@@ -181,34 +209,40 @@ $oField->source_SQL = "SELECT
 				        	: ""
 				        ) . "
 				    GROUP BY anagraph.ID
-				    ORDER BY Fname";
+				    ORDER BY Fname
+				    LIMIT 100";
 
-$oField->widget = "activecomboex";
+$oField->widget = "actex";
 $oField->actex_update_from_db = true;
+$oField->actex_autocomp = true;
 $oField->actex_dialog_url = $cm->oPage->site_path . VG_SITE_MANAGE  . "/anagraph/all/modify";
 $oField->actex_dialog_edit_params = array("keys[anagraph-ID]" => $oRecord->id . "_" . $oField->id);
 //$oField->actex_dialog_delete_url = $oField->actex_dialog_url . "?frmAction=AnagraphModify_confirmdelete";
 $oField->resources[] = "AnagraphModify";
+$oField->setWidthComponent(10);
 $oRecord->addContent($oField, "billing");
 
 
 $oField = ffField::factory($cm->oPage);
 $oField->id = "billing_month_before";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_billing_month_before");
+$oField->setWidthComponent(2);
 $oRecord->addContent($oField, "billing");
 
 $oField = ffField::factory($cm->oPage);
 $oField->id = "billing_buy_price";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_billing_buy_price");
 $oField->base_type = "Number";
-$oField->app_type = "Currency"; 
+$oField->app_type = "Currency";
+$oField->setWidthComponent(4);
 $oRecord->addContent($oField, "billing");
                                       
 $oField = ffField::factory($cm->oPage);
 $oField->id = "billing_sell_price";
 $oField->label = ffTemplate::_get_word_by_code("mc_domain_modify_billing_sell_price");
 $oField->base_type = "Number";
-$oField->app_type = "Currency"; 
+$oField->app_type = "Currency";
+$oField->setWidthComponent(4);
 $oRecord->addContent($oField, "billing");
 
 $oField = ffField::factory($cm->oPage);
@@ -221,13 +255,14 @@ $oField->multi_pairs = array (
                        );      
 $oField->default_value = new ffData("incorporo", "Text");
 $oField->multi_select_one = false;
+$oField->setWidthComponent(4);
 $oRecord->addContent($oField, "billing");
 
-$oRecord->addContent(null, true, "note"); 
+$oRecord->addContent(null, true, "note");
 $oRecord->groups["note"] = array(
-                                         "title" => ffTemplate::_get_word_by_code("mc_domain_modify_note")
-                                         , "cols" => 1
-                                      );
+								"title" => ffTemplate::_get_word_by_code("mc_domain_modify_note")
+
+							);
 
 $oField = ffField::factory($cm->oPage);
 $oField->id = "note";
@@ -282,7 +317,7 @@ $js = '
 	
 	function getWhois(domainName) {
 		$.ajax({
-			url: "http://www.whoisxmlapi.com/whoisserver/WhoisService",
+			url: "https://www.whoisxmlapi.com/whoisserver/WhoisService",
 			dataType: "jsonp",
 			data: {
 				domainName: domainName,
@@ -422,5 +457,3 @@ function MCDomainModify_on_do_action($component, $action) {
     
 
 }
-
-?>

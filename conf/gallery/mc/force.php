@@ -1,5 +1,5 @@
 <?php
-require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
+//require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
 if (!AREA_UPDATER_SHOW_MODIFY) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
@@ -28,9 +28,11 @@ if($db->nextRecord()) {
     $ftp_password = $db->getField("ftp_password", "Text", true);
     $ftp_path = $db->getField("ftp_path", "Text", true);
 
-    $valid_domain = true;
+    $token = $db->getField("token", "Text", true);
+	$valid_domain = true;
 } else {
     if(basename($cm->real_path_info) == DOMAIN_NAME) {
+		$token = "FFCMS-" . time();
         $sSQL = "INSERT INTO " . CM_TABLE_PREFIX . "mod_security_domains 
                 (
                     `ID`
@@ -41,7 +43,7 @@ if($db->nextRecord()) {
                     , `ftp_user`
                     , `ftp_password`
                     , `ftp_path`
-
+                    , `token`
                 ) 
                 VALUES 
                 (
@@ -53,6 +55,7 @@ if($db->nextRecord()) {
                     , " . $db->toSql(FTP_USERNAME, "Text") . " 
                     , " . $db->toSql(FTP_PASSWORD, "Text") . " 
                     , " . $db->toSql(FTP_PATH, "Text") . " 
+                    , " . $db->toSql($token, "Text") . "
                 )";
         $db->execute($sSQL);
         $ID_domain = $db->getInsertID(true);
@@ -65,22 +68,9 @@ if($db->nextRecord()) {
         $valid_domain = true;
     }
 }
+
 if($valid_domain) {
-    if($_REQUEST["frmAction"] == "install") {
-        $res = force_install($ftp_host, $ftp_user, $ftp_password, $ftp_path, $ftp_ip, "execute");
-
-        //if($_REQUEST["XHR_DIALOG_ID"])
-        if($cm->oPage->isXHR()) {  
-            die(ffCommon_jsonenc(array("close" => true, "refresh" => true, "resources" => array("MCDomainModify")), true));
-        } else {
-            ffRedirect($_REQUEST["ret_url"]);
-        }
-        
-       // else
-       //     ffRedirect($_REQUEST["ret_url"]);
-    } 
-
-    if($cm->oPage->isXHR()) { 
+    if($cm->oPage->isXHR()) {
         if(isset($_REQUEST["frmAction"]) && $_REQUEST["frmAction"] == "DomainSettings_update") {
             die(ffCommon_jsonenc(array("close" => true, "refresh" => true, "resources" => array("MCDomainModify")), true));
         }
@@ -236,7 +226,6 @@ if($valid_domain) {
             $tree = get_tree_cat($ID_domain, $manifesto_cat, $manifesto);
             
            // $tree_items = get_mc_items($ID_domain, $manifesto_cat);
-            
             header("Content-type: application/json");
             die(json_encode($tree));
         }
@@ -283,8 +272,8 @@ if($valid_domain) {
     */   
     if(1) {
         $cm->oPage->tplAddJs("ff.ajax", "ajax.js", "/themes/library/ff", false, false, null, true);
-        $cm->oPage->tplAddJs("jquery.fn.tree", "jquery.jstree.min.js", "/themes/library/plugins/jquery.jstree", false, false, null, true);
-        
+        $cm->oPage->tplAddJs("jquery.tree", "jstree.js", "/themes/library/plugins/jquery.jstree", false, false, null, true);
+
         $tpl = ffTemplate::factory(ffCommon_dirname(__FILE__));
         $tpl->load_file("tree.html", "main");
         $tpl->set_var("site_path", FF_SITE_PATH);
@@ -448,177 +437,6 @@ function domain_settings_on_do_action($component, $action) {
 }
 
 
-function force_install($ftp_host, $ftp_user, $ftp_password, $ftp_path, $ftp_ip = null, $action = "check") {
-    $strError = "";
-    $count_check_file = 0;
-
-    $arrBasicInstallFile[] = "/conf/gallery/install/data.sql";
-    $arrBasicInstallFile[] = "/conf/gallery/install/structure.sql";
-    $arrBasicInstallFile[] = "/conf/gallery/install/index.php";
-    $arrBasicInstallFile[] = "/conf/gallery/install/base.css";
-    $arrBasicInstallFile[] = "/conf/gallery/install/base.js";
-    $arrBasicInstallFile[] = "/conf/gallery/install/install.html";
-    $arrBasicInstallFile[] = "/conf/gallery/install/install.css";
-    $arrBasicInstallFile[] = "/conf/gallery/install/install.js";
-    $arrBasicInstallFile[] = "/conf/gallery/install/jquery.min.js";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/data.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/externals.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/files.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/index.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/indexes.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/structure.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/db.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/exclude_fs.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/external.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/file.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/fixed_operations.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/force_drop_db.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/include_db.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/check/manifesto.php";
-    $arrBasicInstallFile[] = "/conf/gallery/updater/js/updater.js";
-
-	if(!$ftp_ip)
-    	$ftp_ip = gethostbyname($ftp_host);
-
-    if($ftp_ip === false && strpos($ftp_host, "www.") === false)
-        gethostbyname("www." . $ftp_host);
-
-    $server_ip = gethostbyname($_SERVER["HTTP_HOST"]);
-    if($ftp_ip == $server_ip)
-        $ftp_host = "localhost";
-    
-    if(strlen($ftp_host) && strlen($ftp_user) && strlen($ftp_password) && strlen($ftp_path)) {
-        if($ftp_ip)
-            $conn_id = @ftp_connect($ftp_ip);
-        if($conn_id === false)
-            $conn_id = @ftp_connect($ftp_host, 21, 3);
-        
-        if($conn_id === false && $ftp_host == "localhost")
-        	$conn_id = @ftp_connect("127.0.0.1");
-		if($conn_id === false && $ftp_host == "localhost")
-        	$conn_id = @ftp_connect($_SERVER["SERVER_ADDR"]);
-        
-        if($conn_id === false && strpos($ftp_host, "www.") === false && $ftp_host != "localhost")
-			$conn_id = @ftp_connect("www." . $ftp_host, 21, 3);
-
-        if($conn_id !== false) {
-            // login with username and password
-            if(@ftp_login($conn_id, $ftp_user, $ftp_password)) {
-                $local_path = $ftp_path;
-                $part_path = "";
-                $real_ftp_path = NULL;
-                
-                if(@ftp_chdir($conn_id, $local_path)) {
-                    $real_ftp_path = $local_path;
-                } 
-                    
-                if($real_ftp_path !== NULL) {
-                    foreach($arrBasicInstallFile AS $arrBasicInstallFile_value) {
-                        if($action == "execute") {
-                            $part_path = "";
-                            foreach(explode("/", ffCommon_dirname($arrBasicInstallFile_value)) AS $tmp_path) {
-                                if(strlen($tmp_path)) {
-                                    $part_path .= "/" . $tmp_path;
-                                    
-                                    if(!@ftp_chdir($conn_id, $real_ftp_path . $part_path)) {
-                                        if(!@ftp_mkdir($conn_id, $real_ftp_path . $part_path))
-                                            $strError .= ffTemplate::_get_word_by_code("creation_failure_directory") . " (" . $real_ftp_path . $part_path . ")" . "<br>";
-                                    }
-                                }
-                            }
-
-                            if(@ftp_size($conn_id, $real_ftp_path . $arrBasicInstallFile_value) >= 0) {
-                                @ftp_delete($conn_id, $real_ftp_path . $arrBasicInstallFile_value);
-                            }
-                            $ret = @ftp_nb_put($conn_id
-                                                , $real_ftp_path . $arrBasicInstallFile_value
-                                                , FF_DISK_PATH . $arrBasicInstallFile_value
-                                                , FTP_BINARY
-                                                , FTP_AUTORESUME
-                                            );
-
-                            while ($ret == FTP_MOREDATA) {
-                               
-                               // Do whatever you want
-                               // Continue uploading...
-                               $ret = @ftp_nb_continue($conn_id);
-                            }
-                            if ($ret != FTP_FINISHED) {
-                               $strError .= ffTemplate::_get_word_by_code("upload_failure_file") . " (" . $real_ftp_path . $arrBasicInstallFile_value . ")" . "<br>";
-                            } else {
-                                $count_check_file++;
-                            }
-                        } else {
-                            if(@ftp_size($conn_id, $real_ftp_path . $arrBasicInstallFile_value) >= 0) {
-                                $count_check_file++;
-                            }
-                        }
-                    }
-                    if($action == "execute") {
-                        $config_updater_path = "/conf/gallery/config/updater.php";
-
-                        $part_path = "";
-                        foreach(explode("/", ffCommon_dirname($config_updater_path)) AS $tmp_path) {
-                            if(strlen($tmp_path)) {
-                                $part_path .= "/" . $tmp_path;
-                                
-                                if(!@ftp_chdir($conn_id, $real_ftp_path . $part_path)) {
-                                    if(!@ftp_mkdir($conn_id, $real_ftp_path . $part_path))
-                                        $strError .= ffTemplate::_get_word_by_code("creation_failure_directory") . " (" . $real_ftp_path . $part_path . ")" . "<br>";
-                                }
-                            }
-                        }
-
-                        $config_updater_content = '<?php
-    define("MASTER_SITE", "' . DOMAIN_INSET . '");
-
-    define("FTP_USERNAME", "' . $ftp_user . '");
-    define("FTP_PASSWORD", "' . $ftp_password . '");
-    define("FTP_PATH", "' . $ftp_path . '");
-    
-    $config_check["updater"] = true;
-?>';
-                        $tempHandle = @tmpfile();
-                        @fwrite($tempHandle, $config_updater_content);
-                        @rewind($tempHandle);
-
-                        if(@ftp_size($conn_id, $real_ftp_path . $config_updater_path) >= 0) {
-                            @ftp_delete($conn_id, $real_ftp_path . $config_updater_path);
-                        }
-                        
-                        $ret = @ftp_nb_fput($conn_id
-                                            , $real_ftp_path . $config_updater_path
-                                            , $tempHandle
-                                            , FTP_BINARY
-                                            , FTP_AUTORESUME
-                                        );
-                        while ($ret == FTP_MOREDATA) {
-                           // Do whatever you want
-                           // Continue upload...
-                           $ret = @ftp_nb_continue($conn_id);
-                        }
-                        if ($ret != FTP_FINISHED) {
-                           $strError .= ffTemplate::_get_word_by_code("upload_failure_file") . " (" . $real_ftp_path . $config_updater_path . ")" . "<br>";
-                        }
-                    }
-                } else {
-                    $strError = ffTemplate::_get_word_by_code("ftp_unavaible_root_dir");
-                }
-            } else {
-                $strError = ffTemplate::_get_word_by_code("ftp_access_denied");
-            }
-        } else {
-            $strError = ffTemplate::_get_word_by_code("ftp_connection_failure");
-        }
-        // close the connection and the file handler
-        @ftp_close($conn_id);
-    } else {
-        $strError = ffTemplate::_get_word_by_code("ftp_not_configutated");
-    }
-    
-    return array("total" => count($arrBasicInstallFile), "count" => $count_check_file, "error" => $strError);
-}
-
 function get_mc_items_old($ID_domain, $manifesto) {
     $db = ffDB_Sql::factory();
     
@@ -673,16 +491,17 @@ function get_mc_items($ID_domain, $manifesto, $cat_key) {
                     } else {
                         $manifesto_title = basename($manifesto_key);
                     }
-                    $tree[$count_field]["attr"]["id"]     = $manifesto_key;
-                    $tree[$count_field]["data"]["title"]  = ucwords(str_replace("_", " ", $manifesto_title));
-                    $tree[$count_field]["metadata"]       = array();
-                    $tree[$count_field]["attr"]["rel"] = "file";
+
+                    $tree[$count_field]["id"]           	= $manifesto_key;
+					$tree[$count_field]["text"]         	= ucwords(str_replace(array("_", "ff ", "cms", "vgallery"), array(" ", "FF ", "CMS", ""), $manifesto_title));
+					$tree[$count_field]["icon"]         	= cm_getClassByFrameworkCss("file-o", "icon", "lg");
+					$tree[$count_field]["a_attr"]["class"] 	= "manifesto-file";
                     $tree[$count_field]["children"] = array();
 
                     if(get_item_data($ID_domain, $manifesto, $manifesto_key)) {
-                        $tree[$count_field]["attr"]["class"]  = "checked";
+						$tree[$count_field]["state"]["selected"]  = true;
                     } else {
-                        $tree[$count_field]["attr"]["class"]  = "";
+						$tree[$count_field]["state"]["selected"]  = false;
                     }
 
                     $count_field++; 
@@ -698,9 +517,8 @@ function get_tree_cat($ID_domain, $schema, $manifesto) {
     if(is_array($schema) && count($schema)) {
         $count_tree = 0;
         foreach($schema AS $schema_key => $schema_value) {
-            $tree[$count_tree]["data"] = array("title" => ucwords(str_replace("_", " ", $schema_key)));
-            $tree[$count_tree]["attr"] = array("id" => $schema_key);
-            $tree[$count_tree]["metadata"] = array();
+			$tree[$count_tree]["id"]            					= $schema_key;
+            $tree[$count_tree]["text"]          					= ucwords(str_replace(array("_", "ff ", "cms", "vgallery"), array(" ", "FF ", "CMS", ""), $schema_key));
 
             if(is_array($schema_value) && count($schema_value)) {
                 $children = get_tree_cat($ID_domain, $schema[$schema_key], $manifesto);
@@ -708,21 +526,25 @@ function get_tree_cat($ID_domain, $schema, $manifesto) {
                 $children = get_mc_items($ID_domain, $manifesto, $schema_key);
             }    
             if(is_array($children) && count($children)) {
-                $tree[$count_tree]["state"] = (is_array($schema_value) && count($schema_value) ? "open" : "closed");
-                $tree[$count_tree]["children"] = $children;
+                $tree[$count_tree]["state"]["opened"] 				= (is_array($schema_value) && count($schema_value) ? true : false);
+                $tree[$count_tree]["children"] 						= $children;
                 if(array_key_exists($schema_key, $manifesto)) {
-                    $tree[$count_tree]["attr"]["rel"] = "folder";
-                }
+					$tree[$count_tree]["icon"] 						= cm_getClassByFrameworkCss("folder-o", "icon", "lg");
+                } else {
+					$tree[$count_tree]["icon"] 						= cm_getClassByFrameworkCss("folder-o", "icon", "lg");
+
+				}
             } else {
                 $res = get_item_data($ID_domain, $manifesto, $schema_key);
                 if($res === null) {
                     unset($tree[$count_tree]);
                     continue;
                 } else {
-                    $tree[$count_tree]["children"] = array();
-                    $tree[$count_tree]["attr"]["rel"] = "file";
+                    $tree[$count_tree]["children"] 					= array();
+                    $tree[$count_tree]["icon"] 						= cm_getClassByFrameworkCss("file-o", "icon", "lg");
+					$tree[$count_tree]["a_attr"]["class"] 			= "manifesto-file";
                     if($res)
-                        $tree[$count_tree]["attr"]["class"]  = "checked";
+                        $tree[$count_tree]["state"]["selected"]  	= true;
                 }
             }
             

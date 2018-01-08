@@ -2,10 +2,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-	<title>Gallery Installation</title>
+	<title>CMS Setup</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js" type="text/javascript"></script> 
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js" type="text/javascript"></script>
 	<script type="text/javascript">{script}</script>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 	<style type="text/css">{style}</style>
 </head>
 <body>
@@ -19,7 +20,7 @@
     <div class="install-db" style="display:none;">
         <h1 style="text-align:center;">Installation in Progress. Please Wait...</h1>
 		 <div class="sk-cube-grid">
-		  <div class="sk-cube sk-cube1"></div>
+		  <div class="sk-cube sk-cube1"> </div>
 		  <div class="sk-cube sk-cube2"></div>
 		  <div class="sk-cube sk-cube3"></div>
 		  <div class="sk-cube sk-cube4"></div>
@@ -28,335 +29,734 @@
 		  <div class="sk-cube sk-cube7"></div>
 		  <div class="sk-cube sk-cube8"></div>
 		  <div class="sk-cube sk-cube9"></div>
-		</div>   
+		</div>
     </div>
-    <div class="menu">
+    <div class="menu col-sm-5 col-md-3">
         <ul>
-            <li class="site-conf selected"><a href="javascript:void(0);" rel="site">1 &bull; Site configuration</a></li>
-            <li class="server-conf"><a href="javascript:void(0);" rel="server">2 &bull; Server configuration</a></li>
-            <li class="db-conf"><a href="javascript:void(0);" rel="db">3 &bull; Database configuration</a></li>
-            <li class="smtp-conf"><a href="javascript:void(0);" rel="smtp">4 &bull; Smtp configuration</a></li>
-            <li class="sadmin-conf"><a href="javascript:void(0);" rel="sadmin">5 &bull; Superadmin configuration</a></li>
-            <li class="ftp-conf"><a href="javascript:void(0);" rel="ftp">6 &bull; Ftp configuration</a></li>
-            <li class="path-conf adv hidden"><a href="javascript:void(0);" rel="path">7 &bull; Path configuration</a></li>
-            <li class="session-conf adv hidden"><a href="javascript:void(0);" rel="session">8 &bull; Session configuration</a></li>
-            <li class="email-conf adv hidden"><a href="javascript:void(0);" rel="email">9 &bull; Email configuration</a></li>
-            <li class="auth-conf adv hidden"><a href="javascript:void(0);" rel="auth">10 &bull; Auth base configuration locale</a></li>
+            <li class="site-conf  selected"><a href="javascript:void(0);" rel="site">1 &bull; Site configuration<span class="need"></span></a></li>
+            <li class="db-conf"><a href="javascript:void(0);" rel="db">2 &bull; Database configuration<span class="need"></span></a></li>
+            <li class="email-conf"><a href="javascript:void(0);" rel="email">3 &bull; Email configuration<span class="need"></span></a></li>
+            <li class="server-conf"><a href="javascript:void(0);" rel="server">4 &bull; Server configuration<span class="need"></span></a></li>
+            <li class="trace-conf"><a href="javascript:void(0);" rel="trace">5 &bull; Trace, Profiling<span class="need"></span></a></li>
+            <li class="notify-conf"><a href="javascript:void(0);" rel="notify">6 &bull; Notify<span class="need"></span></a></li>
+            <li class="security-conf"><a href="javascript:void(0);" rel="security">7 &bull; GDPR<span class="need"></span></a></li>
+            <li class="sadmin-conf"><a href="javascript:void(0);" rel="sadmin">8 &bull; Superadmin configuration<span class="need"></span></a></li>
+            <li class="ftp-conf"><a href="javascript:void(0);" rel="ftp">9 &bull; Ftp configuration<span class="need"></span></a></li>
+            <li class="path-conf adv hidden"><a href="javascript:void(0);" rel="path">10 &bull; Path configuration<span class="need"></span></a></li>
+            <li class="session-conf adv hidden"><a href="javascript:void(0);" rel="session">11 &bull; Session configuration<span class="need"></span></a></li>
+            <li class="auth-conf adv  hidden"><a href="javascript:void(0);" rel="auth">12 &bull; Auth base configuration locale<span class="need"></span></a></li>
         </ul>
         <a href="javascript:void(0);" class="{button_class}install-advanced-settings">advanced settings</a>
     </div>
-    
-    
-    <div class="ffRecord install-container">
-        <div id="install-window" class="installer">
-	     <fieldset title="site" class="default site" id="fieldset_site_conf">
-                    <legend class="subtitle">1  Site configuration<a href="javascript:void(0)" class="helpB" number="one"></a></legend>
-                        <div class="{row_class}" id="field_site_title">
-                            <label class="spanlabel">Site title</label>
-                            <input class="input required" type="text" name="SITE_TITLE" value="{site_title}" />
-                            <span class="check"></span>
 
-                        </div>
-                        <div class="{row_class}" id="field_default_lang">
-                            <label class="spanlabel">Default language</label>
-                            <select class="combo required" name="LANGUAGE_DEFAULT"> 
-                                    <option {language_default_eng} value="ENG">English</option>
-                                    <option {language_default_ita} value="ITA">Italiano</option>
-                                    <option {language_default_esp} value="ESP">Spanish</option>
-                                    <option {language_default_fra} value="FRA">French</option>
-                                    <option {language_default_deu} value="DEU">Deutch</option>
-                            </select>
-                            <span class="check"></span>
-                        </div>
-                        <div class="{row_class}" id="field_site_logo_mail">
-                            <label class="spanlabel">Logo mail</label>
-                            <input class="file" type="file" name="SITE_LOGO" />
-                        </div>
-                        <div class="{row_class}" id="field_site_logo_boffice">
-                            <label class="spanlabel">Logo area backoffice</label>
-                            <input class="file" type="file" name="SITE_LOGO" />
-                        </div>
-                        <div class="{row_class}" id="field_site_logo_fav">
-                            <label class="spanlabel">Favicon</label>
-                            <input class="file" type="file" name="SITE_LOGO" />
-                        </div>
-                        <div class="{row_class}" id="field_site_logo_doc">
-                            <label class="spanlabel">Logo documenti</label>
-                            <input class="file" type="file" name="SITE_LOGO" />
-                        </div>
-                        
-                        <div class="{row_class}" id="field_debug_mode">
-                            <label class="spanlabel">Enable Debug</label>
-                            <input type="checkbox" name="DEBUG_MODE" value="1" {debug_mode} />
-                        </div>
-                        <div class="{row_class}" id="field_debug_profiling">
-                            <label class="spanlabel">Enable Profiling</label>
-                            <input type="checkbox" name="DEBUG_PROFILING" value="1" {debug_profiling} />
-                        </div>
-                        <div class="{row_class}" id="field_debug_log">
-                            <label class="spanlabel">Enable Log</label>
-                            <input type="checkbox" name="DEBUG_LOG" value="1" {debug_log} />
-                        </div>
-                        <div class="{row_class}" id="field_trace_visitor">
-                            <label class="spanlabel">Enable Trace Visitor</label>
-                            <input type="checkbox" name="TRACE_VISITOR" value="1" {trace_visitor} />
-                        </div>
-                    
-                    <div class="helpP" number="one">
-                            <div>SITE TITLE: imposta il brand nel title</div>
-                            <span class="screenshot sitetitle"></span>
-                            <div>DEFAULT LANGUAGE: imposta la lingua di default del CMS</div>
-                            <div>LOGO: Imposta il logo nelle mail di sistema, nei documenti, nelle aree di backoffice e imposta la favicon</div>
+    <div class="ffRecord install-container col-sm-7 col-md-9">
+        <div id="install-window" class="installer">
+        <fieldset title="site" class="default site" id="fieldset_site_conf">
+            <legend class="subtitle">Site configuration<a href="javascript:void(0)" class="helpB"></a></legend>
+             <div class="{row_class}" id="field_site_title">
+                <label class="spanlabel">Site title</label>
+                <input class="input form-control required" type="text" name="SITE_TITLE" value="{site_title}" />
+             </div>
+            <div class="{row_class}" id="field_site_ssl">
+                <input type="checkbox" id="field_site_ssl_check" name="SITE_SSL" value="1" {ste_ssl} />
+                <label class="spanlabel" for="field_site_ssl_check">Use HTTPS</label>
+            </div>
+            <fieldset>
+                <legend>Frontend </legend>
+                <div class="{row_class}" id="field_default_lang">
+                    <label class="spanlabel">Default language (Frontend)</label>
+                    <select class="combo form-control required" name="LANGUAGE_DEFAULT">
+                            <option {language_default_eng} value="ENG">English</option>
+                            <option {language_default_ita} value="ITA">Italiano</option>
+                            <option {language_default_esp} value="ESP">Spanish</option>
+                            <option {language_default_fra} value="FRA">French</option>
+                            <option {language_default_deu} value="DEU">Deutch</option>
+                    </select>
+                </div>
+                <!--BeginSezFrameworkCss-->
+                <div class="{row_class}" id="field_framework_css">
+                     <label class="spanlabel">Framework CSS</label>
+                     <select class="combo form-control required" name="FRAMEWORK_CSS">
+                         <!--BeginSezFrameworkCssItem-->
+                         <option {frameworkcss_current} value="{frameworkcss}">{frameworkcss_label}</option>
+                         <!--EndSezFrameworkCssItem-->
+                     </select>
+                </div>
+                <!--EndSezFrameworkCss-->
+                <!--BeginSezFontIcon-->
+                <div class="{row_class}" id="field_font_icon">
+                     <label class="spanlabel">Font Icon</label>
+                     <select class="combo form-control required" name="FONT_ICON">
+                         <!--BeginSezFontIconItem-->
+                         <option {fonticon_current} value="{fonticon}">{fonticon_label}</option>
+                         <!--EndSezFontIconItem-->
+                     </select>
+                </div>
+                <!--EndSezFontIcon-->
+                <div class="{row_class}" id="field_site_logo_fav">
+                    <label class="spanlabel">Favicon</label>
+                    <input class="file form-control" type="file" name="LOGO_FAVICON" />
+                </div>
+                <div class="{row_class}" id="field_site_logo_mail">
+                    <label class="spanlabel">Logo mail</label>
+                    <input class="file form-control" type="file" name="LOGO_EMAIL" />
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Restricted</legend>
+                    <div class="{row_class}" id="field_default_lang_restricted">
+                         <label class="spanlabel">Default language (Restricted)</label>
+                         <select class="combo form-control required" name="LANGUAGE_RESTRICTED_DEFAULT">
+                             <option {language_restricted_default_eng} value="ENG">English</option>
+                             <option {language_restricted_default_ita} value="ITA">Italiano</option>
+                             <option {language_restricted_default_esp} value="ESP">Spanish</option>
+                             <option {language_restricted_default_fra} value="FRA">French</option>
+                             <option {language_restricted_default_deu} value="DEU">Deutch</option>
+                         </select>
+                    </div>
+                    <div class="{row_class}" id="field_theme_restricted">
+                         <label class="spanlabel">Theme (Restricted)</label>
+                         <select class="combo form-control required" name="ADMIN_THEME">
+                             <!--BeginSezAdminTheme-->
+                             <option {admintheme_current} value="{admintheme}">{admintheme_label}</option>
+                             <!--EndSezAdminTheme-->
+                         </select>
+                    </div>
+                    <!--BeginSezFrameworkCssRestricted-->
+                    <div class="{row_class}" id="field_framework_css_restricted">
+                        <label class="spanlabel">Framework CSS</label>
+                        <select class="combo form-control required" name="FRAMEWORK_CSS_RESTRICTED">
+                            <!--BeginSezFrameworkCssItemRestricted-->
+                            <option {frameworkcss_current} value="{frameworkcss}">{frameworkcss_label}</option>
+                            <!--EndSezFrameworkCssItemRestricted-->
+                        </select>
+                    </div>
+                    <!--EndSezFrameworkCssRestricted-->
+                    <!--BeginSezFontIconRestricted-->
+                    <div class="{row_class}" id="field_font_icon_restricted">
+                        <label class="spanlabel">Font Icon</label>
+                        <select class="combo form-control required" name="FONT_ICON_RESTRICTED">
+                            <!--BeginSezFontIconItemRestricted-->
+                            <option {fonticon_current} value="{fonticon}">{fonticon_label}</option>
+                            <!--EndSezFontIconItemRestricted-->
+                        </select>
+                    </div>
+                    <!--EndSezFontIconRestricted-->
+                    <div class="{row_class}" id="field_site_logo_boffice">
+                        <label class="spanlabel">Logo area backoffice</label>
+                        <input class="file form-control" type="file" name="LOGO_BRAND" />
+                    </div>
+
+                    <div class="{row_class}" id="field_site_logo_doc">
+                        <label class="spanlabel">Logo documenti</label>
+                        <input class="file form-control" type="file" name="LOGO_DOCS" />
                     </div>
             </fieldset>
-	    
-            <fieldset title="Server" class="default server hidden" id="fieldset_serv_conf">
-            <legend class="subtitle">2  Server configuration<a href="javascript:void(0)" class="helpB" number="two"></a></legend>
-		 	    <div class="{row_class}" id="field_master_site">
-                    <label class="spanlabel">Master site</label>
-                    <input class="input required" type="text" name="MASTER_SITE" value="{master_site}" />
-                    <span class="check"></span>
-                </div>
-
-		 	    <div class="{row_class}" id="field_production_site">
-                    <label class="spanlabel">Production site</label>
-                    <input class="input" type="text" name="PRODUCTION_SITE" value="{production_site}" />
-                </div>
-		 	    <div class="{row_class}" id="field_development_site">
-                    <label class="spanlabel">Development site</label>
-                    <input class="input" type="text" name="DEVELOPMENT_SITE" value="{development_site}" />
-                </div>
-
-                <div class="{row_class}" id="field_memory_limit">
-                    <label class="spanlabel">Memory limit</label>
-                    <input class="input required" type="text" name="MEMORY_LIMIT" value="{memory_limit}" />
-                    <span class="check"></span>
-                </div>
-                <div class="{row_class}" id="field_cdn_static">
-                    <label class="spanlabel">CDN Static</label>
-                    <input type="checkbox" name="CDN_STATIC" value="1" {cdn_static} />
-                </div>
-                <div class="helpP" number="two">
-                      <div>MASTER SITE: sorgente aggiornamenti</div>
-                      <div>PRODUCTION SITE: sito ufficiale (produzione)</div>
-                      <div>DEVELOPMENT SITE: sito in sviluppo</div>
-                      <div>MEMORY LIMIT: limite memoria allocata</div>
-                      <div>CDN STATIC: abilita il sottodominio static.yuorsite.com</div>
-                </div>
-            </fieldset>
-            <fieldset title="Database" class="default db hidden" id="fieldset_db_conf">
-            <legend class="subtitle">3  Database configuration<a href="javascript:void(0)" class="helpB" number="three"></a></legend>
-                <div class="{row_class}" id="field_db_name">
-                    <label class="spanlabel">Database name</label>
-                    <input class="input required" type="text" name="FF_DATABASE_NAME" maxlength="64" value="{database_name}" />
-                    <span class="check"></span>
-                </div>
+            <div class="helpP">
+                <div>SITE TITLE: imposta il brand nel title</div>
+                <span class="screenshot sitetitle"></span>
+                <div>DEFAULT LANGUAGE: imposta la lingua di default del CMS</div>
+                <div>LOGO: Imposta il logo nelle mail di sistema, nei documenti, nelle aree di backoffice e imposta la favicon</div>
+            </div>
+         </fieldset>
+            <fieldset title="Database" class="default db" id="fieldset_db_conf">
+            <legend class="subtitle">Database configuration<a href="javascript:void(0)" class="helpB"></a></legend>
+            <fieldset>
+                <legend>Primary(Mysql)</legend>
                 <div class="{row_class}" id="field_db_host">
                     <label class="spanlabel">Database host</label>
-                    <input class="input required" type="text" name="FF_DATABASE_HOST" value="{database_host}" />
-                    <span class="check"></span>
+                    <input class="input form-control required" type="text" name="FF_DATABASE_HOST" value="{database_host}" />
+                </div>
+                <div class="{row_class}" id="field_db_name">
+                    <label class="spanlabel">Database name</label>
+                    <input class="input form-control required" type="text" name="FF_DATABASE_NAME" maxlength="64" value="{database_name}" />
                 </div>
                 <div class="{row_class}" id="field_db_user">
                     <label class="spanlabel">Database username</label>
-                    <input class="input required" type="text" name="FF_DATABASE_USER" maxlength="16" value="{database_user}" />
-                    <span class="check"></span>
+                    <input class="input form-control required" type="text" name="FF_DATABASE_USER" maxlength="16" value="{database_user}" />
                 </div>
                 <div class="{row_class}" id="field_db_pwd">
                     <label class="spanlabel">Database password</label>
-                    <input class="password required" type="password" name="FF_DATABASE_PASSWORD" value="{database_password}" />
-                    <span class="check"></span>
+                    <input class="password form-control required" type="password" name="FF_DATABASE_PASSWORD" value="{database_password}" />
                 </div>
                 <div class="{row_class}" id="field_db_conf_pwd">
                     <label class="spanlabel">Confirm db password</label>
-                    <input class="password required" type="password" name="FF_DATABASE_CONF_PASSWORD" value="{database_password}" />
-                    <span class="check"></span>
+                    <input class="password form-control required" type="password" name="FF_DATABASE_CONF_PASSWORD" value="{database_password}" />
                 </div>
-                <div class="{row_class}" id="field_db_reset">
-                    <label class="spanlabel">Reset</label>
-                    <input type="checkbox" name="RESET_DATABASE" value="1" {reset_database_check} />
+            </fieldset>
+            <fieldset class="options">
+                <legend><input type="checkbox" class="primary" id="field_db_mongo" name="db_mongo" value="1"> <label class="spanlabel" for="field_db_mongo">Performance(MongoDB)</label><a href="javascript:void(0)" class="helpB"></a></legend>
+                <div class="{row_class}" id="field_db_host_mongo">
+                    <label class="spanlabel">Database host</label>
+                    <input class="input form-control" type="text" name="MONGO_DATABASE_HOST" value="{mongo_database_host}" />
                 </div>
-                <div class="{row_class}" id="field_charset">
-                    <label class="spanlabel">Charset</label>
-                    <input class="input required" type="text" name="CHARACTER_SET" value="{character_set}" />
-                    <span class="check"></span>
+                <div class="{row_class}" id="field_db_name_mongo">
+                    <label class="spanlabel">Database name</label>
+                    <input class="input form-control" type="text" name="MONGO_DATABASE_NAME" maxlength="64" value="{mongo_database_name}" />
                 </div>
-                <div class="{row_class}" id="field_collation">
-                    <label class="spanlabel">Collation</label>
-                    <input class="input required" type="text" name="COLLATION" value="{collation}" />
-                    <span class="check"></span>
+                <div class="{row_class}" id="field_db_user_mongo">
+                    <label class="spanlabel">Database username</label>
+                    <input class="input form-control" type="text" name="MONGO_DATABASE_USER" maxlength="16" value="{mongo_database_user}" />
                 </div>
-            <div class="helpP" number="three">
+                <div class="{row_class}" id="field_db_pwd_mongo">
+                    <label class="spanlabel">Database password</label>
+                    <input class="password form-control" type="password" name="MONGO_DATABASE_PASSWORD" value="{mongo_database_password}" />
+                </div>
+                <div class="{row_class}" id="field_db_conf_pwd_mongo">
+                    <label class="spanlabel">Confirm db password</label>
+                    <input class="password form-control" type="password" name="MONGO_DATABASE_CONF_PASSWORD" value="{mongo_database_password}" />
+                </div>
+            </fieldset>
+            <div class="{row_class}" id="field_charset">
+                <label class="spanlabel">Charset</label>
+                <input class="input form-control required" type="text" name="CHARACTER_SET" value="{character_set}" />
+            </div>
+            <div class="{row_class}" id="field_collation">
+                <label class="spanlabel">Collation</label>
+                <input class="input form-control required" type="text" name="COLLATION" value="{collation}" />
+            </div>
+            <div class="helpP">
             </div>
             </fieldset>
-            <fieldset title="SMTP" class="default smtp hidden" id="fieldset_smtp_conf">
-            <legend class="subtitle">4  Smtp configuration<a href="javascript:void(0)" class="helpB" number="four"></a></legend>
-            	<select id="provider_email" class="selection"> 
-            		<option value="">Local</option>
-            		<option value="mandril">Mandrill</option>
-            		<option value="custom">Custom</option>
-            	</select>
-                <div class="{row_class}" id="field_smtp_host">
-                    <label class="spanlabel">SMTP host</label>
-                    <input class="input required" type="text" name="A_SMTP_HOST" value="{smtp_host}" />
-                    <span class="check"></span>
+            <fieldset title="Email" class="default email" id="fieldset_email_conf">
+                <legend class="subtitle">Email configuration<a href="javascript:void(0)" class="helpB"></a></legend>
+                <div class="row">
+                    <div class="{row_class} col-xs-6" id="field_from_email">
+                        <label class="spanlabel">A From Email</label>
+                        <input class="input form-control" type="text" name="A_FROM_EMAIL" value="{email_address}" />
+                    </div>
+                    <div class="{row_class} col-xs-6" id="field_from_name">
+                        <label class="spanlabel">A From Name</label>
+                        <input class="input form-control" type="text" name="A_FROM_NAME" value="{email_name}" />
+                    </div>
                 </div>
-                <div class="{row_class}" id="field_smtp_auth">
-                    <label class="spanlabel">SMTP auth</label>
-                    <input type="checkbox" name="SMTP_AUTH" value="1" {smtp_auth_check} />
+                <div class="row">
+                    <div class="{row_class} col-xs-6" id="field_cc_email">
+                        <label class="spanlabel">CC Default Email</label>
+                        <input class="input form-control" type="text" name="CC_FROM_EMAIL" value="{cc_address}" />
+                    </div>
+                    <div class="{row_class} col-xs-6" id="field_cc_name">
+                        <label class="spanlabel">CC Default Name</label>
+                        <input class="input form-control" type="text" name="CC_FROM_NAME" value="{cc_name}" />
+                    </div>
                 </div>
-                <div class="{row_class}" id="field_smtp_user">
-                    <label class="spanlabel">SMTP user</label>
-                    <input class="input" type="text" name="A_SMTP_USER" value="{smtp_username}" />
+                <div class="row">
+                    <div class="{row_class} col-xs-6" id="field_bcc_email">
+                        <label class="spanlabel">BCC Default Email</label>
+                        <input class="input form-control" type="text" name="BCC_FROM_EMAIL" value="{bcc_address}" />
+                    </div>
+                    <div class="{row_class} col-xs-6" id="field_bcc_name">
+                        <label class="spanlabel">BCC Default Name</label>
+                        <input class="input form-control" type="text" name="BCC_FROM_NAME" value="{bcc_name}" />
+                    </div>
                 </div>
-                <div class="{row_class}" id="field_smtp_pwd">
-                    <label class="spanlabel">SMTP password</label>
-                    <input class="password" type="password" name="A_SMTP_PASSWORD" value="{smtp_password}" />
+                <fieldset title="SMTP" class="options smtp" id="fieldset_smtp_conf">
+                    <legend class="subtitle">Smtp configuration<a href="javascript:void(0)" class="helpB"></a></legend>
+                    <div class="{row_class}">
+                        <select id="provider_email" class="selection form-control">
+                            <option value="">Local</option>
+                            <option value="sparkpost">SparkPost</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="{row_class}" id="field_smtp_host">
+                        <label class="spanlabel">SMTP host</label>
+                        <input class="input form-control required" type="text" name="A_SMTP_HOST" value="{smtp_host}" />
+                    </div>
+                    <fieldset class="options">
+                        <legend><input type="checkbox" id="field_smtp_auth" name="SMTP_AUTH" value="1" {smtp_auth_check} /> <label class="spanlabel" for="field_smtp_auth">SMTP auth</label></legend>
+                        <div class="{row_class}" id="field_smtp_user">
+                            <label class="spanlabel">SMTP user</label>
+                            <input class="input form-control" type="text" name="A_SMTP_USER" value="{smtp_username}" />
+                        </div>
+                        <div class="{row_class}" id="field_smtp_pwd">
+                            <label class="spanlabel">SMTP password</label>
+                            <input class="password form-control" type="password" name="A_SMTP_PASSWORD" value="{smtp_password}" />
+                        </div>
+                        <div class="{row_class}" id="field_smtp_conf_pwd">
+                            <label class="spanlabel">Confirm password</label>
+                            <input class="password form-control" type="password" name="A_SMTP_CONF_PASSWORD" value="{smtp_password}" />
+                        </div>
+                    </fieldset>
+                    <div class="{row_class}" id="field_smtp_port">
+                        <label class="spanlabel">SMTP port</label>
+                        <input class="input form-control required" type="text" name="A_SMTP_PORT" value="{smtp_port}" />
+                    </div>
+                    <div class="{row_class}" id="field_smtp_secure">
+                        <label class="spanlabel">SMTP secure</label>
+                        <select class="selection form-control" name="A_SMTP_SECURE">
+                            <option value="">None</option>
+                            <option value="tls">TLS</option>
+                            <option value="ssl">SSL</option>
+                        </select>
+                    </div>
+                </fieldset>
+            </fieldset>
+            <fieldset title="Server" class="default server" id="fieldset_serv_conf">
+                <legend class="subtitle">Server configuration<a href="javascript:void(0)" class="helpB"></a></legend>
+                <div class="{row_class}" id="field_master_site">
+                    <label class="spanlabel">Master site</label>
+                    <input class="input form-control required" type="text" name="MASTER_SITE" value="{master_site}" />
                 </div>
-                <div class="{row_class}" id="field_smtp_conf_pwd">
-                    <label class="spanlabel">Confirm password</label>
-                    <input class="password" type="password" name="A_SMTP_CONF_PASSWORD" value="{smtp_password}" />
+
+                <div class="{row_class}" id="field_production_site">
+                    <label class="spanlabel">Production site</label>
+                    <input class="input form-control" type="text" name="PRODUCTION_SITE" value="{production_site}" />
                 </div>
-                <div class="{row_class}" id="field_smtp_port">
-                    <label class="spanlabel">SMTP port</label>
-                    <input class="input required" type="text" name="A_SMTP_PORT" value="{smtp_port}" />
-                    <span class="check"></span>
+                <div class="{row_class}" id="field_development_site">
+                    <label class="spanlabel">Development site</label>
+                    <input class="input form-control" type="text" name="DEVELOPMENT_SITE" value="{development_site}" />
                 </div>
-                <div class="{row_class}" id="field_smtp_secure">
-                    <label class="spanlabel">SMTP secure</label>
-                    <select class="selection" name="A_SMTP_SECURE">
-                    	<option value="">None</option>
-                    	<option value="tls">TLS</option>
-                    	<option value="ssl">SSL</option>
+                <fieldset class="options">
+                    <legend><input type="checkbox" id="field_cdn_static" name="CDN_STATIC" value="1" {cdn_static} /> <label class="spanlabel" for="field_cdn_static">CDN Media</label></legend>
+                    <div class="{row_class}" id="field_cdn_static_showfiles">
+                        <label class="spanlabel">Static Media</label>
+                        <input class="input form-control required" readonly="readonly" type="text" name="CM_MEDIACACHE_SHOWPATH" value="{domain_protocol}://media.{domain_primary}.{domain_ext}" />
+                    </div>
+                    <div class="{row_class}" id="field_cdn_cm_showfiles">
+                        <label class="spanlabel">Render Media</label>
+                        <input class="input form-control required" readonly="readonly" type="text" name="CM_SHOWFILES" value="{domain_protocol}://static.{domain_primary}.{domain_ext}" />
+                    </div>
+                </fieldset>
+                <fieldset class="options">
+                    <legend><input type="checkbox" id="field_cdn_services" name="CDN_SERVICES" value="1" {cdn_services} /> <label class="spanlabel" for="field_cdn_services">CDN Services</label></legend>
+                    <div class="{row_class}" id="field_cdn_api">
+                        <label class="spanlabel">API</label>
+                        <input class="input form-control required" readonly="readonly" type="text" name="CMS_API_PATH" value="{domain_protocol}://api.{domain_primary}.{domain_ext}" />
+                    </div>
+                    <div class="{row_class}" id="field_cdn_request">
+                        <label class="spanlabel">Request</label>
+                        <input class="input form-control required" readonly="readonly" type="text" name="CMS_REQUEST_PATH" value="{domain_protocol}://request.{domain_primary}.{domain_ext}" />
+                    </div>
+                </fieldset>
+
+                <div class="{row_class}" id="field_debug_mode">
+                    <input type="checkbox" id="field_debug_mode_check" name="DEBUG_MODE" value="1" {debug_mode} />
+                    <label class="spanlabel" for="field_debug_mode_check">Enable Debug</label>
+                </div>
+                <div class="{row_class}" id="field_debug_profiling">
+                    <input type="checkbox" id="field_debug_profiling_check" name="DEBUG_PROFILING" value="1" {debug_profiling} />
+                    <label class="spanlabel" for="field_debug_profiling_check">Enable Profiling</label>
+                </div>
+                <div class="{row_class}" id="field_debug_log">
+                    <input type="checkbox" id="field_debug_log_check" name="DEBUG_LOG" value="1" {debug_log} />
+                    <label class="spanlabel" for="field_debug_log_check">Enable Log</label>
+                </div>
+                <hr />
+                <div class="{row_class}" id="field_timezone">
+                    <label class="spanlabel">TimeZone</label>
+                    <select class="combo form-control required" name="TIMEZONE">
+                        <!--BeginSezTimezoneItem-->
+                        <option {timezone_current} value="{timezone}">{timezone_label}</option>
+                        <!--EndSezTimezoneItem-->
                     </select>
-                    <span class="check"></span>
                 </div>
-            <div class="helpP" number="four">
-            </div>
+                <div class="{row_class}" id="field_memory_limit">
+                    <label class="spanlabel">Memory limit</label>
+                    <input class="input form-control required" type="text" name="MEMORY_LIMIT" value="{memory_limit}" />
+                </div>
+                <div class="{row_class}" id="field_module_security">
+                    <input type="checkbox" id="field_module_security_check" name="SECURITY_SHIELD" value="1" {security_shield} />
+                    <label class="spanlabel" for="field_module_security_check">Enable Security Shield</label>
+                </div>
+                <hr />
+                <div class="{row_class} server-cnf">
+                    <label class="spanlabel">MemCached:</label>
+                    <input type="hidden" value="{php_ext_memcache}" />
+                    <span class="{php_ext_memcache_class}">{php_ext_memcache_label}</span>
+                </div>
+                <div class="{row_class} server-cnf">
+                    <label class="spanlabel">APC:</label>
+                    <input type="hidden" value="{php_ext_apc}" />
+                    <span class="{php_ext_apc_class}">{php_ext_apc_label}</span>
+                </div>
+                <div class="{row_class} server-cnf">
+                    <label class="spanlabel">JSON:</label>
+                    <input type="hidden" value="{php_ext_json}" />
+                    <span class="{php_ext_json_class}">{php_ext_json_label}</span>
+                </div>
+                <div class="{row_class} server-cnf">
+                    <label class="spanlabel">GD:</label>
+                    <input type="hidden" value="{php_ext_gd}" />
+                    <span class="{php_ext_gd_class}">{php_ext_gd_label}</span>
+                </div>
+                <div class="{row_class} server-cnf">
+                    <label class="spanlabel">Mod Expires:</label>
+                    <input type="hidden" value="{apache_module_expires}" />
+                    <span class="{apache_module_expires_class}">{apache_module_expires_label}</span>
+                </div>
+                <div class="{row_class} server-cnf">
+                    <label class="spanlabel">Mysqli Extensions:</label>
+                    <input type="hidden" value="{mysqli_extensions}" />
+                    <span class="{mysqli_extensions_class}">{mysqli_extensions_label}</span>
+                </div>
+
+                <div class="helpP">
+                    <div>MASTER SITE: sorgente aggiornamenti</div>
+                    <div>PRODUCTION SITE: sito ufficiale (produzione)</div>
+                    <div>DEVELOPMENT SITE: sito in sviluppo</div>
+                    <div>MEMORY LIMIT: limite memoria allocata</div>
+                    <div>CDN STATIC: abilita il sottodominio static.yuorsite.com</div>
+                </div>
             </fieldset>
-         
-            
-            <fieldset title="Root Autentication" class="default sadmin hidden" id="fieldset_su_conf">
-            <legend class="subtitle">5  Superadmin configuration<a href="javascript:void(0)" class="helpB" number="five"></a></legend>
+            <fieldset title="Trace" class="default options trace hidden" id="fieldset_trace_conf">
+                <legend><input type="checkbox" id="field_trace_visitor" name="TRACE_VISITOR" value="1" {trace_visitor} /> <label class="spanlabel" for="field_trace_visitor">Enable Trace Visitor</label><a href="javascript:void(0)" class="helpB"></a></legend>
+                <div class="{row_class}" id="field_trace_table_name">
+                    <label class="spanlabel">Table Name</label>
+                    <input class="input form-control" type="text" name="TRACE_TABLE_NAME" value="{trace_table_name}" />
+                </div>
+                <div class="{row_class}" id="field_trace_onesignal_app_id">
+                    <label class="spanlabel">Table Name</label>
+                    <input class="input form-control" type="text" name="TRACE_ONESIGNAL_APP_ID" value="{trace_onesignal_app_id}" />
+                </div>
+                <div class="{row_class}" id="field_trace_onesignal_api_key">
+                    <label class="spanlabel">Table Name</label>
+                    <input class="input form-control" type="text" name="TRACE_ONESIGNAL_API_KEY" value="{trace_onesignal_api_key}" />
+                </div>
+                <fieldset>
+                    <legend>Mysql</legend>
+                    <div class="{row_class}" id="trace_db_host">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="TRACE_DATABASE_HOST" value="{trace_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_name">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="TRACE_DATABASE_NAME" maxlength="64" value="{trace_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_user">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="TRACE_DATABASE_USER" maxlength="16" value="{trace_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_pwd">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="TRACE_DATABASE_PASSWORD" value="{trace_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_conf_pwd">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="TRACE_DATABASE_CONF_PASSWORD" value="{trace_database_password}" />
+                    </div>
+                </fieldset>
+                <fieldset class="dep" data-dep="field_db_mongo">
+                    <legend>Mongo</legend>
+                    <div class="{row_class}" id="trace_db_host_mongo">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="TRACE_MONGO_DATABASE_HOST" value="{trace_mongo_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_name_mongo">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="TRACE_MONGO_DATABASE_NAME" maxlength="64" value="{trace_mongo_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_user_mongo">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="TRACE_MONGO_DATABASE_USER" maxlength="16" value="{trace_mongo_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_pwd_mongo">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="TRACE_MONGO_DATABASE_PASSWORD" value="{trace_mongo_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="trace_db_conf_pwd_mongo">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="TRACE_MONGO_DATABASE_CONF_PASSWORD" value="{trace_mongo_database_password}" />
+                    </div>
+                </fieldset>
+            </fieldset>
+            <fieldset title="Notify" class="default options notify hidden" id="fieldset_notify_conf">
+                <legend><input type="checkbox" id="field_notify" name="NOTIFY" value="1" {notify_check} /> <label class="spanlabel" for="field_notify">Notify Configuration</label><a href="javascript:void(0)" class="helpB"></a></legend>
+                <div class="{row_class}" id="field_notify_table_name">
+                    <label class="spanlabel">Table Name</label>
+                    <input class="input form-control" type="text" name="NOTIFY_TABLE_NAME" value="{notify_table_name}" />
+                </div>
+                <div class="{row_class}" id="field_notify_table_key">
+                    <label class="spanlabel">Table Name</label>
+                    <input class="input form-control" type="text" name="NOTIFY_TABLE_KEY" value="{notify_table_key}" />
+                </div>
+                <div class="{row_class}" id="field_notify_onesignal_app_id">
+                    <label class="spanlabel">Table Name</label>
+                    <input class="input form-control" type="text" name="NOTIFY_ONESIGNAL_APP_ID" value="{notify_onesignal_app_id}" />
+                </div>
+                <div class="{row_class}" id="field_notify_onesignal_api_key">
+                    <label class="spanlabel">Table Name</label>
+                    <input class="input form-control" type="text" name="NOTIFY_ONESIGNAL_API_KEY" value="{notify_onesignal_api_key}" />
+                </div>
+                <fieldset>
+                    <legend>Mysql</legend>
+                    <div class="{row_class}" id="notify_db_host">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="NOTIFY_DATABASE_HOST" value="{notify_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_name">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="NOTIFY_DATABASE_NAME" maxlength="64" value="{notify_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_user">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="NOTIFY_DATABASE_USER" maxlength="16" value="{notify_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_pwd">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="NOTIFY_DATABASE_PASSWORD" value="{notify_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_conf_pwd">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="NOTIFY_DATABASE_CONF_PASSWORD" value="{notify_database_password}" />
+                    </div>
+                </fieldset>
+                <fieldset class="dep" data-dep="field_db_mongo">
+                    <legend>Mongo</legend>
+                    <div class="{row_class}" id="notify_db_host_mongo">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="NOTIFY_MONGO_DATABASE_HOST" value="{notify_mongo_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_name_mongo">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="NOTIFY_MONGO_DATABASE_NAME" maxlength="64" value="{notify_mongo_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_user_mongo">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="NOTIFY_MONGO_DATABASE_USER" maxlength="16" value="{notify_mongo_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_pwd_mongo">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="NOTIFY_MONGO_DATABASE_PASSWORD" value="{notify_mongo_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="notify_db_conf_pwd_mongo">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="NOTIFY_MONGO_DATABASE_CONF_PASSWORD" value="{notify_mongo_database_password}" />
+                    </div>
+                </fieldset>
+            </fieldset>
+            <fieldset title="Security" class="default options security hidden" id="fieldset_security_conf">
+                <legend><input type="checkbox" id="field_anagraph_gdpr" name="GDPR_COMPLIANCE" value="1" {gdpr_compliance} /> <label class="spanlabel" for="field_anagraph_gdpr">Enable GDPR</label><a href="javascript:void(0)" class="helpB"></a></legend>
+                <fieldset>
+                    <legend>Identification</legend>
+                    <div class="{row_class}" id="anagraph_identification_db_host">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_IDENTIFICATION_DATABASE_HOST" value="{anagraph_identification_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_identification_db_name">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_IDENTIFICATION_DATABASE_NAME" maxlength="64" value="{anagraph_identification_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_identification_db_user">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_IDENTIFICATION_DATABASE_USER" maxlength="16" value="{anagraph_identification_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_identification_db_pwd">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_IDENTIFICATION_DATABASE_PASSWORD" value="{anagraph_identification_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_identification_db_conf_pwd">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_IDENTIFICATION_DATABASE_CONF_PASSWORD" value="{anagraph_identification_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_identification_db_crypt">
+                        <input type="checkbox" id="anagraph_identification_db_crypt_check" name="ANAGRAPH_IDENTIFICATION_DATABASE_CRYPT" value="1" {anagraph_identification_database_crypt} />
+                        <label class="spanlabel" for="anagraph_identification_db_crypt_check">Enable Crypt</label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Access</legend>
+                    <div class="{row_class}" id="anagraph_access_db_host">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_ACCESS_DATABASE_HOST" value="{anagraph_access_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_access_db_name">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_ACCESS_DATABASE_NAME" maxlength="64" value="{anagraph_access_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_access_db_user">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_ACCESS_DATABASE_USER" maxlength="16" value="{anagraph_access_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_access_db_pwd">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_ACCESS_DATABASE_PASSWORD" value="{anagraph_access_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_access_db_conf_pwd">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_ACCESS_DATABASE_CONF_PASSWORD" value="{anagraph_access_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_access_db_crypt">
+                        <input type="checkbox" id="anagraph_access_db_crypt_check" name="ANAGRAPH_ACCESS_DATABASE_CRYPT" value="1" {anagraph_access_database_crypt} />
+                        <label class="spanlabel" for="anagraph_access_db_crypt_check">Enable Crypt</label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>General</legend>
+                    <div class="{row_class}" id="anagraph_general_db_host">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_GENERAL_DATABASE_HOST" value="{anagraph_general_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_general_db_name">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_GENERAL_DATABASE_NAME" maxlength="64" value="{anagraph_general_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_general_db_user">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_GENERAL_DATABASE_USER" maxlength="16" value="{anagraph_general_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_general_db_pwd">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_GENERAL_DATABASE_PASSWORD" value="{anagraph_general_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_general_db_conf_pwd">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_GENERAL_DATABASE_CONF_PASSWORD" value="{anagraph_general_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_general_db_crypt">
+                        <input type="checkbox" id="anagraph_general_db_crypt_check" name="ANAGRAPH_GENERAL_DATABASE_CRYPT" value="1" {anagraph_general_database_crypt} />
+                        <label class="spanlabel" for="anagraph_general_db_crypt_check">Enable Crypt</label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Sensitivity</legend>
+                    <div class="{row_class}" id="anagraph_sensitivity_db_host">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_SENSIVITY_DATABASE_HOST" value="{anagraph_sensitivity_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_sensitivity_db_name">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_SENSIVITY_DATABASE_NAME" maxlength="64" value="{anagraph_sensitivity_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_sensitivity_db_user">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_SENSIVITY_DATABASE_USER" maxlength="16" value="{anagraph_sensitivity_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_sensitivity_db_pwd">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_SENSIVITY_DATABASE_PASSWORD" value="{anagraph_sensitivity_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_sensitivity_db_conf_pwd">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_SENSIVITY_DATABASE_CONF_PASSWORD" value="{anagraph_sensitivity_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_sensitivity_db_crypt">
+                        <input type="checkbox" id="anagraph_sensitivity_db_crypt_check" name="ANAGRAPH_SENSIVITY_DATABASE_CRYPT" value="1" {anagraph_sensitivity_database_crypt} />
+                        <label class="spanlabel" for="anagraph_sensitivity_db_crypt_check">Enable Crypt</label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Relationship</legend>
+                    <div class="{row_class}" id="anagraph_rel_db_host">
+                        <label class="spanlabel">Database host</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_REL_DATABASE_HOST" value="{anagraph_rel_database_host}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_rel_db_name">
+                        <label class="spanlabel">Database name</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_REL_DATABASE_NAME" maxlength="64" value="{anagraph_rel_database_name}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_rel_db_user">
+                        <label class="spanlabel">Database username</label>
+                        <input class="input form-control" type="text" name="ANAGRAPH_REL_DATABASE_USER" maxlength="16" value="{anagraph_rel_database_user}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_rel_db_pwd">
+                        <label class="spanlabel">Database password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_REL_DATABASE_PASSWORD" value="{anagraph_rel_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_rel_db_conf_pwd">
+                        <label class="spanlabel">Confirm db password</label>
+                        <input class="password form-control" type="password" name="ANAGRAPH_REL_DATABASE_CONF_PASSWORD" value="{anagraph_rel_database_password}" />
+                    </div>
+                    <div class="{row_class}" id="anagraph_rel_db_crypt">
+                        <input type="checkbox" id="anagraph_rel_db_crypt_check" name="ANAGRAPH_REL_DATABASE_CRYPT" value="1" {anagraph_rel_database_crypt} />
+                        <label class="spanlabel" for="anagraph_rel_db_crypt_check">Enable Crypt</label>
+                    </div>
+                </fieldset>
+            </fieldset>
+            <fieldset title="Root Autentication" class="default sadmin" id="fieldset_su_conf">
+            <legend class="subtitle">Superadmin configuration<a href="javascript:void(0)" class="helpB"></a></legend>
                 <div class="{row_class}" id="field_su_user">
                     <label class="spanlabel">Username</label>
-                    <input class="input required" type="text" name="Username" value="{username}" />
-                    <span class="check"></span>
+                    <input class="input form-control required" type="text" name="Username" value="{username}" />
                 </div>
                 <div class="{row_class}" id="field_su_pwd">
                     <label class="spanlabel">Password</label>
-                    <input class="password required" type="password" name="Password" value="{password}" />
-                    <span class="check"></span>
+                    <input class="password form-control required" type="password" name="Password" value="{password}" />
                 </div>
                 <div class="{row_class}" id="field_su_conf_pwd">
                     <label class="spanlabel">Confirm password</label>
-                    <input class="password required" type="password" name="Conf_Password" value="{password}" />
-                    <span class="check"></span>
+                    <input class="password form-control required" type="password" name="Conf_Password" value="{password}" />
                 </div>
-            <div class="helpP" number="five">
-	        </div>
+            <div class="helpP">
+            </div>
             </fieldset>
-            <fieldset title="FTP" class="default ftp hidden" id="fieldset_ftp_conf">
-            <legend class="subtitle">6  FTP configuration locale<a href="javascript:void(0)" class="helpB" number="six"></a></legend>
+            <fieldset title="FTP" class="default ftp" id="fieldset_ftp_conf">
+            <legend class="subtitle">FTP configuration locale<a href="javascript:void(0)" class="helpB"></a></legend>
                 <div class="{row_class}" id="field_ftp_user">
                     <label class="spanlabel">FTP username</label>
-                    <input class="input required" type="text" name="FTP_USERNAME" value="{ftp_username}" />
-                    <span class="check"></span>
+                    <input class="input form-control required" type="text" name="FTP_USERNAME" value="{ftp_username}" />
                 </div>
                 <div class="{row_class}" id="field_ftp_pwd">
                     <label class="spanlabel">FTP password</label>
-                    <input class="password required" type="password" name="FTP_PASSWORD" value="{ftp_password}" />
-                    <span class="check"></span>
+                    <input class="password form-control required" type="password" name="FTP_PASSWORD" value="{ftp_password}" />
                 </div>
                 <div class="{row_class}" id="field_ftp_conf_pwd">
                     <label class="spanlabel">Confirm password</label>
-                    <input class="password required" type="password" name="FTP_CONFIRM_PASSWORD" value="{ftp_password}" />
-                    <span class="check"></span>
+                    <input class="password form-control required" type="password" name="FTP_CONFIRM_PASSWORD" value="{ftp_password}" />
                 </div>
-                <div class="helpP" number="six">
+                <div class="helpP">
                 </div>
             </fieldset>
             <fieldset title="Path" class="default path hidden" id="fieldset_path_conf">
-            <legend class="subtitle">Path configuration</legend>
+            <legend class="subtitle">Path configuration<a href="javascript:void(0)" class="helpB"></a></legend>
                 <div class="{row_class}" id="field_disk_path">
                     <label class="spanlabel">Disk path</label>
-                    <input class="input" type="text" name="FF_DISK_PATH" value="{disk_path}" />
+                    <input class="input form-control" type="text" name="FF_DISK_PATH" value="{disk_path}" />
                 </div>
                 <div class="{row_class}" id="field_site_path">
                     <label class="spanlabel">Site path</label>
-                    <input class="input" type="text" name="FF_SITE_PATH" value="{site_path}" />
+                    <input class="input form-control" type="text" name="FF_SITE_PATH" value="{site_path}" />
                 </div>
                 <div class="{row_class}" id="field_disk_updir">
                     <label class="spanlabel">Disk updir</label>
-                    <input class="input" type="text" name="DISK_UPDIR" value="{disk_updir}" />
+                    <input class="input form-control" type="text" name="DISK_UPDIR" value="{disk_updir}" />
                 </div>
                 <div class="{row_class}" id="field_site_updir">
                     <label class="spanlabel">Site updir</label>
-                    <input class="input" type="text" name="SITE_UPDIR" value="{site_updir}" />
+                    <input class="input form-control" type="text" name="SITE_UPDIR" value="{site_updir}" />
                 </div>
             </fieldset>
             <fieldset title="Session" class="default session hidden" id="fieldset_session_conf">
-            <legend class="subtitle">Session configuration</legend>
+            <legend class="subtitle">Session configuration<a href="javascript:void(0)" class="helpB"></a></legend>
                 <div class="{row_class}" id="field_save_path">
                     <label class="spanlabel">Session save path</label>
-                    <input class="input" type="text" name="SESSION_SAVE_PATH" value="{session_save_path}" />
+                    <input class="input form-control" type="text" name="SESSION_SAVE_PATH" value="{session_save_path}" />
                 </div>
                 <div class="{row_class}" id="field_session_name">
                     <label class="spanlabel">Session name</label>
-                    <input class="input" type="text" name="SESSION_NAME" value="{session_name}" />
+                    <input class="input form-control" type="text" name="SESSION_NAME" value="{session_name}" />
+                </div>
+                <div class="{row_class}" id="field_session_permanent">
+                    <input type="checkbox" id="field_session_permanent_check" name="MOD_SECURITY_SESSION_PERMANENT" value="1" {session_permanent} />
+                    <label class="spanlabel" for="field_session_permanent_check">Session Permanent</label>
                 </div>
                 <div class="{row_class}" id="field_app_id">
                     <label class="spanlabel">App ID</label>
-                    <input class="input" type="text" name="APPID" value="{appid}" />
+                    <input class="input form-control" type="text" name="APPID" value="{appid}" />
                 </div>
             </fieldset>
-            <fieldset title="Email" class="default email hidden" id="fieldset_email_conf">
-            <legend class="subtitle">Email configuration</legend>
-                <div class="{row_class}" id="field_from_email">
-                    <label class="spanlabel">A from email</label>
-                    <input class="input" type="text" name="A_FROM_EMAIL" value="{email_address}" />
-                </div>
-                <div class="{row_class}" id="field_from_name">
-                    <label class="spanlabel">A from name</label>
-                    <input class="input" type="text" name="A_FROM_NAME" value="{email_name}" />
-                </div>
-                <div class="{row_class}" id="field_cc_email">
-                    <label class="spanlabel">CC from email</label>
-                    <input class="input" type="text" name="CC_FROM_EMAIL" value="{cc_address}" />
-                </div>
-                <div class="{row_class}" id="field_cc_name">
-                    <label class="spanlabel">CC from name</label>
-                    <input class="input" type="text" name="CC_FROM_NAME" value="{cc_name}" />
-                </div>
-                <div class="{row_class}" id="field_bcc_email">
-                    <label class="spanlabel">BCC from email</label>
-                    <input class="input" type="text" name="BCC_FROM_EMAIL" value="{bcc_address}" />
-                </div>
-                <div class="{row_class}" id="field_bcc_name">
-                    <label class="spanlabel">BCC From name</label>
-                    <input class="input" type="text" name="BCC_FROM_NAME" value="{bcc_name}" />
-                </div>
-            </fieldset>
+
             <fieldset title="Http Autentication" class="default auth hidden" id="fieldset_auth_conf">
-            <legend class="subtitle">Auth Base configuration locale</legend>
+            <legend class="subtitle">Auth Base configuration locale<a href="javascript:void(0)" class="helpB"></a></legend>
                 <div class="{row_class}" id="field_auth_user">
                     <label class="spanlabel">AUTH username</label>
-                    <input class="input" type="text" name="AUTH_USERNAME" value="{auth_username}" />
+                    <input class="input form-control" type="text" name="AUTH_USERNAME" value="{auth_username}" />
                 </div>
                 <div class="{row_class}" id="field_auth_pwd">
                     <label class="spanlabel">AUTH password</label>
-                    <input class="password" type="password" name="AUTH_PASSWORD" value="{auth_password}" />
+                    <input class="password form-control" type="password" name="AUTH_PASSWORD" value="{auth_password}" />
                 </div>
                 <div class="{row_class}" id="field_auth_conf_pwd">
                     <label class="spanlabel">AUTH Confirm password</label>
-                    <input class="password" type="password" name="AUTH_CONFIRM_PASSWORD" value="{auth_password}" />
+                    <input class="password form-control" type="password" name="AUTH_CONFIRM_PASSWORD" value="{auth_password}" />
                 </div>
             </fieldset>
-        </div> 
-	    	
+        </div>
+
     </div>
-    <div class="actions">
-        
-        <a href="" class="{button_class} basic-install">Install</a>
+    <div class="col-xs-12 text-center actions">
+
+        <a href=""  class="{button_class} basic-install btn btn-success btn-lg active" role="button">Install</a>
     </div>
 <!--BeginSezFooter-->
     </form>

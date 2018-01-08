@@ -1,61 +1,28 @@
-<div id="jqtree"></div>
-<div id="jqtree_content"></div>
-<div class="cleared"></div>
-<script type="text/javascript">  
+<div id="jstree"></div>
+<script type="text/javascript">
     jQuery(function() {
         ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {
-            ff.pluginLoad("jquery.jstree", "/themes/library/plugins/jquery.jstree/jquery.jstree.min.js", function() {
+            ff.pluginLoad("jquery.jstree", "/themes/library/plugins/jquery.jstree/jstree.js", function() {
                 ff.injectCSS("js.tree", "/themes/library/plugins/jquery.jstree/themes/default/style.css", function() { 
-                    ff.ajax.blockUI();
+                    //ff.ajax.blockUI();
 
-                    jQuery("#jqtree").jstree({
-                        "core" : {
-                            "animation" : 0
-                        },
-                        "json_data" : {
-                            "ajax" : {
-                                "url" : "{site_path}{json_path}?json=1",
-                                "aync": false,
-                                 "complete" : function() {
-                                    jQuery('#jqtree li.checked').each(function() {
-                                        jQuery.jstree._reference('#jqtree').check_node(this);
-                                    });         
-                                    ff.ajax.unblockUI();
+                    jQuery("#jstree").jstree({
+                        'core' : {
+                            'data': {
+                                'url': function (node) {
+                                    return '{site_path}{json_path}?json=1';
+
+                                },
+                                'data': function (node) {
+                                    return node;
                                 }
                             }
-                        },
-                        "ui" : {
-                            "select_limit" : 1
-                            
-                        },
-                        "themes" : {
-                            "theme" : "default",
-                            "dots" : true,
-                            "icons" : true
-                        },
-                        "types" : {
-                            "types" : {
-                                "folder" : {
-                                    "icon" : { 
-                                        "image" : ff.site_path + "/themes/library/plugins/jquery.jstree/themes/gallery/home.png" 
-                                    }
-                                },
-                                "file" : {
-                                    "icon" : { 
-                                        "image" : ff.site_path + "/themes/library/plugins/jquery.jstree/themes/gallery/file.png" 
-                                    }
-                                },
-                                "default" : {
-                                    "icon" : { 
-                                        "image" : ff.site_path + "/themes/library/plugins/jquery.jstree/themes/gallery/folder.png" 
-                                    }
-                                }
-                            }
-                        },
-                        "checkbox" : {
-                            
-                        },
-                        "plugins" : ["themes", "json_data", "ui", "checkbox", "types"]
+                        }
+
+                        , "plugins" : [ "wholerow", "checkbox" ]
+                        , "checkbox" : {
+                            "keep_selected_style" : false
+                        }
                     });
                 });
             });
@@ -63,18 +30,14 @@
         
     });
     function updateManifesto(id) {
-        var params = "";
-        
-        jQuery("#jqtree .jstree-checked, #jqtree .jstree-undetermined").each(function() {
-            if(jQuery(this).attr("rel") !== undefined) {
-                if(params.length > 0)
-                    params = params + ",";
-
-                params = params + jQuery(this).attr("id");
-                }
-        });
+        var params = [];
         var idItem = id;
-        jQuery.post("{site_path}{json_path}?json=1&frmAction=update&params=" + encodeURIComponent(params), function() {
+
+        jQuery('#jstree .manifesto-file.jstree-clicked').each(function() {
+            params.push(jQuery(this).closest("LI").attr("id"));
+        });
+
+        jQuery.post("{site_path}{json_path}?json=1&frmAction=update&params=" + encodeURIComponent(params.join(",")), function() {
             //document.getElementById('frmAction').value = 'DomainSettings_update';
             if(parseInt(idItem) == idItem) {
                 ff.ffPage.dialog.doAction('UpdaterDomain_force_' + idItem, 'update', 'DomainSettings_');

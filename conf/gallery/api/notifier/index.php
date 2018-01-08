@@ -29,18 +29,31 @@
 	check_function("Mailer");
 
 //todo: ffCommon_crossDomains
+/*
+   $mail = Mailer::getInstance("User Registration", "sparkpost");
+   echo $mail->send("Ciaone!", "ASD", array("wolfgan@gmail.com", "tukulka@gmail.com"));
+die();*/
 
-   $mail = Mailer::getInstance("account registration");
-   echo $mail->send("asd", "wolfgan@gmail.com");
+    $notifier = Notifier::getInstance(null, array(
+    	"unique" => true
+		, "display_in" => "/"
+	));
+	$res = $notifier->send(array(
+	"title" => "titolo"
+	, "description" => "desc"
+	, "media" => array(
+		"cover" => "/img"
+		, "video" => "asdad.avi"
+	)
+	), "9");
+
+	print_r($res);
+die();
 
 
-    $notifier = Notifier::getInstance();
-    $notifier->setFields(array(
-       "users" => "ID_dest"
-       , "attach" => "media" 
-       , "service" => "reader"         
-       , "schedule" => "time_from" 
-    ));
+
+
+
     $res = $notifier->sendMail("ci55555ao", array(22,22,22));
     print_R($res);
     

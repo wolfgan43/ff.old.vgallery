@@ -1,4 +1,5 @@
 <?php
+  define("CM_DEFAULT_THEME", "responsive");
   define("CM_SHOWFILES_ENABLE_DEBUG", false);
   define("CM_SHOWFILES_FORCE_PATH", true);
   define("CM_SHOWFILES_SKIP_DB", true);
@@ -29,10 +30,10 @@
 
 	  define("CM_CACHE_PURGE_JS", true);
 	  define("CM_CACHE_IMG_SET_DIMENSION", true);
-	  define("CM_CACHE_PATH_CONVERT_SHOWFILES", true);
-	  define("CM_CACHE_CSS_INLINE_TO_STYLE", true); 
+	  define("CM_CACHE_CSS_INLINE_TO_STYLE", true);
   }
-  
+
+  define("CM_CACHE_PATH_CONVERT_SHOWFILES", true);
   define("CM_CACHE_IMG_LAZY_LOAD", true);
 
   //define("CM_SHOWFILES_MODULES", true);

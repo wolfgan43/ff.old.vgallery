@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `anagraph_fields` (
   PRIMARY KEY  (`ID`),
   KEY `ID_module` (`ID_type`),
   KEY `ID_extended_type` (`ID_extended_type`),
-  KEY `ID_selection` (`ID_selection`),
+  KEY `ID_group_backoffice` (`ID_group_backoffice`),
   KEY `ID_check_control` (`ID_check_control`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -146,9 +146,9 @@ CREATE TABLE IF NOT EXISTS `anagraph_rel_nodes_fields` (
   `ID_nodes` int(11) NOT NULL default '0',
   PRIMARY KEY  (`ID`),
   KEY `ID_fields` (`ID_fields`),
-  KEY `ID_nodes` (`ID_anagraph`),
-  KEY `fields_nodes_lang` (`ID_fields`,`ID_anagraph`),
-  FULLTEXT KEY `description` (`value`)
+  KEY `ID_nodes` (`ID_nodes`),
+  KEY `fields_nodes_lang` (`ID_fields`,`ID_nodes`),
+  FULLTEXT KEY `description` (`description`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
@@ -1929,14 +1929,14 @@ CREATE TABLE IF NOT EXISTS `module_search_group` (
 DROP TABLE IF EXISTS `module_search_vgallery`;
 CREATE TABLE IF NOT EXISTS `module_search_vgallery` (
   `ID` int(11) NOT NULL auto_increment,
-  `ID_module_search` int(11) NOT NULL default '0',
+  `ID_module` int(11) NOT NULL default '0',
   `ID_vgallery_type` int(11) NOT NULL,
   `ID_vgallery_fields` int(11) NOT NULL,
   `ID_extended_type` int(11) NOT NULL default '0',
   `ID_module_search_group` int(11) NOT NULL,
   `order` int(11) NOT NULL default '0',
   PRIMARY KEY  (`ID`),
-  KEY `ID_module_search` (`ID_module_search`),
+  KEY `ID_module` (`ID_module`),
   KEY `ID_vgallery_type` (`ID_vgallery_type`),
   KEY `ID_vgallery_fields` (`ID_vgallery_fields`),
   KEY `ID_extended_type` (`ID_extended_type`),
@@ -2490,7 +2490,8 @@ CREATE TABLE IF NOT EXISTS `users_rel_vgallery` (
   `request` char(1) collate utf8_unicode_ci NOT NULL,
   `order` int(11) NOT NULL,
   PRIMARY KEY  (`ID`),
-  KEY `ID_form` (`ID_vgallery_nodes`)
+  KEY `uid` (`uid`),
+  KEY `ID_nodes` (`ID_nodes`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------

@@ -75,8 +75,8 @@
     $oButton->action_type = "submit";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("mc_edit");
+    $oButton->display_label = false;
     //$oButton->image = "edit.png";
-    $oButton->template_file = "ffButton_link_fixed.html";                           
     $oGrid->addGridButton($oButton);
 
     $oButton = ffButton::factory($cm->oPage);
@@ -87,9 +87,9 @@
     $oButton->action_type = "submit";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("mc_install");
+    $oButton->display_label = false;
     //$oButton->image = "edit.png";
-    $oButton->template_file = "ffButton_link_fixed.html";                           
-    $oGrid->addGridButton($oButton);    
+    $oGrid->addGridButton($oButton);
 
     
     $oButton = ffButton::factory($cm->oPage);
@@ -135,6 +135,8 @@
                 $installable = false;
 
                 if(strlen($ftp_host) && strlen($ftp_user) && strlen($ftp_password) && strlen($ftp_path)) {
+					$installable = true;
+/*
                      if($ftp_ip)
                         $conn_id = @ftp_connect($ftp_ip);
                     if($conn_id === false)
@@ -165,24 +167,25 @@
                         }
                     }
                     @ftp_close($conn_id);
+ */
                 }
 
                 if($installable) {
-                    $component->grid_buttons["install"]->form_action_url = FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/force/" . urlencode($component->db[0]->getField("nome")->getValue()) . "?ret_url=" . urlencode($component->parent[0]->getRequestUri());
-                    if($_REQUEST["XHR_DIALOG_ID"]) {
-                        $component->grid_buttons["install"]->jsaction = "javascript:ff.ffPage.dialog.doRequest('[[XHR_DIALOG_ID]]', {'action': 'install', 'url' : '[[frmAction_url]]'});";
-                    } else {
-                        $js_open_updater_window = " jQuery('<iframe src=\'http://" . $component->db[0]->getField("nome")->getValue() . "/conf/gallery/install\' />').dialog({ 
-                        		resizable: true
-                        		, modal: false
-                        		, width: 500
-                        		, height: 470
-                        		, title: '" . ffTemplate::_get_word_by_code("install_title") . ": " . $component->db[0]->getField("nome")->getValue() . "'
-                        	}).width(500).height(470);";
-                        $component->grid_buttons["install"]->jsaction = "javascript:ff.ajax.doRequest({'action': 'install', fields: [], 'url' : '[[frmAction_url]]', 'callback' : function() {" . $js_open_updater_window . "}});";
-//                        $component->grid_buttons["install"]->action_type = "gotourl";
-//                        $component->grid_buttons["install"]->url = FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/force/" . $component->db[0]->getField("nome")->getValue() . "?frmAction=install&ret_url=" . urlencode($component->parent[0]->getRequestUri());
-                    }
+                    $cm->oPage->widgetLoad("dialog");
+                    $cm->oPage->widgets["dialog"]->process(
+                        $component->id . "_install_" . $component->key_fields["ID"]->getValue()
+                        , array(
+                            "tpl_id" => $component->id
+                            //"name" => "myTitle"
+                        , "url" => FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/installer/" . urlencode($component->db[0]->getField("nome")->getValue())
+                        , "title" => ffTemplate::_get_word_by_code("mc_installer_title") . ": " . $component->db[0]->getField("nome")->getValue()
+                        , "callback" => ""
+                        , "class" => "ff-modal-small"
+                        , "params" => array()
+                        )
+                        , $cm->oPage
+                    );
+                    $component->grid_buttons["install"]->jsaction = "ff.ffPage.dialog.doOpen('" . $component->id . "_install_" . $component->key_fields["ID"]->getValue() . "')";
                     $component->grid_buttons["install"]->visible = true;
                 } else {
                     $component->grid_buttons["install"]->visible = false;
@@ -199,10 +202,9 @@
                         "tpl_id" => $component->id
                         //"name" => "myTitle"
                         , "url" => FF_SITE_PATH . ffcommon_dirname($component->grid_buttons["install"]->parent[0]->record_url) . "/force/" . urlencode($component->db[0]->getField("nome")->getValue())
-                                . "?ret_url=" . urlencode($component->parent[0]->getRequestUri())
                         , "title" => ffTemplate::_get_word_by_code("mc_force_install_title")
                         , "callback" => ""
-                        , "class" => ""
+                        , "class" => "ff-modal-small"
                         , "params" => array()
                     )
                     , $cm->oPage

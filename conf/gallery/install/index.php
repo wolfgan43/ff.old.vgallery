@@ -1,425 +1,438 @@
 <?php
+/**
+ *   VGallery: CMS based on FormsFramework
+Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
 
-     if(!function_exists("check_primary_class")) {
-        function check_primary_class($disk_path, $site_path, $redirect = true) {
-            $arrError = array();
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-            if(!defined("FF_PHP_EXT")) define("FF_PHP_EXT", "php");
-            if (!defined("FF_ENABLE_MEM_TPL_CACHING"))    define("FF_ENABLE_MEM_TPL_CACHING", false);
-            if (!defined("FF_ENABLE_MEM_PAGE_CACHING")) define("FF_ENABLE_MEM_PAGE_CACHING", false);
-            if (!defined("FF_CACHE_ADAPTER")) define("FF_CACHE_ADAPTER", "");
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-            if(!class_exists("ffTemplate")) {
-            	if(file_exists($disk_path . "/ff/classes/ffTemplate.php"))
-                	require_once($disk_path . "/ff/classes/ffTemplate.php");
-            	else 
-                	$arrError[] = "Missing ffTemplate";
-            }
-            if(!class_exists("ffCommon")) {
-            	if(file_exists($disk_path . "/ff/classes/ffCommon.php"))
-                	require_once($disk_path . "/ff/classes/ffCommon.php");
-	            else
-	                $arrError[] = "Missing ffCommon";
-            }
-            if(!class_exists("ffEvents")) {
-            	if(file_exists($disk_path . "/ff/classes/ffEvents/ffEvents.php"))
-                	require_once($disk_path . "/ff/classes/ffEvents/ffEvents.php");
-	            else
-	                $arrError[] = "Missing ffEvents";
-	        }
-            if(!class_exists("ffMemCache")) {
-                if(file_exists($disk_path . "/ff/classes/ffCache/ffCache.php")) {
-                	require_once($disk_path . "/ff/classes/ffCache/ffCache.php");
-            		if(file_exists($disk_path . "/ff/classes/ffCache/ffCacheAdapter.php"))
-                		require_once($disk_path . "/ff/classes/ffCache/ffCacheAdapter.php");
-				} else
-	                $arrError[] = "Missing ffMemCache";
-            }
-            if(!class_exists("ffData")) {
-            	if(file_exists($disk_path . "/ff/classes/ffData/ffData.php"))
-                	require_once($disk_path . "/ff/classes/ffData/ffData.php");
-	            else
-	                $arrError[] = "Missing ffData";
-            }        
-            if(!class_exists("ffDb_Sql")) {
-            	if(file_exists($disk_path . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php"))
-                	require_once($disk_path . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
-	            else
-	                $arrError[] = "Missing ffDb_Sql";
-            }        
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-            if(!function_exists("ffCommon_charset_encode")) {
-            	if(file_exists($disk_path . "/ff/common.php"))
-                	require_once($disk_path . "/ff/common.php");
-	            else
-	                $arrError[] = "Missing FF Library";
-            }     
-          
-            if(count($arrError)) {
-                if($redirect) {
-                    header("Location: " . $site_path . "/conf/gallery/install?init=1&error=" . urlencode(implode(", ", $arrError)));
-                    exit;          
-                } else 
-                    return implode(", ", $arrError);
-            }
-        }
-    }
+ * @package VGallery
+ * @subpackage updater
+ * @author Alessandro Stucchi <wolfgan@gmail.com>
+ * @copyright Copyright (c) 2004, Alessandro Stucchi
+ * @license http://opensource.org/licenses/gpl-3.0.html
+ * @link https://github.com/wolfgan43/vgallery
+ */
+	require_once(__DIR__ . "/common.php");
 
-    if(!function_exists("file_post_contents")) {
-		function file_post_contents($url, $data = null, $username = null, $password = null, $method = "POST", $timeout = 60) {
-			if(!$username && defined("AUTH_USERNAME"))
-				$username 				= AUTH_USERNAME;
-			if(!$password && defined("AUTH_PASSWORD"))
-				$password 				= AUTH_PASSWORD;
+	$server_report = installer_server_requirements(true);
 
-			if($data)
-				$postdata 				= http_build_query($data);
+	$domain = installer_get_domain();
+	$path = installer_get_path();
 
-			$headers = array();
-			if($method == "POST")
-				$headers[] 				= "Content-type: application/x-www-form-urlencoded";
-			if($username)
-				$headers[] 				= "Authorization: Basic " . base64_encode($username . ":" . $password);
+	/*
+	 * CHECK INTEGRITY
+	 */
+	if(!is_file($path["disk_path"] . "/themes/site/conf/config.remote.php")) {
+		if(is_file($path["disk_path"] . "/themes/site/conf/config.updater.php"))
+			require_once($path["disk_path"] . "/themes/site/conf/config.updater.php");
 
-			$opts = array(
-				'ssl' => array(
-					"verify_peer" 		=> false,
-					"verify_peer_name" 	=> false
-				),
-				'http' => array(
-					'method'  			=> $method,
-					'timeout'  			=> $timeout,
-					'header'  			=> implode("\r\n", $headers),
-					'content' 			=> $postdata
-				)
-			);
+		$install_status = "base";
+		if(!(defined("FTP_USERNAME")
+			&& defined("FTP_PASSWORD")
+			&& defined("FTP_PATH")
+			&& defined("AUTH_USERNAME")
+			&& defined("AUTH_PASSWORD")
+			&& defined("MASTER_SITE")
+		)) {
+			if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
+				&& $_REQUEST["name"]
+				&& $_REQUEST["value"]
+				&& isset($_REQUEST["auth_name"])
+				&& isset($_REQUEST["auth_value"])
+				&& $_REQUEST["domain"]
+			) {
+				$ftp_report = installler_ftp_connection(function($conn_id, $ftp_path, $params) {
+					///////////////////////////////
+					//Scrittura del file config.updater.php installer
+					///////////////////////////////
+					$strError = installer_write("/themes/site/conf/config.updater.php"
+						, "config-updater.tpl"
+						, array(
+							"conn_id" 								=> $conn_id
+							, "path" 								=> $ftp_path
+						)
+						, array(
+							"[FTP_USERNAME]"						=> $_REQUEST["name"]
+							, "[FTP_PASSWORD]"						=> $_REQUEST["value"]
+							, "[FTP_PATH]"							=> ($ftp_path ? $ftp_path : "/")
+							, "[AUTH_USERNAME]"						=> $_REQUEST["auth_name"]
+							, "[AUTH_PASSWORD]"						=> $_REQUEST["auth_value"]
+							, "[MASTER_SITE]"						=> $_REQUEST["domain"]
+							, "[MASTER_TOKEN]"						=> (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : "")
+						)
+					);
 
-			$context = stream_context_create($opts);
-			return @file_get_contents($url, false, $context);
+					return $strError;
+				}, null, $_REQUEST["name"], $_REQUEST["value"]);
+
+				if(!$ftp_report["error"] && is_file($path["disk_path"] . "/themes/site/conf/config.updater.php")) {
+					$install_status = "updater";
+					require_once($path["disk_path"] . "/themes/site/conf/config.updater.php");
+				} else {
+					$server_report["error"]["critical"] .= $ftp_report["error"];
+				}
+				echo json_encode($server_report["error"]["critical"]);
+				exit;
+			}
+		} else {
+			$ftp_report = installler_ftp_connection();
+			if(!$ftp_report["error"]) {
+				$install_status = "updater";
+			} else {
+				$server_report["error"]["critical"] .= $ftp_report["error"];
+			}
+		}
+
+		/*
+		 * Parse Template Basic Configuration
+		 */
+		if($install_status == "base") {
+			if($_SERVER["PATH_INFO"] == "/setup" && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {
+				header("Location: " . dirname($_SERVER["REQUEST_URI"]));
+				exit;
+			}
+			echo installer_tpl_parse("install-base.html", array(
+				"[CRITICAL]"								=> $server_report["error"]["critical"]
+				, "[WARNING]"								=> $server_report["error"]["warning"]
+			));
+			exit;
+		}
+
+
+		/***
+		 * htaccess install And fs Need
+		 */
+		if(!is_file($path["disk_path"] . "/.htaccess")) {
+			$ftp_report = installler_ftp_connection(function($conn_id, $ftp_path, $params)
+			{
+				///////////////////////////////
+				//Scrittura del file .htaccess installer
+				///////////////////////////////
+				$strError = installer_write("/.htaccess"
+					, "install-htaccess.tpl"
+					, array(
+						"conn_id" 									=> $conn_id
+						, "path" 									=> $ftp_path
+					)
+				);
+
+				return $strError;
+			});
+			if($ftp_report["error"])
+				$server_report["error"]["critical"] .= $ftp_report["error"];
+
+			$ftp_report = installler_ftp_connection(function($conn_id, $ftp_path, $params)
+			{
+				///////////////////////////////
+				//Scrittura FS Need
+				///////////////////////////////
+				$strError = installer_fs_need(array(
+						"conn_id" 									=> $conn_id
+						, "path" 									=> $ftp_path
+					)
+				);
+
+				return $strError;
+			});
+			if($ftp_report["error"])
+				$server_report["error"]["critical"] .= $ftp_report["error"];
+
+			if(!$server_report["error"]["critical"] && is_file($path["disk_path"] . "/index.php"))
+				@unlink($path["disk_path"] . "/index.php");
 		}
 	}
 
-	if(defined("BLOCK_INSTALL") || isset($_REQUEST["complete"])) {
-			echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
-			echo '<html>';
-			echo '<head>';
-                        echo '<style>
-                                h1 {margin-top: 30%; font-family: verdana;font-weight:lighter;}
-
-                                h1 a{
-                                     padding: 10px 5px;
-                                     border-width: 1px 1px 4px;
-                                     border-color: #2F68CD;
-                                     border-style: solid;
-                                     background: none repeat scroll 0% 0% #4081F5;
-                                     color: #FFF;
-                                     text-transform: uppercase;
-                                     font-size: 0.7em;
-                                     width: 170px;
-                                     margin: 25% auto 0px;
-                                     text-decoration: none;
-                                     font-weight:lighter;
-                                     transition:0.5;
-                                     }
-                                     
-                                h1 a:hover{background: none repeat scroll 0% 0% #2F68CD;}
-                              </style>';
-			echo '<title>Gallery Installation</title>';
-			echo '<meta http-equiv="Cache-Control" content="no-cache">';
-			echo '<meta http-equiv="Pragma" content="no-cache">';
-			echo '</head>';
-			echo '<body>';
-			echo '<div style="margin: 0 auto; width:300px; text-align:center;"><h1>Installation complete.<a style="display:block;" href="javascript:void(0);" onclick="if(window != window.top) { window.open(\'http' . ($_SERVER["HTTPS"] ? "s": "") . "://" . $_SERVER["HTTP_HOST"] . '/admin/configuration/updater\', \'_blank\' ); } else { window.location.href = \'/admin/configuration/updater\'; }">Go to Site</a></h1></div>';
-			echo '</body>';
-			echo '</html>';
-			exit;
-	}
-
-	error_reporting((E_ALL ^ E_NOTICE) | E_STRICT);
-
-   // require("../sources/ffDb_Sql_mysql.php");
-  //  require("../sources/ffTemplate.php");
-
-/*creazione interfaccia
-  DATABASE
-   Richiesta  = > DATABASE_NAME
-                  DATABASE_HOST
-                  DATABASE_USER
-                  DATABASE_PASSWORD
-  USER SUPERADMIN
-   Richiesta  = > Username SuperAdmin
-                  Password SuperAdmin    
-  SMTP SETTINGS
-   Richiesta  = > A_SMTP_HOST
-                  SMTP_AUTH
-                  A_SMTP_USER
-                  A_SMTP_PASSWORD
-                  A_SMTP_PORT
-                  A_SMTP_SECURE
-
-  EMAIL SETTINGS
-   Richiesta  = > A_FROM_EMAIL
-                  A_FROM_NAME
-                  CC_FROM_EMAIL
-                  CC_FROM_NAME
-                  BCC_FROM_EMAIL
-                  BCC_FROM_NAME
-  
-  * Verifica della validita dei campi  
-  Creazione del database
-  * Verifica della creazione del database
-  Importazione della struttura delle tabelle del database da file `Structure.sql`
-  * Verifica della importazione della struttura delle tabelle
-  Importazione dei dati preliminari delle tabelle del database da file `data.sql`
-  * Verifica della importazione dei dati preliminari delle tabelle    
-
-  Creazione del file config_db.php
-    **
-    * define("DATABASE_NAME", "www_redexport_it");
-    * define("DATABASE_HOST", "localhost");
-    * define("DATABASE_USER", "redexport");
-    * define("DATABASE_PASSWORD", "pippopluto");
-    *
-    * $config_check["db"] = true;
-    **
-
-  * Verifica della creazione del file config_db.php
-
-  Creazione del file other.php
-    **
-    * define("A_SMTP_HOST", "localhost");
-    * define("SMTP_AUTH", true);
-    * define("A_SMTP_USER", "forms@b2arts.com");
-    * define("A_SMTP_PASSWORD", "Spatural2008");
-    * define("A_SMTP_PORT", '25');  
-    * define("A_SMTP_SECURE", '');                    
-    * 
-    * $domain_name = DOMAIN_NAME;
-    * $domain_sig = substr($domain_name, 0, strpos($domain_name, "."));
-    *
-    * define("A_FROM_EMAIL", "info@" . $domain_name);
-    * define("A_FROM_NAME", $domain_sig);
-    * define("CC_FROM_EMAIL", "");
-    * define("CC_FROM_NAME", "");
-    * define("BCC_FROM_EMAIL", "forms@b2arts.com");
-    * define("BCC_FROM_NAME", "test[" . DOMAIN_INSET . "]");
-    * 
-    * $config_check["email"] = true;
-    **
-
-  * Verifica della creazione del file other.php
-
-  Redirect alla home Page
-*/
-
-
-
-	if(function_exists("apache_get_modules")) {
-		$PHP_fastCGI = false;
-		if(!in_array('mod_rewrite', apache_get_modules()))
-			die("Apachee Module Rewrite must be Loaded");
-	} else 
-		$PHP_fastCGI = true;
-
-	$total_php_value_need++;
-	if(version_compare(phpversion(), "5.3.0", "<") && ini_get("safe_mode"))
-		if(ini_set("safe_mode", "0") === false)
-	    	$strCriticalError .= "safe_mode must be Disabled\n";
-	    else
-	    	$allow_rewite_php_value_on_htaccess++;
-	
-	$total_php_value_need++;
-	if(version_compare(phpversion(), "5.3.0", "<") && ini_get("register_globals"))
-		if(ini_set("register_globals", "0") === false)
-	    	$strCriticalError .= "register_globals must be Disabled\n";
-	    else
-	    	$allow_rewite_php_value_on_htaccess++;
-
-	$total_php_value_need++;
-	if(ini_get("mysql.max_persistent") != "-1")
-		if(ini_set("mysql.max_persistent", "-1") === false)
-	    	$strCriticalError .= "mysql.max_persistent must be Unlimited\n";
-	    else
-	    	$allow_rewite_php_value_on_htaccess++;
-
-	$total_php_value_need++;
-	if(!ini_get("display_errors"))
-		if(ini_set("display_errors", "1") === false)
-	    	$strWarningError .= "display_errors must be Enabled\n";
-	    else
-	    	$allow_rewite_php_value_on_htaccess++;
-
-/*	$total_php_value_need++;
-	if(ini_get("request_order") != "EGPCS")
-		if(ini_set("request_order", "EGPCS") === false)
-	    	$strWarningError .= "request_order must be EGPCS\n";
-	    else
-			$allow_rewite_php_value_on_htaccess++;
-
-	$total_php_value_need++;
-	if(ini_get("max_input_time") < 1000)
-		if(ini_set("max_input_time", "1000") === false)
-	    	$strWarningError .= "max_input_time must be 1000\n";
-	    else
-			$allow_rewite_php_value_on_htaccess++;
-
-	$total_php_value_need++;
-	if(ini_get("post_max_size") != "100M")
-		if(ini_set("post_max_size", "100M") === false)
-	    	$strWarningError .= "post_max_size must be 100M\n";
-	    else
-			$allow_rewite_php_value_on_htaccess++;
-
-	$total_php_value_need++;
-	if(ini_get("upload_max_filesize") != "100M")
-		if(ini_set("upload_max_filesize", "100M") === false)
-	    	$strWarningError .= "upload_max_filesize must be 100M\n";
-	    else
-			$allow_rewite_php_value_on_htaccess++;
-*/
-	$total_php_value_need++;
-	if(ini_get("magic_quotes_gpc"))
-		if(ini_set("magic_quotes_gpc", "0") === false)
-	    	$strWarningError .= "magic_quotes_gpc must be Disabled\n";
-	    else
-	    	$allow_rewite_php_value_on_htaccess++;
-
-	$total_php_value_need++;
-	if(ini_get("magic_quotes_runtime"))
-		if(ini_set("magic_quotes_runtime", "0") === false)
-	    	$strWarningError .= "magic_quotes_runtime must be Disabled\n";
-	    else
-	    	$allow_rewite_php_value_on_htaccess++;
-	    	
-	$total_php_value_need++;
-	if(ini_get("magic_quotes_sybase"))
-		if(ini_set("magic_quotes_sybase", "0") === false)
-	    	$strWarningError .= "magic_quotes_sybase must be Disabled\n";
-	    else
-	    	$allow_rewite_php_value_on_htaccess++;
-
-	if(ini_get("memory_limit"))
-		if(ini_set("memory_limit", "96M") === false)
-	    	$strWarningError .= "unable set memory_limit\n";
-
-    if(strlen($strCriticalError))
-        die($strCriticalError);
-
-    $strCriticalError = $_REQUEST["error"];
-
-    if(!function_exists("ffCommon_dirname")) {
-        function ffCommon_dirname($path) 
-        {
-            $res = dirname($path);
-            if(dirname("/") == "\\")
-                $res = str_replace("\\", "/", $res);
-            
-            if($res == ".")
-                $res = "";
-                
-            return $res;
-        }
-    }    
-    
 	/**
-	*  Define default Vars
-	*/
-    $st_host_name = $_SERVER["HTTP_HOST"];
-	if(strpos($st_host_name, "www.") === 0) {
-    	$st_domain_name = substr($st_host_name, 4);
-	} else {
-        $st_domain_name = $st_host_name;
+	 * IF Primary Page Check file Updater and Check Files. If not Redirect Progress-bar
+	 */
+	if(1) {
+		/***
+		 * Updater file Updater
+		 */
+		$res = installer_updater("updater", true);
+		if($res && !is_array($res)) {
+			echo $res;
+			exit;
+		}
+
+
+
+		/**
+		 * Check Updater files
+		 */
+		$res = installer_updater("file");
+		if(!$res) {
+			$install_status = "setup";
+		} else {
+			$install_status = "updater";
+			if($_SERVER["PATH_INFO"] == "/setup" && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {
+				header("Location: " . dirname($_SERVER["REQUEST_URI"]));
+				exit;
+			}
+
+			if(!is_array($res))
+				$server_report["error"]["critical"] .= $res;
+		}
+
+		/*
+		 * Parse Template Progress Bar
+		 */
+		if($install_status == "updater") {
+			if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
+				$res = installer_updater("file", true);
+
+				if(is_array($res)) {
+					echo json_encode($res);
+				} else {
+					echo $res;
+				}
+				exit;
+			}
+
+			echo installer_tpl_parse("install-base-progress.html", array(
+				"[CRITICAL]"								=> $server_report["error"]["critical"]
+				, "[WARNING]"								=> $server_report["error"]["warning"]
+				, "[MASTER_SITE]"							=> MASTER_SITE
+				, "[TOTAL]"									=> $res["result"]
+			));
+			exit;
+		}
+
+		if(0 && $install_status == "setup") {
+			if($_SERVER["PATH_INFO"] != "/setup" && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {
+				header("Location: " . $path["site_path"] . "/setup");
+				exit;
+			}
+		}
 	}
-	$st_domain_sig = substr($st_domain_name, 0, strpos($st_domain_name, "."));
-    
-    if (strpos(php_uname(), "Windows") !== false)
-        $tmp_file = str_replace("\\", "/", __FILE__);
-    else
-        $tmp_file = __FILE__;
 
-    if(strpos($tmp_file, $_SERVER["DOCUMENT_ROOT"]) !== false) {
-	    $st_document_root =  $_SERVER["DOCUMENT_ROOT"];
-		if (substr($st_document_root,-1) == "/")
-		    $st_document_root = substr($st_document_root,0,-1);
-
-		$st_site_path = str_replace($st_document_root, "", str_replace("/conf/gallery/install/index.php", "", $tmp_file));
-		$st_disk_path = $st_document_root . $st_site_path;
-	} elseif(strpos($tmp_file, $_SERVER["PHP_DOCUMENT_ROOT"]) !== false) {
-	    $st_document_root =  $_SERVER["PHP_DOCUMENT_ROOT"];
-		if (substr($st_document_root,-1) == "/")
-		    $st_document_root = substr($st_document_root,0,-1);
-
-		$st_site_path = str_replace($_SERVER["DOCUMENT_ROOT"], "", str_replace("/conf/gallery/install/index.php", "", $_SERVER["SCRIPT_FILENAME"]));
-		$st_disk_path = $st_document_root . str_replace($st_document_root, "", str_replace("/conf/gallery/install/index.php", "", $tmp_file));
-	} else {
-		$st_disk_path = str_replace("/conf/gallery/install/index.php", "", $tmp_file);
-		$st_site_path = str_replace("/conf/gallery/install/index.php", "", $_SERVER["SCRIPT_NAME"]);
+	$server_report["error"]["critical"] .= installer_check_FF_class();
+	if($server_report["error"]["critical"]) {
+		echo $server_report["error"]["critical"];
+		exit;
 	}
 
-	$st_site_updir = $st_site_path . "/uploads";
-	$st_disk_updir = $st_disk_path . "/uploads";
+	/**
+	 * SETUP
+	 */
+	if(is_file($path["disk_path"] . "/themes/site/conf/config.remote.php")) {
+		if(is_file($path["disk_path"] . "/themes/site/conf/config.updater.php"))
+			@unlink($path["disk_path"] . "/themes/site/conf/config.updater.php");
 
-    $st_session_save_path = session_save_path();
-    if(!(@is_dir($st_session_save_path) && @is_writable($st_session_save_path))) {
-        $open_basedir = explode(":", ini_get("open_basedir"));
-        if(is_array($open_basedir) && count($open_basedir) > 0) {
-            foreach ($open_basedir AS $open_basedir_key => $open_basedir_value) {
-                if(strlen($open_basedir_value)) {
-                    if(@is_dir($open_basedir_value) && @is_writable($open_basedir_value)) {
-                        $st_session_save_path = $open_basedir_value;
-                        break;
-                    }
-                }
-            }
-            if(!strlen($st_session_save_path)) {
-                $st_session_save_path = ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/sessions";
-                if(!(@is_dir($st_session_save_path) && @is_writable($st_session_save_path))) {
-                    $st_session_save_path = "";
-                } 
-            }
-        }
-    }   
+		require_once($path["disk_path"] . "/themes/site/conf/config.remote.php");
+	}
 
-    $st_appid = md5(ffCommon_dirname(__FILE__)) . "-" . md5($st_domain_name);
-    $st_session_name = "PHPSESS_" . substr($st_appid, 1, 8);
-    $st_memory_limit = "96M";
-    $st_cdn_static = "";
-    
-    $st_character_set = "utf8";
-    $st_collation = "utf8_unicode_ci";
-        
-	$arrLang = array(
-		"ENG" => 2
-		, "ITA" => 1
-		, "ESP" => 4
-		, "FRA" => 3
-		, "DEU" => 5
-	);
 
+	/**
+	 *  INSTALLATION: COMPLETE
+	 */
+	//if(defined("BLOCK_INSTALL") || isset($_REQUEST["complete"])) {
+	if(isset($_REQUEST["complete"])
+		&& defined("FF_DISK_PATH")
+		&& defined("SESSION_NAME")
+		&& defined("FF_DATABASE_NAME")
+		&& defined("SUPERADMIN_PASSWORD")
+		&& defined("MASTER_SITE")
+		&& defined("FTP_PASSWORD")
+		&& defined("APPID")
+		&& defined("LANGUAGE_DEFAULT")
+		&& defined("ADMIN_THEME")
+		&& defined("FRAMEWORK_CSS")
+		&& defined("FONT_ICON")
+	) {
+		echo installer_tpl_parse("install-complete.html");
+		exit;
+	}
+
+
+	/**
+	 *  Define SESSION Vars
+	 */
+	$st_session_save_path = session_save_path();
+	if(!(@is_dir($st_session_save_path) && @is_writable($st_session_save_path))) {
+		$open_basedir = explode(":", ini_get("open_basedir"));
+		if(is_array($open_basedir) && count($open_basedir) > 0) {
+			foreach ($open_basedir AS $open_basedir_key => $open_basedir_value) {
+				if(strlen($open_basedir_value)) {
+					if(@is_dir($open_basedir_value) && @is_writable($open_basedir_value)) {
+						$st_session_save_path = $open_basedir_value;
+						break;
+					}
+				}
+			}
+			if(!strlen($st_session_save_path)) {
+				$st_session_save_path = ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/sessions";
+				if(!(@is_dir($st_session_save_path) && @is_writable($st_session_save_path))) {
+					$st_session_save_path = "";
+				}
+			}
+		}
+	}
+
+	/**
+	 *  Define OTHER Vars
+	 */
+
+	$st_appid 					= (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : time()) . "-" ;
+	$st_session_name 			= str_replace(array("a", "e", "i", "o", "u", "-"), "", strtolower($domain["primary"]));
+	//$st_session_name 			= "PHPSESS_" . substr($st_appid, 1, 8);
+	$st_memory_limit 			= "96M";
+	$st_service_time_limit		= false;
+	$st_session_permanent 		= true;
+	$st_cdn_static 				= false;
+	$st_cdn_services 			= false;
+
+	$st_character_set 			= "utf8";
+	$st_collation 				= "utf8_unicode_ci";
+
+	$st_framework_css 			= "bootstrap-fluid";
+	$st_font_icon 				= "fontawesome";
+
+	$st_timezone 				= "Europe/Rome";
+	$st_security_shield 		= false;
+	$st_admin_theme 			= "admin";
+
+	$arrLang 					= array(
+									"ENG" => 2
+									, "ITA" => 1
+									, "ESP" => 4
+									, "FRA" => 3
+									, "DEU" => 5
+								);
+
+	if(function_exists("get_loaded_extensions"))
+		$php_ext_loaded 		= get_loaded_extensions();
+	else
+		$php_ext_loaded 		= array();
+
+	if(function_exists("apache_get_modules"))
+		$apache_module_loaded 	= apache_get_modules();
+	else
+		$apache_module_loaded 	= array();
+
+	/**
+	 *  INSTALLATION: INSTALL (config, .htaccess, other)
+	 */
 	$frmAction = $_REQUEST["frmAction"];
     if($frmAction == "install") 
     {
         $disk_path              = $_REQUEST["FF_DISK_PATH"];
         $site_path              = $_REQUEST["FF_SITE_PATH"];
+
         $disk_updir             = $_REQUEST["DISK_UPDIR"];
         $site_updir             = $_REQUEST["SITE_UPDIR"];
 
         $session_save_path      = $_REQUEST["SESSION_SAVE_PATH"];
         $session_name           = $_REQUEST["SESSION_NAME"];
-        $appid                  = $_REQUEST["APPID"];
-		$memory_limit           = $_REQUEST["MEMORY_LIMIT"];
-		$cdn_static           	= $_REQUEST["CDN_STATIC"];
-        
-        $database_name          = $_REQUEST["FF_DATABASE_NAME"];
-        $database_host          = $_REQUEST["FF_DATABASE_HOST"];
-        $database_username      = $_REQUEST["FF_DATABASE_USER"];
-        $database_password      = $_REQUEST["FF_DATABASE_PASSWORD"];
-        $database_conf_password = $_REQUEST["FF_DATABASE_CONF_PASSWORD"];
-        $reset_database         = $_REQUEST["RESET_DATABASE"];
+		$session_permanent      = (isset($_REQUEST["MOD_SECURITY_SESSION_PERMANENT"])
+									? $_REQUEST["MOD_SECURITY_SESSION_PERMANENT"]
+									: null
+								);
 
 		$character_set          = $_REQUEST["CHARACTER_SET"];
 		$collation		        = $_REQUEST["COLLATION"];
-        
+
+        $database_host          = $_REQUEST["FF_DATABASE_HOST"];
+		$database_name          = $_REQUEST["FF_DATABASE_NAME"];
+        $database_username      = $_REQUEST["FF_DATABASE_USER"];
+        $database_password      = $_REQUEST["FF_DATABASE_PASSWORD"];
+        $database_conf_password = $_REQUEST["FF_DATABASE_CONF_PASSWORD"];
+
+        //mongo
+		$mongo_database_host          			= $_REQUEST["MONGO_DATABASE_HOST"];
+		$mongo_database_name          			= $_REQUEST["MONGO_DATABASE_NAME"];
+		$mongo_database_username      			= $_REQUEST["MONGO_DATABASE_USER"];
+		$mongo_database_password      			= $_REQUEST["MONGO_DATABASE_PASSWORD"];
+		$mongo_database_conf_password 			= $_REQUEST["MONGO_DATABASE_CONF_PASSWORD"];
+
+		//trace
+		$trace_table_name          				= $_REQUEST["TRACE_TABLE_NAME"];
+		$trace_onesignal_app_id          		= $_REQUEST["TRACE_ONESIGNAL_APP_ID"];
+		$trace_onesignal_api_key      			= $_REQUEST["TRACE_ONESIGNAL_API_KEY"];
+
+		$trace_database_host          			= $_REQUEST["TRACE_DATABASE_HOST"];
+		$trace_database_name          			= $_REQUEST["TRACE_DATABASE_NAME"];
+		$trace_database_username      			= $_REQUEST["TRACE_DATABASE_USER"];
+		$trace_database_password      			= $_REQUEST["TRACE_DATABASE_PASSWORD"];
+		$trace_database_conf_password 			= $_REQUEST["TRACE_DATABASE_CONF_PASSWORD"];
+
+		$trace_mongo_database_host          	= $_REQUEST["TRACE_MONGO_DATABASE_HOST"];
+		$trace_mongo_database_name          	= $_REQUEST["TRACE_MONGO_DATABASE_NAME"];
+		$trace_mongo_database_username      	= $_REQUEST["TRACE_MONGO_DATABASE_USER"];
+		$trace_mongo_database_password      	= $_REQUEST["TRACE_MONGO_DATABASE_PASSWORD"];
+		$trace_mongo_database_conf_password 	= $_REQUEST["TRACE_MONGO_DATABASE_CONF_PASSWORD"];
+
+
+		//notify
+		$notify_table_name          			= $_REQUEST["NOTIFY_TABLE_NAME"];
+		$notify_table_key          				= $_REQUEST["NOTIFY_TABLE_KEY"];
+		$notify_onesignal_app_id      			= $_REQUEST["NOTIFY_ONESIGNAL_APP_ID"];
+		$notify_onesignal_api_key      			= $_REQUEST["NOTIFY_ONESIGNAL_API_KEY"];
+
+
+		$notify_database_host          			= $_REQUEST["NOTIFY_DATABASE_HOST"];
+		$notify_database_name          			= $_REQUEST["NOTIFY_DATABASE_NAME"];
+		$notify_database_username      			= $_REQUEST["NOTIFY_DATABASE_USER"];
+		$notify_database_password      			= $_REQUEST["NOTIFY_DATABASE_PASSWORD"];
+		$notify_database_conf_password 			= $_REQUEST["NOTIFY_DATABASE_CONF_PASSWORD"];
+
+		$notify_mongo_database_host          	= $_REQUEST["NOTIFY_MONGO_DATABASE_HOST"];
+		$notify_mongo_database_name          	= $_REQUEST["NOTIFY_MONGO_DATABASE_NAME"];
+		$notify_mongo_database_username      	= $_REQUEST["NOTIFY_MONGO_DATABASE_USER"];
+		$notify_mongo_database_password      	= $_REQUEST["NOTIFY_MONGO_DATABASE_PASSWORD"];
+		$notify_mongo_database_conf_password 	= $_REQUEST["NOTIFY_MONGO_DATABASE_CONF_PASSWORD"];
+
+		//gdpr
+		$gdpr_compliance          									= $_REQUEST["GDPR_COMPLIANCE"];
+
+		$anagraph_identification_database_host          			= $_REQUEST["ANAGRAPH_IDENTIFICATION_DATABASE_HOST"];
+		$anagraph_identification_database_name          			= $_REQUEST["ANAGRAPH_IDENTIFICATION_DATABASE_NAME"];
+		$anagraph_identification_database_username      			= $_REQUEST["ANAGRAPH_IDENTIFICATION_DATABASE_USER"];
+		$anagraph_identification_database_password      			= $_REQUEST["ANAGRAPH_IDENTIFICATION_DATABASE_PASSWORD"];
+		$anagraph_identification_database_conf_password 			= $_REQUEST["ANAGRAPH_IDENTIFICATION_DATABASE_CONF_PASSWORD"];
+		$anagraph_identification_database_crypt 					= $_REQUEST["ANAGRAPH_IDENTIFICATION_DATABASE_CRYPT"];
+
+		$anagraph_access_database_host          					= $_REQUEST["ANAGRAPH_ACCESS_DATABASE_HOST"];
+		$anagraph_access_database_name          					= $_REQUEST["ANAGRAPH_ACCESS_DATABASE_NAME"];
+		$anagraph_access_database_username      					= $_REQUEST["ANAGRAPH_ACCESS_DATABASE_USER"];
+		$anagraph_access_database_password      					= $_REQUEST["ANAGRAPH_ACCESS_DATABASE_PASSWORD"];
+		$anagraph_access_database_conf_password 					= $_REQUEST["ANAGRAPH_ACCESS_DATABASE_CONF_PASSWORD"];
+		$anagraph_access_database_crypt 							= $_REQUEST["ANAGRAPH_ACCESS_DATABASE_CRYPT"];
+
+		$anagraph_general_database_host          					= $_REQUEST["ANAGRAPH_GENERAL_DATABASE_HOST"];
+		$anagraph_general_database_name          					= $_REQUEST["ANAGRAPH_GENERAL_DATABASE_NAME"];
+		$anagraph_general_database_username      					= $_REQUEST["ANAGRAPH_GENERAL_DATABASE_USER"];
+		$anagraph_general_database_password      					= $_REQUEST["ANAGRAPH_GENERAL_DATABASE_PASSWORD"];
+		$anagraph_general_database_conf_password 					= $_REQUEST["ANAGRAPH_GENERAL_DATABASE_CONF_PASSWORD"];
+		$anagraph_general_database_crypt 							= $_REQUEST["ANAGRAPH_GENERAL_DATABASE_CRYPT"];
+
+		$anagraph_sensivity_database_host          					= $_REQUEST["ANAGRAPH_SENSIVITY_DATABASE_HOST"];
+		$anagraph_sensivity_database_name          					= $_REQUEST["ANAGRAPH_SENSIVITY_DATABASE_NAME"];
+		$anagraph_sensivity_database_username      					= $_REQUEST["ANAGRAPH_SENSIVITY_DATABASE_USER"];
+		$anagraph_sensivity_database_password      					= $_REQUEST["ANAGRAPH_SENSIVITY_DATABASE_PASSWORD"];
+		$anagraph_sensivity_database_conf_password 					= $_REQUEST["ANAGRAPH_SENSIVITY_DATABASE_CONF_PASSWORD"];
+		$anagraph_sensivity_database_crypt 							= $_REQUEST["ANAGRAPH_SENSIVITY_DATABASE_CRYPT"];
+
+		$anagraph_rel_database_host          						= $_REQUEST["ANAGRAPH_REL_DATABASE_HOST"];
+		$anagraph_rel_database_name          						= $_REQUEST["ANAGRAPH_REL_DATABASE_NAME"];
+		$anagraph_rel_database_username      						= $_REQUEST["ANAGRAPH_REL_DATABASE_USER"];
+		$anagraph_rel_database_password      						= $_REQUEST["ANAGRAPH_REL_DATABASE_PASSWORD"];
+		$anagraph_rel_database_conf_password 						= $_REQUEST["ANAGRAPH_REL_DATABASE_CONF_PASSWORD"];
+		$anagraph_rel_database_crypt 								= $_REQUEST["ANAGRAPH_REL_DATABASE_CRYPT"];
+
+
+
         $smtp_host              = $_REQUEST["A_SMTP_HOST"];
         $smtp_auth              = $_REQUEST["SMTP_AUTH"];
         $smtp_username          = $_REQUEST["A_SMTP_USER"];
@@ -434,47 +447,69 @@
         $cc_name                = $_REQUEST["CC_FROM_NAME"];
         $bcc_address            = $_REQUEST["BCC_FROM_EMAIL"];
         $bcc_name               = $_REQUEST["BCC_FROM_NAME"];
-        
-        $site_title             = $_REQUEST["SITE_TITLE"];
-        $language_default       = $_REQUEST["LANGUAGE_DEFAULT"];
-        $language_default_id	= $arrLang[$language_default];
 
-//        $trace_path			    = $_REQUEST["TRACE_PATH"];
+		$username               = $_REQUEST["Username"];
+		$password               = $_REQUEST["Password"];
+		$conf_password          = $_REQUEST["Conf_Password"];
+
+		$master_site            = $_REQUEST["MASTER_SITE"];
+		$production_site        = $_REQUEST["PRODUCTION_SITE"];
+		$development_site		= $_REQUEST["DEVELOPMENT_SITE"];
+
+		$auth_username           = $_REQUEST["AUTH_USERNAME"];
+		$auth_password           = $_REQUEST["AUTH_PASSWORD"];
+
+		$ftp_username           = $_REQUEST["FTP_USERNAME"];
+		$ftp_password           = $_REQUEST["FTP_PASSWORD"];
+		$ftp_confirm_password   = $_REQUEST["FTP_CONFIRM_PASSWORD"];
 
         $debug_mode   			= $_REQUEST["DEBUG_MODE"];
         $debug_profiling   		= $_REQUEST["DEBUG_PROFILING"];
         $debug_log   			= $_REQUEST["DEBUG_LOG"];
-        $trace_visitor 			= $_REQUEST["TRACE_VISITOR"];
-        
-        $username               = $_REQUEST["Username"];
-        $password               = $_REQUEST["Password"];
-        $conf_password          = $_REQUEST["Conf_Password"];
 
-        $master_site            = $_REQUEST["MASTER_SITE"];
-        $production_site        = $_REQUEST["PRODUCTION_SITE"];
-        $development_site		= $_REQUEST["DEVELOPMENT_SITE"];
-        
-        $ftp_username           = $_REQUEST["FTP_USERNAME"];
-        $ftp_password           = $_REQUEST["FTP_PASSWORD"];
-        $ftp_confirm_password   = $_REQUEST["FTP_CONFIRM_PASSWORD"];
+        $disable_cache			= (isset($_REQUEST["DISABLE_CACHE"])
+									? $_REQUEST["DISABLE_CACHE"]
+									: null
+								);
+        $cache_last_version		= $_REQUEST["CACHE_LAST_VERSION"];
 
-        $auth_username           = $_REQUEST["AUTH_USERNAME"];
-        $auth_password           = $_REQUEST["AUTH_PASSWORD"];
+		$site_title             = $_REQUEST["SITE_TITLE"];
+		$site_ssl				= $_REQUEST["SITE_SSL"];
+		$appid                  = $_REQUEST["APPID"];
 
-        if($cdn_static) {
-			if(strlen($production_site)) {
-				$arrDomain = explode(".", $production_site);
-				
-				$str_static_cdn_domain_name = 'define("CDN_STATIC_IMAGE", \'' . addslashes('http://static.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
-			} else {
-				$arrDomain = explode(".", $st_host_name);
-				
-				$str_static_cdn_domain_name = 'define("CM_SHOWFILES", \'' . addslashes('http://static.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
-				$str_media_cdn_domain_name = 'define("CM_MEDIACACHE_SHOWPATH", \'' . addslashes('http://media.' . $arrDomain[count($arrDomain) - 2] . "." . $arrDomain[count($arrDomain) - 1]) . '\');';
-			}
-		}
+		$trace_visitor 			= $_REQUEST["TRACE_VISITOR"];
 
-        if(!strlen($disk_path))
+		$framework_css       	= $_REQUEST["FRAMEWORK_CSS"];
+		$font_icon       		= $_REQUEST["FONT_ICON"];
+		$language_default       = $_REQUEST["LANGUAGE_DEFAULT"];
+		$language_default_id	= $arrLang[$language_default];
+		$logo_favicon			= $_REQUEST["LOGO_FAVICON"];
+		$logo_email				= $_REQUEST["LOGO_EMAIL"];
+
+		$admin_theme						= $_REQUEST["ADMIN_THEME"];
+		$language_restricted_default       	= $_REQUEST["LANGUAGE_RESTRICTED_DEFAULT"];
+		$language_restricted_default_id		= $arrLang[$language_restricted_default];
+		$framework_css_restricted       	= $_REQUEST["FRAMEWORK_CSS_RESTRICTED"];
+		$font_icon_restricted       		= $_REQUEST["FONT_ICON_RESTRICTED"];
+		$logo_brand							= $_REQUEST["LOGO_BRAND"];
+		$logo_docs							= $_REQUEST["LOGO_DOCS"];
+
+		$cdn_static           	= (isset($_REQUEST["CDN_STATIC"])
+									? $_REQUEST["CDN_STATIC"]
+									: null
+								);
+		$cdn_services           =  (isset($_REQUEST["CDN_SERVICES"])
+									? $_REQUEST["CDN_SERVICES"]
+									: null
+								);
+
+		$memory_limit           = $_REQUEST["MEMORY_LIMIT"];
+		$service_time_limit     = $_REQUEST["SERVICE_TIME_LIMIT"];
+		$timezone 				= $_REQUEST["TIMEZONE"];
+		$security_shield 		= $_REQUEST["SECURITY_SHIELD"];
+
+
+		if(!strlen($disk_path))
             $strError .= "Disk Path empty <br />";
 
         if(!strlen($disk_updir))
@@ -510,7 +545,65 @@
             $strError .= "Database password no match<br />";
         }    
 
-        if(!strlen($character_set))
+        //mongo
+		if($mongo_database_password != $mongo_database_conf_password) {
+			$mongo_database_password = "";
+			$mongo_database_conf_password = "";
+			$strError .= "Mongo Database password no match<br />";
+		}
+		//trace
+		if($trace_database_password != $trace_database_conf_password) {
+			$trace_database_password = "";
+			$trace_database_conf_password = "";
+			$strError .= "Trace Database password no match<br />";
+		}
+		if($trace_mongo_database_password != $trace_mongo_database_conf_password) {
+			$trace_mongo_database_password = "";
+			$trace_mongo_database_conf_password = "";
+			$strError .= "Trace Mongo Database password no match<br />";
+		}
+
+		//notify
+		if($notify_database_password != $notify_database_conf_password) {
+			$notify_database_password = "";
+			$notify_database_conf_password = "";
+			$strError .= "Notify Database password no match<br />";
+		}
+		if($notify_mongo_database_password != $notify_mongo_database_conf_password) {
+			$notify_mongo_database_password = "";
+			$notify_mongo_database_conf_password = "";
+			$strError .= "Notify Mongo Database password no match<br />";
+		}
+
+		//gdpr
+		if($anagraph_identification_database_password != $anagraph_identification_database_conf_password) {
+			$anagraph_identification_database_password = "";
+			$anagraph_identification_database_conf_password = "";
+			$strError .= "GDPR identification Database password no match<br />";
+		}
+		if($anagraph_access_database_password != $anagraph_access_database_conf_password) {
+			$anagraph_access_database_password = "";
+			$anagraph_access_database_conf_password = "";
+			$strError .= "GDPR access Database password no match<br />";
+		}
+		if($anagraph_general_database_password != $anagraph_general_database_conf_password) {
+			$anagraph_general_database_password = "";
+			$anagraph_general_database_conf_password = "";
+			$strError .= "GDPR general Database password no match<br />";
+		}
+		if($anagraph_sensivity_database_password != $anagraph_sensivity_database_conf_password) {
+			$anagraph_sensivity_database_password = "";
+			$anagraph_sensivity_database_conf_password = "";
+			$strError .= "GDPR sensivity Database password no match<br />";
+		}
+		if($anagraph_rel_database_password != $anagraph_rel_database_conf_password) {
+			$anagraph_rel_database_password = "";
+			$anagraph_rel_database_conf_password = "";
+			$strError .= "GDPR relationship Database password no match<br />";
+		}
+
+
+		if(!strlen($character_set))
             $strError .= "Character set  empty <br />";
 
         if(!strlen($collation))
@@ -544,62 +637,11 @@
             $conf_password = "";
             $strError .= "Admin Password no match<br />";
         }
-		
-		$ftp_path = null;
-        if(strlen($ftp_username)) {
-	        if($ftp_password != $ftp_confirm_password) {
-	            $password = "";
-	            $conf_password = "";
-	            $strError .= "FTP Password no match<br />";
-	        } else {
-				$conn_id = @ftp_connect("localhost");
-		        if($conn_id === false)
-        			$conn_id = @ftp_connect("127.0.0.1");
-				if($conn_id === false)
-        			$conn_id = @ftp_connect($_SERVER["SERVER_ADDR"]);
-				
-				if($conn_id !== false) {
-					// login with username and password
-					if(@ftp_login($conn_id, $ftp_username, $ftp_password)) {
-						$local_path = $disk_path;
-						$part_path = "";
-						$real_ftp_path = NULL;
-						
-						foreach(explode("/", $local_path) AS $curr_path) {
-						    if(strlen($curr_path)) {
-						        $ftp_path = str_replace($part_path, "", $local_path);
-						        if(@ftp_chdir($conn_id, $ftp_path)) {
-						            $real_ftp_path = $ftp_path;
-						            break;
-						        } 
 
-						        $part_path .= "/" . $curr_path;
-						    }
-						}
-						
-						if($real_ftp_path === null) {
-							if(@ftp_chdir($conn_id, "/conf/gallery/install")) {
-								$real_ftp_path = "/";
-							}
-						}
-					} else {
-						$strError .= "FTP Login Incorrect<br />";
-					}
-				} else {
-					$strError .= "FTP Connection Failure<br />";
-				} 
-				//@ftp_close($conn_id);
-				if($real_ftp_path === null) {
-					$strError .= "FTP Path unavailable<br />";
-				} else {
-					$ftp_path = $real_ftp_path;
-				}
-			}
-		}
-
-        check_primary_class($disk_path, $site_path);
-		
-        $db_install = new ffDB_Sql;
+		/**
+		 * Load db Struct and data from Dump
+		 */
+        $db_install = new ffDB_Sql();
         $db_install->halt_on_connect_error = false;
         $db_res = @$db_install->connect($database_name, $database_host, $database_username, $database_password);
 
@@ -612,955 +654,304 @@
         if(!is_readable($disk_path . "/conf/gallery/install/data.sql") || filesize($disk_path . "/conf/gallery/install/data.sql") <= 0)
             $strError .= "Unable read file: " . $disk_path . "/install/data.sql" . "<br />";
 
-		if(version_compare(phpversion(), "5.3.0", "<") && ini_get("safe_mode"))
-			if(ini_set("safe_mode", "0") === false)
-	    		$safe_mode = true;
-		    else
-	    		$safe_mode = false;
-
-       /* if(!is_writable($disk_path . "/conf/gallery/config/path." . FF_PHP_EXT))
-            $strError .= "Unable write file: " . $disk_path . "/conf/gallery/config/path." . FF_PHP_EXT . "<br />";
-
-        if(!is_writable($disk_path . "/conf/gallery/config/db." . FF_PHP_EXT))
-            $strError .= "Unable write file: " . $disk_path . "/conf/gallery/config/db." . FF_PHP_EXT . "<br />";
-
-        if(!is_writable($disk_path . "/conf/gallery/config/other." . FF_PHP_EXT))
-            $strError .= "Unable write file: " . $disk_path . "/conf/gallery/config/other." . FF_PHP_EXT . "<br />";
-        */
-
         if(!$strError) {
-            $dirname_relative = "/conf/gallery/config";
-            @ftp_chmod($conn_id, 0755, $ftp_path . $dirname_relative);
-            
-/*            $filename = $disk_path . $dirname_relative;
-            
-            $perm_dir_change = false;
-            if(!is_writable($filename) && $ftp_path !== null) {
-                $perm_dir_change = true;
-                @ftp_chmod($conn_id, 0777, $ftp_path . $dirname_relative);
-            }
-*/            
+			$ftp_report = installler_ftp_connection(function($conn_id, $ftp_path, $params) {
+				///////////////////////////////
+				//Scrittura del file config.remote.php
+				///////////////////////////////
+				$strError = installer_write("/themes/site/conf/config.remote.php"
+					, "config.tpl"
+					, array(
+						"conn_id" 									=> $conn_id
+						, "path" 									=> $ftp_path
+					)
+					, $params
+				);
 
-            ///////////////////////////////
-            //Scrittura del file db.php
-            ///////////////////////////////
-            $filename_relative = $dirname_relative . "/db." . FF_PHP_EXT;
-            $filename = $disk_path . $filename_relative;
-            $config_content = '<?php
-    define("FF_DATABASE_NAME", \'' . addslashes($database_name) . '\');
-    define("FF_DATABASE_HOST", \'' . addslashes($database_host) . '\');
-    define("FF_DATABASE_USER", \'' . addslashes($database_username) . '\');
-    define("FF_DATABASE_PASSWORD", \'' . addslashes($database_password) . '\');
+				return $strError;
+			}, array(
+				"[FF_DISK_PATH]"							=> $disk_path
+				, "[FF_SITE_PATH]"							=> $site_path
+				, "[SITE_UPDIR]"							=> $site_updir
+				, "[DISK_UPDIR]"							=> $disk_updir
 
-    define("DB_CHARACTER_SET", \'' . addslashes($character_set) . '\');
-    define("DB_COLLATION", \'' . addslashes($collation) . '\');
-    
-';
-           
-            $tempHandle = @tmpfile();
-            @fwrite($tempHandle, $config_content);
-            @rewind($tempHandle);
+				, "[SESSION_SAVE_PATH]"						=> $session_save_path
+				, "[SESSION_NAME]"							=> $session_name
+				, "[MOD_SECURITY_SESSION_PERMANENT]"		=> ($session_permanent ? "true" : "false") //$session_permanent
 
-            if(@ftp_size($conn_id, $ftp_path . $filename_relative) >= 0) {
-                @ftp_delete($conn_id, $ftp_path . $filename_relative);
-            }
-            
-            $ret = @ftp_nb_fput($conn_id
-                                , $ftp_path . $filename_relative
-                                , $tempHandle
-                                , FTP_BINARY
-                                , FTP_AUTORESUME
-                            );
-            while ($ret == FTP_MOREDATA) {
-               // Do whatever you want
-               // Continue upload...
-               $ret = @ftp_nb_continue($conn_id);
-            }
-            if ($ret != FTP_FINISHED) {
-               $strError .= "Unable write file: " . $filename_relative . "<br />";
-            } else {
-                @ftp_chmod($conn_id, 0644, $ftp_path . $filename_relative);
-            }
-            ///////////////////////////////
+				, "[DB_CHARACTER_SET]"						=> $character_set
+				, "[DB_COLLATION]"							=> $collation
 
-            
-            ///////////////////////////////
-            //Scrittura del file path.php
-            ///////////////////////////////
-            $filename_relative = $dirname_relative . "/path." . FF_PHP_EXT;
-            $filename = $disk_path . $filename_relative;
-            $config_content = '<?php
-    define("FF_DISK_PATH", \'' . addslashes($disk_path) . '\');
-    define("FF_SITE_PATH", \'' . addslashes($site_path) . '\');
+				, "[FF_DATABASE_HOST]"						=> $database_host
+				, "[FF_DATABASE_NAME]"						=> $database_name
+				, "[FF_DATABASE_USER]"						=> $database_username
+				, "[FF_DATABASE_PASSWORD]"					=> $database_password
 
-    define("DISK_UPDIR", \'' . addslashes($disk_updir) . '\');
-    define("SITE_UPDIR", \'' . addslashes($site_updir) . '\');
-    
-    $config_check["path"] = true;
-';
-           
-            $tempHandle = @tmpfile();
-            @fwrite($tempHandle, $config_content);
-            @rewind($tempHandle);
+				, "[MONGO_DATABASE_HOST]"					=> $mongo_database_host
+				, "[MONGO_DATABASE_NAME]"					=> $mongo_database_name
+				, "[MONGO_DATABASE_USER]"					=> $mongo_database_username
+				, "[MONGO_DATABASE_PASSWORD]"				=> $mongo_database_password
 
-            if(@ftp_size($conn_id, $ftp_path . $filename_relative) >= 0) {
-                @ftp_delete($conn_id, $ftp_path . $filename_relative);
-            }
-            
-            $ret = @ftp_nb_fput($conn_id
-                                , $ftp_path . $filename_relative
-                                , $tempHandle
-                                , FTP_BINARY
-                                , FTP_AUTORESUME
-                            );
-            while ($ret == FTP_MOREDATA) {
-               // Do whatever you want
-               // Continue upload...
-               $ret = @ftp_nb_continue($conn_id);
-            }
-            if ($ret != FTP_FINISHED) {
-               $strError .= "Unable write file: " . $filename_relative . "<br />";
-            } else {
-                @ftp_chmod($conn_id, 0644, $ftp_path . $filename_relative);
-            }
-            ///////////////////////////////
-            
-            
-            ///////////////////////////////
-            //Scrittura del file session.php
-            ///////////////////////////////
-            $filename_relative = $dirname_relative . "/session." . FF_PHP_EXT;
-            $filename = $disk_path . $filename_relative;
-            
-            $config_content = '<?php
-    define("SESSION_SAVE_PATH", \'' . addslashes($session_save_path) . '\');
-    define("SESSION_NAME", \'' . addslashes($session_name) . '\');
-    define("SESSION_PERMANENT", true);
-    define("APPID", \'' . addslashes($appid) . '\');
-    define("MEMORY_LIMIT", \'' . addslashes($memory_limit) . '\');
-    
-    $config_check["session"] = true;
-';
-           
-            $tempHandle = @tmpfile();
-            @fwrite($tempHandle, $config_content);
-            @rewind($tempHandle);
+				, "[TRACE_TABLE_NAME]"						=> $trace_table_name
+				, "[TRACE_ONESIGNAL_APP_ID]"				=> $trace_onesignal_app_id
+				, "[TRACE_ONESIGNAL_API_KEY]"				=> $trace_onesignal_api_key
 
-            if(@ftp_size($conn_id, $ftp_path . $filename_relative) >= 0) {
-                @ftp_delete($conn_id, $ftp_path . $filename_relative);
-            }
-            
-            $ret = @ftp_nb_fput($conn_id
-                                , $ftp_path . $filename_relative
-                                , $tempHandle
-                                , FTP_BINARY
-                                , FTP_AUTORESUME
-                            );
-            while ($ret == FTP_MOREDATA) {
-               // Do whatever you want
-               // Continue upload...
-               $ret = @ftp_nb_continue($conn_id);
-            }
-            if ($ret != FTP_FINISHED) {
-               $strError .= "Unable write file: " . $filename_relative . "<br />";
-            } else {
-                @ftp_chmod($conn_id, 0644, $ftp_path . $filename_relative);
-            }
-            ///////////////////////////////
+				, "[TRACE_DATABASE_HOST]"					=> $trace_database_host
+				, "[TRACE_DATABASE_NAME]"					=> $trace_database_name
+				, "[TRACE_DATABASE_USER]"					=> $trace_database_username
+				, "[TRACE_DATABASE_PASSWORD]"				=> $trace_database_password
+
+				, "[TRACE_MONGO_DATABASE_HOST]"				=> $trace_mongo_database_host
+				, "[TRACE_MONGO_DATABASE_NAME]"				=> $trace_mongo_database_name
+				, "[TRACE_MONGO_DATABASE_USER]"				=> $trace_mongo_database_username
+				, "[TRACE_MONGO_DATABASE_PASSWORD]"			=> $trace_mongo_database_password
+
+				, "[NOTIFY_TABLE_NAME]"						=> $notify_table_name
+				, "[NOTIFY_TABLE_KEY]"						=> $notify_table_key
+				, "[NOTIFY_ONESIGNAL_APP_ID]"				=> $notify_onesignal_app_id
+				, "[NOTIFY_ONESIGNAL_API_KEY]"				=> $notify_onesignal_api_key
+
+				, "[NOTIFY_DATABASE_HOST]"					=> $notify_database_host
+				, "[NOTIFY_DATABASE_NAME]"					=> $notify_database_name
+				, "[NOTIFY_DATABASE_USER]"					=> $notify_database_username
+				, "[NOTIFY_DATABASE_PASSWORD]"				=> $notify_database_password
+
+				, "[NOTIFY_MONGO_DATABASE_HOST]"			=> $notify_mongo_database_host
+				, "[NOTIFY_MONGO_DATABASE_NAME]"			=> $notify_mongo_database_name
+				, "[NOTIFY_MONGO_DATABASE_USER]"			=> $notify_mongo_database_username
+				, "[NOTIFY_MONGO_DATABASE_PASSWORD]"		=> $notify_mongo_database_password
+
+				, "[GDPR_COMPLIANCE]"								=> ($gdpr_compliance ? "true" : "false")
+
+				, "[ANAGRAPH_IDENTIFICATION_DATABASE_HOST]"			=> $anagraph_identification_database_host
+				, "[ANAGRAPH_IDENTIFICATION_DATABASE_NAME]"			=> $anagraph_identification_database_name
+				, "[ANAGRAPH_IDENTIFICATION_DATABASE_USER]"			=> $anagraph_identification_database_username
+				, "[ANAGRAPH_IDENTIFICATION_DATABASE_PASSWORD]"		=> $anagraph_identification_database_password
+				, "[ANAGRAPH_IDENTIFICATION_DATABASE_CRYPT]"		=> ($anagraph_identification_database_crypt ? "true" : "false")
+
+				, "[ANAGRAPH_ACCESS_DATABASE_HOST]"					=> $anagraph_access_database_host
+				, "[ANAGRAPH_ACCESS_DATABASE_NAME]"					=> $anagraph_access_database_name
+				, "[ANAGRAPH_ACCESS_DATABASE_USER]"					=> $anagraph_access_database_username
+				, "[ANAGRAPH_ACCESS_DATABASE_PASSWORD]"				=> $anagraph_access_database_password
+				, "[ANAGRAPH_ACCESS_DATABASE_CRYPT]"				=> ($anagraph_access_database_crypt ? "true" : "false")
+
+				, "[ANAGRAPH_GENERAL_DATABASE_HOST]"				=> $anagraph_general_database_host
+				, "[ANAGRAPH_GENERAL_DATABASE_NAME]"				=> $anagraph_general_database_name
+				, "[ANAGRAPH_GENERAL_DATABASE_USER]"				=> $anagraph_general_database_username
+				, "[ANAGRAPH_GENERAL_DATABASE_PASSWORD]"			=> $anagraph_general_database_password
+				, "[ANAGRAPH_GENERAL_DATABASE_CRYPT]"				=> ($anagraph_general_database_crypt ? "true" : "false")
+
+				, "[ANAGRAPH_SENSIVITY_DATABASE_HOST]"				=> $anagraph_sensivity_database_host
+				, "[ANAGRAPH_SENSIVITY_DATABASE_NAME]"				=> $anagraph_sensivity_database_name
+				, "[ANAGRAPH_SENSIVITY_DATABASE_USER]"				=> $anagraph_sensivity_database_username
+				, "[ANAGRAPH_SENSIVITY_DATABASE_PASSWORD]"			=> $anagraph_sensivity_database_password
+				, "[ANAGRAPH_SENSIVITY_DATABASE_CRYPT]"				=> ($anagraph_sensivity_database_crypt ? "true" : "false")
+
+				, "[ANAGRAPH_REL_DATABASE_HOST]"					=> $anagraph_rel_database_host
+				, "[ANAGRAPH_REL_DATABASE_NAME]"					=> $anagraph_rel_database_name
+				, "[ANAGRAPH_REL_DATABASE_USER]"					=> $anagraph_rel_database_username
+				, "[ANAGRAPH_REL_DATABASE_PASSWORD]"				=> $anagraph_rel_database_password
+				, "[ANAGRAPH_REL_DATABASE_CRYPT]"					=> ($anagraph_rel_database_crypt ? "true" : "false")
 
 
-            ///////////////////////////////
-            //Scrittura del file other.php
-            ///////////////////////////////
-			if(function_exists("get_loaded_extensions"))
-				$php_ext_loaded = get_loaded_extensions();
-			else
-				$php_ext_loaded = array();
-			
-			if(function_exists("apache_get_modules"))
-				$apache_module_loaded = apache_get_modules();
-			else
-				$apache_module_loaded = array();
-            
-            $filename_relative = $dirname_relative . "/other." . FF_PHP_EXT;
-            $filename = $disk_path . $filename_relative;
-            $config_content = '<?php
-    define("A_SMTP_HOST", \'' . addslashes($smtp_host) . '\');
-    define("SMTP_AUTH", ' . ($smtp_auth ? 'true' : 'false') . ');
-    define("A_SMTP_USER", \'' . addslashes($smtp_username) . '\');
-    define("A_SMTP_PASSWORD", \'' . addslashes($smtp_password) . '\');
-    define("A_SMTP_PORT", \'' . addslashes($smtp_port) . '\');
-    define("A_SMTP_SECURE", \'' . addslashes($smtp_secure) . '\');
+				, "[A_SMTP_HOST]"							=> $smtp_host
+				, "[SMTP_AUTH]"								=> ($smtp_auth ? "true" : "false")
+				, "[A_SMTP_USER]"							=> $smtp_username
+				, "[A_SMTP_PASSWORD]"						=> $smtp_password
+				, "[A_SMTP_PORT]"							=> $smtp_port
+				, "[A_SMTP_SECURE]"							=> $smtp_secure
 
-    define("A_FROM_EMAIL", \'' . addslashes($email_address) . '\');
-    define("A_FROM_NAME", \'' . addslashes($email_name) . '\');
-    define("CC_FROM_EMAIL", \'' . addslashes($cc_address) . '\');
-    define("CC_FROM_NAME", \'' . addslashes($cc_name) . '\');
-    define("BCC_FROM_EMAIL", \'' . addslashes($bcc_address) . '\');
-    define("BCC_FROM_NAME", \'' . addslashes($bcc_name) . '\');
-    
-    define("CM_LOCAL_APP_NAME", \'' . addslashes($site_title) . '\');
-    define("LANGUAGE_DEFAULT", \'' . addslashes($language_default) . '\');
-    define("LANGUAGE_DEFAULT_ID", \'' . addslashes($language_default_id) . '\');
-    define("LANGUAGE_RESTRICTED_DEFAULT", \'' . addslashes($language_default) . '\'); 
+				, "[A_FROM_EMAIL]"							=> $email_address
+				, "[A_FROM_NAME]"							=> $email_name
+				, "[CC_FROM_EMAIL]"							=> $cc_address
+				, "[CC_FROM_NAME]"							=> $cc_name
+				, "[BCC_FROM_EMAIL]"						=> $bcc_address
+				, "[BCC_FROM_NAME]"							=> $bcc_name
 
-    ' . ($debug_mode ? ' define("DEBUG_MODE", true);' : '') . '
-    ' . ($debug_profiling ? ' define("DEBUG_PROFILING", true);' : '') . '
-    ' . ($debug_log ? ' define("DEBUG_LOG", true);' : '') . '
-    ' . ($trace_visitor ? ' define("TRACE_VISITOR", true);' : '') . '
-    
- 	' . $str_static_cdn_domain_name . '
- 	' . $str_media_cdn_domain_name . '
-    define("CDN_STATIC", \'' . addslashes($cdn_static) . '\');
-    ' . (count($php_ext_loaded)
-    	? '
-    define("PHP_EXT_MEMCACHE", \'' . (array_search("memcached", $php_ext_loaded) === false
-											? false
-											: true
-									) . '\');
-	define("PHP_EXT_APC", \'' . (array_search("apc", $php_ext_loaded) === false
-											? false
-											: true
-									) . '\');
-	define("PHP_EXT_JSON", \'' . (array_search("json", $php_ext_loaded) === false
-											? false
-											: true
-									) . '\');
-	define("PHP_EXT_GD", \'' . (array_search("gd", $php_ext_loaded) === false
-											? false
-											: true
-									) . '\');'
-    	: ''
-    ) 
-    . (count($apache_module_loaded)
-    	? '
-    define("APACHE_MODULE_EXPIRES", \'' . (array_search("mod_expires", $apache_module_loaded) === false
-											? false
-											: true
-									) . '\');'
-		: ''
-	) . '
-	define("MYSQLI_EXTENSIONS", \'' . (function_exists("mysqli_init") && function_exists('mysqli_fetch_all')
-											? true
-											: false
-									) . '\');
+				, "[SUPERADMIN_USERNAME]"					=> $username
+				, "[SUPERADMIN_PASSWORD]"					=> $password
 
-    $config_check["other"] = true;
-';
-           
-            $tempHandle = @tmpfile();
-            @fwrite($tempHandle, $config_content);
-            @rewind($tempHandle);
+				, "[MASTER_SITE]"							=> $master_site
+				, "[MASTER_TOKEN]"							=> (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : time())
+				, "[PRODUCTION_SITE]"						=> $production_site
+				, "[DEVELOPMENT_SITE]"						=> $development_site
 
-            if(@ftp_size($conn_id, $ftp_path . $filename_relative) >= 0) {
-                @ftp_delete($conn_id, $ftp_path . $filename_relative);
-            }
-            
-            $ret = @ftp_nb_fput($conn_id
-                                , $ftp_path . $filename_relative
-                                , $tempHandle
-                                , FTP_BINARY
-                                , FTP_AUTORESUME
-                            );
-            while ($ret == FTP_MOREDATA) {
-               // Do whatever you want
-               // Continue upload...
-               $ret = @ftp_nb_continue($conn_id);
-            }
-            if ($ret != FTP_FINISHED) {
-               $strError .= "Unable write file: " . $filename_relative . "<br />";
-            } else {
-                @ftp_chmod($conn_id, 0644, $ftp_path . $filename_relative);
-            }
-            /////////////////////////////// 
+				, "[AUTH_USERNAME]"							=> $auth_username
+				, "[AUTH_PASSWORD]"							=> $auth_password
 
-            
-            ///////////////////////////////
-            //Scrittura del file admin.php
-            ///////////////////////////////
-            $filename_relative = $dirname_relative . "/admin." . FF_PHP_EXT;
-            $filename = $disk_path . $filename_relative;
-            $config_content = '<?php
-    define("SUPERADMIN_USERNAME", \'' . addslashes($username) . '\');
-    define("SUPERADMIN_PASSWORD", \'' . addslashes($password) . '\');
+				, "[FTP_USERNAME]"							=> $ftp_username
+				, "[FTP_PASSWORD]"							=> $ftp_password
+				, "[FTP_PATH]"								=> ($ftp_path ? $ftp_path : "/")
 
-    $config_check["admin"] = true;
-';
-           
-            $tempHandle = @tmpfile();
-            @fwrite($tempHandle, $config_content);
-            @rewind($tempHandle);
+				, "[DEBUG_MODE]"							=> ($debug_mode ? "true" : "false")
+				, "[DEBUG_PROFILING]"						=> ($debug_profiling ? "true" : "false")
+				, "[DEBUG_LOG]"								=> ($debug_log ? "true" : "false")
 
-            if(@ftp_size($conn_id, $ftp_path . $filename_relative) >= 0) {
-                @ftp_delete($conn_id, $ftp_path . $filename_relative);
-            }
-            
-            $ret = @ftp_nb_fput($conn_id
-                                , $ftp_path . $filename_relative
-                                , $tempHandle
-                                , FTP_BINARY
-                                , FTP_AUTORESUME
-                            );
-            while ($ret == FTP_MOREDATA) {
-               // Do whatever you want
-               // Continue upload...
-               $ret = @ftp_nb_continue($conn_id);
-            }
-            if ($ret != FTP_FINISHED) {
-               $strError .= "Unable write file: " . $filename_relative . "<br />";
-            } else {
-                @ftp_chmod($conn_id, 0644, $ftp_path . $filename_relative);
-            }
-            ///////////////////////////////
-            
-            
-            ///////////////////////////////
-            //Scrittura del file updater.php
-            ///////////////////////////////
-            $filename_relative = $dirname_relative . "/updater." . FF_PHP_EXT;
-            $filename = $disk_path . $filename_relative;
-            $config_content = '<?php
-    define("MASTER_SITE", \'' . addslashes($master_site) . '\');
-    define("PRODUCTION_SITE", \'' . addslashes($production_site) . '\');
-    define("DEVELOPMENT_SITE", \'' . addslashes($development_site) . '\');
+				, "[DISABLE_CACHE_ESCAPE]"					=> (!$disable_cache
+						? '//'
+						: ''
+					) //
+				, "[CACHE_LAST_VERSION]"					=> $cache_last_version //
 
-    define("FTP_USERNAME", \'' . addslashes($ftp_username) . '\');
-    define("FTP_PASSWORD", \'' . addslashes($ftp_password) . '\');
-    define("FTP_PATH", \'' . addslashes($ftp_path) . '\'); 
+				, "[CM_LOCAL_APP_NAME]"						=> $site_title
+				, "[APPID]"									=> $appid
 
-    define("AUTH_USERNAME", \'' . addslashes($auth_username) . '\');
-    define("AUTH_PASSWORD", \'' . addslashes($auth_password) . '\');
-    
-    $config_check["updater"] = true;
-';
-           
-            $tempHandle = @tmpfile();
-            @fwrite($tempHandle, $config_content);
-            @rewind($tempHandle);
+				, "[TRACE_VISITOR]"							=> ($trace_visitor ? "true" : "false")
 
-            if(@ftp_size($conn_id, $ftp_path . $filename_relative) >= 0) {
-                @ftp_delete($conn_id, $ftp_path . $filename_relative);
-            }
-            
-            $ret = @ftp_nb_fput($conn_id
-                                , $ftp_path . $filename_relative
-                                , $tempHandle
-                                , FTP_BINARY
-                                , FTP_AUTORESUME
-                            );
-            while ($ret == FTP_MOREDATA) {
-               // Do whatever you want
-               // Continue upload...
-               $ret = @ftp_nb_continue($conn_id);
-            }
-            if ($ret != FTP_FINISHED) {
-               $strError .= "Unable write file: " . $filename_relative . "<br />";
-            } else {
-                @ftp_chmod($conn_id, 0644, $ftp_path . $filename_relative);
-            }
-            ///////////////////////////////
-			if(!$strError) {
-				$sSQL = "SHOW TABLES";
-	            $db_install->query($sSQL);
-	            if(!$db_install->nextRecord()) {            
-            		$reset_database = true;
-				}   
-	            if(($safe_mode || !$master_site) && $reset_database) {
-                //Creazione e Scrittura della struttura del database
-                // Aggiorna il database utilizzando il file locale che descrive la struttura di base
-                    $filename = $disk_path . "/conf/gallery/install/structure.sql";
-                    if (!$handle = @fopen($filename, "r")) {
-                        $strError .= "Unable read file: " . "/conf/gallery/install/structure.sql" . "<br />";
-                        $sql_structure = "";
-                    } else {
-                        $sql_structure = @fread($handle, @filesize($filename));
-                        @fclose($handle);
-                        
-                        $structure = explode(";", trim($sql_structure));
-                        foreach($structure AS $structure_value) {
-                            if(strlen($structure_value)) {
-                                $db_install->execute($structure_value . ";");
-                            }
-                        }
-                	}
-                //Scrittura dei dati preliminari del database
-                // Aggiorna il database utilizzando il file locale che descrive i dati di base
-                    $filename = $disk_path . "/conf/gallery/install/data.sql";
-                    if (!$handle = @fopen($filename, "r")) {
-                        $strError .= "Unable read file: " . "/conf/gallery/install/data.sql" . "<br />";
-                        $sql_data = "";
-                    } else {
-                        $sql_data = @fread($handle, @filesize($filename));
-                        @fclose($handle);
+				, "[FRAMEWORK_CSS]"							=> $framework_css
+				, "[FONT_ICON]"								=> $font_icon
+				, "[LANGUAGE_DEFAULT]"						=> $language_default
+				, "[LANGUAGE_DEFAULT_ID]"					=> $language_default_id
+				, "[LOGO_FAVICON]"							=> $logo_favicon //
+				, "[LOGO_EMAIL]"							=> $logo_email //
 
-                        $sql_data = str_replace("[SUPERADMIN_NAME]", $username, $sql_data);
-                        $sql_data = str_replace("[SUPERADMIN_PASSWORD]", $db_install->mysqlPassword($password), $sql_data);
-                        
-                        $data = explode(");", trim($sql_data));
-                        foreach($data AS $data_value) {
-                            if(strlen($data_value)) {
-                                $db_install->execute($data_value . ");");
-                            }
-                        }  
-                    }
-				}
-            }
+				, "[ADMIN_THEME]"							=> $admin_theme
+				, "[FRAMEWORK_CSS_RESTRICTED]"				=> $framework_css_restricted
+				, "[FONT_ICON_RESTRICTED]"					=> $font_icon_restricted
+				, "[LANGUAGE_RESTRICTED_DEFAULT]"			=> $language_restricted_default
+				, "[LANGUAGE_RESTRICTED_DEFAULT_ID]"		=> $language_restricted_default_id
+				, "[LOGO_BRAND]"							=> $logo_brand //
+				, "[LOGO_DOCS]"								=> $logo_docs //
+
+				, "[CDN_STATIC_ESCAPE]"						=> (!$cdn_static
+						? '//'
+						: ''
+					)
+				, "[CDN_SERVICES_ESCAPE]"					=> (!$cdn_services
+						? '//'
+						: ''
+					)
+
+				, "[MEMORY_LIMIT]"							=> $memory_limit
+				, "[SERVICE_TIME_LIMIT]"					=> $service_time_limit
+				, "[TIMEZONE]"								=> $timezone
+				, "[SECURITY_SHIELD]"						=> ($security_shield ? "true" : "false")
+
+				, "[PHP_EXT_MEMCACHE]"						=> (array_search("memcached", $php_ext_loaded) === false
+						? "false"
+						: "true"
+					)
+				, "[PHP_EXT_APC]"							=> (array_search("apc", $php_ext_loaded) === false
+						? "false"
+						: "true"
+					)
+				, "[PHP_EXT_JSON]"							=> (array_search("json", $php_ext_loaded) === false
+						? "false"
+						: "true"
+					)
+				, "[PHP_EXT_GD]"							=> (array_search("gd", $php_ext_loaded) === false
+						? "false"
+						: "true"
+					)
+				, "[APACHE_MODULE_EXPIRES]"					=> (array_search("mod_expires", $php_ext_loaded) === false
+						? "false"
+						: "true"
+					)
+				, "[MYSQLI_EXTENSIONS]"						=> (function_exists("mysqli_init") && function_exists('mysqli_fetch_all')
+						? "true"
+						: "false"
+					)
+				, "[DOMAIN_PROTOCOL]"						=> ($site_ssl ? "https" : "http")
+			));
+			///////////////////////////////////
 
             if($master_site) {
-                if(!$strError && $reset_database) {
-                    $truncate_db = array();
-                    
-                    $sSQL = "SHOW TABLES";
-                    $db_install->query($sSQL);
-                    if($db_install->nextRecord()) {
-                        do {
-                            $truncate_db[$db_install->getField("Tables_in_" . $database_name, "Text", true)] = true;
-                        } while($db_install->nextRecord());
-                    }
-                   
-                    if(is_array($truncate_db) && count($truncate_db)) {
-                        foreach($truncate_db AS $truncate_db_key => $truncate_db_value) {
-                            if($truncate_db_value) {
-                                $sSQL = "TRUNCATE `" . $db_install->toSql($truncate_db_key, "Text", false) . "`";
-                                $db_install->execute($sSQL);
-                            }
-                        }
-                    }
 
-                    $sSQL = "CREATE TABLE IF NOT EXISTS `cm_mod_security_users_rel_groups` (
-                              `uid` int(4) NOT NULL default '0',
-                              `gid` int(4) NOT NULL default '0',
-                              UNIQUE KEY `uid` (`uid`,`gid`)
-                            )";
-                    $db_install->execute($sSQL);
-                } 
-                
-                if(!$safe_mode) {
-                    // CERCA di sincronizzare il database con il MASTER SITE in merito alla STRUTTURA
-                    if(!$strError) {
-                        // Tenta di sincronizzare la STRUTTURA DB con il MASTER SITE
-                        $count_limit = 0;
-                        do {
-                            
-                            $count_limit++;
+				if(!$strError && $_SERVER["REQUEST_URI"] == $site_path . "/setup") {
+					$strError = updater_resetDB($db_install);
+                }
 
-							$json = file_post_contents(
-								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/structure.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
-								, null
-								, $auth_username
-								, $auth_password
-								, "GET"
-								, "120"
-							);
-
-                            $arr_json = json_decode($json, true);
-                            if(is_array($arr_json)) {
-                                if(count($arr_json)) {
-                                    if(array_key_exists("error", $arr_json)) {
-                                        $strError = "Structure: " . ($arr_json["error"] ? $arr_json["error"] : "Not Found. Update Installer!");
-                                        break;
-                                    }
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                $strError = "Structure: " . (print_r($arr_json, true) ? print_r($arr_json, true) : "Not Found. Update Installer!");
-                            }
-                        } while(!strlen($strError) && $count_limit <= 10);
-                    }
-                    
-                    if(!$strError) {
-						///////////////////////////////
-			            //Scrittura del file db.php (verificando l'installazione delle tabelle di base)
-			            ///////////////////////////////
-			            $filename_relative = $dirname_relative . "/db." . FF_PHP_EXT;
-			            $filename = $disk_path . $filename_relative;
-			            $config_content = '<?php
-    define("FF_DATABASE_NAME", \'' . addslashes($database_name) . '\');
-    define("FF_DATABASE_HOST", \'' . addslashes($database_host) . '\');
-    define("FF_DATABASE_USER", \'' . addslashes($database_username) . '\');
-    define("FF_DATABASE_PASSWORD", \'' . addslashes($database_password) . '\');
-
-    define("DB_CHARACTER_SET", \'' . addslashes($character_set) . '\');
-    define("DB_COLLATION", \'' . addslashes($collation) . '\');
-    
-    $config_check["db"] = true;
-';
-           
-			            $tempHandle = @tmpfile();
-			            @fwrite($tempHandle, $config_content);
-			            @rewind($tempHandle);
-
-			            if(@ftp_size($conn_id, $ftp_path . $filename_relative) >= 0) {
-			                @ftp_delete($conn_id, $ftp_path . $filename_relative);
-			            }
-			            
-			            $ret = @ftp_nb_fput($conn_id
-			                                , $ftp_path . $filename_relative
-			                                , $tempHandle
-			                                , FTP_BINARY
-			                                , FTP_AUTORESUME
-			                            );
-			            while ($ret == FTP_MOREDATA) {
-			               // Do whatever you want
-			               // Continue upload...
-			               $ret = @ftp_nb_continue($conn_id);
-			            }
-			            if ($ret != FTP_FINISHED) {
-			               $strError .= "Unable write file: " . $filename_relative . "<br />";
-			            } else {
-			                @ftp_chmod($conn_id, 0644, $ftp_path . $filename_relative);
-			            }
-            ///////////////////////////////                    
-					}
+				// CERCA di sincronizzare il database con il MASTER SITE in merito alla STRUTTURA
+				if(!$strError) {
+					// Tenta di sincronizzare la STRUTTURA DB con il MASTER SITE
+					$count_limit = 0;
+					do {
+						$count_limit++;
+						$strError .= installer_updater("structure", true);
+					} while(!$strError && $count_limit <= 10);
 				}
 
 				if(!$strError) {
-/****
-* htaccess				
-*/
-					if(strlen($site_path))
-        				$site_path_rev = ltrim($site_path, "/") . "/";
-					else
-						$site_path_rev = "";
+					// Tenta di sincronizzare la INDICI DB con il MASTER SITE
+					 $count_limit = 0;
+					do {
+						$count_limit++;
+						$strError .= installer_updater("indexes", true);
+					} while(!$strError && $count_limit <= 10);
+				}
 
-					$htaccess_path = "/.htaccess";
-					$htaccess_content = 'RewriteEngine on
+				if(!$strError) {
+					// Tenta di sincronizzare la DATI BASE DB con il MASTER SITE
+					 $count_limit = 0;
+					do {
+						$count_limit++;
+						$strError .= installer_updater("data", true);
+					} while(!$strError && $count_limit <= 10);
+				}
+				if(!$strError) {
+					// Tenta di sincronizzare i DATI INTERNATIONAL DB con il MASTER SITE
+					$count_limit = 0;
+					do {
+						$count_limit++;
+						$strError .= installer_updater("international", true);
+					} while(!$strError && $count_limit <= 10);
+				}
 
-# ----------------------------------------------
-#                 Production
-
-Options -Indexes
-
-AddDefaultCharset UTF-8
-
-# Apache mimetype configuration
-AddType text/cache-manifest .manifest
-
-';
-
-                    if($PHP_fastCGI || $total_php_value_need == $allow_rewite_php_value_on_htaccess) {
-                        $htaccess_content .='
-                                 
-#php_value display_errors 1
-#php_value register_globals 0
-#php_value safe_mode 0
-
-#php_value request_order "EGPCS" 
-
-#php_value magic_quotes_gpc 0
-#php_value magic_quotes_runtime 0
-#php_value magic_quotes_sybase 0
-
-#php_value max_execution_time 1000
-#php_value max_input_time 1000
-#php_value post_max_size 100M
-#php_value upload_max_filesize 100M
-';
-                    } else {
-                        $htaccess_content .=' 
-                                
-php_value display_errors 1
-php_value register_globals 0
-php_value safe_mode 0
-
-php_value request_order "EGPCS"
-
-php_value magic_quotes_gpc 0
-php_value magic_quotes_runtime 0
-php_value magic_quotes_sybase 0
-
-php_value max_execution_time 1000
-php_value max_input_time 1000
-php_value post_max_size 100M
-php_value upload_max_filesize 100M
-';
-    
-                    }
-                    $htaccess_content .=' 
-ErrorDocument 404 /error-document
-ErrorDocument 403 /error-document
-';
-
-					if(substr_count($st_domain_name, ".") > 1) {
-						$primary_domain = str_replace('.', '\\.', $st_domain_name);
-					} else {
-						$primary_domain = 'www\.' . str_replace('.', '\\.', $st_domain_name);
- 						$htaccess_content .='
-RewriteCond %{HTTP_HOST} ^' . str_replace('.', '\\.', $st_domain_name) . '$
-RewriteRule (.*)$ http://www.' . $st_domain_name . '/$1 [R=301,L,QSA]';
-					}
-
-					if($str_static_cdn_domain_name && $str_media_cdn_domain_name) {
-						$htaccess_content .='
-
-RewriteCond   %{HTTP_HOST}      ^media\.' . str_replace('.', '\\.', $st_domain_name) . '$
-RewriteCond   %{REQUEST_URI}  	!^' . $site_path . '/cache/_thumb
-RewriteCond   %{REQUEST_URI}  	!^' . $site_path . '/error-document
-RewriteRule   ^(.*)    /cache/_thumb/$0 [L,QSA]
-
-RewriteCond %{HTTP_HOST}      ^media\.' . str_replace('.', '\\.', $st_domain_name) . '$
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^cache/_thumb/(.*) http://static.' . $st_domain_name . '/$1 [L,R=301]
-
-RewriteCond   %{HTTP_HOST}      ^static\.' . str_replace('.', '\\.', $st_domain_name) . '$
-RewriteCond   %{REQUEST_URI}  	!^' . $site_path . '/cm/showfiles\.php
-RewriteRule   ^(.*)    /cm/showfiles\.php/$0 [L,QSA]
-';
-					} else {
-						$htaccess_content .='
-RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
-RewriteCond   %{REQUEST_URI}  	^' . $site_path . '/media 
-RewriteRule   ^media/(.*)    ' . $site_path . '/cache/_thumb/$1 [L]';
-					}
-					
-					$htaccess_content .='
-RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
-RewriteCond   %{REQUEST_URI}  	^' . $site_path . '/asset
-RewriteRule   ^asset/(.*)    ' . $site_path . '/cache/$1 [L]					
-
-RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
-RewriteCond   %{REQUEST_URI}	^' . $site_path . '/modules
-RewriteCond   %{REQUEST_URI}	!^' . $site_path . '/modules/([^/]+)/themes(.+)
-RewriteRule  ^modules/([^/]+)(.+)  ' . $site_path . '/modules/$1/themes$2 [L,QSA]
-					
-RewriteCond   %{HTTP_HOST}  	^' . $primary_domain . '$
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'index\.php
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'cm/main\.php
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'cm/showfiles\.php
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'themes
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'applets/.*/?themes
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'modules/.*/?themes
-RewriteCond   %{REQUEST_URI}    !^/' . $site_path_rev . 'uploads
-RewriteCond   %{REQUEST_URI}    !^/' . $site_path_rev . 'cache
-RewriteCond   %{REQUEST_URI}    !^/' . $site_path_rev . 'asset
-RewriteCond   %{REQUEST_URI}    !^/' . $site_path_rev . 'media
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'robots\.txt
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'favicon
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'conf/gallery/install
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'conf/gallery/updater
-RewriteCond   %{REQUEST_URI}  	!^/' . $site_path_rev . 'router\.php';
-                    if($PHP_fastCGI) {
-                        $htaccess_content .=' 
-RewriteRule   ^(.*)    ' . $site_path . '/index\.php?_ffq_=/$0 [L,QSA]';
-                    } else {
-                        $htaccess_content .=' 
-RewriteRule   ^(.*)    ' . $site_path . '/index\.php/$0 [L,QSA]';
-                    }
-					
-					if($str_static_cdn_domain_name && $str_media_cdn_domain_name) {
-						$htaccess_content .= '
-
-RewriteCond   %{HTTP_HOST}      !^(' . $primary_domain . '|static\.' . str_replace('.', '\\.', $st_domain_name) . '|media\.' . str_replace('.', '\\.', $st_domain_name) . ')$';
-					} else {
-						$htaccess_content .= '
-
-RewriteCond   %{HTTP_HOST}      !^' . $primary_domain . '$';
-					}
-					$htaccess_content .= '
-RewriteCond   %{REQUEST_URI}      !^/?router\.php
-RewriteRule   ^(.*)    /router\.php/$0 [L,QSA]					
-
-RewriteCond %{HTTP_USER_AGENT} libwww-perl.* 
-RewriteRule .* – [F,L]
-
-<IfModule mod_deflate.c>
-# force deflate for mangled headers 
-# developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/
-    <IfModule mod_setenvif.c>
-      <IfModule mod_headers.c>
-      	SetEnvIf Authorization .+ Authorization=$0
-        SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
-        RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
-      </IfModule>
-    </IfModule>
-
-  # Legacy versions of Apache
-  AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
-  AddOutputFilterByType DEFLATE application/javascript
-  AddOutputFilterByType DEFLATE text/xml application/xml text/x-component
-  AddOutputFilterByType DEFLATE application/xhtml+xml application/rss+xml application/atom+xml
-  AddOutputFilterByType DEFLATE application/vnd.ms-fontobject application/x-font-ttf font/opentype
-  AddOutputFilterByType DEFLATE image/svg+xml image/png image/jpeg image/gif image/x-icon
-</IfModule>
-
-
-<IfModule mod_expires.c>
-  ExpiresActive on
-
-# Perhaps better to whitelist expires rules? Perhaps.
-  ExpiresDefault                          "access plus 1 month"
-
-# cache.appcache needs re-requests in FF 3.6 (thx Remy ~Introducing HTML5)
-  ExpiresByType text/cache-manifest       "access plus 0 seconds"
-
-
-
-# Your document html
-  ExpiresByType text/html                 "access plus 1 week"
-
-# Data
-  ExpiresByType text/xml                  "access plus 0 seconds"
-  ExpiresByType application/xml           "access plus 0 seconds"
-  ExpiresByType application/json          "access plus 0 seconds"
-
-# RSS feed
-  ExpiresByType application/rss+xml       "access plus 1 hour"
-
-# Favicon (cannot be renamed)
-  ExpiresByType image/x-icon              "access plus 1 month" 
-
-# Media: images, video, audio
-  ExpiresByType image/gif                 "access plus 1 month"
-  ExpiresByType image/png                 "access plus 1 month"
-  ExpiresByType image/jpg                 "access plus 1 month"
-  ExpiresByType image/jpeg                "access plus 1 month"
-  ExpiresByType video/ogg                 "access plus 1 month"
-  ExpiresByType audio/ogg                 "access plus 1 month"
-  ExpiresByType video/mp4                 "access plus 1 month"
-  ExpiresByType video/webm                "access plus 1 month"
-
-# HTC files  (css3pie)
-  ExpiresByType text/x-component          "access plus 1 month"
-
-# Webfonts
-  ExpiresByType font/truetype             "access plus 1 month"
-  ExpiresByType font/opentype             "access plus 1 month"
-  ExpiresByType application/x-font-woff   "access plus 1 month"
-  ExpiresByType image/svg+xml             "access plus 1 month"
-  ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
-
-# CSS and JavaScript
-  ExpiresByType text/css                  "access plus 1 year"
-  ExpiresByType application/javascript    "access plus 1 year"
-  ExpiresByType text/javascript           "access plus 1 year"
-
-</IfModule>
-
-<IfModule mod_headers.c>
-    <FilesMatch "\.(js|css|xml|gz|svg)$"> 
-        Header set Cache-Control: public
-    </FilesMatch>
-	# FileETag None is not enough for every server.
-	#  Header unset ETag
-	
-	Header always append X-Frame-Options SAMEORIGIN
-	
-  <FilesMatch "\.(html|js|css|xml|gz|svg)$">
-      Header append Vary: Accept-Encoding
-  </FilesMatch>     
-</IfModule>
-
-# Since we`re sending far-future expires, we dont need ETags for static content.
-# developer.yahoo.com/performance/rules.html#etags
-FileETag None';
-							$handle = @tmpfile();
-							@fwrite($handle, $htaccess_content);
-							@fseek($handle, 0);
-							if(!@ftp_fput($conn_id, $real_ftp_path . $htaccess_path, $handle, FTP_ASCII)) {
-								$strError = "Unable to write .htaccess";
-							} else {
-								if(@ftp_chmod($conn_id, 0644, $real_ftp_path . $htaccess_path) === false) {
-									@chmod(FF_DISK_PATH . $htaccess_path, 0644);
-								}
-							} 
-				
-					require_once($disk_path . "/library/gallery/common/convert_db.php");
-
-					$strError .= convert_db($collation, $character_set, $database_name, $db_install);
-				}				
-
-				if(!$safe_mode) {
-                    if(!$strError) {
-                        // Tenta di sincronizzare la INDICI DB con il MASTER SITE
-                         $count_limit = 0;
-                        do {
-                            $count_limit++;
-
-							$json = file_post_contents(
-								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/indexes.php?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
-								, null
-								, $auth_username
-								, $auth_password
-								, "GET"
-								, "120"
-							);
-
-                            $arr_json = json_decode($json, true);
-                            if(is_array($arr_json)) {
-                                if(count($arr_json)) {
-                                    if(array_key_exists("error", $arr_json)) {
-                                        $strError = "Indexes: " . $arr_json["error"];
-                                        break;
-                                    }
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                $strError = "Indexes: " . print_r($arr_json, true);
-                            }
-                        } while(!strlen($strError) && $count_limit <= 10);
-                    }
-                }
-
-                if(!$strError && $reset_database) {
-                    $sSQL = "INSERT INTO `cm_mod_security_users` (`ID`, `ID_domains`, `level`, `expiration`, `status`, `active_sid`, `username`, `password`, `primary_gid`, `email`, `shippingaddress`, `shippingcap`, `shippingtown`, `shippingprovince`, `shippingstate`, `enable_ecommerce_data`, `enable_manage`, `ID_module_register`) VALUES
-                                (2, 0, '0', '0000-00-00 00:00:00', '', '2cdffa246995e64e686fa557918f0c3d', 'guest', 'guest', 2, '0', '', '', '0', '', 0, '', '', 0),
-                                (1, 0, '0', '0000-00-00 00:00:00', '1', '2cdffa246995e64e686fa557918f0c3d', " . $db_install->toSql($username) . ", " . $db_install->toSql($db_install->mysqlPassword($password)) . ", 1, '0', '', '', '0', '', 0, '', '1', 0)
-                            ";
-                    $db_install->execute($sSQL);
-                    
-                    $sSQL = "INSERT INTO `vgallery_nodes` (`ID`, `ID_vgallery`, `name`, `order`, `parent`, `ID_type`, `last_update`) VALUES
-                                (1, 0, '', '0', '/', 0, 0)
-                            ";
-                    $db_install->execute($sSQL);
-                    $sSQL = "UPDATE `vgallery_nodes` SET `ID` = '0' WHERE (`vgallery_nodes`.`ID` = 1)";
-                    $db_install->execute($sSQL);
-                }
-                
-                if(!$safe_mode) {
-                    if(!$strError) {
-                        // Tenta di sincronizzare la DATI BASE DB con il MASTER SITE
-                         $count_limit = 0;
-                        do {
-                            $count_limit++;
-
-							$json = file_post_contents(
-								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/basic?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
-								, null
-								, $auth_username
-								, $auth_password
-								, "GET"
-								, "120"
-							);
-
-                            $arr_json = json_decode($json, true);
-                            if(is_array($arr_json)) {
-                                if(count($arr_json)) {
-                                    if(array_key_exists("error", $arr_json)) {
-                                        $strError = "Data Basic: " . $arr_json["error"];
-                                        break;
-                                    }
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                $strError = "Data Basic: " . print_r($arr_json, true);
-                            }
-                        } while(!strlen($strError) && $count_limit <= 10);
-                    }
-                    if(!$strError) {
-                        $count_limit = 0;
-                        do {
-                            $count_limit++;
-                            // Tenta di sincronizzare i DATI INTERNATIONAL DB con il MASTER SITE
-							$json = file_post_contents(
-								"http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/data.php/international?json=1&exec=1&nowarning=1&lo=" . urlencode("-1")
-								, null
-								, $auth_username
-								, $auth_password
-								, "GET"
-								, "120"
-							);
-
-                            $arr_json = json_decode($json, true);
-                            if(is_array($arr_json)) {
-                                if(count($arr_json)) {
-                                    if(array_key_exists("error", $arr_json)) {
-                                        $strError = "Data International: " . $arr_json["error"];
-                                        break;
-                                    }
-                                } else {
-                                    break;
-                                }
-                            } else {
-                                $strError = "Data International: " . print_r($arr_json, true);
-                            }
-                        } while(!strlen($strError) && $count_limit <= 10);
-                    }
-                }
             }                
-        }            
-		
-        $arrPathNeed = array(
-        	"/applets" 							=> "readable"
-			, "/cache" 							=> "writable"
-			, "/cache/international" 			=> "writable"
-			, "/cache/css" 						=> "writable"
-			, "/cache/js" 						=> "writable"
-			, "/contents" 						=> "readable"
-			, $site_updir 						=> "writable"
-			, "/themes/site/conf" 				=> "readable"
-			, "/themes/site/contents" 			=> "readable"
-			, "/themes/site/css" 				=> "readable"
-			, "/themes/site/fonts" 				=> "readable"
-			, "/themes/site/images" 			=> "readable"
-			, "/themes/site/javascript" 		=> "readable"
-			, "/themes/site/swf" 				=> "readable"
-			, "/themes/site/xml" 				=> "readable"
-		);
-        
-        if(is_array($arrPathNeed) && count($arrPathNeed)) {
-            foreach($arrPathNeed AS $arrPathNeed_key => $arrPathNeed_value) {
-                if(!file_exists($disk_path . $arrPathNeed_key)) {
-                    @ftp_mkdir($conn_id, $ftp_path . $arrPathNeed_key);
-                }
-                if($arrPathNeed_value == "writable") {
-                    @ftp_chmod($conn_id, 0777, $ftp_path . $arrPathNeed_key);
-                } elseif($arrPathNeed_value == "readable") {
-                    @ftp_chmod($conn_id, 0755, $ftp_path . $arrPathNeed_key);
-                }
-            }
         }
 
-        $arrFileNeed = array("/themes/site/css/root.css" => "readable"
-                        );
+		if(!$strError) {
+			$ftp_report = installler_ftp_connection(function($conn_id, $ftp_path, $params) {
+				///////////////////////////////
+				//Scrittura del file .htaccess
+				///////////////////////////////
+				$strError = installer_write("/.htaccess"
+					, ".htaccess-cms.tpl"
+					, array(
+						"conn_id" 									=> $conn_id
+						, "path" 									=> $ftp_path
+					)
+					, $params
+				);
 
-        if(is_array($arrFileNeed) && count($arrFileNeed)) {
-            $handle = @tmpfile();
-            foreach($arrFileNeed AS $arrFileNeed_key => $arrFileNeed_value) {
-                if(!file_exists($disk_path . $arrFileNeed_key)) {
-                    if(@ftp_fput($conn_id, $ftp_path . $arrFileNeed_key, $handle, FTP_ASCII)) {
-                        if($arrFileNeed_value == "writable") {
-                            if(@ftp_chmod($conn_id, 0777, $ftp_path . $arrFileNeed_key) === false) {
-                                @chmod($disk_path . $arrFileNeed_key, 0777);
-                            }
-                        } elseif($arrFileNeed_value == "readable") {
-                            if(@ftp_chmod($conn_id, 0644, $ftp_path . $arrFileNeed_key) === false) {
-                                @chmod($disk_path . $arrFileNeed_key, 0644);
-                            }
-                        }
-                    }
-                }
-            }
-            @fclose($handle);
-        }
+				return $strError;
+			}, array(
+				"[FF_SITE_PATH]"									=> $site_path
+				, "[DOMAIN_PROTOCOL]"								=> ($site_ssl ? "https" : "http")
+			));
 
-		@ftp_close($conn_id);
-        
-        if(!$strError) {
-			header("Location: " . $site_path . "/install?complete"); 
-	
-			//header("Location: " . $site_path . "/admin/configuration/updater"); 
-            exit;
-        }
+			require_once($disk_path . "/library/gallery/common/convert_db.php");
+
+			$strError .= convert_db($collation, $character_set, $database_name, $db_install);
+		}
+		if(!$strError) {
+			$ftp_report = installler_ftp_connection(function($conn_id, $ftp_path, $params)
+			{
+				///////////////////////////////
+				//Scrittura FS Need
+				///////////////////////////////
+				$strError = installer_fs_need(array(
+						"conn_id" 									=> $conn_id
+						, "path" 									=> $ftp_path
+					)
+					, $params
+				);
+
+				return $strError;
+			}, array(
+				"[FF_SITE_PATH]"							=> $site_path
+			));
+			if($ftp_report["error"])
+				$strError .= $ftp_report["error"];
+
+			if(!$strError) {
+				header("Location: " . $site_path . "/install?complete");
+				exit;
+			}
+		}
     } 
     else 
-    {    
-    	if(is_file($st_disk_path . "/conf/gallery/config/admin.php"))
-    		require_once($st_disk_path . "/conf/gallery/config/admin.php");
-    	if(is_file($st_disk_path . "/conf/gallery/config/db.php"))
-    		require_once($st_disk_path . "/conf/gallery/config/db.php");
-    	if(is_file($st_disk_path . "/conf/gallery/config/other.php"))
-    		require_once($st_disk_path . "/conf/gallery/config/other.php");
-    	if(is_file($st_disk_path . "/conf/gallery/config/path.php"))
-    		require_once($st_disk_path . "/conf/gallery/config/path.php");
-    	if(is_file($st_disk_path . "/conf/gallery/config/session.php"))
-    		require_once($st_disk_path . "/conf/gallery/config/session.php");
-    	if(is_file($st_disk_path . "/conf/gallery/config/updater.php"))
-    		require_once($st_disk_path . "/conf/gallery/config/updater.php");
-
-                
+    {
         $disk_path          = (defined("FF_DISK_PATH") ? FF_DISK_PATH : "");
         $site_path          = (defined("FF_SITE_PATH") ? FF_SITE_PATH : "");
         $disk_updir         = (defined("DISK_UPDIR") ? DISK_UPDIR : "");
@@ -1568,17 +959,89 @@ FileETag None';
 
         $session_save_path  = (defined("SESSION_SAVE_PATH") ? SESSION_SAVE_PATH : "");
         $session_name       = (defined("SESSION_NAME") ? SESSION_NAME : "");
-        $appid              = (defined("APPID") ? APPID : "");
-        $memory_limit       = (defined("MEMORY_LIMIT") ? MEMORY_LIMIT : "");
-        $cdn_static       	= (defined("CDN_STATIC") ? CDN_STATIC : "");
-        
+        $session_permanent  = (defined("MOD_SECURITY_SESSION_PERMANENT") ? MOD_SECURITY_SESSION_PERMANENT : "");
+
+		$character_set      = (defined("CHARACTER_SET") ? CHARACTER_SET : "");
+		$collation       	= (defined("COLLATION") ? COLLATION : "");
+
+		$database_host      = (defined("FF_DATABASE_HOST") ? FF_DATABASE_HOST : "");
         $database_name      = (defined("FF_DATABASE_NAME") ? FF_DATABASE_NAME : "");
-        $database_host      = (defined("FF_DATABASE_HOST") ? FF_DATABASE_HOST : "");
         $database_username  = (defined("FF_DATABASE_USER") ? FF_DATABASE_USER : "");
         $database_password  = (defined("FF_DATABASE_PASSWORD") ? FF_DATABASE_PASSWORD : "");
 
-        $character_set      = (defined("CHARACTER_SET") ? CHARACTER_SET : "");
-        $collation       	= (defined("COLLATION") ? COLLATION : "");
+        //mongo
+		$mongo_database_host      			= (defined("MONGO_DATABASE_HOST") ? MONGO_DATABASE_HOST : "");
+        $mongo_database_name      			= (defined("MONGO_DATABASE_NAME") ? MONGO_DATABASE_NAME : "");
+		$mongo_database_username  			= (defined("MONGO_DATABASE_USER") ? MONGO_DATABASE_USER : "");
+		$mongo_database_password  			= (defined("MONGO_DATABASE_PASSWORD") ? MONGO_DATABASE_PASSWORD : "");
+
+		/**
+		 * TRACE
+		 */
+		$trace_table_name      				= (defined("TRACE_TABLE_NAME") ? TRACE_TABLE_NAME : "");
+		$trace_onesignal_app_id      		= (defined("TRACE_ONESIGNAL_APP_ID") ? TRACE_ONESIGNAL_APP_ID : "");
+		$trace_onesignal_api_key  			= (defined("TRACE_ONESIGNAL_API_KEY") ? TRACE_ONESIGNAL_API_KEY : "");
+
+		$trace_database_host      			= (defined("TRACE_DATABASE_HOST") ? TRACE_DATABASE_HOST : "");
+		$trace_database_name      			= (defined("TRACE_DATABASE_NAME") ? TRACE_DATABASE_NAME : "");
+		$trace_database_username  			= (defined("TRACE_DATABASE_USER") ? TRACE_DATABASE_USER : "");
+		$trace_database_password  			= (defined("TRACE_DATABASE_PASSWORD") ? TRACE_DATABASE_PASSWORD : "");
+
+		$trace_mongo_database_host      	= (defined("TRACE_MONGO_DATABASE_HOST") ? TRACE_MONGO_DATABASE_HOST : "");
+		$trace_mongo_database_name      	= (defined("TRACE_MONGO_DATABASE_NAME") ? TRACE_MONGO_DATABASE_NAME : "");
+		$trace_mongo_database_username  	= (defined("TRACE_MONGO_DATABASE_USER") ? TRACE_MONGO_DATABASE_USER : "");
+		$trace_mongo_database_password  	= (defined("TRACE_MONGO_DATABASE_PASSWORD") ? TRACE_MONGO_DATABASE_PASSWORD : "");
+
+		/**
+		 * NOTIFY
+		 */
+		$notify_table_name      			= (defined("NOTIFY_TABLE_NAME") ? NOTIFY_TABLE_NAME : "");
+		$notify_table_key      				= (defined("NOTIFY_TABLE_KEY") ? NOTIFY_TABLE_KEY : "");
+		$notify_onesignal_app_id      		= (defined("NOTIFY_ONESIGNAL_APP_ID") ? NOTIFY_ONESIGNAL_APP_ID : "");
+		$notify_onesignal_api_key  			= (defined("NOTIFY_ONESIGNAL_API_KEY") ? NOTIFY_ONESIGNAL_API_KEY : "");
+
+		$notify_database_host      			= (defined("NOTIFY_DATABASE_HOST") ? NOTIFY_DATABASE_HOST : "");
+		$notify_database_name      			= (defined("NOTIFY_DATABASE_NAME") ? NOTIFY_DATABASE_NAME : "");
+		$notify_database_username  			= (defined("NOTIFY_DATABASE_USER") ? NOTIFY_DATABASE_USER : "");
+		$notify_database_password  			= (defined("NOTIFY_DATABASE_PASSWORD") ? NOTIFY_DATABASE_PASSWORD : "");
+
+		$notify_mongo_database_host      	= (defined("NOTIFY_MONGO_DATABASE_HOST") ? NOTIFY_MONGO_DATABASE_HOST : "");
+		$notify_mongo_database_name      	= (defined("NOTIFY_MONGO_DATABASE_NAME") ? NOTIFY_MONGO_DATABASE_NAME : "");
+		$notify_mongo_database_username  	= (defined("NOTIFY_MONGO_DATABASE_USER") ? NOTIFY_MONGO_DATABASE_USER : "");
+		$notify_mongo_database_password  	= (defined("NOTIFY_MONGO_DATABASE_PASSWORD") ? NOTIFY_MONGO_DATABASE_PASSWORD : "");
+
+		//GDPR
+		$gdpr_compliance      				= (defined("GDPR_COMPLIANCE") ? GDPR_COMPLIANCE : "");
+
+		$notify_mongo_database_host      	= (defined("ANAGRAPH_IDENTIFICATION_DATABASE_HOST") ? ANAGRAPH_IDENTIFICATION_DATABASE_HOST : "");
+		$notify_mongo_database_name      	= (defined("ANAGRAPH_IDENTIFICATION_DATABASE_NAME") ? ANAGRAPH_IDENTIFICATION_DATABASE_NAME : "");
+		$notify_mongo_database_username  	= (defined("ANAGRAPH_IDENTIFICATION_DATABASE_USER") ? ANAGRAPH_IDENTIFICATION_DATABASE_USER : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_IDENTIFICATION_DATABASE_PASSWORD") ? ANAGRAPH_IDENTIFICATION_DATABASE_PASSWORD : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_IDENTIFICATION_DATABASE_CRYPT") ? ANAGRAPH_IDENTIFICATION_DATABASE_CRYPT : "");
+
+		$notify_mongo_database_host      	= (defined("ANAGRAPH_ACCESS_DATABASE_HOST") ? ANAGRAPH_ACCESS_DATABASE_HOST : "");
+		$notify_mongo_database_name      	= (defined("ANAGRAPH_ACCESS_DATABASE_NAME") ? ANAGRAPH_ACCESS_DATABASE_NAME : "");
+		$notify_mongo_database_username  	= (defined("ANAGRAPH_ACCESS_DATABASE_USER") ? ANAGRAPH_ACCESS_DATABASE_USER : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_ACCESS_DATABASE_PASSWORD") ? ANAGRAPH_ACCESS_DATABASE_PASSWORD : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_ACCESS_DATABASE_CRYPT") ? ANAGRAPH_ACCESS_DATABASE_CRYPT : "");
+
+		$notify_mongo_database_host      	= (defined("ANAGRAPH_GENERAL_DATABASE_HOST") ? ANAGRAPH_GENERAL_DATABASE_HOST : "");
+		$notify_mongo_database_name      	= (defined("ANAGRAPH_GENERAL_DATABASE_NAME") ? ANAGRAPH_GENERAL_DATABASE_NAME : "");
+		$notify_mongo_database_username  	= (defined("ANAGRAPH_GENERAL_DATABASE_USER") ? ANAGRAPH_GENERAL_DATABASE_USER : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_GENERAL_DATABASE_PASSWORD") ? ANAGRAPH_GENERAL_DATABASE_PASSWORD : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_GENERAL_DATABASE_CRYPT") ? ANAGRAPH_GENERAL_DATABASE_CRYPT : "");
+
+		$notify_mongo_database_host      	= (defined("ANAGRAPH_SENSIVITY_DATABASE_HOST") ? ANAGRAPH_SENSIVITY_DATABASE_HOST : "");
+		$notify_mongo_database_name      	= (defined("ANAGRAPH_SENSIVITY_DATABASE_NAME") ? ANAGRAPH_SENSIVITY_DATABASE_NAME : "");
+		$notify_mongo_database_username  	= (defined("ANAGRAPH_SENSIVITY_DATABASE_USER") ? ANAGRAPH_SENSIVITY_DATABASE_USER : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_SENSIVITY_DATABASE_PASSWORD") ? ANAGRAPH_SENSIVITY_DATABASE_PASSWORD : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_SENSIVITY_DATABASE_CRYPT") ? ANAGRAPH_SENSIVITY_DATABASE_CRYPT : "");
+
+		$notify_mongo_database_host      	= (defined("ANAGRAPH_REL_DATABASE_HOST") ? ANAGRAPH_REL_DATABASE_HOST : "");
+		$notify_mongo_database_name      	= (defined("ANAGRAPH_REL_DATABASE_NAME") ? ANAGRAPH_REL_DATABASE_NAME : "");
+		$notify_mongo_database_username  	= (defined("ANAGRAPH_REL_DATABASE_USER") ? ANAGRAPH_REL_DATABASE_USER : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_REL_DATABASE_PASSWORD") ? ANAGRAPH_REL_DATABASE_PASSWORD : "");
+		$notify_mongo_database_password  	= (defined("ANAGRAPH_REL_DATABASE_CRYPT") ? ANAGRAPH_REL_DATABASE_CRYPT : "");
 
         $smtp_host          = (defined("A_SMTP_HOST") ? A_SMTP_HOST : "");
         $smtp_auth          = (defined("SMTP_AUTH") ? SMTP_AUTH : "");
@@ -1594,112 +1057,142 @@ FileETag None';
         $bcc_address        = (defined("BCC_FROM_EMAIL") ? BCC_FROM_EMAIL : "");
         $bcc_name           = (defined("BCC_FROM_NAME") ? BCC_FROM_NAME : "");
 
-        $site_title         = (defined("CM_LOCAL_APP_NAME") ? CM_LOCAL_APP_NAME : "");
-        $language_default   = (defined("LANGUAGE_DEFAULT") ? LANGUAGE_DEFAULT : "");
+		$username           = (defined("SUPERADMIN_USERNAME") ? SUPERADMIN_USERNAME : "");
+		$password           = (defined("SUPERADMIN_PASSWORD") ? SUPERADMIN_PASSWORD : "");
+
+		$master_site        = (defined("MASTER_SITE") ? MASTER_SITE : "");
+		$production_site    = (defined("PRODUCTION_SITE") ? PRODUCTION_SITE : "");
+		$development_site   = (defined("DEVELOPMENT_SITE") ? DEVELOPMENT_SITE : "");
+
+		$auth_username       = (defined("AUTH_USERNAME") ? AUTH_USERNAME : "");
+		$auth_password       = (defined("AUTH_PASSWORD") ? AUTH_PASSWORD : "");
+
+		$ftp_username       = (defined("FTP_USERNAME") ? FTP_USERNAME : "");
+		$ftp_password       = (defined("FTP_PASSWORD") ? FTP_PASSWORD : "");
+
+		$debug_mode   		= (defined("DEBUG_MODE") ? DEBUG_MODE : "");
+		$debug_profiling   	= (defined("DEBUG_PROFILING") ? DEBUG_PROFILING : "");
+		$debug_log   		= (defined("DEBUG_LOG") ? DEBUG_LOG : "");
+
+		$disable_cache 		= (defined("DISABLE_CACHE") ? DISABLE_CACHE : "");
+		$cache_last_version	= (defined("CACHE_LAST_VERSION") ? CACHE_LAST_VERSION : "");
+
+		$site_title         = (defined("CM_LOCAL_APP_NAME") ? CM_LOCAL_APP_NAME : "");
+		$site_ssl         	= (defined("SITE_SSL") ? SITE_SSL : "");
+		$appid              = (defined("APPID") ? APPID : "");
+
+		$trace_visitor 		= (defined("TRACE_VISITOR") ? TRACE_VISITOR : "");
+
+		$framework_css		= (defined("FRAMEWORK_CSS") ? FRAMEWORK_CSS : "");
+		$font_icon			= (defined("FONT_ICON") ? FONT_ICON : "");
+		$language_default   = (defined("LANGUAGE_DEFAULT") ? LANGUAGE_DEFAULT : "");
         $language_default_id= (defined("LANGUAGE_DEFAULT_ID") ? LANGUAGE_DEFAULT_ID : "");
+		$logo_favicon		= (defined("LOGO_FAVICON") ? LOGO_FAVICON : "");
+		$logo_email			= (defined("LOGO_EMAIL") ? LOGO_EMAIL : "");
 
-//        $trace_path   		= (defined("MOD_SEC_ENABLE_USER_TRACE") ? MOD_SEC_ENABLE_USER_TRACE : "");
-        
-        $debug_mode   		= (defined("DEBUG_MODE") ? DEBUG_MODE : "");
-        $debug_profiling   	= (defined("DEBUG_PROFILING") ? DEBUG_PROFILING : "");
-        $debug_log   		= (defined("DEBUG_LOG") ? DEBUG_LOG : "");
-        $trace_visitor 		= (defined("TRACE_VISITOR") ? TRACE_VISITOR : "");
+		$admin_theme   					= (defined("ADMIN_THEME") ? ADMIN_THEME : "");
+		$framework_css_restricted		= (defined("FRAMEWORK_CSS_RESTRICTED") ? FRAMEWORK_CSS_RESTRICTED : "");
+		$font_icon_restricted			= (defined("FONT_ICON_RESTRICTED") ? FONT_ICON_RESTRICTED : "");
+		$language_restricted_default   	= (defined("LANGUAGE_RESTRICTED_DEFAULT") ? LANGUAGE_RESTRICTED_DEFAULT : "");
+		$language_restricted_default_id	= (defined("LANGUAGE_RESTRICTED_DEFAULT_ID") ? LANGUAGE_RESTRICTED_DEFAULT_ID : "");
+		$logo_brand						= (defined("LOGO_BRAND") ? LOGO_BRAND : "");
+		$logo_docs						= (defined("LOGO_DOCS") ? LOGO_DOCS : "");
 
+		$cdn_static       	= (defined("CM_SHOWFILES") || defined("CM_MEDIACACHE_SHOWPATH") ? true : null);
+		$cdn_services      	= (defined("CMS_API_PATH") || defined("CMS_REQUEST_PATH") ? true : null);
 
-        $username           = (defined("SUPERADMIN_USERNAME") ? SUPERADMIN_USERNAME : "");
-        $password           = (defined("SUPERADMIN_PASSWORD") ? SUPERADMIN_PASSWORD : "");
+		$memory_limit       = (defined("MEMORY_LIMIT") ? MEMORY_LIMIT : "");
+		$service_time_limit = (defined("SERVICE_TIME_LIMIT") ? SERVICE_TIME_LIMIT : "");
+		$timezone   		= (defined("TIMEZONE") ? TIMEZONE : "");
+		$security_shield 	= (defined("SECURITY_SHIELD") ? SECURITY_SHIELD : "");
 
-        $master_site        = (defined("MASTER_SITE") ? MASTER_SITE : "");
-        $production_site    = (defined("PRODUCTION_SITE") ? PRODUCTION_SITE : "");
-        $development_site   = (defined("DEVELOPMENT_SITE") ? DEVELOPMENT_SITE : "");
-        
-        $ftp_username       = (defined("FTP_USERNAME") ? FTP_USERNAME : "");
-        $ftp_password       = (defined("FTP_PASSWORD") ? FTP_PASSWORD : "");
-
-        $auth_username       = (defined("AUTH_USERNAME") ? AUTH_USERNAME : "");
-        $auth_password       = (defined("AUTH_PASSWORD") ? AUTH_PASSWORD : "");
-        
 
         
         if(!strlen($disk_path))
-            $disk_path = $st_disk_path;
+            $disk_path = $path["disk_path"];
         if(!strlen($site_path))
-            $site_path = $st_site_path;
+            $site_path = $path["site_path"];
         if(!strlen($disk_updir))
-            $disk_updir = $st_disk_updir;
+            $disk_updir = $path["disk_updir"];
         if(!strlen($site_updir))
-            $site_updir = $st_site_updir;
+            $site_updir = $path["site_updir"];
 
         if(!strlen($session_save_path))
             $session_save_path = $st_session_save_path;
         if(!strlen($session_name))
             $session_name = $st_session_name;
-        if(!strlen($appid))
-            $appid = $st_appid;
-        if(!strlen($memory_limit))
-            $memory_limit = $st_memory_limit;
-        if(!strlen($cdn_static))
-            $cdn_static = $st_cdn_static;
+		if($session_permanent === null)
+			$session_permanent = $st_session_permanent;
 
+		if(!strlen($character_set))
+			$character_set = $st_character_set;
+		if(!strlen($collation))
+			$collation = $st_collation;
+
+		if(!strlen($database_host))
+			$database_host = "localhost";
         if(!strlen($database_name))
-            $database_name = substr(str_replace(".", "_", $st_domain_name), 0 , 64);
-        if(!strlen($database_host))
-            $database_host = "localhost";
+            $database_name = substr(str_replace(".", "_", $domain["name"]), 0 , 64);
         if(!strlen($database_username))
-            $database_username = substr(str_replace(".", "_", substr($st_domain_name, 0, strrpos($st_domain_name, "."))), 0 , 16);
+            $database_username = substr(str_replace(".", "_", $domain["unique"]), 0 , 16);
         if(!strlen($database_password))
             $database_password = "";
 
-        if(!strlen($character_set))
-            $character_set = $st_character_set;
-        if(!strlen($collation))
-            $collation = $st_collation;
-        
-        if($_SERVER["PATH_INFO"] == "/setup" &&
-			!defined("FF_DATABASE_HOST") &&
-			!defined("FF_DATABASE_NAME") &&
-			!defined("FF_DATABASE_PASSWORD")
-		) {
-            $reset_database = true;
-        } else {
-            $reset_database = false;
-        }
+        //mongo
+		if(!strlen($mongo_database_host))
+			$mongo_database_host = "localhost";
+		if(!strlen($mongo_database_password))
+			$mongo_database_password = "";
+		//trace
+		if(!strlen($trace_database_host))
+			$trace_database_host = "localhost";
+		if(!strlen($trace_database_password))
+			$trace_database_password = "";
+		if(!strlen($trace_mongo_database_host))
+			$trace_mongo_database_host = "localhost";
+		if(!strlen($trace_mongo_database_password))
+			$trace_mongo_database_password = "";
+		//notify
+		if(!strlen($notify_database_host))
+			$notify_database_host = "localhost";
+		if(!strlen($notify_database_password))
+			$notify_database_password = "";
+		if(!strlen($notify_mongo_database_host))
+			$notify_mongo_database_host = "localhost";
+		if(!strlen($notify_mongo_database_password))
+			$notify_mongo_database_password = "";
+
+		//gdpr
+
             
         if(!strlen($smtp_host))
             $smtp_host = "localhost";
         if(!strlen($smtp_auth))
             $smtp_auth = false;
         if(!strlen($smtp_username))
-            $smtp_username = "info@" . $st_domain_name;
+            $smtp_username = "info@" . $domain["name"];
         if(!strlen($smtp_password))
             $smtp_password = "";
         if(!strlen($smtp_port))
             $smtp_port = "25";
             
         if(!strlen($email_address))
-            $email_address = "info@" . $st_domain_name;
+            $email_address = "info@" . $domain["name"];
         if(!strlen($email_name))
-            $email_name = $st_domain_sig;
+            $email_name = ucfirst($domain["primary"]);
         if(!strlen($cc_address))
             $cc_address = "";
         if(!strlen($cc_name))
             $cc_name = "";
-        if(!strlen($bcc_address))
-            $bcc_address = "debug@" . $st_domain_name;
-        if(!strlen($bcc_name))
-            $bcc_name = "test[" . $st_domain_name . "]";
-            
+		if(!strlen($bcc_address))
+			$bcc_address = "";
+		if(!strlen($bcc_name))
+			$bcc_name = "";
+
         if(!strlen($username))
             $username = "admin";
         if(!strlen($password))
             $password = "";
-            
-        if(!strlen($language_default)) {
-            $language_default = "ITA";
-            $language_default_id = $arrLang[$language_default];
-		}
-       // if(!strlen($trace_path))
-       //     $trace_path 		= false;
 
         if(!strlen($debug_mode))
 	        $debug_mode   		= false;
@@ -1707,592 +1200,62 @@ FileETag None';
 	        $debug_profiling   	= false;
         if(!strlen($debug_log))
 	        $debug_log   		= false;
-        if(!strlen($trace_visitor))
-	        $trace_visitor 		= false;
+
+
+        if(!strlen($cache_last_version))
+        	$cache_last_version = 0;
+
+		if(!strlen($appid))
+			$appid = $st_appid;
+
+		if(!strlen($trace_visitor))
+			$trace_visitor 		= false;
+
+
+		if(!strlen($framework_css)) {
+			$framework_css = $st_framework_css;
+		}
+		if(!strlen($font_icon)) {
+			$font_icon = $st_font_icon;
+		}
+		if(!strlen($language_default)) {
+			$language_default = "ITA";
+			$language_default_id = $arrLang[$language_default];
+		}
+
+		if(!strlen($admin_theme)) {
+			$admin_theme = $st_admin_theme;
+		}
+		if(!strlen($framework_css_restricted)) {
+			$framework_css_restricted = $framework_css;
+		}
+		if(!strlen($font_icon_restricted)) {
+			$font_icon_restricted = $font_icon;
+		}
+		if(!strlen($language_restricted_default)) {
+			$language_restricted_default = "ITA";
+			$language_restricted_default_id = $arrLang[$language_restricted_default];
+		}
+
+		if($cdn_static === null)
+			$cdn_static = $st_cdn_static;
+		if($cdn_services === null)
+			$cdn_services = $st_cdn_services;
+
+		if(!strlen($memory_limit))
+			$memory_limit = $st_memory_limit;
+		if(!strlen($service_time_limit))
+			$service_time_limit = $st_service_time_limit;
+		if(!strlen($timezone))
+			$timezone = $st_timezone;
+		if(!strlen($security_shield))
+			$security_shield = $st_security_shield;
     }
-    
 
 
-    if(!$strError && isset($_REQUEST["installer"]) || strpos($_SERVER["REQUEST_URI"], "/conf/gallery/install") !== false) {
-        if(file_exists(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/path.php"))
-            require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/path.php");
-        if(file_exists(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/session.php"))
-            require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/session.php");
-        if(file_exists(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/db.php"))
-            require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/db.php");
-        if(file_exists(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/other.php"))
-            require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/other.php");
-        if(file_exists(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/admin.php"))
-            require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/admin.php");
-        if(file_exists(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/updater.php"))
-            require_once(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/updater.php");
-        
-        if(isset($config_check["path"]) && isset($config_check["session"]) && isset($config_check["db"]) && isset($config_check["other"]) && isset($config_check["admin"]) && isset($config_check["updater"])) {
-			header("Location: " . $site_path . "/install?complete");
-            exit;
-        }
-
-        if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && basename($_SERVER["REQUEST_URI"]) != "setup" && !isset($_REQUEST["setup"]))
-            $_REQUEST["init"] = true;
-            
-    	$check_file_config = false;
-		if(file_exists(ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/config/updater.php")) {
-			if(defined("MASTER_SITE") && constant("MASTER_SITE")
-				&& defined("FTP_USERNAME") && constant("FTP_USERNAME")
-				&& defined("FTP_PASSWORD") && constant("FTP_PASSWORD")
-			) {
-				$master_site = MASTER_SITE;
-				$production_site = (defined("PRODUCTION_SITE") ? PRODUCTION_SITE : "");
-				$development_site = (defined("DEVELOPMENT_SITE") ? DEVELOPMENT_SITE : "");
-				
-				$ftp_username = FTP_USERNAME;
-				$ftp_password = FTP_PASSWORD;
-				
-                $auth_username = (defined("AUTH_USERNAME") ? AUTH_USERNAME : ""); 
-                $auth_password = (defined("AUTH_PASSWORD") ? AUTH_PASSWORD : "");
-
-				$check_file_config = true;
-			}
-		} else {
-			if(isset($_REQUEST["domain"]) && strlen($_REQUEST["domain"]) 
-				&& isset($_REQUEST["name"]) && strlen($_REQUEST["name"]) 
-				&& isset($_REQUEST["value"]) && strlen($_REQUEST["value"])
-			) {
-				$master_site = $_REQUEST["domain"];
-				$production_site = "";
-				$development_site = "";
-
-				$ftp_username = $_REQUEST["name"];
-				$ftp_password = $_REQUEST["value"];
-
-				$auth_username = $_REQUEST["auth_name"];
-				$auth_password = $_REQUEST["auth_value"];
-				
-				$check_file_config = true;
-				//$_REQUEST["init"] = true;
-			}
-		}
-
-		/***
-		* htaccess install
-		*/		
-        if(!is_file($disk_path . "/.htaccess")) {
-			$ftp_path = null;
-			if(strlen($ftp_username)) {
-				$conn_id = @ftp_connect("localhost");
-				if($conn_id === false)
-        			$conn_id = @ftp_connect("127.0.0.1");
-				if($conn_id === false)
-        			$conn_id = @ftp_connect($_SERVER["SERVER_ADDR"]);
-				
-				if($conn_id !== false) 
-				{
-					// login with username and password
-					if(@ftp_login($conn_id, $ftp_username, $ftp_password)) {
-						$local_path = $disk_path;
-						$part_path = "";
-						$real_ftp_path = NULL;
-						
-						foreach(explode("/", $local_path) AS $curr_path) {
-							if(strlen($curr_path)) {
-								$ftp_path = str_replace($part_path, "", $local_path);
-								if(@ftp_chdir($conn_id, $ftp_path)) {
-									$real_ftp_path = $ftp_path;
-									break;
-								} 
-
-								$part_path .= "/" . $curr_path;
-							}
-						}
-
-						if($real_ftp_path === null) {
-							if(@ftp_chdir($conn_id, "/conf/gallery/install")) {
-								$real_ftp_path = "/";
-							}
-						}
-					}
-					if($real_ftp_path === null) 
-					{
-						$strError .= "FTP Path unavailable<br />";
-					} 
-					else 
-					{
-						if(strlen($site_path))
-        					$site_path_rev = ltrim($site_path, "/") . "/";
-						else
-							$site_path_rev = "";
-
-						$htaccess_path = "/.htaccess";
-						$htaccess_content = 'RewriteEngine on
-
-	AddDefaultCharset UTF-8
-
-	RewriteCond   %{REQUEST_URI}  	!^/?' . $site_path_rev . 'conf/gallery/install
-	RewriteCond   %{REQUEST_URI}  	!^/?' . $site_path_rev . 'conf/gallery/updater
-	RewriteRule   ^(.*)    ' . $site_path . '/conf/gallery/install/index\.php?installer [L,QSA]';
-
-						$handle = @tmpfile();
-						@fwrite($handle, $htaccess_content);
-						@fseek($handle, 0);
-						if(!@ftp_fput($conn_id, $real_ftp_path . $htaccess_path, $handle, FTP_ASCII)) {
-							$strError = "Unable to write .htaccess";
-						} else {
-							if(@ftp_chmod($conn_id, 0644, $real_ftp_path . $htaccess_path) === false) {
-								@chmod(FF_DISK_PATH . $htaccess_path, 0644);
-							}
-						}
-						@fclose($handle); 
-					}
-				} else {
-					$strError = 'FTP Function are Disabled on Server. <a href="http://php.net/manual/en/ftp.installation.php" target="_blank">See Php Manual</a>';
-				}
-				@ftp_close($conn_id);
-			}        
-		}
-
-		if($_REQUEST["init"]) 
-		{
-			echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
-			echo '<html>';
-			echo '<head>';
-			echo '<title>Gallery Installation</title>';
-			echo '<meta http-equiv="Cache-Control" content="no-cache">';
-			echo '<meta http-equiv="Pragma" content="no-cache">';
-			echo '<script src="' . $site_path . '/conf/gallery/install/jquery.min.js" type="text/javascript"></script>';
-                        echo '<script src="' . $site_path . '/conf/gallery/install/base.js" type="text/javascript"></script>';
-                        echo '<link href="' . $site_path . '/conf/gallery/install/base.css" rel="stylesheet" type="text/css" />';
-			echo '</head>';
-			echo '<body>';
-			if(!$check_file_config) {
-				echo '<div id="container-params">';
-		        echo '<fieldset title="su" class="default" id="fieldset_updater_conf">';
-		        echo '<legend class="subtitle">Updater configuration</legend>';
-		 		echo '	  <div class="row" id="field_master_site">';
-	            echo '    	  <label class="spanlabel">Master site</label>';
-	            echo '		  <input id="master_site" class="input" type="text" name="MASTER_SITE" value="" />';
-	            echo '	  </div>';
-		        echo '    <div class="row" id="field_ftp_user">';
-		        echo '        <label class="spanlabel">FTP username locale (' . $st_domain_name . ')</label>';
-		        echo '        <input id="ftp_user" class="input" type="text" name="FTP_USERNAME" value="" />';
-		        echo '    </div>';
-		        echo '    <div class="row" id="field_ftp_pwd">';
-		        echo '        <label class="spanlabel">FTP password locale (' . $st_domain_name . ')</label>';
-		        echo '        <input id="ftp_pwd" class="password" type="password" name="FTP_PASSWORD" value="" />';
-		        echo '    </div>';
-		        echo '    <div class="row" id="field_ftp_conf_pwd">';
-		        echo '        <label class="spanlabel">Confirm password locale (' . $st_domain_name . ')</label>';
-		        echo '        <input id="ftp_conf_pwd" class="password" type="password" name="FTP_CONFIRM_PASSWORD" value="" />';
-		        echo '    </div>';
-		        echo '    <div class="row" id="field_auth_user">';
-		        echo '        <label class="spanlabel">AUTH Basic username locale (' . $st_domain_name . ')</label>';
-		        echo '        <input id="auth_user" class="input" type="text" name="AUTH_USERNAME" value="" />';
-		        echo '    </div>';
-		        echo '    <div class="row" id="field_auth_pwd">';
-		        echo '        <label class="spanlabel">AUTH Basic password locale (' . $st_domain_name . ')</label>';
-		        echo '        <input id="auth_pwd" class="password" type="password" name="AUTH_PASSWORD" value="" />';
-		        echo '    </div>';
-		        echo '    <div class="row" id="field_auth_conf_pwd">';
-		        echo '        <label class="spanlabel">Confirm password locale (' . $st_domain_name . ')</label>';
-		        echo '        <input id="auth_conf_pwd" class="password" type="password" name="AUTH_CONFIRM_PASSWORD" value="" />';
-		        echo '    </div>';
-		        echo '</fieldset>';
-				echo '<div class="actions">';
-			    echo '	<a href="javascript:void(0);" class="link" id="install">Install</a>';
-			    echo '</div>';
-			    echo '</div>';
-			} 
-				
-			echo '<h1 style="text-align:center;" id="check">Check Update File... Please Wait</h1>';
-            if($strWarningError) {
-                echo '<h2 style="text-align:center; font-size:12px;" id="warning">' . $strWarningError . '</h2>';
-            }
-			echo '<div class="error" style="display:none;">';
-			echo '	<div class="actions">';
-			echo '		<a class="detail link" href="javascript:jQuery(\'#error\').toggle();">Detail</a>';
-			echo '		<a class="retry link" href="javascript:location.reload()">Retry</a>';
-			echo '	</div>';
-			echo '	<ul id="error" style="display:none;">';
-			echo '	</ul>';
-			echo '</div>';
-			echo '<div class="content" style="display:block;">';
-			//echo '<iframe border="0" src="http://' . $master_site . '" width="300" height="200" />';
-			echo '<div class="sk-folding-cube">
-				  <div class="sk-cube1 sk-cube"></div>
-				  <div class="sk-cube2 sk-cube"></div>
-				  <div class="sk-cube4 sk-cube"></div>
-				  <div class="sk-cube3 sk-cube"></div>
-				</div>';
-			echo '<input type="hidden" id="site_path" value="' . $site_path . '"/>';
-			echo '<input type="hidden" id="total" value="0" />';
-			echo '<input type="hidden" id="result" value="0" />';
-			echo '<div style="width:400px; position:absolute; bottom:0; left:50%; margin-left:-200px;" id="update-progress">';
-			echo '	<label id="progress-label"></label>';
-			echo '	<div style="width:400px; height: 32px;" class="pace pace-active"><div style="width:0px; transition:0.5s; height:32px;"  class="progress"></div><div class="pace-activity"></div</div>';
-			echo '</div>';
-			echo '</body>';
-			echo '</html>';
-			exit;
-		}
-
-
-  
-
-	    if($check_file_config) {
-			$allow_load_file = true;
-		    $force_load = (isset($_REQUEST["force"])
-	    					? $_REQUEST["force"]
-	    					: false
-	    				);
-
-		    if($force_load) 
-		    {
-			} 
-			elseif($_REQUEST["check"]) 
-			{
-				$total_file = 0;
-				$allow_load_file = false;
-				if(!ini_get("allow_url_fopen")) {
-					die("allow_url_fopen must be enable. Load file Manually or enable this");
-				}
-
-				$ftp_path = null;
-			    if(strlen($ftp_username)) {
-					$conn_id = @ftp_connect("localhost");
-			        if($conn_id === false)
-        				$conn_id = @ftp_connect("127.0.0.1");
-					if($conn_id === false)
-        				$conn_id = @ftp_connect($_SERVER["SERVER_ADDR"]);
-					
-					if($conn_id !== false) 
-					{
-						// login with username and password
-						if(@ftp_login($conn_id, $ftp_username, $ftp_password)) {
-							$local_path = $disk_path;
-							$part_path = "";
-							$real_ftp_path = NULL;
-							
-							foreach(explode("/", $local_path) AS $curr_path) {
-								if(strlen($curr_path)) {
-									$ftp_path = str_replace($part_path, "", $local_path);
-									if(@ftp_chdir($conn_id, $ftp_path)) {
-									    $real_ftp_path = $ftp_path;
-									    break;
-									} 
-
-									$part_path .= "/" . $curr_path;
-								}
-							}
-
-							if($real_ftp_path === null) {
-								if(@ftp_chdir($conn_id, "/conf/gallery/install")) {
-									$real_ftp_path = "/";
-								}
-							}
-						}
-						if($real_ftp_path === null) 
-						{
-							$strError .= "FTP Path unavailable<br />";
-						} 
-						else 
-						{
-//robots.txt                            
-                            $robots_path = "/robots.txt"; 
-                            $robots_content = 'User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /restricted/
-Disallow: /manage/
-
-Sitemap: http://' . $st_domain_name . $site_path . '/sitemap.xml
-';
-                            $handle = @tmpfile();
-                            @fwrite($handle, $robots_content);
-                            @fseek($handle, 0);
-                            if(!@ftp_fput($conn_id, $real_ftp_path . $robots_path, $handle, FTP_ASCII)) {
-                                $strError = "Unable to write robots.txt";
-                            } else {
-                                if(@ftp_chmod($conn_id, 0644, $real_ftp_path . $robots_path) === false) {
-                                    @chmod(FF_DISK_PATH . $robots_path, 0644);
-                                }
-                            } 
-
-							//htaccess no script
-                            $htaccess_noscript_file = ".htaccess"; 
-                            $htaccess_noscript_content = '<IfModule mod_php4.c>
-  php_value engine off
-</IfModule>
-<IfModule mod_php5.c>
-  php_value engine off
-</IfModule>
-
-Options -Indexes
-Options -ExecCGI
-AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi';
-
-							$arrPathNeed = array(
-								"/applets" 							=> "readable"
-								, "/cache"							=> "writable"
-								, "/contents" 						=> "readable"
-								, "/themes" 						=> "readable"
-								, "/themes/site" 					=> "readable"
-								, "/themes/site/conf" 				=> "readable"
-								, "/themes/site/contents" 			=> "readable"
-								, "/themes/site/css" 				=> "readable"
-								, "/themes/site/fonts" 				=> "readable"
-								, "/themes/site/images" 			=> "readable"
-								, "/themes/site/javascript" 		=> "readable"
-								, "/themes/site/swf" 				=> "readable"
-								, "/themes/site/xml" 				=> "readable"
-								, "/uploads" 						=> "writable"
-							);
-		                    
-		                    if(is_array($arrPathNeed) && count($arrPathNeed)) {
-		                        foreach($arrPathNeed AS $arrPathNeed_key => $arrPathNeed_value) {
-		                            if(!file_exists($disk_path . $arrPathNeed_key)) {
-		                                @ftp_mkdir($conn_id, $real_ftp_path . $arrPathNeed_key);
-		                            }
-		                            if($arrPathNeed_value == "writable") {
-		                                @ftp_chmod($conn_id, 0777, $real_ftp_path . $arrPathNeed_key);
-
-			                            $handle = @tmpfile();
-			                            @fwrite($handle, $htaccess_noscript_content);
-			                            @fseek($handle, 0);
-										// Write .htaccess no script		                                
-			                            if(!@ftp_fput($conn_id, $real_ftp_path . $arrPathNeed_key . "/" . $htaccess_noscript_file, $handle, FTP_ASCII)) {
-			                                $strError = "Unable to write htaccess no script " . $arrPathNeed_key;
-			                            } else {
-			                                if(@ftp_chmod($conn_id, 0644, $real_ftp_path . $arrPathNeed_key . "/" . $htaccess_noscript_file) === false) {
-			                                    @chmod(FF_DISK_PATH . $arrPathNeed_key . "/" . $htaccess_noscript_file, 0644);
-			                                }
-			                            } 
-		                            } elseif($arrPathNeed_value == "readable") {
-		                                @ftp_chmod($conn_id, 0755, $real_ftp_path . $arrPathNeed_key);
-		                            }
-		                        }
-		                    }
-
-							// Write .htaccess no script in /themes/site
-                            $handle = @tmpfile();
-                            @fwrite($handle, $htaccess_noscript_content);
-                            @fseek($handle, 0);
-			                if(!@ftp_fput($conn_id, $real_ftp_path . "/themes/site/" . $htaccess_noscript_file, $handle, FTP_ASCII)) {
-			                    $strError = "Unable to write htaccess no script site";
-			                } else {
-			                    if(@ftp_chmod($conn_id, 0644, $real_ftp_path . "/themes/site/" . $htaccess_noscript_file) === false) {
-			                        @chmod(FF_DISK_PATH . "/themes/site/" . $htaccess_noscript_file, 0644);
-			                    }
-			                } 
-							@fclose($handle);
-		                    
-		                    $arrFileNeed = array("/themes/site/css/main.css" => "readable"
-		                                    );
-
-		                    if(is_array($arrFileNeed) && count($arrFileNeed)) {
-		                        $handle = @tmpfile();
-		                        foreach($arrFileNeed AS $arrFileNeed_key => $arrFileNeed_value) {
-		                            if(!file_exists($disk_path . $arrFileNeed_key)) {
-		                                if(@ftp_fput($conn_id, $real_ftp_path . $arrFileNeed_key, $handle, FTP_ASCII)) {
-		                                    if($arrFileNeed_value == "writable") {
-		                                        if(@ftp_chmod($conn_id, 0777, $real_ftp_path . $arrFileNeed_key) === false) {
-		                                            @chmod($disk_path . $arrFileNeed_key, 0777);
-		                                        }
-		                                    } elseif($arrFileNeed_value == "readable") {
-		                                        if(@ftp_chmod($conn_id, 0644, $real_ftp_path . $arrFileNeed_key) === false) {
-		                                            @chmod($disk_path . $arrFileNeed_key, 0644);
-		                                        }
-		                                    }
-		                                }
-		                            }
-		                        }
-		                        @fclose($handle);
-		                    }							
-						}
-					} 
-                                        
-					@ftp_close($conn_id);
-				}
-				if($strError)
-					die($strError);
-
-				$restore_file = file_post_contents(
-					(strlen($auth_username) && strlen($auth_password)
-						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1"
-						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1"
-					)
-					, null
-					, $auth_username
-					, $auth_password
-					, "GET"
-				);
-
-				if($restore_file === false) {
-					die("Missing File... Please reload all Updater file");
-				} else {
-					if(strlen($restore_file))
-				        $arr_restore_file = json_decode($restore_file, true);
-
-				    if(is_array($arr_restore_file)) {
-				        if(count($arr_restore_file["record"])) {
-                            if(array_key_exists("error", $arr_restore_file))
-                                die("Error: " . $arr_restore_file["error"]);
-
-				        	$total_file = $total_file + count($arr_restore_file["record"]);
-							$allow_load_file = true;
-						} else {
-							$allow_load_file = false;
-						}
-					} else {
-						die("Error: " . $restore_file);
-					}
-				}
-				$restore_file = file_post_contents(
-					(strlen($auth_username) && strlen($auth_password)
-						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path. "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1"
-						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path. "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1"
-					)
-					, null
-					, $auth_username
-					, $auth_password
-					, "GET"
-				);
-
-				if($restore_file === false) {
-					die("Missing File... Please reload all CMS file");
-				} else {
-					if(strlen($restore_file))
-					    $arr_restore_file = json_decode($restore_file, true);
-
-					if(is_array($arr_restore_file)) {
-					    if(count($arr_restore_file["record"])) {
-                            if(array_key_exists("error", $arr_restore_file))
-                                die("Error: " . $arr_restore_file["error"]);
-
-					        $total_file = $total_file + count($arr_restore_file["record"]);
-							$allow_load_file = true;
-						} else {
-							$allow_load_file = false;
-						}
-					} else {
-						die("Error: " . $restore_file);
-					}
-				}
-				if($_REQUEST["check"]) {
-					if($total_file > 0) {
-						echo json_encode(array("total" => $total_file));
-					} else {
-						echo json_encode(array());
-					}
-					exit;
-				}
-			}
-		}
-
-	    if($allow_load_file) {
-			//$check_files = false;
-			//do {
-				$restore_file = file_post_contents(
-					(strlen($auth_username) && strlen($auth_password)
-						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1&exec=1"
-						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php/updater?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1&exec=1"
-					)
-					, null
-					, $auth_username
-					, $auth_password
-					, "GET"
-					, "120"
-				);
-
-				if(!$restore_file) {
-					die("Critical Error... Please reload all Updater file");
-				} else {
-					if(strlen($restore_file))
-                		$arr_restore_file = json_decode($restore_file, true);
-
-            		if(is_array($arr_restore_file)) {
-						if(array_key_exists("error", $arr_restore_file)) {
-                            die("Error: " . $arr_restore_file["error"]);
-                        } elseif(array_key_exists("result", $arr_restore_file)) {
-            				echo json_encode(array("result" => $arr_restore_file["result"]));
-            				exit;
-						} elseif(count($arr_restore_file["record"])) {
-            				    //header("Location: " . (strpos($_SERVER["REQUEST_URI"], "?") === false ? $_SERVER["REQUEST_URI"] : substr($_SERVER["REQUEST_URI"], 0,  strpos($_SERVER["REQUEST_URI"], "?"))) . "?force=" . filemtime(__FILE__));
-            				echo json_encode(array("result" => count($arr_restore_file["record"])));
-            				exit;
-	//					} else {
-	//						$check_files = false;
-						}            		
-					} else {
-						die("Error: " . $restore_file);
-					}
-				}
-			//} while($check_files);
-			
-			//$check_files = false;
-			//do {
-				$restore_file = file_post_contents(
-					(strlen($auth_username) && strlen($auth_password)
-						? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1&exec=1"
-						: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1&exec=1"
-					)
-					, null
-					, $auth_username
-					, $auth_password
-					, "GET"
-					, "120"
-				);
-				if($restore_file !== false && !strlen($restore_file)) {
-					$restore_file = file_post_contents(
-						(strlen($auth_username) && strlen($auth_password)
-							? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&abpuser=" . urlencode($auth_username) . "&abppw=" . urlencode($auth_password) . "&json=1"
-							: "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $st_host_name . $site_path . "/conf/gallery/updater/files.php?mc=" . urlencode($master_site) . "&apuser=" . urlencode($ftp_username) . "&appw=" . urlencode($ftp_password) . "&json=1"
-						)
-						, null
-						, $auth_username
-						, $auth_password
-						, "GET"
-						, "120"
-					);
-				}
-
-				if(!$restore_file) {
-					echo "Transfert Data is too low";
-					//header("Location: " . $_SERVER["REQUEST_URI"]);
-					exit;
-					//die("Critical Error... Please reload all CMS file");
-				} else {
-					if(strlen($restore_file))
-                		$arr_restore_file = json_decode($restore_file, true);
-
-            		if(is_array($arr_restore_file)) {
-                        if(array_key_exists("error", $arr_restore_file)) {
-                            die("Error: " . $arr_restore_file["error"]);
-                        } elseif(array_key_exists("result", $arr_restore_file)) {
-            				echo json_encode(array("result" => $arr_restore_file["result"]));
-            				exit;
-						} elseif(count($arr_restore_file["record"])) {
-            				echo json_encode(array("result" => count($arr_restore_file["record"])));
-            				exit;
-						} else {
-            				//echo json_encode(array());
-            				//exit;
-						}
-            			
-					} else {
-						die("Error: " . $restore_file);
-					}
-				}
-			//} while($check_files);
-		}
-
-        if(check_primary_class($disk_path, $site_path, $strCriticalError))
-            die($strError . "... Please Reload File Manually");
-            
-		if($_REQUEST["json"]) {
-			echo json_encode(array());
-			exit;
-		}
-	}
-
+	/**
+	 * INSTALLATION: TEMPLATE PARSE
+	 */
     $tpl = ffTemplate::factory($disk_path . "/conf/gallery/install");
     $tpl->load_file("install.html", "Main");
 
@@ -2300,31 +1263,215 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
     $tpl->set_var("site_path", $site_path);
     $tpl->set_var("disk_updir", $disk_updir);
     $tpl->set_var("site_updir", $site_updir);
+
+	$tpl->set_var("domain", $domain["host_name"]);
+	$tpl->set_var("domain_name", $domain["name"]);
+    $tpl->set_var("domain_protocol", $domain["protocol"]);
+	$tpl->set_var("domain_primary", $domain["primary"]);
+	$tpl->set_var("domain_sub", $domain["sub"]);
+	$tpl->set_var("domain_ext", $domain["ext"]);
+	$tpl->set_var("domain_unique", $domain["unique"]);
+
+	if(!function_exists("cm_getClassByFrameworkCss") && is_file($disk_path . "/library/FF/common/framework-css.php")) {
+		require_once($disk_path . "/library/FF/common/framework-css.php");
+	}
     if(function_exists("cm_getClassByFrameworkCss")) {
-		$tpl->set_var("row_class", cm_getClassByFrameworkCss("", "row-default"));
-		$tpl->set_var("button_class", cm_getClassByFrameworkCss("", "link"));
+		$arrFrameworkCss  = cm_getFrameworkCss_settings();
+		$arrFontIcon  = cm_getFontIcon_settings();
+
+		$tpl->set_var("row_class", cm_getClassByFrameworkCss("", "row-default"), null, "bootstrap");
+		$tpl->set_var("button_class", cm_getClassByFrameworkCss("", "link", null, "bootstrap"));
+
+		if($arrFrameworkCss) {
+			foreach($arrFrameworkCss AS $framework_name => $framework_params) {
+				//normal
+				$tpl->set_var("frameworkcss", $framework_name);
+				$tpl->set_var("frameworkcss_label", ucfirst($framework_name));
+
+				if($framework_name == $framework_css)
+					$tpl->set_var("frameworkcss_current", 'selected="selected"');
+				else
+					$tpl->set_var("frameworkcss_current", '');
+				$tpl->parse("SezFrameworkCssItem", true);
+
+				if($framework_name == $framework_css_restricted)
+					$tpl->set_var("frameworkcss_current", 'selected="selected"');
+				else
+					$tpl->set_var("frameworkcss_current", '');
+				$tpl->parse("SezFrameworkCssItemRestricted", true);
+
+				//fluid
+				$tpl->set_var("frameworkcss", $framework_name . "-fluid");
+				$tpl->set_var("frameworkcss_label", ucfirst($framework_name) . " Fluid");
+
+				if($framework_name . "-fluid" == $framework_css)
+					$tpl->set_var("frameworkcss_current", 'selected="selected"');
+				else
+					$tpl->set_var("frameworkcss_current", '');
+				$tpl->parse("SezFrameworkCssItem", true);
+
+				if($framework_name . "-fluid" == $framework_css_restricted)
+					$tpl->set_var("frameworkcss_current", 'selected="selected"');
+				else
+					$tpl->set_var("frameworkcss_current", '');
+				$tpl->parse("SezFrameworkCssItemRestricted", true);
+
+			}
+
+			$tpl->parse("SezFrameworkCss", false);
+			$tpl->parse("SezFrameworkCssRestricted", false);
+		}
+		if($arrFontIcon) {
+			foreach($arrFontIcon AS $fonticon_name => $fonticon_params) {
+				//normal
+				$tpl->set_var("fonticon", $fonticon_name);
+				$tpl->set_var("fonticon_label", ucfirst($fonticon_name));
+
+				if($fonticon_name == $font_icon)
+					$tpl->set_var("fonticon_current", 'selected="selected"');
+				else
+					$tpl->set_var("fonticon_current", '');
+				$tpl->parse("SezFontIconItem", true);
+
+				if($fonticon_name == $font_icon_restricted)
+					$tpl->set_var("fonticon_current", 'selected="selected"');
+				else
+					$tpl->set_var("fonticon_current", '');
+				$tpl->parse("SezFontIconItemRestricted", true);
+			}
+
+			$tpl->parse("SezFontIcon", false);
+			$tpl->parse("SezFontIconRestricted", false);
+		}
 	}
     $tpl->set_var("session_save_path", $session_save_path);
     $tpl->set_var("session_name", $session_name);
     $tpl->set_var("appid", $appid);
     $tpl->set_var("memory_limit", $memory_limit);
+	if(array_search("memcached", $php_ext_loaded) === false) {
+		$tpl->set_var("php_ext_memcache", "");
+		$tpl->set_var("php_ext_memcache_label", "Off");
+		$tpl->set_var("php_ext_memcache_class", "red");
+	} else {
+		$tpl->set_var("php_ext_memcache", "1");
+		$tpl->set_var("php_ext_memcache_label", "On");
+		$tpl->set_var("php_ext_memcache_class", "green");
+
+	}
+	if(array_search("apc", $php_ext_loaded) === false) {
+		$tpl->set_var("php_ext_apc", "");
+		$tpl->set_var("php_ext_apc_label", "Off");
+		$tpl->set_var("php_ext_apc_class", "red");
+	} else {
+		$tpl->set_var("php_ext_apc", "1");
+		$tpl->set_var("php_ext_apc_label", "On");
+		$tpl->set_var("php_ext_apc_class", "green");
+
+	}
+	if(array_search("json", $php_ext_loaded) === false) {
+		$tpl->set_var("php_ext_json", "");
+		$tpl->set_var("php_ext_json_label", "Off");
+		$tpl->set_var("php_ext_json_class", "red");
+	} else {
+		$tpl->set_var("php_ext_json", "1");
+		$tpl->set_var("php_ext_json_label", "On");
+		$tpl->set_var("php_ext_json_class", "green");
+
+	}
+	if(array_search("gd", $php_ext_loaded) === false) {
+		$tpl->set_var("php_ext_gd", "");
+		$tpl->set_var("php_ext_gd_label", "Off");
+		$tpl->set_var("php_ext_gd_class", "red");
+	} else {
+		$tpl->set_var("php_ext_gd", "1");
+		$tpl->set_var("php_ext_gd_label", "On");
+		$tpl->set_var("php_ext_gd_class", "green");
+
+	}
+	if(array_search("mod_expires", $php_ext_loaded) === false) {
+		$tpl->set_var("apache_module_expires", "");
+		$tpl->set_var("apache_module_expires_label", "Off");
+		$tpl->set_var("apache_module_expires_class", "red");
+	} else {
+		$tpl->set_var("apache_module_expires", "1");
+		$tpl->set_var("apache_module_expires_label", "On");
+		$tpl->set_var("apache_module_expires_class", "green");
+
+	}
+	if(function_exists("mysqli_init")) {
+		$tpl->set_var("mysqli_extensions", "1");
+		$tpl->set_var("mysqli_extensions_label", "On");
+		$tpl->set_var("mysqli_extensions_class", "green");
+	} else {
+		$tpl->set_var("mysqli_extensions", "");
+		$tpl->set_var("mysqli_extensions_label", "Off");
+		$tpl->set_var("mysqli_extensions_class", "red");
+	}
+
+
+    if($session_permanent)
+		$tpl->set_var("session_permanent", "checked=\"checked\"");
+	else
+		$tpl->set_var("session_permanent", "");
+
     if($cdn_static)
         $tpl->set_var("cdn_static", "checked=\"checked\"");
     else
-        $tpl->set_var("cdn_static", "");	
+        $tpl->set_var("cdn_static", "");
 
-    $tpl->set_var("database_name", $database_name);
+	if($cdn_services)
+		$tpl->set_var("cdn_services", "checked=\"checked\"");
+	else
+		$tpl->set_var("cdn_services", "");
+
     $tpl->set_var("database_host", $database_host);
+	$tpl->set_var("database_name", $database_name);
     $tpl->set_var("database_user", $database_username);
     $tpl->set_var("database_password", $database_password);
-    if($reset_database)
-        $tpl->set_var("reset_database_check", "checked=\"checked\"");
-    else
-        $tpl->set_var("reset_database_check", "");
+
+	//mongo
+	$tpl->set_var("mongo_database_host", $mongo_database_host);
+	$tpl->set_var("mongo_database_name", $mongo_database_name);
+	$tpl->set_var("mongo_database_user", $mongo_database_username);
+	$tpl->set_var("mongo_database_password", $mongo_database_password);
+
+
+	//trace
+	$tpl->set_var("trace_table_name", $trace_table_name);
+	$tpl->set_var("trace_onesignal_app_id", $trace_onesignal_app_id);
+	$tpl->set_var("trace_onesignal_api_key", $trace_onesignal_api_key);
+
+	$tpl->set_var("trace_database_host", $trace_database_host);
+	$tpl->set_var("trace_database_name", $trace_database_name);
+	$tpl->set_var("trace_database_user", $trace_database_username);
+	$tpl->set_var("trace_database_password", $trace_database_password);
+
+	$tpl->set_var("trace_mongo_database_host", $trace_mongo_database_host);
+	$tpl->set_var("trace_mongo_database_name", $trace_mongo_database_name);
+	$tpl->set_var("trace_mongo_database_user", $trace_mongo_database_username);
+	$tpl->set_var("trace_mongo_database_password", $trace_mongo_database_password);
+
+
+	//notify
+	$tpl->set_var("notify_table_name", $notify_table_name);
+	$tpl->set_var("notify_table_key", $notify_table_key);
+	$tpl->set_var("notify_onesignal_app_id", $notify_onesignal_app_id);
+	$tpl->set_var("notify_onesignal_api_key", $notify_onesignal_api_key);
+
+	$tpl->set_var("notify_database_host", $notify_database_host);
+	$tpl->set_var("notify_database_name", $notify_database_name);
+	$tpl->set_var("notify_database_user", $notify_database_username);
+	$tpl->set_var("notify_database_password", $notify_database_password);
+
+	$tpl->set_var("notify_mongo_database_host", $notify_mongo_database_host);
+	$tpl->set_var("notify_mongo_database_name", $notify_mongo_database_name);
+	$tpl->set_var("notify_mongo_database_user", $notify_mongo_database_username);
+	$tpl->set_var("notify_mongo_database_password", $notify_mongo_database_password);
+
 
     $tpl->set_var("character_set", $character_set);
-    $tpl->set_var("collation", $collation);    
-    
+    $tpl->set_var("collation", $collation);
+
     $tpl->set_var("smtp_host", $smtp_host);
     
     if($smtp_auth)
@@ -2347,12 +1494,53 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
     $tpl->set_var("bcc_name", $bcc_name);
 
     $tpl->set_var("site_title", $site_title);
-    $tpl->set_var("language_default_" . strtolower($language_default), "selected=\"selected\"");
+	if($site_ssl)
+		$tpl->set_var("site_ssl", "checked=\"checked\"");
+	else
+		$tpl->set_var("site_ssl", "");
 
-    /*if($trace_path)
-        $tpl->set_var("trace_path", "checked=\"checked\"");
-    else
-        $tpl->set_var("trace_path", "");	*/
+    $tpl->set_var("language_default_" . strtolower($language_default), 'selected="selected"');
+	$tpl->set_var("language_restricted_default_" . strtolower($language_restricted_default), 'selected="selected"');
+
+	$theme_dir = glob($disk_path . "/themes/*", GLOB_ONLYDIR);
+	if(is_array($theme_dir) && count($theme_dir)) {
+		foreach($theme_dir AS $dir_path) {
+			$dir_name = basename($dir_path);
+			if($dir_name == "restricted"
+				|| $dir_name == "responsive"
+				|| $dir_name == "default"
+				|| $dir_name == "library"
+				|| $dir_name == "gallery"
+				|| $dir_name == "site"
+			) {
+				continue;
+			}
+
+			$tpl->set_var("admintheme", $dir_name);
+			$tpl->set_var("admintheme_label", ucfirst($dir_name));
+			if($dir_name == $admin_theme)
+				$tpl->set_var("admintheme_current", 'selected="selected"');
+			else
+				$tpl->set_var("admintheme_current", "");
+
+			$tpl->parse("SezAdminTheme", true);
+		}
+	}
+
+
+	$tzlist = DateTimeZone::listIdentifiers(DateTimeZone::ALL);
+	if(is_array($tzlist) && count($tzlist)) {
+		foreach($tzlist AS $zone) {
+			$tpl->set_var("timezone", $zone);
+			$tpl->set_var("timezone_label", $zone);
+			if($zone == $timezone)
+				$tpl->set_var("timezone_current", 'selected="selected"');
+			else
+				$tpl->set_var("timezone_current", "");
+
+			$tpl->parse("SezTimezoneItem", true);
+		}
+	}
 
     if($debug_mode)
         $tpl->set_var("debug_mode", "checked=\"checked\"");
@@ -2399,8 +1587,6 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
             ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
         }
 
-        require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
-        
         $tpl->set_var("SezHeader", "");
         $tpl->set_var("SezFooter", "");
 
@@ -2410,9 +1596,15 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
         $cm->oPage->form_method = "POST";
 
 		if(is_file($disk_path . "/conf/gallery/install/install.js"))
-        	$cm->oPage->tplAddJs("install", null, null, false, false, file_get_contents($disk_path . "/conf/gallery/install/install.js"));
+        	$cm->oPage->tplAddJs("install"
+                , array(
+                    "embed" => file_get_contents($disk_path . "/conf/gallery/install/install.js")
+            ));
 		if(is_file($disk_path . "/conf/gallery/install/install.css"))
-        	$cm->oPage->tplAddCss("install", null, null, "stylesheet", "text/css", false, false, null, false, "top", file_get_contents($disk_path . "/conf/gallery/install/install.css"));
+        	$cm->oPage->tplAddCss("install"
+                , array(
+                    "embed" => file_get_contents($disk_path . "/conf/gallery/install/install.css")
+            ));
 
         
         if(1) {
@@ -2508,7 +1700,7 @@ AddHandler cgi-script .php .php3 .php4 .phtml .pl .py .jsp .asp .htm .shtml .sh 
         if($strCriticalError) {
             die("Unable to run installation process");
         } else {
-            header("Location: " . $site_path . "/conf/gallery/install?setup");
+            header("Location: " . $site_path . "/setup");
             exit;
         }
     }

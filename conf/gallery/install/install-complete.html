@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        h1 {
+            margin-top: 30%;
+            font-family: verdana;font-weight:lighter;
+        }
+
+        h1 a{
+            padding: 10px 5px;
+            border-width: 1px 1px 4px;
+            border-color: #2F68CD;
+            border-style: solid;
+            background: none repeat scroll 0% 0% #4081F5;
+            color: #FFF;
+            text-transform: uppercase;
+            font-size: 0.7em;
+            width: 170px;
+            margin: 25% auto 0px;
+            text-decoration: none;
+            font-weight:lighter;
+            transition:0.5;
+        }
+
+        h1 a:hover{
+            background: none repeat scroll 0% 0% #2F68CD;
+        }
+    </style>
+    <script>
+        function redirectComplete() {
+            if(window != window.top) {
+                window.open("[DOMAIN_PROTOCOL]://[DOMAIN]/admin/configuration/updater", "_blank");
+            } else {
+                window.location.href = "/admin/configuration/updater";
+            }
+
+        }
+    </script>
+    <title>CMS Installation</title>
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Pragma" content="no-cache">
+    </head>
+<body>
+<div style="margin: 0 auto; width:300px; text-align:center;">
+    <h1>Installation complete.
+        <a style="display:block;" href="javascript:void(0);" onclick="redirectComplete();">Go to Site</a>
+    </h1>
+</div>
+</body>
+</html>

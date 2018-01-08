@@ -1,0 +1,6 @@
+<span id="installer-container" class="loading"><iframe src="{domain}" width="500" height="470"></iframe></span>
+<script>
+    document.getElementsByTagName('iframe')[0].onload = function() {
+        document.getElementById("installer-container").classList.remove("loading");
+    };
+</script>
