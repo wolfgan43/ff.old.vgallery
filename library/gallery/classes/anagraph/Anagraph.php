@@ -28,61 +28,240 @@ require_once(__DIR__ . "/../vgCommon.php");
 
 class Anagraph extends vgCommon
 {
-    static $singleton                           = null;
+    static $singleton                   = null;
 
-    protected $storage                          = "mysql";
-    protected $services                         = array();
-    protected $struct                           = array(
-                                                    "access" => array(
-                                                        "table" => CM_TABLE_PREFIX . "mod_security_users"
-                                                        , "key" => "ID"
-                                                    )
-                                                    , "data" => array(
-                                                        "table" => "anagraph"
-                                                        , "key" => "ID"
-                                                        , "rel" => "uid"
-                                                    )
-                                                );
+    protected $storage                 	= "mysql";
+    protected $services                 = array(
+											"anagraph" => null
+											, "access" => null
+										);
+    protected $controllers              = array(
+                                            "anagraph"                      => array(
+                                                "default"                   => false
+                                                , "services"                => false
+                                                , "storage"                 => array(
+                                                    "nosql"                 => null
+                                                    , "sql"                 => null
+                                                )
+												, "struct"					=> "anagraph"
+                                            )
+											, "access"                      => array(
+                                                "default"                   => false
+                                                , "services"                => false
+                                                , "storage"                 => array(
+                                                    "sql"                 	=> null
+                                                )
+												, "struct"					=> "access"
+                                            )
+                                        );
+    protected $controllers_rev          = array();
+    protected $struct              		= array(
+											"connectors"                    => array(
+												"sql"                       => array(
+													"prefix"				=> "ANAGRAPH_DATABASE_"
+                                                )
+                                                , "nosql"                   => array(
+													"prefix"				=> "ANAGRAPH_MONGO_DATABASE_"
+                                                )
+											)
+											, "table" => array(
+												/*
+												 * quelli che permettono l'identificazione diretta, come i dati anagrafici (ad esempio: nome e cognome), le immagini, ecc.;
+												 */
+												"identification " => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													, "table" 				=> "anagraph"
+													, "key" 				=> "ID"
+													, "rel" 				=> array(
+														"access" 			=> "uid"
+													)
+													, "crypt" => array(
+														"data" => false //metodo di criptazione applicato es: sha256
+														, "transfert" => false  //metodo di criptazione applicato es: ssl
+													)
+												)
+												, "general" => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													, "table" 				=> "anagraph_ext"
+													, "key" 				=> "ID"
+													, "rel" 				=> array(
+														"identification" 	=> "ID_anagraph"
+													)
+													, "crypt" => array(
+														"data" => false //metodo di criptazione applicato es: sha256
+														, "transfert" => false  //metodo di criptazione applicato es: ssl
+													)
+												)
+
+												/*
+												 * quelli che possono rivelare l'origine razziale ed etnica, le convinzioni religiose, filosofiche o di altro genere, le opinioni politiche, l'adesione a partiti, sindacati, associazioni od organizzazioni a carattere religioso, filosofico, politico o sindacale, lo stato di salute e la vita sessuale;
+												 */
+												, "sensitivity" => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													, "table" 				=> "anagraph_ext"
+													, "key" 				=> "ID"
+													, "rel" 				=> array(
+														"identification" 	=> "ID_anagraph"
+													)
+													, "crypt" => array(
+														"data" => false //metodo di criptazione applicato es: sha256
+														, "transfert" => false  //metodo di criptazione applicato es: ssl
+													)
+												)
+												/*
+												 * quelli che possono rivelare l'esistenza di determinati provvedimenti giudiziari soggetti ad iscrizione nel casellario giudiziale (ad esempio, i provvedimenti penali di condanna definitivi, la liberazione condizionale, il divieto od obbligo di soggiorno, le misure alternative alla detenzione) o la qualità di imputato o di indagato
+												 */
+												, "legal" => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													, "table" 				=> "anagraph_ext"
+													, "key" 				=> "ID"
+													, "rel" 				=> array(
+														"identification" 	=> "ID_anagraph"
+													)
+													, "crypt" => array(
+														"data" => false //metodo di criptazione applicato es: sha256
+														, "transfert" => false  //metodo di criptazione applicato es: ssl
+													)
+												)
+												/*
+												 * i dati personali relativi alle caratteristiche genetiche ereditarie o acquisite di una persona fisica che forniscono informazioni univoche sulla fisiologia o sulla salute di detta persona fisica, e che risultano in particolare dall'analisi di un campione biologico della persona fisica in questione
+												 */
+												, "genetic" => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													, "table" 				=> "anagraph_ext"
+													, "key" 				=> "ID"
+													, "rel" 				=> array(
+														"identification" 	=> "ID_anagraph"
+													)
+													, "crypt" => array(
+														"data" => false //metodo di criptazione applicato es: sha256
+														, "transfert" => false  //metodo di criptazione applicato es: ssl
+													)
+												)
+												/*
+												 * i dati personali ottenuti da un trattamento tecnico specifico relativi alle caratteristiche fisiche, fisiologiche o comportamentali di una persona fisica che ne consentono o confermano l'identificazione univoca, quali l'immagine facciale o i dati dattiloscopic
+												 */
+												, "biometric" => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													, "table" 				=> "anagraph_ext"
+													, "key" 				=> "ID"
+													, "rel" 				=> array(
+														"identification" 	=> "ID_anagraph"
+													)
+													, "crypt" => array(
+														"data" => false //metodo di criptazione applicato es: sha256
+														, "transfert" => false  //metodo di criptazione applicato es: ssl
+													)
+												)
+												/*
+												 * : i dati personali attinenti alla salute fisica o mentale di una persona fisica, compresa la prestazione di servizi di assistenza sanitaria, che rivelano informazioni relative al suo stato di salut
+												 */
+												, "health" => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													, "table" 				=> "anagraph_ext"
+													, "key" 				=> "ID"
+													, "rel" 				=> array(
+														"identification" 	=> "ID_anagraph"
+													)
+													, "crypt" => array(
+														"data" => false //metodo di criptazione applicato es: sha256
+														, "transfert" => false  //metodo di criptazione applicato es: ssl
+													)
+												)
+												/*
+												 * i Dati per effettuare l'accesso all'interno del sistema.
+												 */
+												, "access" => array(
+													"prefix"				=> null //prefisso usato per le costanti di connessione db
+													,"table" 				=> CM_TABLE_PREFIX . "mod_security_users"
+													, "key" 				=> "ID"
+													, "crypt" 				=> array(
+														"data" 				=> false //metodo di criptazione applicato es: sha256
+														, "transfert" 		=> false  //metodo di criptazione applicato es: ssl
+													)
+												)
+
+											)
+										);
     protected $struct_default                   = "access";
-    
-    protected $query                            = null;
+
+    protected $query                            = "";
     protected $users                            = null;
     protected $groups                           = null;
     protected $fields                           = array();
+    private $session							= null;
 
-    public static function getInstance($params)
+	public static function getInstance($services = null, $params = null)
 	{
 		if (self::$singleton === null)
-			self::$singleton = new Anagraph($params);
+			self::$singleton = new Notifier($services, $params);
+		else {
+			if($services)
+				self::$singleton->setServices($services);
 
+			self::$singleton->setParams($params);
+		}
 		return self::$singleton;
-	} 
-    
-    public function __construct($params) 
+	}
+
+	public function __construct($services = null, $params = null)
+	{
+		if($services)
+			$this->setServices($services);
+
+		$this->setParams($params);
+
+		//$this->loadControllers(__DIR__);
+		$this->loadSession();
+		//da aggiungere inizializzazioni classe necessarie come anagraph
+	}
+
+    private function loadSession()
+	{
+		if(!$this->session) {
+			$this->session = get_session("user_permissions");
+		}
+	}
+	private function getAnagraphByUser($uid = null) {
+    	if(!$uid)
+			$uid = $this->session["ID"];
+
+	}
+
+
+    public function get($where = null, $fields = null)
     {
-        $this->setParams($params);
+		$service = "server";
+		$connectors = $this->controllers[$service]["storage"];
+		foreach($connectors AS $type => $data)
+		{
+			if(!$data)
+			{
+				$connectors[$type] = array(
+					"service" => null
+				, "connector" => $this->struct["connectors"][$type]
+				);
+			}
+		}
+print_r($connectors);
+		die();
+		$storage = Storage::getInstance($connectors);
+		$this->result = $storage->read($where, $fields);
+		$res = ($this->result
+			? $this->result
+			: array(
+				"result" => array()
+			)
+		);
+
+        //$anagraph = get
+
+
     }
-    
-    
-    public function get()
-    {
-        foreach($this->services AS $name => $params) {
-            if($params["field"]) {
-                $this->addField($params["field"], $name);
-            }
-
-            $this->query["join"][] = $params["tbl"] . " ON " . $params["tbl"] . "." . $params["rel"] . " = " . $this->struct[$this->struct_default]["table"] . "." . $this->struct[$this->struct_default]["key"];        
-        }
-
-        $this->makeSelect();
-        
-        
-       // $query["where"][] = CM_TABLE_PREFIX . "mod_security_users.ID IN(" . $dest["uid"] . ")";
-    }
 
 
-    
-    public function addFields($fields) 
+
+    public function addFields($fields)
     {
         if(is_array($fields))
         {
@@ -94,8 +273,8 @@ class Anagraph extends vgCommon
             $this->addField($fields);
         }
     }
-    
-    
+
+
     public function get_user($dest = array(), $to, $fields = null, $service = null) {
         $db = ffDB_Sql::factory();
 
@@ -104,12 +283,12 @@ class Anagraph extends vgCommon
                 $query["select"][] = CM_TABLE_PREFIX . "mod_security_users.`" . $field_name . "`";
             }
         } elseif($fields) {
-            $query["select"][] = CM_TABLE_PREFIX . "mod_security_users.`" . $fields . "`";        
+            $query["select"][] = CM_TABLE_PREFIX . "mod_security_users.`" . $fields . "`";
         }
 
         if($service) {
             $query["select"][] = CM_TABLE_PREFIX . "mod_security_token.`token`";
-            $query["join"][] = CM_TABLE_PREFIX . "mod_security_token.`token` ON " . CM_TABLE_PREFIX . "mod_security_token.`token`.ID_user = " . CM_TABLE_PREFIX . "mod_security_users.ID";        
+            $query["join"][] = CM_TABLE_PREFIX . "mod_security_token.`token` ON " . CM_TABLE_PREFIX . "mod_security_token.`token`.ID_user = " . CM_TABLE_PREFIX . "mod_security_users.ID";
         }
 
         if(is_array($to)) {
@@ -140,27 +319,27 @@ class Anagraph extends vgCommon
         }
 
         return $dest;
-    }    
+    }
 
-    private function addField($name, $type = null) 
+    private function addField($name, $type = null)
     {
         $this->fields[$name] = $type;
     }
-    
-    private function makeSelect() 
+
+    private function makeSelect()
     {
         if(is_array($this->fields))
         {
-            foreach($this->fields AS $name => $type) 
+            foreach($this->fields AS $name => $type)
             {
                 if(!$this->struct[$type])
                     $type = $this->struct_default;
-                
+
                 $this->query["select"][] = $this->struct[$type]["table"] . "." . $name;
             }
         }
     }
-    private function addWhere($value, $field = null, $type = null) 
+    private function addWhere($value, $field = null, $type = null)
     {
         if(!$field)
             $field = $value;

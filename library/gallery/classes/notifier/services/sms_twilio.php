@@ -31,16 +31,12 @@ class notifierTwilio
 
     private $device                                         = null;
     private $config                                         = null;
-    private $data                                           = null;
     private $notifier                                       = null;
 
-    public function __construct($notifier, $data = null, $config = null)
+    public function __construct($notifier)
     {
         $this->notifier = $notifier;
-        $this->setConfig($config);
-        $this->setData($data);
-
-        $notify = $this->data;
+        $this->setConfig();
     }
 
     public function getDevice()
@@ -51,11 +47,7 @@ class notifierTwilio
     {
         return $this->config;
     }
-    public function getData()
-    {
-        return $this->data;
-    }
-    private function setConfig($config = null)
+    private function setConfig()
     {
         $this->config = $this->notifier->getConfig($this::TYPE);
 
@@ -65,19 +57,15 @@ class notifierTwilio
             {
                 require_once($this->notifier->getAbsPathPHP("/config"));
 
-                $this->config["app_id"] = (defined("NOTIFY_PUSH_ONESIGNAL_APP_ID")
-                    ? NOTIFY_PUSH_ONESIGNAL_APP_ID
+                $this->config["app_id"] = (defined("NOTIFY_ONESIGNAL_APP_ID")
+                    ? NOTIFY_ONESIGNAL_APP_ID
                     : ""
                 );
-                $this->config["app_key"] = (defined("NOTIFY_PUSH_ONESIGNAL_APP_ID")
-                    ? NOTIFY_PUSH_ONESIGNAL_APP_ID
+                $this->config["app_key"] = (defined("NOTIFY_ONESIGNAL_APP_ID")
+                    ? NOTIFY_ONESIGNAL_APP_ID
                     : ""
                 );
             }
         }
-    }
-    private function setData($data = null)
-    {
-        $this->data = $this->notifier->getData($this::TYPE, $data);
     }
 }

@@ -67,40 +67,41 @@ class filemanagerPhp
 
         if(is_file($path)) {
             if(strpos($output, "No syntax errors") === 0) {
-                require($path);
+                $res = include($path);
+				if(!$res) {
+					if(!$var) {
+						$arrDefVars = get_defined_vars();
+						end($arrDefVars);
+						$var                                            = key($arrDefVars);
+						if($var == "output")
+							$var                                        = null;
+						else
+							$this->filemanager->setParam("var", $var);
+					}
 
-                if(!$var) {
-                    $arrDefVars = get_defined_vars();
-                    end($arrDefVars);
-                    $var                                            = key($arrDefVars);
-                    if($var == "output")
-                        $var                                        = null;
-                    else
-                        $this->filemanager->setParam("var", $var);
-                }
+					if($var) {
+						if($keys)
+						{
+							if(!is_array($keys))
+								$keys = array($keys);
 
-                if($var) {
-                    if($keys)
-                    {
-                        if(!is_array($keys))
-                            $keys = array($keys);
+							foreach($keys AS $key)
+							{
+								if($flags == Filemanager::SEARCH_IN_KEY || $flags == Filemanager::SEARCH_IN_BOTH && isset(${$var}[$key]))
+									$res[$key]                      = ${$var}[$key];
 
-                        foreach($keys AS $key)
-                        {
-                            if($flags == Filemanager::SEARCH_IN_KEY || $flags == Filemanager::SEARCH_IN_BOTH && isset(${$var}[$key]))
-                                $res[$key]                      = ${$var}[$key];
-
-                            if($flags == Filemanager::SEARCH_IN_VALUE || $flags == Filemanager::SEARCH_IN_BOTH) {
-                                $arrToAdd                       = array_flip(array_keys(${$var}, $key));
-                                $res                            = array_replace($res, array_intersect_key(${$var}, $arrToAdd));
-                            }
-                        }
-                    } else {
-                        $res                                        = ${$var};
-                    }
-                } else {
-                    $this->filemanager->isError("variable name needed");
-                }
+								if($flags == Filemanager::SEARCH_IN_VALUE || $flags == Filemanager::SEARCH_IN_BOTH) {
+									$arrToAdd                       = array_flip(array_keys(${$var}, $key));
+									$res                            = array_replace($res, array_intersect_key(${$var}, $arrToAdd));
+								}
+							}
+						} else {
+							$res                                        = ${$var};
+						}
+					} else {
+						$this->filemanager->isError("variable name needed");
+					}
+				}
             } else {
                 @unlink($this->filemanager->getParam("path"));
                 $this->filemanager->isError("syntax errors into file");
@@ -116,9 +117,11 @@ class filemanagerPhp
         //$data                                                   = $this->filemanager->getParam("data");
         $expires                                                = $this->filemanager->getParam("expires");
         if($var)
-            $this->filemanager->save("<?php\n" . ' $'. $var .' = ' . var_export($data, true) . ";", $expires);
+            $return = '$'. $var;
         else
-            $this->filemanager->isError("variable name needed");
+			$return = 'return';
+
+        $this->filemanager->save("<?php\n" . ' '. $return . ' = ' . var_export($data, true) . ";", $expires);
     }
 
     public function update($data, $var = null)

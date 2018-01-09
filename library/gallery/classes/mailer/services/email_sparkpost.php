@@ -25,20 +25,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-class mailerLocalhost
+class mailerSparkpost
 {
     const TYPE                                              = "email";
 
     private $device                                         = null;
     private $config                                         = null;
-    private $data                                           = null;
     private $mailer                                         = null;
 
-    public function __construct($mailer, $data = null, $config = null)
+    public function __construct($mailer)
     {
         $this->mailer = $mailer;
-        $this->setConfig($config);
-        //$this->setData($data);
+        $this->setConfig();
     }
 
     public function getDevice()
@@ -49,7 +47,7 @@ class mailerLocalhost
     {
         return $this->config;
     }
-    private function setConfig($config = null)
+    private function setConfig()
     {
         $this->config = $this->mailer->getConfig($this::TYPE);
 
@@ -58,6 +56,13 @@ class mailerLocalhost
             if (is_file($this->mailer->getAbsPathPHP("/config")))
             {
                 require_once($this->mailer->getAbsPathPHP("/config"));
+
+				if(defined("A_FROM_EMAIL") && A_FROM_EMAIL) {
+					$this->mailer->addAddress(array(
+						"name" 		=> A_FROM_NAME
+					, "email" 	=> A_FROM_EMAIL
+					), "from");
+				}
 
                 $this->config["host"] = (defined("A_SMTP_HOST")
                     ? A_SMTP_HOST
@@ -91,8 +96,4 @@ class mailerLocalhost
             }
         }
     }
-    /*private function setData($data = null)
-    {
-        $this->data = $this->mailer->getData($this::TYPE, $data);
-    }*/
 }
