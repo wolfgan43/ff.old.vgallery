@@ -25,6 +25,8 @@
  */
   function get_schema_fields_by_type($type, $default = null) 
   {
+	  $def = array();
+
     require(FF_DISK_PATH . "/library/gallery/struct." . FF_PHP_EXT);
   	$def = $def + system_get_schema_module("fields", $def);
 	
@@ -79,7 +81,7 @@
             $src["table"]                   = $src["seo"]["primary_table"];
             $src["seo"]["table"]            = $src["seo"]["primary_table"];
             $src["seo"]["rel_lang"]         = false;
-            $src["field"]                   = array_replace($src["field"], $src["seo"]);
+			$src["field"]                   = array_replace($src["seo"], $src["field"]);
         }
     }
     return $src;

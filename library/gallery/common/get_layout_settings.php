@@ -33,6 +33,7 @@ function get_layout_settings($ID_layout = NULL, $layout_type) {
 		$ID_layout = 0;
 	
     if(is_array($layout_type)) {
+		$sql_layout_WHERE = "";
     	$require_loading = false;
         $actual_res["sections"] = array();
 
@@ -326,7 +327,7 @@ function get_layout_by_block($type, $ctx = null, $out = null) {
 						$layout["layouts"]["/"] = array(
 							"ID" => null
 							, "prefix" => "L"
-							, "settings" => $settings["/"]
+							, "settings" => $layout["settings"][$setting_type . "-0"]
 						);
         				foreach($layout["settings"] AS $ctx => $settings) {
         					if(isset($layout["layouts"][$ctx])) 

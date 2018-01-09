@@ -46,19 +46,11 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
     $admin_menu["setting"] = ""; 
     */
 
-    if(USE_ADMIN_AJAX) {
-    	$suffix = "_ajax";
-    	$cancel_dialog_url = "[CLOSEDIALOG]";
-	    $admin_menu["delete"] = str_replace("--returl--", urlencode("[CLOSEDIALOG]"), $admin_menu["delete"]);
-	    $admin_menu["delete"] = str_replace("--encodereturl--", urlencode($ret_url), $admin_menu["delete"]);
-	} else {
-		$suffix = "";
-		$cancel_dialog_url = ($ret_url ? $ret_url : "/");
-	    $admin_menu["delete"] = str_replace("--returl--", $ret_url, $admin_menu["delete"]);
-	    $admin_menu["delete"] = str_replace("--encodereturl--", urlencode($ret_url), $admin_menu["delete"]);
-	}
+	$cancel_dialog_url = "[CLOSEDIALOG]";
+	$admin_menu["delete"] = str_replace("--returl--", urlencode("[CLOSEDIALOG]"), $admin_menu["delete"]);
+	$admin_menu["delete"] = str_replace("--encodereturl--", urlencode($ret_url), $admin_menu["delete"]);
 
-    $file_name = "admin_" . $template_name . $suffix . ".html";
+    $file_name = "admin_" . $template_name . ".html";
     if($ret_url === NULL)
         $ret_url = $_SERVER["REQUEST_URI"];
       
@@ -120,25 +112,14 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
             $count_element++;
             if($admin_menu["layout"]["ID"] > 0) {
 	            $tpl->set_var("item_modify_path", get_path_by_rule("blocks") . "/modify");
-	            if(USE_ADMIN_AJAX) {
-		            $tpl->set_var("item_delete_path", urlencode(ffDialog(TRUE,
-		                                                "yesno",
-		                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
-		                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
-		                                                $cancel_dialog_url,
-		                                                get_path_by_rule("blocks") . "/modify?keys[ID]=" . urlencode($admin_menu["layout"]["ID"]) . "&location=" . urlencode($location) . "&path=" . urlencode($user_path) . "&LayoutModify_frmAction=confirmdelete", 
-		                                                get_path_by_rule("blocks") . "/dialog")
-		                                ));
-				} else {
-		            $tpl->set_var("item_delete_path", ffDialog(TRUE,
-		                                                "yesno",
-		                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
-		                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
-		                                                $cancel_dialog_url,
-		                                                get_path_by_rule("blocks") . "/modify?keys[ID]=" . urlencode($admin_menu["layout"]["ID"]) . "&location=" . urlencode($location) . "&path=" . urlencode($user_path) . "&LayoutModify_frmAction=confirmdelete", 
-		                                                get_path_by_rule("blocks") . "/dialog")
-		                                );
-				}
+				$tpl->set_var("item_delete_path", urlencode(ffDialog(TRUE,
+													"yesno",
+													ffTemplate::_get_word_by_code("vgallery_erase_title"),
+													ffTemplate::_get_word_by_code("vgallery_erase_description"),
+													$cancel_dialog_url,
+													get_path_by_rule("blocks") . "/modify?keys[ID]=" . urlencode($admin_menu["layout"]["ID"]) . "&location=" . urlencode($location) . "&path=" . urlencode($user_path) . "&LayoutModify_frmAction=confirmdelete",
+													get_path_by_rule("blocks") . "/dialog")
+									));
 	            $tpl->set_var("item_id", urlencode($admin_menu["layout"]["ID"]));
 	            $tpl->set_var("item_location", urlencode($location));
 	            $tpl->set_var("item_path", urlencode($user_path));
@@ -168,25 +149,14 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 		        $tpl->parse("SezModuleModify", false);
 
                 if($allow_delete) {
-                    if(USE_ADMIN_AJAX) {
-			            $tpl->set_var("item_delete_path", urlencode(ffDialog(TRUE,
-			                                                "yesno",
-			                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
-			                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
-			                                                $cancel_dialog_url,
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "?form-config_frmAction=confirmdelete", 
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "/dialog")
-			                                ));
-				    } else {
-			            $tpl->set_var("item_delete_path", ffDialog(TRUE,
-			                                                "yesno",
-			                                                ffTemplate::_get_word_by_code("vgallery_erase_title"),
-			                                                ffTemplate::_get_word_by_code("vgallery_erase_description"),
-			                                                $cancel_dialog_url,
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "?form-config_frmAction=confirmdelete", 
-			                                                get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "/dialog")
-			                                );
-				    }
+					$tpl->set_var("item_delete_path", urlencode(ffDialog(TRUE,
+														"yesno",
+														ffTemplate::_get_word_by_code("vgallery_erase_title"),
+														ffTemplate::_get_word_by_code("vgallery_erase_description"),
+														$cancel_dialog_url,
+														get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "?form-config_frmAction=confirmdelete",
+														get_path_by_rule("addons") . "/" . $admin_menu["module"]["value"] . "/" . $admin_menu["module"]["params"] . "/dialog")
+										));
 				    $tpl->set_var("class_name", $class_name);
                     $tpl->parse("SezModuleDelete", false);
                 } else {
@@ -250,11 +220,7 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 
         if($allow_delete && isset($admin_menu["delete"]) && strlen($admin_menu["delete"])) {
             $count_element++;
-            if(USE_ADMIN_AJAX) {
-	            $tpl->set_var("item_path", urlencode($admin_menu["delete"]));
-			} else {
-				$tpl->set_var("item_path", $admin_menu["delete"]);
-			}
+			$tpl->set_var("item_path", urlencode($admin_menu["delete"]));
 			$tpl->set_var("class_name", $class_name);
             $tpl->parse("SezMenuAdminDelete", false);
         } else {

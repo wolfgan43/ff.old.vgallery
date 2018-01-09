@@ -114,89 +114,89 @@
 									)
 								)
 								, "bar" => array(
-									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"
-									, "file" => "ff.cms.bar.js"
+									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+									, "file" => "admin.js"
 									, "css_deps" => array(
 										".style" => array(
-											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/css"
-											, "file" => "cms-bar.css"
+											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+											, "file" => "admin.css"
 										)
 									)
 									, "js_deps" => array(
-										"jquery.plugins.cookie" => null
+										"jquery-ui" => null
+										, "jquery.plugins.cookie" => null
 										, "jquery.plugins.helperborder" => null
 										, "jquery.plugins.hoverintent" => null
+
 									)
 									, "js_defs" => array(
-										"block" => array(
-											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"
-											, "file" => "ff.cms.bar.block.js"
-											, "css_deps" => array(
-												".style" => array(
-													"path" => FF_THEME_DIR . "/" . THEME_INSET . "/css"
-													, "file" => "cms-bar-block.css"
-												)
-											)
-											, "js_deps" => array(
-												"jquery.plugins.helperborder" => null
-											)
-										)
 									)
 									, "js_loads"  => array(
-										"ff.cms.editor" => null
-										, "ff.cms.seo" => null
-										, "ff.cms.bar.block" => null
-										, "ff.cms.bar.item" => null
+										"ff.cms.block" => null
+									)
+								)
+								, "block" => array(
+									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+									, "file" => "toolbar.js"
+									, "css_deps" => array(
+										".style" => array(
+											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+										, "file" => "toolbar.css"
+										)
+									)
+									, "js_deps" => array(
+										"jquery.plugins.helperborder" => null
 									)
 								)
 								, "editor" => array(
-									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"
-									, "file" => "ff.cms.editor.js"
+									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+									, "file" => "editor.js"
 									, "css_deps" => array(
 										".style" => array(
-											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/css"
-											, "file" => "cms-editor.css"
+											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+											, "file" => "editor.css"
 										)
 										, "ff.cms.font-icon" => null
 									)
 									, "js_deps" => array(
-										"jquery-ui" => null
-										, "jquery.plugins.nicescroll" => null
+											"jquery-ui" => null
+											, "jquery.plugins.nicescroll" => null
+											, "jquery.plugins.colorpicker" => null
+										)
 									)
-								)
 								, "seo" => array(
-									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"
-									, "file" => "ff.cms.seo.js"
+									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo"
+									, "file" => "seo.js"
 									, "css_deps" => array(
 										".style" => array(
-											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/css"
-											, "file" => "cms-seo.css"
+											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo"
+											, "file" => "seo.css"
 										)
 										, "ff.cms.font-icon" => null
 									)
 									, "js_loads" => array(
 										".stopwords" => array(
-											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/stopwords"
-											, "file" => "ff.cms.seo.stopwords." . strtolower(LANGUAGE_INSET) . ".js"
-										
+											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo/stopwords"
+										, "file" => strtolower(LANGUAGE_INSET) . ".js"
+
 										)
 									)
 								)
 								, "sitemap" => array(
-									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"
-									, "file" => "ff.cms.sitemap.js"
+									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+									, "file" => "sitemap.js"
 									, "css_deps" => array(
 										"ff.cms.font-icon" => null
 									)
 								)
 								, "layout" => array(
-									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"
-									, "file" => "ff.cms.layout.js"
+									"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+									, "file" => "layout.js"
 									, "css_deps" => array(
-										".style" => array(
-											"path" => FF_THEME_DIR . "/" . THEME_INSET . "/css"
-											, "file" => "cms-layout.css"
-										)
+											".style" => array(
+												"path" => FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.bar"
+												, "file" => "layout.css"
+											)
 										, "ff.cms.font-icon" => null
 									)
 								)

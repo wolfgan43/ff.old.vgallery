@@ -113,7 +113,7 @@ function system_redirect_goto_destination($arrDestination, $hostname = null, $re
         if($write_cache)            
             system_redirect_set_destination($hostname, $request_uri, $arrDestination["dst"], $arrDestination["code"]);
 
-        if(defined("TRACE_VISITOR")) {
+        if(TRACE_VISITOR === true) {
             require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
             system_trace("redirect", "routing"); 
         }   

@@ -23,18 +23,46 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $sections, $css = array(), $js = array(), $international = array(), $seo = array(), $option = array()) 
+function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array(), $js = array(), $international = array(), $seo = array())
 {
-    $globals = ffGlobals::getInstance("gallery");
-    $settings_path = $globals->settings_path;
+	$cm = cm::getInstance();
+	if(AREA_SHOW_NAVBAR_ADMIN) {
+		$cm->oPage->tplAddJs("ff.cms.bar");
+	} else {
+		$cm->oPage->tplAddJs("ff.cms.block");
+	}
+	if(AREA_SECTION_SHOW_MODIFY) {
+		$cm->oPage->tplAddJs("ff.cms.editor");
 
-    if(strlen($globals->strip_user_path) && strpos($ret_url, $globals->strip_user_path) === 0) {
-        $ret_url = substr($ret_url, strlen($globals->strip_user_path));
+		$option["editor"] = array();
+
+		if(AREA_SEO_SHOW_MODIFY) {
+			$cm->oPage->tplAddJs("ff.cms.seo");
+
+			$option["editor"]["seo"] = true;
+		}
+		if(AREA_SITEMAP_SHOW_MODIFY && 0) {
+			$cm->oPage->tplAddJs("ff.cms.sitemap");
+
+			$option["editor"]["sitemap"] = array(
+				"menu" => array("class" => "cms-editor-menu sitemap"
+				, "icon" => cm_getClassByFrameworkCss("sitemap", "icon-tag", "2x")
+				, "rel" => "add"
+				)
+			);
+		}
+		if(AREA_LAYOUT_SHOW_MODIFY && 0) {
+			$cm->oPage->tplAddJs("ff.cms.layout");
+
+			$option["editor"]["sitemap"] = array(
+				"menu" => array("class" => "cms-editor-menu"
+				, "icon" => cm_getClassByFrameworkCss("addnew", "icon-tag", "2x")
+				, "rel" => "add"
+				)
+			);
+		}
 	}
 
-    $buffer = "";
-    $count_application = 0;
-    $count_ecommerce = 0;
     $count_tools = 0;
 
     $check_class = "checked";
@@ -42,22 +70,12 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
     $uncheck_class = "unchecked";
     $uncheck_icon = cm_getClassByFrameworkCss($uncheck_class, "icon-tag");
 
-    if($ret_url === NULL)
-        $ret_url = $_SERVER["REQUEST_URI"];
+	$cancel_dialog_url = "[CLOSEDIALOG]";
 
-    if(USE_ADMIN_AJAX) {
-    	$suffix = "_ajax";
-    	$cancel_dialog_url = "[CLOSEDIALOG]";
-	} else {
-		$suffix = "";
-		$cancel_dialog_url = ($ret_url ? $ret_url : "/");
-	}
-    
     $tpl = ffTemplate::factory(get_template_cascading($user_path, "admin.html", ""));
-    $tpl->load_file("admin" . $suffix . ".html", "main");
+    $tpl->load_file("admin.html", "main");
     
     $tpl->set_var("site_path", FF_SITE_PATH);
-    $tpl->set_var("ret_url", urlencode($ret_url));
 
     $tpl->set_var("info_icon", cm_getClassByFrameworkCss("info", "icon-tag", "2x"));
     $tpl->set_var("logout_icon", cm_getClassByFrameworkCss("power-off", "icon-tag", "2x"));
@@ -159,15 +177,15 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 			        $tpl->set_var("css_check_class", $uncheck_class);
 
     				if(strpos($tmp_path . $tmp_file, "/themes/" . THEME_INSET . "/css") === false) {
-    					$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/css") . "&extype=static"); //&ret_url=" . urlencode($ret_url)
-    					$tpl->set_var("css_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/css") . "&extype=static"); //&ret_url=" . urlencode($ret_url)
+    					$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/css") . "&extype=static");
+    					$tpl->set_var("css_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/css") . "&extype=static");
     					$tpl->parse("SezAdminPanelCssAdd", false);
 					} else {
-    					$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files"); //&ret_url=" . urlencode($ret_url)
+    					$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files");
 						$tpl->set_var("SezAdminPanelCssAdd", "");
 					}
 
-    				$tpl->set_var("css_view_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files"); //&ret_url=" . urlencode($ret_url)
+    				$tpl->set_var("css_view_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files");
     				$tpl->parse("SezAdminPanelCssView", false);
 
     				$tpl->set_var("SezAdminPanelCssModify", "");
@@ -180,33 +198,22 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 					$tpl->set_var("SezAdminPanelCssView", "");
 					
 					if(basename($tmp_file) == "main.css") {
-						$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static&deletable=0"); //&ret_url=" . urlencode($ret_url)
-    					$tpl->set_var("css_edit_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static&deletable=0"); //&ret_url=" . urlencode($ret_url)
+						$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static&deletable=0");
+    					$tpl->set_var("css_edit_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static&deletable=0");
 			            $tpl->parse("SezAdminPanelCssModify", false);
 						$tpl->set_var("SezAdminPanelCssDelete", "");
 					} else {
-						$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static"); //&ret_url=" . urlencode($ret_url)
-    					$tpl->set_var("css_edit_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static"); //&ret_url=" . urlencode($ret_url)
+						$tpl->set_var("css_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static");
+    					$tpl->set_var("css_edit_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static");
 			            $tpl->parse("SezAdminPanelCssModify", false);
-			            if(USE_ADMIN_AJAX) {
-				            $tpl->set_var("css_delete_path", urlencode(ffDialog(TRUE,
-				                                                        "yesno",
-				                                                        ffTemplate::_get_word_by_code("admin_erase_title"),
-				                                                        ffTemplate::_get_word_by_code("admin_erase_description"),
-				                                                        $cancel_dialog_url,
-				                                                        get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static" . "&" . "ThemeModify_frmAction=confirmdelete", //&ret_url=" . urlencode($ret_url)
-				                                                        get_path_by_rule("utility") . "/resources/modify" . "/dialog")
-				                                            ));
-						} else {
-				            $tpl->set_var("css_delete_path", ffDialog(TRUE,
-				                                                        "yesno",
-				                                                        ffTemplate::_get_word_by_code("admin_erase_title"),
-				                                                        ffTemplate::_get_word_by_code("admin_erase_description"),
-				                                                        $cancel_dialog_url,
-				                                                        get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static" . "&" . "ThemeModify_frmAction=confirmdelete", //&ret_url=" . urlencode($ret_url)
-				                                                        get_path_by_rule("utility") . "/resources/modify" . "/dialog")
-				                                            );
-						}
+						$tpl->set_var("css_delete_path", urlencode(ffDialog(TRUE,
+																	"yesno",
+																	ffTemplate::_get_word_by_code("admin_erase_title"),
+																	ffTemplate::_get_word_by_code("admin_erase_description"),
+																	$cancel_dialog_url,
+																	get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static" . "&" . "ThemeModify_frmAction=confirmdelete",
+																	get_path_by_rule("utility") . "/resources/modify" . "/dialog")
+														));
     					$tpl->parse("SezAdminPanelCssDelete", false);
 					}
 				}
@@ -214,7 +221,7 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
     			$tpl->parse("SezAdminPanelCss", true);
 			} 
 		} reset($css);
-		$tpl->set_var("css_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/css") . "&extype=static"); //&ret_url=" . urlencode($ret_url)
+		$tpl->set_var("css_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/css") . "&extype=static");
 
 		foreach($js AS $js_queue) {
 		    foreach($js_queue AS $js_key => $js_value) {
@@ -274,28 +281,17 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
     				$tpl->set_var("SezAdminPanelJsAdd", "");
     				$tpl->set_var("SezAdminPanelJsView", "");
     				
-    				$tpl->set_var("js_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static"); //&ret_url=" . urlencode($ret_url)
-    				$tpl->set_var("js_edit_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static"); //&ret_url=" . urlencode($ret_url)
+    				$tpl->set_var("js_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static");
+    				$tpl->set_var("js_edit_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static");
     				$tpl->parse("SezAdminPanelJsModify", false);
-			        if(USE_ADMIN_AJAX) {
-			            $tpl->set_var("js_delete_path", urlencode(ffDialog(TRUE,
-			                                                        "yesno",
-			                                                        ffTemplate::_get_word_by_code("admin_erase_title"),
-			                                                        ffTemplate::_get_word_by_code("admin_erase_description"),
-			                                                        $cancel_dialog_url,
-			                                                        get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static" . "&" . "ThemeModify_frmAction=confirmdelete", //&ret_url=" . urlencode($ret_url)
-			                                                        get_path_by_rule("utility") . "/resources/modify" . "/dialog")
-			                                            ));
-					} else {
-			            $tpl->set_var("js_delete_path", ffDialog(TRUE,
-			                                                        "yesno",
-			                                                        ffTemplate::_get_word_by_code("admin_erase_title"),
-			                                                        ffTemplate::_get_word_by_code("admin_erase_description"),
-			                                                        $cancel_dialog_url,
-			                                                        get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static" . "&" . "ThemeModify_frmAction=confirmdelete", //&ret_url=" . urlencode($ret_url)
-			                                                        get_path_by_rule("utility") . "/resources/modify" . "/dialog")
-			                                            );
-					}
+					$tpl->set_var("js_delete_path", urlencode(ffDialog(TRUE,
+																"yesno",
+																ffTemplate::_get_word_by_code("admin_erase_title"),
+																ffTemplate::_get_word_by_code("admin_erase_description"),
+																$cancel_dialog_url,
+																get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&extype=static" . "&" . "ThemeModify_frmAction=confirmdelete",
+																get_path_by_rule("utility") . "/resources/modify" . "/dialog")
+													));
     				$tpl->parse("SezAdminPanelJsDelete", false);
 				} elseif((strpos($tmp_path . $tmp_file, "/themes/" . THEME_INSET) !== false && basename($tmp_file) != "main.js") 
 	                    || (strpos($tmp_path . $tmp_file, "/themes/" . "library") !== false && strpos(basename($tmp_file), "observe") !== false)
@@ -303,11 +299,11 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
     				$tpl->set_var("js_check_icon", $uncheck_icon);
 			        $tpl->set_var("js_check_class", $uncheck_class);
 
-					$tpl->set_var("js_default_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/javascript") . "&extype=static"); //&ret_url=" . urlencode($ret_url)
-					$tpl->set_var("js_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/javascript") . "&extype=static"); //&ret_url=" . urlencode($ret_url)
+					$tpl->set_var("js_default_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/javascript") . "&extype=static");
+					$tpl->set_var("js_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=" . urlencode($tmp_path . $tmp_file) . "&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/javascript") . "&extype=static");
     				$tpl->parse("SezAdminPanelJsAdd", false);
 
-					$tpl->set_var("js_view_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files"); //&ret_url=" . urlencode($ret_url)
+					$tpl->set_var("js_view_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files");
     				$tpl->parse("SezAdminPanelJsView", false);
 
     				$tpl->set_var("SezAdminPanelJsModify", "");
@@ -318,8 +314,8 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 
     				$tpl->set_var("SezAdminPanelJsAdd", "");
 
-					$tpl->set_var("js_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files"); //&ret_url=" . urlencode($ret_url)
-					$tpl->set_var("js_view_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files"); //&ret_url=" . urlencode($ret_url)
+					$tpl->set_var("js_default_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files");
+					$tpl->set_var("js_view_path", get_path_by_rule("utility") . "/resources/modify." . FF_PHP_EXT . "?path=" . urlencode($tmp_path . $tmp_file) . "&writable=0&extype=files");
     				$tpl->parse("SezAdminPanelJsView", false);
 
     				$tpl->set_var("SezAdminPanelJsModify", "");
@@ -329,7 +325,7 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
     			$tpl->parse("SezAdminPanelJs", true);
 			} 
 		} reset($js);
-		$tpl->set_var("js_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/javascript") . "&extype=static"); //&ret_url=" . urlencode($ret_url)
+		$tpl->set_var("js_add_path", get_path_by_rule("utility") . "/resources/add." . FF_PHP_EXT . "?source=&path=" . urlencode($user_path) . "&basepath=" . urlencode("/" . $theme . "/javascript") . "&extype=static");
 		
 		$tpl->parse("SezAdminPanelTheme", false);
 	} else {
@@ -357,39 +353,28 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 	    foreach($international AS $international_key => $international_value) {
 	    	$tpl->set_var("international_name", $international_key);
 		    if($international_value) {
-    			$tpl->set_var("international_edit_path", get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT . "?wc=" . urlencode($international_key)); // . "&ret_url=" . urlencode($ret_url));
+    			$tpl->set_var("international_edit_path", get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT . "?wc=" . urlencode($international_key));
 		        $tpl->parse("SezAdminPanelInternationalModify", false);
-		        if(USE_ADMIN_AJAX) {
-			        $tpl->set_var("international_delete_path", urlencode(ffDialog(TRUE,
-			                                                    "yesno",
-			                                                    ffTemplate::_get_word_by_code("admin_erase_title"),
-			                                                    ffTemplate::_get_word_by_code("admin_erase_description"),
-			                                                    $cancel_dialog_url,
-			                                                    get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT . "?wc=" . urlencode($international_key) . "&" . "InternationalModify_frmAction=confirmdelete", //"&ret_url=" . urlencode($ret_url)
-			                                                    get_path_by_rule("utility") . "/international/modify" . "/dialog")
-			                                        ));
-				} else {
-			        $tpl->set_var("international_delete_path", ffDialog(TRUE,
-			                                                    "yesno",
-			                                                    ffTemplate::_get_word_by_code("admin_erase_title"),
-			                                                    ffTemplate::_get_word_by_code("admin_erase_description"),
-			                                                    $cancel_dialog_url,
-			                                                    get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT . "?wc=" . urlencode($international_key) . "&" . "InternationalModify_frmAction=confirmdelete", //"&ret_url=" . urlencode($ret_url) .
-			                                                    get_path_by_rule("utility") . "/international/modify" . "/dialog")
-			                                        );
-				}
+				$tpl->set_var("international_delete_path", urlencode(ffDialog(TRUE,
+															"yesno",
+															ffTemplate::_get_word_by_code("admin_erase_title"),
+															ffTemplate::_get_word_by_code("admin_erase_description"),
+															$cancel_dialog_url,
+															get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT . "?wc=" . urlencode($international_key) . "&" . "InternationalModify_frmAction=confirmdelete",
+															get_path_by_rule("utility") . "/international/modify" . "/dialog")
+												));
     			$tpl->parse("SezAdminPanelInternationalDelete", false);
     			
     			$tpl->parse("SezAdminPanelInternationalVisible", true);
 			} else {
-    			$tpl->set_var("international_edit_path", get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT . "?wc=" . urlencode($international_key)); // . "&ret_url=" . urlencode($ret_url));
+    			$tpl->set_var("international_edit_path", get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT . "?wc=" . urlencode($international_key));
 		        $tpl->parse("SezAdminPanelInternationalModify", false);
 		        $tpl->set_var("SezAdminPanelInternationalDelete", "");
 		        
 		        $tpl->parse("SezAdminPanelInternationalNoVisible", true);
 			}
 		} reset($international);
-		$tpl->set_var("international_add_path", get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT); // . "?ret_url=" . urlencode($ret_url));
+		$tpl->set_var("international_add_path", get_path_by_rule("utility") . "/international/modify." . FF_PHP_EXT);
 
 		$tpl->parse("SezAdminPanelInternational", false);
 	} else {
@@ -397,7 +382,7 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 	}    
 
 	if(AREA_SEO_SHOW_MODIFY && is_array($seo) && count($seo) && $seo["ID"]) {
-		$seo_url = get_path_by_rule("seo") . "/" . ltrim($seo["src"], "/") . "?key=" . $seo["ID"]; //. "&ret_url=" . urlencode($ret_url);
+		$seo_url = get_path_by_rule("seo") . "/" . ltrim($seo["src"], "/") . "?key=" . $seo["ID"];
 
 		$tpl->set_var("seo_url", $seo_url);
 		$tpl->set_var("seo_class", "");
@@ -412,9 +397,12 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 	} 
 	    
     if(AREA_SECTION_SHOW_MODIFY && is_array($sections) && count($sections)) {
+		$last_layer = "";
+		$count_item = 0;
+
         $tpl->set_var("section_addnew_class", "");
         $tpl->set_var("section_addnew_icon", cm_getClassByFrameworkCss("lay-addnew", "icon-tag", "2x"));
-        $tpl->set_var("section_add_path", get_path_by_rule("pages-structure") . "/modify." . FF_PHP_EXT);  // . "?ret_url=" . urlencode($ret_url));
+        $tpl->set_var("section_add_path", get_path_by_rule("pages-structure") . "/modify." . FF_PHP_EXT);
         foreach($sections AS $sections_key => $sections_value) {
 			$tpl->set_var("section_dialog_pre", ffCommon_specialchars('<h1 class="admin-title section">'));
 			$tpl->set_var("section_dialog_post", ffCommon_specialchars('</h1>'));
@@ -497,26 +485,15 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 							}
                             if($layout_value["type"] == "MODULE") {
                                 //ffErrorHandler::raise("asd", E_USER_ERROR, null, get_defined_vars());         
-                                $tpl->set_var("module_edit_path", get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"]); // . "?ret_url=" . urlencode($ret_url));
-		        				if(USE_ADMIN_AJAX) {
-	                                $tpl->set_var("module_delete_path", urlencode(ffDialog(TRUE,
-	                                                                            "yesno",
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_title"),
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_description"),
-	                                                                            $cancel_dialog_url,
-	                                                                            get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"] . "?" . strtolower($layout_value["value"]) . "-config_frmAction=confirmdelete", // ret_url=" . urlencode($ret_url) . "&"
-	                                                                            get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"] . "/dialog")
-	                                                                ));
-								} else {
-	                                $tpl->set_var("module_delete_path", ffDialog(TRUE,
-	                                                                            "yesno",
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_title"),
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_description"),
-	                                                                            $cancel_dialog_url,
-	                                                                            get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"] . "?" . strtolower($layout_value["value"]) . "-config_frmAction=confirmdelete", //ret_url=" . urlencode($ret_url) . "&"
-	                                                                            get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"] . "/dialog")
-	                                                                );
-								}
+                                $tpl->set_var("module_edit_path", get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"]);
+								$tpl->set_var("module_delete_path", urlencode(ffDialog(TRUE,
+																			"yesno",
+																			ffTemplate::_get_word_by_code("admin_erase_title"),
+																			ffTemplate::_get_word_by_code("admin_erase_description"),
+																			$cancel_dialog_url,
+																			get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"] . "?" . strtolower($layout_value["value"]) . "-config_frmAction=confirmdelete",
+																			get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"] . "/dialog")
+																));
                                 $tpl->set_var("module_delete_path", get_path_by_rule("addons") . "/" . $layout_value["value"] . "/" . $layout_value["params"]);
 
                                 $tpl->set_var("module_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
@@ -528,26 +505,15 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
                             }
                             
                             if($layout_value["visible"] !== NULL) {
-                                $tpl->set_var("layout_edit_path", get_path_by_rule("blocks") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $layout_value["ID"] . "&location=" . $sections_value["ID"] . "&path=" . $user_path); // . "&ret_url=" . urlencode($ret_url));
-								if(USE_ADMIN_AJAX) {
-	                                $tpl->set_var("layout_delete_path", urlencode(ffDialog(TRUE,
-	                                                                            "yesno",
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_title"),
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_description"),
-	                                                                            $cancel_dialog_url,
-	                                                                            get_path_by_rule("blocks") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $layout_value["ID"] . "&location=" . $sections_value["ID"] . "&path=" . $user_path . "&LayoutModify_frmAction=confirmdelete", //"&ret_url=" . urlencode($ret_url) . "
-	                                                                            get_path_by_rule("blocks") . "/dialog")
-	                                                                ));
-								} else {
-	                                $tpl->set_var("layout_delete_path", ffDialog(TRUE,
-	                                                                            "yesno",
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_title"),
-	                                                                            ffTemplate::_get_word_by_code("admin_erase_description"),
-	                                                                            $cancel_dialog_url,
-	                                                                            get_path_by_rule("blocks") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $layout_value["ID"] . "&location=" . $sections_value["ID"] . "&path=" . $user_path . "&LayoutModify_frmAction=confirmdelete", //"&ret_url=" . urlencode($ret_url) . "
-	                                                                            get_path_by_rule("blocks") . "/dialog")
-	                                                                );
-								}
+                                $tpl->set_var("layout_edit_path", get_path_by_rule("blocks") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $layout_value["ID"] . "&location=" . $sections_value["ID"] . "&path=" . $user_path);
+								$tpl->set_var("layout_delete_path", urlencode(ffDialog(TRUE,
+																			"yesno",
+																			ffTemplate::_get_word_by_code("admin_erase_title"),
+																			ffTemplate::_get_word_by_code("admin_erase_description"),
+																			$cancel_dialog_url,
+																			get_path_by_rule("blocks") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $layout_value["ID"] . "&location=" . $sections_value["ID"] . "&path=" . $user_path . "&LayoutModify_frmAction=confirmdelete",
+																			get_path_by_rule("blocks") . "/dialog")
+																));
                                 if(isset($layout_value["admin"]) && strlen($layout_value["admin"])) {
                                     $count_item++;
                                     $tpl->set_var("admin_menu", $layout_value["admin"]);
@@ -570,17 +536,17 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 
                                 if($layout_value["type"] == "FORMS_FRAMEWORK") {
                                     //DA CONCORDARE CON SAMUELE PRIMA O POI
-                                    $tpl->set_var("ff_settings_path", get_path_by_rule("blocks") . "/type/modify." . FF_PHP_EXT . "/" . $layout_value["type"]); //. "?ret_url=" . urlencode($ret_url));
+                                    $tpl->set_var("ff_settings_path", get_path_by_rule("blocks") . "/type/modify." . FF_PHP_EXT . "/" . $layout_value["type"]);
                                     $tpl->set_var("SezNoLayoutSettings", "");
                                     $tpl->parse("SezNoLayoutFF", false);
                                     $tpl->set_var("SezNoLayoutVGS", "");
                                 } elseif($layout_value["type"] == "VG_SERVICES") {
-                                    $tpl->set_var("vgs_settings_path", FF_SITE_PATH . VG_UI_PATH . "/services/" . $layout_value["ID"] . "/config"); //. "?ret_url=" . urlencode($ret_url));
+                                    $tpl->set_var("vgs_settings_path", FF_SITE_PATH . VG_UI_PATH . "/services/" . $layout_value["ID"] . "/config");
                                     $tpl->set_var("SezNoLayoutSettings", "");
                                     $tpl->set_var("SezNoLayoutFF", "");
                                     $tpl->parse("SezNoLayoutVGS", false);
                                 } else {
-                                    $tpl->set_var("layout_settings_path", get_path_by_rule("blocks") . "/type/modify." . FF_PHP_EXT . "/" . $layout_value["type"]); //. "?ret_url=" . urlencode($ret_url));
+                                    $tpl->set_var("layout_settings_path", get_path_by_rule("blocks") . "/type/modify." . FF_PHP_EXT . "/" . $layout_value["type"]);
                                     $tpl->parse("SezNoLayoutSettings", false);
                                     $tpl->set_var("SezNoLayoutFF", "");
                                     $tpl->set_var("SezNoLayoutVGS", "");
@@ -600,28 +566,16 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 
                     }
                     
-                    $tpl->set_var("layer_edit_path", get_path_by_rule("pages-structure") . "/layer/modify." . FF_PHP_EXT . "?section=" . $sections_value["ID"]); // . "&ret_url=" . urlencode($ret_url));
-                    $tpl->set_var("section_edit_path", get_path_by_rule("pages-structure") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $sections_value["ID"]); // . "&ret_url=" . urlencode($ret_url));
-					if(USE_ADMIN_AJAX) {
-	                    $tpl->set_var("section_delete_path", urlencode(ffDialog(TRUE,
-	                                                                "yesno",
-	                                                                ffTemplate::_get_word_by_code("admin_erase_title"),
-	                                                                ffTemplate::_get_word_by_code("admin_erase_description"),
-	                                                                $cancel_dialog_url,
-	                                                                get_path_by_rule("pages-structure") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $sections_value["ID"] . "&SectionModify_frmAction=confirmdelete", //"&ret_url=" . urlencode($ret_url) . "
-	                                                                get_path_by_rule("pages-structure") . "/dialog")
-	                                                    ));
-					} else {
-	                    $tpl->set_var("section_delete_path", ffDialog(TRUE,
-	                                                                "yesno",
-	                                                                ffTemplate::_get_word_by_code("admin_erase_title"),
-	                                                                ffTemplate::_get_word_by_code("admin_erase_description"),
-	                                                                $cancel_dialog_url,
-	                                                                get_path_by_rule("pages-structure") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $sections_value["ID"] . "&SectionModify_frmAction=confirmdelete", //"&ret_url=" . urlencode($ret_url) . "
-	                                                                get_path_by_rule("pages-structure") . "/dialog")
-	                                                    );
-					}
-
+                    $tpl->set_var("layer_edit_path", get_path_by_rule("pages-structure") . "/layer/modify." . FF_PHP_EXT . "?section=" . $sections_value["ID"]);
+                    $tpl->set_var("section_edit_path", get_path_by_rule("pages-structure") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $sections_value["ID"]);
+					$tpl->set_var("section_delete_path", urlencode(ffDialog(TRUE,
+																"yesno",
+																ffTemplate::_get_word_by_code("admin_erase_title"),
+																ffTemplate::_get_word_by_code("admin_erase_description"),
+																$cancel_dialog_url,
+																get_path_by_rule("pages-structure") . "/modify." . FF_PHP_EXT . "?keys[ID]=" . $sections_value["ID"] . "&SectionModify_frmAction=confirmdelete",
+																get_path_by_rule("pages-structure") . "/dialog")
+													));
                     $tpl->set_var("section_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
                     $tpl->set_var("section_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
 
@@ -658,7 +612,7 @@ function process_admin_toolbar($ret_url = null, $user_path = "/", $theme, $secti
 					}
 					
                     $tpl->set_var("layout_addnew_bottom_class", cm_getClassByFrameworkCss("addnew", "icon", array("2x")));
-                    $tpl->set_var("layout_add_path", get_path_by_rule("blocks") . "/modify." . FF_PHP_EXT . "?location=" . $sections_value["ID"] . "&path=" . $user_path); // . "&ret_url=" . urlencode($ret_url));
+                    $tpl->set_var("layout_add_path", get_path_by_rule("blocks") . "/modify." . FF_PHP_EXT . "?location=" . $sections_value["ID"] . "&path=" . $user_path);
 
                     $tpl->parse("SezLayouts", false);
                     $tpl->set_var("SezLayout", "");

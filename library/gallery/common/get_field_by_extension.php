@@ -24,6 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null) {
+	$js = "";
     $default_params = array(
         "ID" => null
         , "name" => ""
@@ -1273,9 +1274,9 @@ function get_field_by_extension_vgallery($obj_page_field, $params = array()) {
                                                     [ORDER] [COLON] module_form.name
                                                     [LIMIT]";
                     if (AREA_MODULES_SHOW_MODIFY) {
-                        $obj_page_field->actex_dialog_url = $cm->oPage->site_path . VG_SITE_RESTRICTED . "/modules/form/extra?clonename=" . urlencode(ucwords(str_replace("-", " ", $params["vgallery_node_name"])));
+                        $obj_page_field->actex_dialog_url = FF_SITE_PATH . VG_SITE_RESTRICTED . "/modules/form/extra?clonename=" . urlencode(ucwords(str_replace("-", " ", $params["vgallery_node_name"])));
                         $obj_page_field->actex_dialog_edit_params = array("name" => null);
-                        $obj_page_field->actex_dialog_delete_url = $cm->oPage->site_path . VG_SITE_RESTRICTED . "/modules/form/extra?frmAction=FormExtraFieldModify_confirmdelete";
+                        $obj_page_field->actex_dialog_delete_url = FF_SITE_PATH . VG_SITE_RESTRICTED . "/modules/form/extra?frmAction=FormExtraFieldModify_confirmdelete";
                         $obj_page_field->extended_type = "String";
                         $obj_page_field->widget = "actex";
 						//$obj_page_field->widget = "activecomboex";
@@ -1444,9 +1445,9 @@ function get_field_by_extension_vgallery($obj_page_field, $params = array()) {
                 $strAuth = "";
 
                 if (strlen($strAuth)) {
-                    $google_docs_mode .= "/ccc";
+                    $google_docs_mode = "/ccc";
                 } else {
-                    $google_docs_mode .= "/pub";
+                    $google_docs_mode = "/pub";
                 }
 
                 $google_docs_lang = strtolower(substr(LANGUAGE_INSET, 0, -1));
@@ -1455,9 +1456,6 @@ function get_field_by_extension_vgallery($obj_page_field, $params = array()) {
 
                 $obj_page_field->display_label = false;
 
-                //setJsRequest("gdocsEdit", "system");
-                //if(check_function("system_set_js"))
-                //system_set_js($cm->oPage, "/", false);
                 $tpl = ffTemplate::factory(get_template_cascading("/", "google.docs.edit.html", "/vgallery"));
                 $tpl->load_file("google.docs.edit.html", "main");
                 $tpl->set_var("service", $google_docs_service);
@@ -1466,7 +1464,7 @@ function get_field_by_extension_vgallery($obj_page_field, $params = array()) {
                 $tpl->set_var("token", $google_docs_token);
 
                 if (check_function("get_vgallery_information_by_lang")) {
-                    $tpl->set_var("title", get_vgallery_information_by_lang(null, $ID_vgallery_nodes, array("meta_title_alt" => "meta_title"), "System", $ID_vgallery));
+                    $tpl->set_var("title", get_vgallery_information_by_lang(null, $params["ID_vgallery_nodes"], array("meta_title_alt" => "meta_title"), "System"));
                 }
                 //$tpl->rpparse("main", false);
                 $obj_page_field->fixed_post_content = $tpl->rpparse("main", false);
@@ -1999,13 +1997,7 @@ function get_field_by_extension_search($obj_page_field, $params = array()) {
             $obj_page_field->encode_entities = false;
             break;
         case "Group":
-            if (strlen($source_SQL_key) && array_key_exists($source_SQL_key, $selection)) {
-                $obj_page_field->multi_pairs = $selection[$source_SQL_key]["multi_pairs"];
-                if (array_key_exists("user_vars", $selection[$source_SQL_key]) && is_array($selection[$source_SQL_key]["user_vars"]))
-                    $obj_page_field->user_vars = array_replace($obj_page_field->user_vars, $selection[$source_SQL_key]["user_vars"]);
-            } else {
-                $obj_page_field->source_SQL = $params["source_SQL"];
-            }
+			$obj_page_field->source_SQL = $params["source_SQL"];
             break;
         case "Date":
             break;

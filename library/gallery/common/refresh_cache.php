@@ -173,6 +173,12 @@ function refresh_cache($namespace, $node, $action, $path = null, $tags = null, $
     return null;
 }
 
+function refresh_cache_by_path($path) {
+	if(is_file(FF_DISK_PATH . $path)) {
+		@touch(FF_DISK_PATH . $path, filectime(FF_DISK_PATH . $path) - 10);
+	}
+}
+
 function refresh_cache_get_blocks_by_layout($value) {
     $db = ffDB_Sql::factory();
 

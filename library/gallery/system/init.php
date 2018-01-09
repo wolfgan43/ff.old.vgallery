@@ -32,7 +32,7 @@ function system_init($cm) {
 	    $path_info = "/";
 
 	$globals->user_path 	= $path_info;
-	$globals->page 			= cache_get_page_properties($path_info, null, true);
+	$globals->page 			= cache_get_page_properties($path_info, true);
 	$globals->locale 		= cache_get_locale($globals->page, DOMAIN_NAME); //pulisce il percorso dalla lingua
     $globals->selected_lang = FF_LOCALE;
 
@@ -98,46 +98,75 @@ function system_init($cm) {
 	if($cm_layout_vars["layer"] == THEME_INSET && $cm_layout_vars["theme"] != FRONTEND_THEME)
 		cm::getInstance()->layout_vars["theme"] = FRONTEND_THEME;
 
+	if($globals->page["router"]) {
+		cm::getInstance()->router->addRule(
+			$globals->page["router"]["source"]
+			, array(
+				"url" => $globals->page["router"]["destination"]
+			)
+			, cmRouter::PRIORITY_NORMAL
+			, true
+			, false
+			, 0
+			, array()
+			, ($globals->page["router"]["reverse"]
+				? $globals->page["router"]["reverse"]
+				: "/" . $globals->page["name"]
+			)
+		);
+	}
+
 	if(defined("SHOWFILES_IS_RUNNING")
-        || $globals->page["group"] == "actex"
-        || $globals->page["group"] == "services" // nn lo so
-        || $globals->page["group"] == "resource"
-        //|| strpos($globals->settings_path, "/services") === 0 
-        //|| isset($_REQUEST["XHR_COMPONENT"])
-    ) {
-    	if($_SERVER["REMOTE_ADDR"] != $_SERVER["SERVER_ADDR"]) {
-			require_once(CACHE_DISK_PATH . "/library/gallery/system/trace.php");
-    		if(system_trace_isCrawler()) {
-    			http_response_code("401");
-    			echo '<html>
+		|| $globals->page["group"] == "actex"
+		|| $globals->page["group"] == "service" // nn lo so
+		|| $globals->page["group"] == "resource"
+		//|| strpos($globals->settings_path, "/services") === 0
+		//|| isset($_REQUEST["XHR_COMPONENT"])
+	) {
+		if($_SERVER["REMOTE_ADDR"] != $_SERVER["SERVER_ADDR"]) {
+			require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
+			if(system_trace_isCrawler()) {
+				http_response_code("401");
+				echo '<html>
 						<head>
 							<title>no resource</title>
 							<meta name="robots" content="noindex,nofollow" />
 							<meta name="googlebot" content="noindex,nofollow" />
 						</head>
 					</html>';
-    			exit;
-    		}    
-		}  
-    	switch($globals->page["name"]) {
-    		case "api":
-    			cm::getInstance()->router->addRule('(?!^/updater/check/file(.*))/api(/[^/]*)(.*)', array("url"=> '/conf/gallery/api$2/index.php$3'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "api"), "/api");
-    			break;
-    		case "service":
-    			cm::getInstance()->router->addRule('^(/srv|/restricted/srv)(.*)', array("url"=> '/conf/gallery/sys/services$2'), cmRouter::PRIORITY_NORMAL, true, false, 0, array("id" => "services"), "/srv");
-                break;
-    		case "actex":
-    			break;
-    		default:
-    	}
-    
+				exit;
+			}
+		}
+
 //        define("FF_LOCALE", $globals->selected_lang);
 //       define("LANGUAGE_INSET", $globals->selected_lang);
 		//define("CM_DONT_RUN_LAYOUT", true);					//se tolto da sopra e necessario qui
+		if(defined("SERVICE_TIME_LIMIT") && SERVICE_TIME_LIMIT > 0)
+			set_time_limit(SERVICE_TIME_LIMIT);
 
-        define("SKIP_CMS", true);
-        return false;
-    }    	
+		cm::getInstance()->layout_vars["layer"] = "empty";
+		cm::getInstance()->layout_vars["page"] = "XHR";
+		cm::getInstance()->layout_vars["exclude_ff_js"] = true;
+
+		ffTemplate::addEvent("on_loaded_data", "ffTemplate_applets_on_loaded_file");
+		cm::getInstance()->addEvent("on_before_include_applet", "cms_on_before_include_applet");
+		cm::getInstance()->addEvent("on_before_process", function($cm) {
+			if(!$cm->oPage->output_buffer) {
+				$cm->oPage->process();
+			} else {
+				if (is_array($cm->oPage->output_buffer)) {
+					$out_buffer = $cm->oPage->output_buffer;
+				} elseif (strlen($cm->oPage->output_buffer)) {
+					$out_buffer = array("html" => $cm->oPage->output_buffer);
+				}
+				echo ffCommon_jsonenc($out_buffer, true);
+			}
+			exit;
+		});
+
+		define("SKIP_CMS", true);
+		return false;
+	}
 
 	if(!(is_array($globals->settings) && count($globals->settings))) {
 	    $globals->settings = vg_get_settings();
@@ -1074,14 +1103,20 @@ function system_init_on_before_cm($cm)
 //		if(strpos($globals->page["user_path"], $cm->router->getRuleById("mod_sec_social")->reverse) !== false)
 //			define("SKIP_VG_CONTENT", true);	
 
+		if($globals->page["group"] != "console") {
+			ffTemplate::addEvent("on_loaded_data", "ffTemplate_applets_on_loaded_file");
+			cm::getInstance()->addEvent("on_before_include_applet", "cms_on_before_include_applet");
+		}
+
 	     cm::getInstance()->addEvent("on_before_page_process", function(cm $cm) {
 			$glob_libs = ffGlobals::getInstance("__ffTheme_libs__");
 
 			cm_loadlibs($glob_libs->libs, FF_DISK_PATH . "/library/gallery", "cms", "", false, false);
 			if(AREA_SHOW_ECOMMERCE)
-				cm_loadlibs($glob_libs->libs, FF_DISK_PATH . "/library/gallery/ecommerce", "cms", "", false, false);
+				cm_loadlibs($glob_libs->libs, FF_DISK_PATH . "/library/gallery/ecommerce", "cms", "cms/ecommerce", false, false);
 
-	     }, ffEvent::PRIORITY_HIGH);	
+			 cm_loadlibs_save($glob_libs->libs, $_REQUEST["__NOCACHE__"]); //todo: non va bene questa variabile. non si aggiorna mai il file
+	     }, ffEvent::PRIORITY_HIGH);
 
         if(!$globals->page["restricted"]) {
 		    if(strlen($globals->strip_user_path))
@@ -1089,13 +1124,6 @@ function system_init_on_before_cm($cm)
 		    if($globals->ID_domain > 0)
 			    $res["ID_domain"] = $globals->ID_domain;
 
-            if(is_dir(FF_DISK_PATH . "/applets") && count(glob(FF_DISK_PATH . "/applets", GLOB_ONLYDIR )) > 0)
-                 ffTemplate::addEvent ("on_loaded_data", function($tpl) {
-					$cm = cm::getInstance();
-
-					$cm->preloadApplets($tpl);
-					$cm->parseApplets($tpl);
-				} , ffEvent::PRIORITY_DEFAULT);
         } else {
         	cm::getInstance()->addEvent("mod_security_on_check_session", function($cm) { //da rifare prob con i cookie. con la cache questo non funziona piu
 			    $globals = ffGlobals::getInstance("gallery");
@@ -1230,6 +1258,7 @@ function system_init_on_before_routing($cm)
     	
     	$globals->seo["current"] = "page";
     }*/
+
     switch($globals->page["group"]) {
     	case "console":
     		$cm->router->addRule(
@@ -1397,30 +1426,21 @@ function system_init_on_before_routing($cm)
 			 	    
     		break;
     	case "shard":
-    		$cm->oPage->theme = FRONTEND_THEME;
+			check_function("system_layer_shards");
 
-			rewrite_request($globals->page["strip_path"]); //imposta user_path e settings_path togliendo eventuali parametri
-			if(check_function("system_layer_shard")) {
-				$shard = system_layer_shard($globals->settings_path);
-				if($shard)
-					if($shard === true) { //da vedere bene
-						http_response_code(204);
-					} else {
-						echo $shard;
-					}
-				else
-				{
-					if($cm->isXHR()) {
-						http_response_code(500);
-					} else 
-						http_response_code(404);
-				}
+			$shard = system_layer_shards($globals->user_path);
+			if($shard)
+				echo $shard["pre"] . $shard["content"] . $shard["post"];
+			else
+			{
+				if($cm->isXHR()) {
+					http_response_code(500);
+				} else
+					http_response_code(404);
 			}
 	        exit;
-    	case "updater":
-			ffRedirect($cm->oPage->site_path . "/admin/system" . $globals->page["user_path"]);
-    		break;
-		case "services":
+		case "service":
+		case "updater":
     	case "actex":
     		//non dovrebbe mai entrare qui
     		ffErrorHandler::raise("Catrina: Percorso Riservato. Verificare perche entra qui", E_USER_ERROR, null, get_defined_vars());
@@ -1735,4 +1755,18 @@ function rewrite_request($strip_path = null) {
 	$globals->settings_path = $settings_path;
 	$globals->user_path = $user_path;
 	
+}
+
+function ffTemplate_applets_on_loaded_file($tpl)
+{
+	$cm = cm::getInstance();
+
+	$cm->preloadApplets($tpl);
+	$cm->parseApplets($tpl);
+}
+function cms_on_before_include_applet($cm, $name, $params, $id) {
+	$globals = ffGlobals::getInstance("gallery");
+	$globals->applets["notifier"] = FF_DISK_PATH . "/library/gallery/classes/notifier/applet/index.php";
+
+	return $globals->applets[$name];
 }
