@@ -27,7 +27,7 @@
 # if file notfound goto static
  RewriteCond %{HTTP_HOST}           ^media\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
  RewriteCond %{REQUEST_FILENAME}    ^!-f
- RewriteRule ^cache/_thumb/(.*)     [DOMAIN_PROTOCOL]://static.[DOMAIN_NAME].[DOMAIN_EXT]/$1 [L,R=301]
+ RewriteRule ^cache/_thumb/(.*)     [DOMAIN_PROTOCOL]://static.[DOMAIN_NAME].[DOMAIN_EXT]/$1 [L,R=302,E=nocache:1]
 
 #cm showfiles in static
  RewriteCond %{HTTP_HOST}           ^static\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
