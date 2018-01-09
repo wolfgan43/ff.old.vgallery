@@ -46,47 +46,62 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
     //$globals->lang_alt                  = null;
     $globals->locale                  	= null;
     $globals->ecommerce                 = array();
-    $globals->permissions               = array();
+    //$globals->permissions               = array();
     $globals->custom_data               = array();
     $globals->ID_domain                 = null;
-    $globals->frame_smart_url           = null;
-    $globals->sid                       = null;
-    $globals->params                    = array();
-    $globals->cache                     = array(
-        "enabled" => null
-    , "file" => null
-    , "section_blocks" => array()
-    , "layout_blocks" => array()
-    , "data_blocks" => array()
-    , "ff_blocks" => array()
-    );
+    //$globals->frame_smart_url           = null;
+    //$globals->sid                       = null;
+    //$globals->params                    = array();
+   	$globals->cache                     = array(
+											"enabled"			=> null
+											, "file" 			=> null
+											, "layer_blocks" 	=> array()
+											, "section_blocks" 	=> array()
+											, "layout_blocks" 	=> array()
+											, "data_blocks" 	=> array()
+											, "ff_blocks" 		=> array()
+											, "refresh" 		=> array(
+												"nodes" 		=> array()
+												, "tags" 		=> array()
+												, "cats"		=> array()
+												, "places" 		=> array()
+		   										, "paths"		=> array()
+											)
+										);
     //$globals->cache_file                = null;
     $globals->strip_user_path           = null;
     $globals->media_exception           = array();
     $globals->js                        = array();
     $globals->css                       = array();
+	$globals->microdata                 = array();
+	$globals->author                 	= array();
     $globals->meta                      = array();
     $globals->html                      = array();
     $globals->template                  = array();
     $globals->manage                    = array();
     $globals->page               		= null;
     $globals->page_title                = null;
-    $globals->canonical                 = null;
-    $globals->favicon               	= null;
-    $globals->manifest               	= null;
-    $globals->user						= array(
-        "menu" => null
-    , "pages" => null
-    );
+	$globals->cover               		= null;
+	$globals->http_status              	= null;
+
+	$globals->canonical                 = null;
+    //$globals->favicon               	= null;
+    //$globals->manifest               	= null;
+
+	$globals->links						= null;
+	$globals->user						= array(
+											"menu" => null
+											, "pages" => null
+										);
     $globals->settings                  = array();
     $globals->fixed_pre                 = array(
-        "body" => null
-    , "content" => null
-    );
+											"body" => null
+											, "content" => null
+										);
     $globals->fixed_post                = array(
-        "body" => null
-    , "content" => null
-    );
+											"body" => null
+											, "content" => null
+										);
     $globals->seo                       = array();
     $globals->search                    = null;
     $globals->navigation                = null;
@@ -96,46 +111,52 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
     $globals->tpl                  		= null;    //array associativo con tutte le info sulla struttura della pagina
     $globals->data_storage              = array();    //array associativo con tutte le info sulla struttura della pagina
 
-	//generic meta valid for all situation
 	$globals->setMeta = function($name = "", $content = "", $type = "name") { //todo: eliminare l'intermedio e usare direttametne page_meta
-		$globals = ffGlobals::getInstance("gallery");
+		 $globals = ffGlobals::getInstance("gallery");
 
-		$globals->meta[$name] = array(
-			"content" => $content
-		, "type" => $type
-		);
+		 $globals->meta[$name] = array(
+			 "content" 							=> $content
+		 	, "type" 							=> $type
+		 );
 	};
-	//seo params divided in type
-    $globals->setSeo = function($params = array(), $priority = "user") {
-        $globals = ffGlobals::getInstance("gallery");
-        if(is_array($params) && count($params)) {
-            if(is_array($globals->seo[$priority]))
-                $globals->seo[$priority] = array_replace($globals->seo[$priority], $params);
-            else
-                $globals->seo[$priority] = $params;
-        }
-        $globals->seo["current"] = $priority;
-    };
+	 //seo params divided in type
+	$globals->setSeo = function($params = array(), $priority = "user") {
+		 $globals = ffGlobals::getInstance("gallery");
+		 if(is_array($params) && count($params)) {
+			 if(is_array($globals->seo[$priority]))
+				 $globals->seo[$priority] 		= array_replace($globals->seo[$priority], $params);
+			 else
+				 $globals->seo[$priority] 		= $params;
+		 }
+		 $globals->seo["current"] 				= $priority;
+	};
+	$globals->setMicrodata = function($params = array()) {
+		 $globals = ffGlobals::getInstance("gallery");
+		 if(is_array($params) && count($params)) {
+			 if(is_array($globals->microdata))
+				 $globals->microdata 			= array_replace($globals->microdata, $params);
+			 else
+				 $globals->microdata 			= $params;
+		 }
+	};
+	$globals->setAuthor = function($name, $url = null, $avatar = null, $tags = null) {
+		 $globals = ffGlobals::getInstance("gallery");
 
-    if(1)//todo: da togliere
+		 $globals->author = array(
+		 	"name" 								=> $name
+			 , "avatar" 						=> $avatar
+			 , "url" 							=> $url
+			 , "tags" 							=> $tags
+		 );
+	};
+
+   /* if(1)//todo: da togliere. tolto come esperimento
     {
         global $ff_global_setting;
 
         $ff_global_setting["ffRecord"]["widget_discl_enable"] = false;
         $ff_global_setting["ffGrid"]["widget_discl_enable"] = false;
         $ff_global_setting["ffGrid_html"]["reset_page_on_search"] = true;
-
-        /*
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["component"]["class"] = "pagenav";
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["pagination"]["class"] = "pagenav__pages";
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["pagination"]["col"] = null;
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["choice"]["class"] = "pagenav__choice";
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["choice"]["col"] = null;
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["totelem"]["class"] = "pagenav__totEl";
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["totelem"]["col"] = null;
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["perPage"]["class"] = "pagenav__perPage";
-            $ff_global_setting["ffPageNavigator"]["framework_css"]["perPage"]["col"] = null;*/
-
 
 
         $ff_global_setting["ffPageNavigator"]["with_choice"] = true;
@@ -167,6 +188,6 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
 
 
         $ff_global_setting["ffDetails_horiz"]["switch_row_class"]["display"] = true;
-    }
+    }*/
 }
 
