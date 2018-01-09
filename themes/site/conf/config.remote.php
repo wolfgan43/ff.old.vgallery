@@ -41,7 +41,6 @@ define("MONGO_DATABASE_PASSWORD","");
  * Trace
  */
 define("TRACE_TABLE_NAME", 'trace');
-define("TRACE_NOTIFY_TABLE_NAME", 'trace_notify');
 define("TRACE_ONESIGNAL_APP_ID", "");
 define("TRACE_ONESIGNAL_API_KEY", "");
 
@@ -65,28 +64,29 @@ define("TRACE_MONGO_DATABASE_PASSWORD", '');
 /**
  * Notifier
  */
-define("NOTIFY_PUSH_ONESIGNAL_APP_ID", "");
-define("NOTIFY_PUSH_ONESIGNAL_API_KEY", "");
+define("NOTIFY_TABLE_NAME", 'trace_notify');
+define("NOTIFY_TABLE_KEY", 'ID');
+define("NOTIFY_ONESIGNAL_APP_ID", "");
+define("NOTIFY_ONESIGNAL_API_KEY", "");
 
 /**
  * Notifier Database Mysql
  */
-define("NOTIFY_SQL_HOST", '');
-define("NOTIFY_SQL_NAME", '');
-define("NOTIFY_SQL_USER", '');
-define("NOTIFY_SQL_PASSWORD", '');
-define("NOTIFY_SQL_TABLE", 'trace_notify');
-define("NOTIFY_SQL_KEY", 'ID');
+define("NOTIFY_DATABASE_HOST", '');
+define("NOTIFY_DATABASE_NAME", '');
+define("NOTIFY_DATABASE_USER", '');
+define("NOTIFY_DATABASE_PASSWORD", '');
+define("NOTIFY_DATABASE_TABLE", 'trace_notify');
 
 /**
  * Notifier Database Mysql
  */
-define("NOTIFY_NOSQL_HOST", '');
-define("NOTIFY_NOSQL_NAME", '');
-define("NOTIFY_NOSQL_USER", '');
-define("NOTIFY_NOSQL_PASSWORD", '');
-define("NOTIFY_NOSQL_TABLE", 'trace_notify');
-define("NOTIFY_NOSQL_KEY", 'ID');
+define("NOTIFY_MONGO_DATABASE_HOST", '');
+define("NOTIFY_MONGO_DATABASE_NAME", '');
+define("NOTIFY_MONGO_DATABASE_USER", '');
+define("NOTIFY_MONGO_DATABASE_PASSWORD", '');
+define("NOTIFY_MONGO_DATABASE_TABLE", 'trace_notify');
+define("NOTIFY_MONGO_DATABASE_KEY", 'ID');
 
 /**
  * Email SMTP
