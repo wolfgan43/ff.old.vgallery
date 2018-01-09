@@ -167,7 +167,6 @@ define("CM_LOCAL_APP_NAME", 'Blue Ocarina');
 define("APPID", '9abe42619b6fa5ce92889ff1e6fed8b4-888ef0s118e1004221606882ef3ca09f');
 define("CDN_STATIC", false);
 //define("CM_SHOWFILES", "");
-//define("CMS_SHOWFILES", "");
 define("TRACE_VISITOR", true);
 define("ADMIN_THEME"			, "admin");
 
