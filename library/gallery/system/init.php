@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
 *   VGallery: CMS based on FormsFramework
     Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
@@ -76,7 +76,7 @@ function system_init($cm) {
 	    $path_info                      = "/";
 
 	$globals->user_path 	            = $path_info;
-	$globals->page 			            = cache_get_page_properties($path_info, null, true);
+	$globals->page 			            = cache_get_page_properties($path_info, true);
 	$globals->locale 		            = cache_get_locale($globals->page, DOMAIN_NAME); //pulisce il percorso dalla lingua
     $globals->selected_lang             = FF_LOCALE;
 
@@ -115,17 +115,19 @@ function system_init($cm) {
     	, "enable_gzip" 				=> true
     	, "compact_js" 					=> 2
     	, "compact_css"					=> 2
-    	, "framework_css" 				=> ($globals->page["framework_css"]
-    										? $globals->page["framework_css"]
-    										: "bootstrap-fluid"
-    									)	
-    	, "font_icon" 					=> ($globals->page["font_icon"]
-    										? $globals->page["font_icon"]
-    										: "fontawesome"
-    									)
 	);
-	
 
+	define("FF_THEME_FRAMEWORK_CSS", 	($globals->page["framework_css"] && !$globals->page["restricted"]
+		? $globals->page["framework_css"]
+		: "bootstrap-fluid"
+	));
+	define("FF_THEME_FONT_ICON",  		($globals->page["font_icon"]
+		? $globals->page["font_icon"]
+		: "fontawesome"
+	));
+
+	$globals->page["framework_css"] 	= FF_THEME_FRAMEWORK_CSS;
+	$globals->page["font_icon"] 		= FF_THEME_FONT_ICON;
 
 	if($globals->page["restricted"]) {
 		$cm_layout_vars["exclude_form"] = false;
@@ -140,6 +142,7 @@ function system_init($cm) {
 	}
 	if($cm_layout_vars["layer"] == THEME_INSET && $cm_layout_vars["theme"] != FRONTEND_THEME)
 		cm::getInstance()->layout_vars["theme"] = FRONTEND_THEME;
+
 
 	if(defined("SHOWFILES_IS_RUNNING")
         || $globals->page["group"] == "actex"
@@ -165,6 +168,29 @@ function system_init($cm) {
 //        define("FF_LOCALE", $globals->selected_lang);
 //       define("LANGUAGE_INSET", $globals->selected_lang);
 		//define("CM_DONT_RUN_LAYOUT", true);					//se tolto da sopra e necessario qui
+		if(defined("SERVICE_TIME_LIMIT") && SERVICE_TIME_LIMIT > 0)
+			set_time_limit(SERVICE_TIME_LIMIT);
+
+		cm::getInstance()->layout_vars["layer"] = "empty";
+		cm::getInstance()->layout_vars["page"] = "XHR";
+		cm::getInstance()->layout_vars["exclude_ff_js"] = true;
+
+		ffTemplate::addEvent("on_loaded_data", "ffTemplate_applets_on_loaded_file");
+		cm::getInstance()->addEvent("on_before_include_applet", "cms_on_before_include_applet");
+		cm::getInstance()->addEvent("on_before_process", function($cm) {
+			if(!$cm->oPage->output_buffer) {
+				$cm->oPage->process();
+			} else {
+				if (is_array($cm->oPage->output_buffer)) {
+					$out_buffer = $cm->oPage->output_buffer;
+				} elseif (strlen($cm->oPage->output_buffer)) {
+					$out_buffer = array("html" => $cm->oPage->output_buffer);
+				}
+				echo ffCommon_jsonenc($out_buffer, true);
+			}
+			exit;
+		});
+
         define("SKIP_CMS", true);
         return false;
     }      	
@@ -321,7 +347,6 @@ function system_init($cm) {
 			define("MOD_SEC_LOGIN_FORCE_LAYER", false);
 		elseif(array_key_exists("MOD_SEC_FORCE_LAYER_" . $area, $globals->settings))
     		define("MOD_SEC_LOGIN_FORCE_LAYER", $globals->settings["MOD_SEC_FORCE_LAYER_" . $area]);
-
 
 		if($globals->settings["MOD_SEC_" . $prefix . "_LOGO_" . $area]) {
 		    $arrLogoBox = explode("-", $globals->settings["MOD_SEC_" . $prefix . "_LOGO_" . $area]);
@@ -959,7 +984,7 @@ function system_get_schema_module($return = "schema", $def = null, $type = null)
 			}		
 		}  		
   	}
-  	
+
   	if($type)
   		return $schema_module[$return][$type];
   	else
@@ -1080,7 +1105,6 @@ function system_init_on_before_cm($cm) {
     //if(defined("CM_MULTIDOMAIN_ROUTING") && CM_MULTIDOMAIN_ROUTING)
     //	check_page_alias($settings_path, $_SERVER["HTTP_HOST"], false);
 
-   
     if(!AREA_INTERNATIONAL_SHOW_MODIFY) {
         ffTemplate::$_MultiLang_Hide_code = true;
     } else {
@@ -1099,7 +1123,12 @@ function system_init_on_before_cm($cm) {
 	$res = null;
 	if($globals->page["primary"]) {
 		if(strpos($globals->page["user_path"], $cm->router->getRuleById("mod_sec_social")->reverse) !== false)
-			define("SKIP_VG_CONTENT", true);	
+			define("SKIP_VG_CONTENT", true);
+
+		if($globals->page["group"] != "console") {
+			ffTemplate::addEvent("on_loaded_data", "ffTemplate_applets_on_loaded_file");
+			cm::getInstance()->addEvent("on_before_include_applet", "cms_on_before_include_applet");
+		}
 
         if(!$globals->page["restricted"]) {
 		    if(strlen($globals->strip_user_path))
@@ -1107,8 +1136,6 @@ function system_init_on_before_cm($cm) {
 		    if($globals->ID_domain > 0)
 			    $res["ID_domain"] = $globals->ID_domain;
 
-            if(is_dir(FF_DISK_PATH . "/applets") && count(glob(FF_DISK_PATH . "/applets", GLOB_ONLYDIR )) > 0)
-                 ffTemplate::addEvent ("on_loaded_data", "ffTemplate_applets_on_loaded_file" , ffEvent::PRIORITY_DEFAULT);
         } else {
           //  $cm->modules["security"]["events"]->addEvent("on_retrive_params", "mod_security_on_retrive_params", ffEvent::PRIORITY_DEFAULT);
 
@@ -1163,7 +1190,7 @@ function system_cache_on_tpl_parse($oPage, $tpl)
     	$oPage->compress = false;
 }
 
-function system_init_on_before_routing($cm) 
+function system_init_on_before_routing($cm)
 {           
     $globals = ffGlobals::getInstance("gallery");
 
@@ -1181,6 +1208,8 @@ function system_init_on_before_routing($cm)
 
     switch($globals->page["group"]) {
     	case "console":
+
+
 			if(check_function("system_layer_restricted"))
 				call_user_func_array("system_layer_" . $globals->page["name"], array(&$cm));
     		break;
@@ -1188,7 +1217,6 @@ function system_init_on_before_routing($cm)
 			$cm->oPage->theme = FRONTEND_THEME;
     	    //da mettere il process frame  che sta ala momento in /srv/frame
 			rewrite_request($globals->page["strip_path"]); //imposta user_path e settings_path togliendo eventuali parametri
-
 	        //$globals->settings_path = $settings_path;
 	        ffGrid::addEvent ("on_factory_done", "ffGrid_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
 	        ffRecord::addEvent ("on_factory_done", "ffRecord_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
@@ -1202,12 +1230,12 @@ function system_init_on_before_routing($cm)
 			    //if(!defined("DISABLE_CACHE")) {
 			        //check_cache_sid($sid["key"], LANGUAGE_INSET);
 			   // }
-				if(array_key_exists("key", $sid))
-		    		$globals->sid = $sid["key"];
+				//if(array_key_exists("key", $sid))
+		    	//	$globals->sid = $sid["key"];
 			    
 				if(array_key_exists("value", $sid)) {
 			        $params = json_decode($sid["value"], true);
-			        $globals->params = $params;
+			        //$globals->params = $params;
 
 			        if(check_function("process_init_modules")) {
 			            if((is_array($params["sys"]) && array_key_exists("layouts", $params["sys"]) && is_array($params["sys"]["layouts"]) && count($params["sys"]["layouts"])) || (is_array($params["sys"]) && array_key_exists("layouts", $params["sys"]) && !is_array($params["sys"]["layouts"]) && strlen($params["sys"]["layouts"]))) {
@@ -1217,23 +1245,20 @@ function system_init_on_before_routing($cm)
 			            }
 			        }
 				}
-			}    	    
+			}
     		break;
     	case "shard":
-    		$cm->oPage->theme = FRONTEND_THEME;
+			check_function("system_layer_shards");
 
-			rewrite_request($globals->page["strip_path"]); //imposta user_path e settings_path togliendo eventuali parametri
-			if(check_function("system_layer_shard")) {
-				$shard = system_layer_shard($globals->settings_path);
-				if($shard)
-					echo $shard;
-				else
-				{
-					if($cm->isXHR()) {
-						http_response_code(500);
-					} else 
-						http_response_code(404);
-				}
+			$shard = system_layer_shards($globals->user_path);
+			if($shard)
+				echo $shard["pre"] . $shard["content"] . $shard["post"];
+			else
+			{
+				if($cm->isXHR()) {
+					http_response_code(500);
+				} else
+					http_response_code(404);
 			}
 	        exit;
 		case "service":
@@ -1317,11 +1342,7 @@ function system_init_on_before_routing($cm)
                 if(check_function("process_init_modules"))
                     process_init_modules($cm->oPage, ($_SERVER['REQUEST_METHOD'] == "POST" ? null : $cm->oPage->isXHR()));    	
             }   	
-    
     }
-    
-    
-   
 }
 
 function rewrite_request($strip_path = null) {
@@ -1479,4 +1500,18 @@ function rewrite_request($strip_path = null) {
 	$globals->settings_path = $settings_path;
 	$globals->user_path = $user_path;
 	
+}
+
+function ffTemplate_applets_on_loaded_file($tpl)
+{
+	$cm = cm::getInstance();
+
+	$cm->preloadApplets($tpl);
+	$cm->parseApplets($tpl);
+}
+function cms_on_before_include_applet($cm, $name, $params, $id) {
+	$globals = ffGlobals::getInstance("gallery");
+	$globals->applets["notifier"] = FF_DISK_PATH . "/library/gallery/classes/notifier/applet/index.php";
+
+	return $globals->applets[$name];
 }

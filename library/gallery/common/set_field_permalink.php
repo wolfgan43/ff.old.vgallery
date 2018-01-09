@@ -249,11 +249,16 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
 		}
   	}
 
+	$sSQL_where = "";
   	if(is_array($arrTable["where"]) && count($arrTable["where"])) {
   		foreach($arrTable["where"] AS $field_name => $field_value) {
   			$sSQL_where .= " AND " . $field_name . " = " . $field_value;
   		}
   	}
+
+	$sSQL_update = "";
+	$sSQL_inset_head = "";
+	$sSQL_inset_body = "";
   	if(is_array($arrTable["update"]) && count($arrTable["update"])) {
   		foreach($arrTable["update"] AS $field_name => $field_value) {
   			$sSQL_update .= ", " . $field_name . " = " . $field_value;
@@ -297,6 +302,7 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
  			/**
  			* Resolve Source User Path By Lang
  			*/
+			$arrSourceUserPathSQL = array();
 			if(is_array($arrLang) && count($arrLang) > 1) {
 				$tmp_parent = $source_user_path;
 				do {
@@ -346,6 +352,7 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
 		}
 	}
 
+	$arrSql = array();
 	if($arrTable["name"] && is_array($arrLang) && count($arrLang) > 1) {
 		$tmp_parent = $default_parent;
 		do {
@@ -662,7 +669,7 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
 	if(!$skip_redirect && is_array($oldPermalink) && count($oldPermalink) && check_function("system_gallery_redirect")) {
 		foreach($oldPermalink AS $lang_code => $old_permalink) {
 			if($old_permalink && $arrPermalink[$lang_code] && $arrPermalink[$lang_code] != $old_permalink)
-				system_redirect_set_rule(DOMAIN_NAME, $old_permalink, DOMAIN_NAME . $arrPermalink[$lang_code]);
+				system_redirect_set_rule(DOMAIN_NAME, $old_permalink, DOMAIN_INSET . $arrPermalink[$lang_code]);
 		}
 	}
 	

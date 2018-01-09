@@ -28,12 +28,12 @@
 	$target = ($nocurrent ? "nocurrent" : "current");
   	//if(!$arrLocale)
   	///	$arrLocale = cache_get_settings("locale");
-	if(!$locale_loaded[$target] && !$nocurrent) {
+	/*if(!$locale_loaded[$target] && !$nocurrent) {
 		$globals = ffGlobals::getInstance("gallery");
 		if($globals->locale) {
 			$locale_loaded[$target] = $globals->locale;
 		}
-	}
+	}*/
   	
 	if(!$locale_loaded[$target]) {
 		if(is_file(CM_CACHE_PATH . "/locale" . ($nocurrent ? "-nocurrent" : "") . "." . FF_PHP_EXT)) {
