@@ -445,5 +445,9 @@ function process_login($user_path, &$layout) {
 
     $cm->doEvent("vg_on_processed_block_login", array(&$tpl, $user_permission));
 
-    return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
+	return array(
+		"pre" 			=> $block["tpl"]["pre"]
+		, "content" 	=> $tpl->rpparse("main", false)
+		, "post" 		=> $block["tpl"]["post"]
+	);
 }

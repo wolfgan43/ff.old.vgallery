@@ -298,6 +298,10 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
 
     if($count_item)
         $buffer = $tpl->rpparse("main", false);
-    
-    return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
+
+	return array(
+		"pre" 			=> $block["tpl"]["pre"]
+		, "content" 	=> $buffer
+		, "post" 		=> $block["tpl"]["post"]
+	);
 }

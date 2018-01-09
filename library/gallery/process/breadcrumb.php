@@ -312,5 +312,9 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
         $tpl->set_var("SezNavigation", "");
     }
 
-    return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
+	return array(
+		"pre" 			=> $block["tpl"]["pre"]
+		, "content" 	=> $tpl->rpparse("main", false)
+		, "post" 		=> $block["tpl"]["post"]
+	);
 }

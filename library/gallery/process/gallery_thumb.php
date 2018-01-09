@@ -374,9 +374,16 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
      * Process Block Header
      */
     if ($file_properties["container_mode"] == "HIDE" && check_function("set_template_var")) {
-	$block = get_template_header($user_path, $admin_menu, $layout);
+		$block = get_template_header($user_path, $admin_menu, $layout);
 
-	return array("content" => $block["tpl"]["header"] . ($enable_error ? ffTemplate::_get_word_by_code("gallery_is_hidden_by_properties") : "") . $block["tpl"]["footer"]);
+		return array(
+			"pre" 			=> $block["tpl"]["pre"]
+			, "content" 	=>  ($enable_error
+								? ffTemplate::_get_word_by_code("gallery_is_hidden_by_properties")
+								: ""
+							)
+			, "post" 		=> $block["tpl"]["post"]
+		);
     }
 
     $real_rec_per_page = $file_properties["rec_per_page"];
@@ -1335,6 +1342,10 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	$buffer = $tpl->rpparse("main", false);
     }
 
-    return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
+    return array(
+    	"pre" 			=> $block["tpl"]["pre"]
+		, "content"		=> $buffer
+		, "post" 		=> $block["tpl"]["post"]
+	);
 }
 

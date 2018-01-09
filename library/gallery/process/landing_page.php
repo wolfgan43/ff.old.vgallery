@@ -503,8 +503,10 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 	    */            
 	    if(check_function("set_template_var")) 
 	        $block = get_template_header($user_path, $admin_menu, $layout, $tpl);
-        
-	    $res["content"] = $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"];
+
+		$res["pre"] 		= $block["tpl"]["pre"];
+		$res["content"] 	= $buffer;
+		$res["post"] 		= $block["tpl"]["post"];
     } else {
     
     
@@ -517,6 +519,7 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 function parse_landing_page_overview($arrLandingPage, $arrLandingPageGroup, $vg_params) {
 	check_function("preposition");
 
+	$res = null;
     if(is_array($arrLandingPageGroup["overview"]) && count($arrLandingPageGroup["overview"])) {
 		$arrLandingPageTags = process_landing_tags($arrLandingPage);
 //print_r($arrLandingPage);

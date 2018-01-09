@@ -236,12 +236,14 @@ function process_vgallery_menu_group($user_path, $group_menu, $search_param = ""
 
     
     if(is_array($menu_params["template"]) && count($menu_params["template"])) {
-    	$res["template"] = $menu_params["template"];
-    	$res["template"]["offcanvas"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
-    	$res["content"] = $res["template"]["content"];
-    } else { 
-		$res["content"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
-    }      
+    	$res["template"] 					= $menu_params["template"];
+    	$res["template"]["offcanvas"] 		= $block["tpl"]["pre"] . $tpl->rpparse("main", false) . $block["tpl"]["post"];
+    	$res["content"] 					= $res["template"]["content"];
+    } else {
+		$res["pre"] 						= $block["tpl"]["pre"];
+		$res["content"] 					= $tpl->rpparse("main", false);
+		$res["post"] 						= $block["tpl"]["post"];
+    }
     
     return $res;
 }

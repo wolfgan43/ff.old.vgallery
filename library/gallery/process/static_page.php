@@ -88,7 +88,7 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
             //$globals->cache["data_blocks"]["DV" . "0" . "-" . $static_value] = $static_value;        
         } else {
             $tpl->set_var("content", "");
-            $strError = ffTemplate::_get_word_by_code("static_page_nopage_db");
+            $strError = ffTemplate::_get_word_by_code("static_page_nopage_db: #" . $unic_id);
         }
     } elseif($static_type == "STATIC_PAGE_BY_FILE") {
 		$block["class"]["default"] = ffCommon_url_rewrite(ffGetFilename($static_value));
@@ -117,7 +117,7 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
             $tpl = ffTemplate::factory(get_template_cascading($user_path, "draft.html"));
             $tpl->load_file("draft.html", "main");
             $tpl->set_var("content", "");
-            $strError = ffTemplate::_get_word_by_code("static_page_nopage_file");
+            $strError = ffTemplate::_get_word_by_code("static_page_nopage_file: " . $unic_id);
         }
         
         set_cache_data("T", basename($static_value));
@@ -224,6 +224,10 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 	} else {
     	return array("content" => $tpl->rpparse("main", false));
 	}*/
-	
-	return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
+
+	return array(
+		"pre" 			=> $block["tpl"]["pre"]
+		, "content" 	=> $tpl->rpparse("main", false)
+		, "post" 		=> $block["tpl"]["post"]
+	);
 }

@@ -232,5 +232,9 @@ function process_language($selected_lang, $user_path, &$layout)
         $tpl->parse("SezError", false);
     }
   */  
-	return array("content" => $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"]);
+	return array(
+		"pre" 			=> $block["tpl"]["pre"]
+		, "content" 	=> $tpl->rpparse("main", false)
+		, "post" 		=> $block["tpl"]["post"]
+	);
 }

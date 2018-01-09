@@ -820,14 +820,16 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                             
     if($layout_settings["AREA_VGALLERY_MENU_OFFCANVAS"])
     {
-        $template["offcanvas"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
-        $res["content"] = '<nav class="tab-bar hide-for-large-up"> 
-                                <a class="left-off-canvas-toggle menu-icon" aria-expanded="false">
-                                    <span></span>
-                                </a>
-                            </nav>';
+        $template["offcanvas"] 	= $block["tpl"]["pre"] . $tpl->rpparse("main", false) . $block["tpl"]["post"];
+        $res["content"] 		= '<nav class="tab-bar hide-for-large-up"> 
+										<a class="left-off-canvas-toggle menu-icon" aria-expanded="false">
+											<span></span>
+										</a>
+									</nav>';
     } else {
-		$res["content"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
+		$res["pre"] 			= $block["tpl"]["pre"];
+		$res["content"] 		= $tpl->rpparse("main", false);
+		$res["post"] 			= $block["tpl"]["post"];
     }
 	if(is_array($template) && count($template))
 		$res["template"] = $template;

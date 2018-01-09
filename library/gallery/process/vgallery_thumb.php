@@ -204,11 +204,10 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
     */
     $vg_father = process_vgallery_father($vg_father_params, "thumb");
 
-	//print_r($vg_father);
     if(!$vg_father || !$vg_father["available"] || !$vg_father["permission"]["visible"])
         return null; 
 	//$layout["unic_id"] = $vg_father_params["unic_id"];    
-	
+
     /**
     * Override Block Grid System
     */
@@ -328,10 +327,11 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 		/**
 		* Load Record
 		*/
-		$vg = process_vgallery_node($vg_father, $father_settings, $vg_field);	
-	    if (is_array($vg)) 
+		$vg = process_vgallery_node($vg_father, $father_settings, $vg_field);
+	    if (is_array($vg))
 	    {
 		    $count_files = 0;
+			$count_field_per_row_empty = 0;
 
 	        $switch_style_row = false;
 	        $switch_style_col = false;
@@ -1043,19 +1043,23 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
     	$globals->seo[$vg_father["seo"]["mode"]] = $vg_father["seo"];
     }
 
-    if($params["output"]) {
-    	$res = array("nodes" => $arrKeyNode
-                        , "content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-                        , "params" => $vg_father["request_params"]
-                        , "js_request" => array_keys($arrJsRequest)
-                    );
+	if($params["output"]) {
+    	$res = array(
+			"nodes" => $arrKeyNode
+			, "content" => $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
+			, "params" => $vg_father["request_params"]
+			, "js_request" => array_keys($arrJsRequest)
+		);
 
         if($params["output"] === true)
         	return $res;
         else
         	return $res[$params["output"]]; 
     } else {
-        return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
+		return array(
+			"pre" 			=> $block["tpl"]["pre"]
+			, "content" 	=> $buffer
+			, "post" 		=> $block["tpl"]["post"]
+		);
     }
 }
-?>

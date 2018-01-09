@@ -620,16 +620,21 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
     }
 
     if($params["output"]) {
-        $res = array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
-                        , "params" => $vg_father["request_params"]
-                        , "js_request" => array_keys($arrJsRequest)
-                    );
+        $res = array(
+        	"content" => $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
+			, "params" => $vg_father["request_params"]
+			, "js_request" => array_keys($arrJsRequest)
+		);
 
         if($params["output"] === true)
             return $res;
         else
             return $res[$params["output"]];
     } else {
-        return array("content" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]);
-    }
+		return array(
+			"pre" 			=> $block["tpl"]["pre"]
+			, "content" 	=> $buffer
+			, "post" 		=> $block["tpl"]["post"]
+		);
+	}
 }

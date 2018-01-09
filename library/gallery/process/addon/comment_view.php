@@ -396,7 +396,10 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
     } else {
         $tpl->set_var("SezError", "");
     }
-	
-	return $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
+
+	return array(
+		"pre" 			=> $block["tpl"]["pre"]
+		, "content" 	=> $tpl->rpparse("main", false)
+		, "post" 		=> $block["tpl"]["post"]
+	);
 }
-?>

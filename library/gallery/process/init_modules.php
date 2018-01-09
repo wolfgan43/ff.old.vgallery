@@ -136,7 +136,7 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 			            			, $db_modules->getField("module_name")->getValue()
 			            			, $db_modules->getField("module_params")->getValue()
 			            			, array(
-			            				"own_location" => (strlen($globals->frame_smart_url) && $_REQUEST["out"] == "html"
+			            				"own_location" => ($_REQUEST["out"] == "html"
 			            					? false
 			            					: true
 			            				)
