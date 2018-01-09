@@ -1,9 +1,9 @@
-ff.cms.fn.toolbaradmin = function(targetid) {	
+ff.cms.fn.toolbaradmin = function(targetid) {
 	var displayMode = "";
 	var targetid = targetid;
 	if(targetid != "#adminPanel")
 		return;
-           
+
 	var zIndex = 90;
 	$("*").each(function() {
 		var current = parseInt($(this).css("z-index"), 10);
@@ -38,7 +38,7 @@ ff.cms.fn.toolbaradmin = function(targetid) {
 						, "border-top" : "1px solid rgba(0,127,255,0.80)"
 					});			
 				} else {
-					jQuery(targetid + ".toolbaradmin").animate({ 
+					jQuery(targetid + ".toolbaradmin").animate({
 						"height" : "0"
 					},300, function() {
 						jQuery(targetid + " > ul").hide();
@@ -61,7 +61,7 @@ ff.cms.fn.toolbaradmin = function(targetid) {
 	}
 	/*jQuery(targetid + ".toolbaradmin").children(".first").append(''); */
 	
-	jQuery("#adminPanel").draggable(); 
+	jQuery("#adminPanel").draggable();
 
 	if(document.cookie.indexOf("cms-toolbar-fixed") < 0) {
 		toolbarToggle(false, true);
@@ -134,7 +134,7 @@ ff.cms.fn.toolbaradmin = function(targetid) {
 			}, 
 			out : function(e) {
 				if(document.cookie.indexOf("toolbarclosed") >= 0 
-					&& jQuery(targetid + ".toolbaradmin > ul").is(":visible") 
+					&& jQuery(targetid + ".toolbaradmin > ul").is(":visible")
 					&& !jQuery(targetid + ".toolbaradmin > ul:not(submenu) > li > ul.submenu").is(":visible")
 				) {
 					toolbarToggleTimer = setTimeout(toolbarToggle, 1000);
@@ -364,6 +364,6 @@ ff.cms.fn.toolbaradmin = function(targetid) {
 				jQuery(this).closest("ul.submenu").sortable( "enable" );
 		}
 		return false;
-	});	
+	});
 	return displayMode;
 };

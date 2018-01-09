@@ -3,7 +3,7 @@ ff.cms.fn.jqueryui_accordion = function(targetid) {
 	if(targetid.length > 0)
 		targetid = targetid + " ";
 	
-	ff.pluginLoad("jquery.ui", "/themes/library/jquery.ui/jquery.ui.js", function() {
+	ff.pluginLoad("jquery-ui", "/themes/library/jquery-ui/jquery-ui.js", function() {
 	    jQuery(targetid + '.accordion > li').each(function() {
 	        jQuery(this).prepend('<h3></h3>');
 	        jQuery('#' + this.id + ' > *:not(h3, ul, div.desc)').appendTo('#' + this.id + ' > h3');
