@@ -38,7 +38,8 @@ ff.cms.vgallery = (function () {
                 elem = jQuery("body");
 
             jQuery(".vg-item[data-fullclick]", elem).click(function(e) {
-                if(jQuery(this).attr("data-fullclick") && !jQuery(e.srcElement).is("a") && !jQuery(e.srcElement).closest("a").length)  {
+                var target = e.target || e.srcElement;
+                if(jQuery(this).attr("data-fullclick") && !jQuery(target).is("a") && !jQuery(target).closest("a").length)  {
                     window.location.href = jQuery(this).attr("data-fullclick");
                     return false;
                 }

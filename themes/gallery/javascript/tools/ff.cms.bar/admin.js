@@ -24,37 +24,26 @@
  */
 if (!ff.cms) ff.cms = {};
 ff.cms.bar = (function () {
+    var targetID = "#adminPanel";
 	var zIndex = 90;
 	var $bar = undefined;
 	var load = function(skip) {
 		skip = skip || {};
 
-//		var link = ff.site_path + "/admin/bar" + ff.page_path;	
-//		console.log(link);	
-		var link = jQuery('INPUT.ajaxcontent[type=hidden]').first().val();
-		jQuery('INPUT.ajaxcontent[type=hidden]').remove();
+	$bar = jQuery(targetID);
+	$bar.css("z-index", zIndex);
 
-		jQuery.get(link, function(data) {
-			var itemID = jQuery(data).attr("id");
+	ui.menu();
+	ui.toggle(!skip.toggle);
+	ui.layout(!skip.layout);
+	ui.info(!skip.info);
 
-			jQuery("BODY").prepend(data);
-			
-			$bar = jQuery("#" + itemID);
-			$bar.css("z-index", zIndex);
-			//$bar.draggable(); 
-			
-			ui.menu();
-		    ui.toggle(!skip.toggle);
-			ui.layout(!skip.layout);
-			ui.info(!skip.info);
-			
-			if(ff.cms.editor && !skip.editor)
-				ff.cms.editor.init();
+	if(ff.cms.editor && !skip.editor)
+		ff.cms.editor.init();
 
-			if(ff.cms.seo && !skip.seo)
-				ff.cms.seo.init();			
+	if(ff.cms.seo && !skip.seo)
+		ff.cms.seo.init();
 		
-		});
 	}
 	var ui = {
 		"menu" : function() {
@@ -174,7 +163,7 @@ ff.cms.bar = (function () {
 				}
 			});
 			jQuery("ul.submenu", $bar).disableSelection();		
-		}, 
+		},
 		"toggle" : function(enable) {
 			var timer = "";
 			if(enable) {
@@ -195,19 +184,19 @@ ff.cms.bar = (function () {
 						clearTimeout(timer);
 						timer = "";
 				  	}
-					
-				  	ff.cms.bar.toggle(true);
+
+                    that.toggle(true);
 				}, function() {
 	  			  	timer = setTimeout(function() {ff.cms.bar.toggle(false); }, 1000);
 				});	
 				
 				if(document.cookie.indexOf("cms-toolbar-fixed") < 0) {
-					ff.cms.bar.toggle(false, true);
+                    that.toggle(false, true);
 				} else {
 					jQuery(".hide-toggle", $bar).addClass("pressed");
 				}							
 			} else {
-				ff.cms.bar.toggle(false, true);
+                that.toggle(false, true);
 
 				jQuery(".hide-toggle", $bar).hide();
 			}

@@ -103,7 +103,7 @@
 
 .toolbaradmin .submenu LI.layout {
     padding-left:15px;
-    background-image:url("../../../responsive/ff/ffGrid/widgets/dragsort/grippy.png");
+    background-image:url("/themes/responsive/ff/ffGrid/widgets/dragsort/grippy.png");
 	background-position:5px center;
 	background-repeat:no-repeat;
 }

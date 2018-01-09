@@ -45,13 +45,13 @@ ff.pluginAddInit("ff.cms.seo", function() {
 		if(jQuery(that).closest(".seo-page").find(".header INPUT").length)
 		    keyCompare["H1"] = jQuery(that).closest(".seo-page").find(".header INPUT").val();
 		
-		if(lang && ff.cms.libs.stopWords) {
+		/*if(lang && ff.cms.libs.stopWords) {
 			if(jQuery.isFunction(ff.cms.libs.stopWords[lang])) {
 		        ff.cms.seo.stopWords = ff.cms.libs.stopWords[lang];
 			} else {
 		        ff.cms.libs.stopWords[lang] = ff.cms.seo.stopWords;
 			}
-		}
+		}*/
 		var seoPage = (jQuery(that).closest(".seo-page").length
 		    ? jQuery(jQuery(that).closest(".seo-page").find(".check-keywords INPUT, .check-keywords TEXTAREA"))
 		    : jQuery(jQuery(that).closest(container_class).find(".check-keywords INPUT, .check-keywords TEXTAREA"))
