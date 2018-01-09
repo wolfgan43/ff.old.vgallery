@@ -61,6 +61,7 @@ $sSQL = "SELECT module_search_fields.*
 $db_gallery->query($sSQL);
 if($db_gallery->nextRecord()) 
 {
+	$framework_css = cm_getFrameworkCss();
     do { 
         $field_name = $db_gallery->getField("name")->getValue();
 
@@ -88,7 +89,7 @@ if($db_gallery->nextRecord())
         else
             $arrField[$field_name]["placeholder"] = ffTemplate::_get_word_by_code($arrField[$field_name]["name"]);
 
-        if(is_array($cm->oPage->framework_css))
+        if(is_array($framework_css))
         {
             if(!array_key_exists("grid", $arrField[$field_name]["group"]["class"])) {
                 $arrField[$field_name]["group"]["class"]["grid"] = cm_getClassByFrameworkCss(array(

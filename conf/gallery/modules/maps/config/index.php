@@ -36,7 +36,7 @@ $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/preview/[MapsC
 $oButton->aspect = "link";
 //$oButton->image = "preview.png";
 $oButton->label = ffTemplate::_get_word_by_code("preview");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $oButton = ffButton::factory($cm->oPage);
@@ -47,7 +47,7 @@ $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/marker?[KEYS]r
 $oButton->aspect = "link";
 //$oButton->image = "add.png";
 $oButton->label = ffTemplate::_get_word_by_code("marker_add");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $cm->oPage->addContent($oGrid);

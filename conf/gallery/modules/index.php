@@ -67,7 +67,7 @@ $oButton->url = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules" . "/[modules_mo
 $oButton->aspect = "link";
 //$oButton->image = "detail.png";
 $oButton->label = ffTemplate::_get_word_by_code("module_detail");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $cm->oPage->addContent($oGrid);

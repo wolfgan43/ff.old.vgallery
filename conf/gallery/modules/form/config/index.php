@@ -64,7 +64,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("clone_form");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $oButton = ffButton::factory($cm->oPage);
@@ -75,7 +75,7 @@ $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/customize_form
 $oButton->aspect = "link";
 //$oButton->image = "preview.png";
 $oButton->label = ffTemplate::_get_word_by_code("customize_form");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $oButton = ffButton::factory($cm->oPage);
@@ -85,7 +85,7 @@ $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/preview_form/[
 $oButton->aspect = "link";
 //$oButton->image = "preview.png";
 $oButton->label = ffTemplate::_get_word_by_code("preview_form");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $oButton = ffButton::factory($cm->oPage);
@@ -95,7 +95,7 @@ $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/preview_email/
 $oButton->aspect = "link";
 //$oButton->image = "preview.png";
 $oButton->label = ffTemplate::_get_word_by_code("preview_mail");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $oButton = ffButton::factory($cm->oPage);
@@ -105,7 +105,7 @@ $oButton->url = $cm->oPage->site_path . ffcommon_dirname($cm->oPage->page_path) 
 $oButton->aspect = "link";
 //$oButton->image = "detail.png";
 $oButton->label = ffTemplate::_get_word_by_code("manage_detail");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $cm->oPage->addContent($oGrid, "rel", null, array("title" => ffTemplate::_get_word_by_code("form_config"))); 

@@ -50,7 +50,7 @@ $oButton->url = stripslash($oGrid->user_vars["MD_chk"]["page_url"]) . "/zone?[KE
 $oButton->aspect = "link";
 //$oButton->image = "detail.png";
 $oButton->label = ffTemplate::_get_word_by_code("detail_zone");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 

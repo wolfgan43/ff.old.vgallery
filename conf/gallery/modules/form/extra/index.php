@@ -251,7 +251,7 @@ if(isset($_REQUEST["keys"]["formcnf-ID"])) {
         $oButton = ffButton::factory($cm->oPage);
         $oButton->id = "module_form_dep";
         $oButton->aspect = "link";
-        $oButton->template_file = "ffButton_link_fixed.html";                           
+		$oButton->display_label = false;
         $oGrid->addGridButton($oButton);
 
         //ffErrorHandler::raise("ad", E_USER_ERROR, null, get_defined_vars());

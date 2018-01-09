@@ -111,7 +111,6 @@ $oButton->aspect = "link";
 	$oButton->form_action_url = FF_SITE_PATH . $cm->oPage->page_path . "/modify-selected"; //impostato nell'evento
 	$oButton->jsaction = "";
 
-$oButton->template_file = "ffButton_link_fixed.html";                           
 $oGrid->addGridButton($oButton);
 */
 $oButton = ffButton::factory($cm->oPage);

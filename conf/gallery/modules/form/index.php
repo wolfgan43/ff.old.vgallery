@@ -308,7 +308,8 @@ if($db_gallery->nextRecord()) {
                         , "val" => $discount_val
                 );
         }
-        do {
+		$framework_css = cm_getFrameworkCss();
+		do {
             $ID_field = $db_gallery->getField("ID", "Number", true);
             $is_hidden = ($field_default["hide"] === null ? $db_gallery->getField("hide")->getValue() : $field_default["hide"]);
             if($is_hidden)
@@ -382,7 +383,8 @@ if($db_gallery->nextRecord()) {
             $field[$ID_field]["preload_by_db"] = ($field_default["preload_by_db"] === null ? $db_gallery->getField("preload_by_db")->getValue() : $field_default["preload_by_db"]);
             $field[$ID_field]["require"] = ($field_default["require"] === null ? $db_gallery->getField("require", "Number", true) : $field_default["require"]);
             $field[$ID_field]["display_label"] = ($field_default["hide_label"] === null ? !$db_gallery->getField("hide_label", "Number", true) : !$field_default["hide_label"]);
-            if(is_array($cm->oPage->framework_css))
+
+            if(is_array($framework_css))
             {
                 $field[$ID_field]["framework_css"]["component"] = array(
                         $db_gallery->getField("default_grid", "Number", true)

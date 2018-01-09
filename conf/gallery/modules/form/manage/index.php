@@ -37,7 +37,7 @@ $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/detail/[FormMa
 $oButton->aspect = "link";
 //$oButton->image = "detail.png";
 $oButton->label = ffTemplate::_get_word_by_code("manage_detail");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
                        
 $cm->oPage->addContent($oGrid);

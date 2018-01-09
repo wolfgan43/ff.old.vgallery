@@ -334,7 +334,8 @@ if($db_gallery->nextRecord())
                             ORDER BY IF(module_form_fields_group.`order`, module_form_fields_group.`order`, 999), module_register_fields.`order`, module_register_fields.name");
     if($db_gallery->nextRecord()) 
     {
-        do 
+		$framework_css = cm_getFrameworkCss();
+		do
         {
             $ID_anagraph_fields = $db_gallery->getField("ID_anagraph_fields", "Number", true);
             $ID_check_control = $db_gallery->getField("ID_check_control", "Number", true);
@@ -425,7 +426,7 @@ if($db_gallery->nextRecord())
             
                 
             
-            if(is_array($cm->oPage->framework_css))
+            if(is_array($framework_css))
             {
                 if(!array_key_exists("grid", $arrField[$field_name]["group"]["class"])) {
                     $arrField[$field_name]["group"]["class"]["grid"] = cm_getClassByFrameworkCss(array(

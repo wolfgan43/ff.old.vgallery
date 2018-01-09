@@ -140,7 +140,7 @@ if($ID_form > 0) {
 	$oButton->url = "";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("form_visible");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 	                        
 	$oButton = ffButton::factory($cm->oPage);
