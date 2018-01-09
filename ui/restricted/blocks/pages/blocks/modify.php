@@ -425,7 +425,11 @@ if($cm->real_path_info == "/add") {
 
 if(!isset($_REQUEST["keys"]["ID"]) && !strlen(basename($cm->real_path_info)))
 {
-    $cm->oPage->addContent(add_block($add_block_type));
+	$content = add_block($add_block_type);
+	if(!$content)
+		$content = "Error: No Type Blocks";
+
+	$cm->oPage->addContent($content);
     //$cm->oPage->tplAddJs("ff.cms.admin.block");
 } else {
     $oRecord = ffRecord::factory($cm->oPage);
@@ -1927,8 +1931,6 @@ function add_block($action = "")
             $tpl->set_var("SezBlockItem", "");
         }
 
-        $tpl_layout = $tpl->rpparse("main", false);
+		return $tpl->rpparse("main", false);
     }
-
-    return $tpl_layout;
 }

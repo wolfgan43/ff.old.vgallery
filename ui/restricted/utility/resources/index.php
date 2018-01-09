@@ -52,7 +52,7 @@ if(strlen($actual_path) &&  isset($arrAllowed[basename($actual_path)]) && is_dir
 	setJsRequest($layout["settings"]["AREA_GALLERY_MENU_PLUGIN"]);
 
 	if(check_function("system_set_js"))
-        system_set_js($cm->oPage, "/", false, null, USE_ADMIN_AJAX);
+        system_set_js($cm->oPage, "/", false);
 
     if(check_function("process_gallery_menu"))
     	$res = process_gallery_menu($arrAllowed[basename($actual_path)], $arrAllowed[basename($actual_path)], $layout, FF_DISK_PATH, true);
