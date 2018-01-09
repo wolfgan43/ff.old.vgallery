@@ -97,7 +97,7 @@ if(!$res["error"]) {
 	$tpl = ffTemplate::factory(ffCommon_dirname(__FILE__));
 	$tpl->load_file("installer.html", "main");
 	$tpl->set_var("site_path", FF_SITE_PATH);
-	$tpl->set_var("domain", "http://" . basename($cm->real_path_info));
+	$tpl->set_var("domain", "http://" . basename($cm->real_path_info) . "/index.php");
 
 	$cm->oPage->addContent($tpl);
 } else {
