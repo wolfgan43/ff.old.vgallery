@@ -42,12 +42,21 @@ function profiling_stats($start = true) {
 			$res["mem"] = number_format(memory_get_usage(true) - $res["mem"], 0, ',', '.');
 			$res["mem_peak"] = number_format(memory_get_peak_usage(true) - $res["mem_peak"], 0, ',', '.');
 			$res["cpu"] = number_format(abs(($ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec']) - $res["cpu"]), 0, ',', '.');
+			$res["includes"] = get_included_files();
+			$res["classes"] = get_declared_classes();
 
 			return $res;
 		}
 	}
 }
+function profiling_stopwatch($start)
+{
+	if(!$start)
+		return microtime(true);
 
+	$duration = microtime(true) - $start;
+	return number_format($duration, 2, '.', '');
+}
 /**
  * Config
  */
