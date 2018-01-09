@@ -89,7 +89,7 @@ class notifierOnesignal
     {
         return $this->data;
     }
-    private function setConfig($config = null)
+    private function setConfig()
     {
         $this->config = $this->notifier->getConfig($this::TYPE);
 
@@ -99,12 +99,12 @@ class notifierOnesignal
             {
                 require_once($this->notifier->getAbsPathPHP("/config"));
 
-                $this->config["app_id"] = (defined("NOTIFY_PUSH_ONESIGNAL_APP_ID")
-                    ? NOTIFY_PUSH_ONESIGNAL_APP_ID
+                $this->config["app_id"] = (defined("NOTIFY_ONESIGNAL_APP_ID")
+                    ? NOTIFY_ONESIGNAL_APP_ID
                     : ""
                 );
-                $this->config["app_key"] = (defined("NOTIFY_PUSH_ONESIGNAL_APP_ID")
-                    ? NOTIFY_PUSH_ONESIGNAL_APP_ID
+                $this->config["app_key"] = (defined("NOTIFY_ONESIGNAL_APP_ID")
+                    ? NOTIFY_ONESIGNAL_APP_ID
                     : ""
                 );
             }

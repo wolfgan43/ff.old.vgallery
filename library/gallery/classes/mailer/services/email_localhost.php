@@ -33,10 +33,10 @@ class mailerLocalhost
     private $config                                         = null;
     private $mailer                                         = null;
 
-    public function __construct($mailer, $data = null, $config = null)
+    public function __construct($mailer)
     {
         $this->mailer = $mailer;
-        $this->setConfig($config);
+        $this->setConfig();
     }
 
     public function getDevice()
@@ -56,6 +56,12 @@ class mailerLocalhost
             {
                 require_once($this->mailer->getAbsPathPHP("/config"));
 
+                if(defined("A_FROM_EMAIL") && A_FROM_EMAIL) {
+					$this->mailer->addAddress(array(
+						"name" 		=> A_FROM_NAME
+						, "email" 	=> A_FROM_EMAIL
+					), "from");
+				}
                 $this->config["host"] = (defined("A_SMTP_HOST")
                     ? A_SMTP_HOST
                     : "localhost"

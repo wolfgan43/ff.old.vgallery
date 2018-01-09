@@ -28,17 +28,16 @@
 class storageMysql
 {
     const TYPE                                              = "sql";
+    const PREFIX											= "FF_DATABASE_";
 
     private $device                                         = null;
     private $config                                         = null;
-    private $data                                           = null;
     private $storage                                        = null;
 
-    public function __construct($storage, $data = null, $config = null)
+    public function __construct($storage)
     {
         $this->storage = $storage;
-        $this->setConfig($config);
-        $this->setData($data);
+        $this->setConfig();
 
         if (!class_exists("ffDB_Sql"))
             require_once($this->storage->getAbsPathPHP("/ff/classes/ffDb_Sql/ffDb_Sql_mysqli"));
@@ -54,7 +53,132 @@ class storageMysql
         $storage->convertData("_id", "ID");
         $storage->convertWhere("_id", "ID");
     }
+	public function convertFields($fields, $flag = false)
+	{
+		$res = array();
+		$struct = $this->storage->getParam("struct");
+		if(is_array($fields) && count($fields))
+		{
+			foreach($fields AS $name => $value)
+			{
+				if ($name == "key") {
+					$name 															= $this->config["key"];
+				} elseif(strpos($name, "key") === 1) {
+					$name 															= substr($name, 0,1) . $this->config["key"];
+				} elseif ($flag == "select" && strpos($value, ".") > 0) {
+					$name 															= substr($value, 0, strpos($value, "."));
+					$value 															= true;
+				}
+				if($flag == "select" && !is_array($value)) {
+					$arrValue = explode(":", $value, 2);
+					$value = ($arrValue[0] ? $arrValue[0] : true);
+				}
 
+				if($flag == "sort") {
+					$res[$name] 													= "`" . $name ."` " . ($value == "DESC"
+																						? "DESC"
+																						: "ASC"
+																					);
+					continue;
+				}
+
+				$field 																= $this->storage->normalizeField($name, $value);
+
+				if($field["res"])
+					$result															= $field["res"];
+
+				switch($flag) {
+					case "select":
+						$res[$name]         										= $field["name"];
+						break;
+					case "insert":
+						$res["head"][$name]         								= $field["name"];
+						if(is_array($field["value"])) {
+							if($this->storage->isAssocArray($field["value"]))														//array assoc to string
+								$res["body"][$name] 								= "'" . str_replace("'", "\\'", json_encode($field["value"])) . "'";
+							else																				//array seq to string
+								$res["body"][$name] 								= $this->device->toSql(implode(",", array_unique($field["value"])));
+						} else {
+							$res["body"][$name]         							= $this->device->toSql($field["value"]);
+						}
+						break;
+					case "update":
+						if(is_array($field["value"])) {
+							if($this->storage->isAssocArray($field["value"]))														//array assoc to string
+								$res[$name] 										= "`" . $field["name"] . "` = " . "'" . str_replace("'", "\\'", json_encode($field["value"])) . "'";
+							else																				//array seq to string
+								$res[$name] 										= "`" . $field["name"] . "` = " . $this->device->toSql(implode(",", array_unique($field["value"])));
+						} else {
+							$res[$name]         									= "`" . $field["name"] . "` = " . $this->device->toSql($field["value"]);
+						}
+						break;
+					case "where":
+						if(!is_array($value))
+							$value 													= $field["value"];
+
+						if($field["name"] == $this->config["key"]) {
+							$value 													= $this->convertID($value);
+						}
+
+						if(is_array($struct[$field["name"]])) {
+							$struct_type = "array";
+						} else {
+							$arrStructType = explode(":", $struct[$field["name"]], 2);
+							$struct_type = $arrStructType[0];
+						}
+
+						switch ($struct_type) {
+							case "arrayOfNumber":                                                                         //array
+							case "array":                                                                                //array
+								if (is_array($value) && count($value)) {
+									foreach($value AS $i => $item) {
+										$res[$name][] 								= ($field["not"] ? "NOT " : "") . "FIND_IN_SET(" . $this->device->toSql($item) . ", `" . $field["name"] . "`)";
+									}
+									$res[$name] 									= "(" . implode(($field["not"] ? " AND " : " OR "), $res[$name]) . ")";
+								}
+								break;
+							case "boolean":
+							case "date":
+							case "number":
+							case "string":
+							default:
+								if (is_array($value)) {
+									if(count($value))
+										$res[$name] 								= "`" . $field["name"] . "` " . ($field["not"] ? "NOT " : "") . "IN('" . implode("','", array_unique($value)) . "')";
+								} else {
+									$res[$name]     								= "`" . $field["name"] . "` " . ($field["not"] ? "<>" : "=") . " " . $this->device->toSql($value);
+								}
+						}
+						break;
+					default:
+				}
+			}
+
+			if(is_array($res)) {
+				switch ($flag) {
+					case "select":
+						$result["select"] 											= "`" . implode("`, `", $res) . "`";
+						break;
+					case "insert":
+						$result["insert"]["head"] 									= "`" . implode("`, `", $res["head"]) . "`";
+						$result["insert"]["body"] 									= implode(", ", $res["body"]);
+						break;
+					case "update":
+						$result["update"] 											= implode(", ", $res);
+						break;
+					case "where":
+						$result["where"] 											= implode(" AND ", $res);
+						break;
+					case "sort":
+						$result["sort"]												= implode(", ", $res);
+						break;
+					default:
+				}
+			}
+		}
+
+		return $result;
+	}
     public function getDevice()
     {
         return $this->device;
@@ -63,37 +187,44 @@ class storageMysql
     {
         return $this->config;
     }
-    private function setConfig($config = null)
+    private function setConfig()
     {
         $this->config = $this->storage->getConfig($this::TYPE);
+		if(!$this->config["name"])
+		{
+			$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
+				? $this->config["prefix"]
+				: $this::PREFIX
+			);
+			if (is_file($this->storage->getAbsPathPHP("/config")))
+			{
+				require_once($this->storage->getAbsPathPHP("/config"));
 
-        if (!$this->config["name"])
-        {
-            if (is_file($this->storage->getAbsPathPHP("/config")))
-            {
-                require_once($this->storage->getAbsPathPHP("/config"));
+				$this->config["host"] = (defined($prefix . "HOST")
+					? constant($prefix . "HOST")
+					: "localhost"
+				);
+				$this->config["name"] = (defined($prefix . "NAME")
+					? constant($prefix . "NAME")
+					: ""
+				);
+				$this->config["username"] = (defined($prefix . "USER")
+					? constant($prefix . "USER")
+					: ""
+				);
+				$this->config["password"] = (defined($prefix . "PASSWORD")
+					? constant($prefix . "PASSWORD")
+					: ""
+				);
+			}
+		}
+    }
+	private function convertID($keys) {
+		if(is_array($keys))
+			$res = array_filter($keys, "is_numeric");
+		elseif(!is_numeric($keys))
+			$res = null;
 
-                $this->config["host"] = (defined("FF_DATABASE_HOST")
-                    ? FF_DATABASE_HOST
-                    : "localhost"
-                );
-                $this->config["name"] = (defined("FF_DATABASE_NAME")
-                    ? FF_DATABASE_NAME
-                    : ""
-                );
-                $this->config["username"] = (defined("FF_DATABASE_USER")
-                    ? FF_DATABASE_USER
-                    : ""
-                );
-                $this->config["password"] = (defined("FF_DATABASE_PASSWORD")
-                    ? FF_DATABASE_PASSWORD
-                    : ""
-                );
-            }
-        }
-    }
-    private function setData($data = null)
-    {
-        $this->data = $this->storage->getData("result", $data);
-    }
+		return $res;
+	}
 }

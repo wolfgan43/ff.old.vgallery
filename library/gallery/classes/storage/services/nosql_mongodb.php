@@ -26,17 +26,16 @@
 
 class storageMongodb {
     const TYPE                                              = "nosql";
+	const PREFIX											= "MONGO_DATABASE_";
 
-    private $device                                         = null;
+	private $device                                         = null;
     private $config                                         = null;
-    private $data                                           = null;
     private $storage                                        = null;
 
-    public function __construct($storage, $data = null, $config = null)
+    public function __construct($storage)
     {
         $this->storage = $storage;
-        $this->setConfig($config);
-        $this->setData($data);
+        $this->setConfig();
 
         if (!class_exists("ffDB_MongoDB"))
             require_once($storage->getAbsPathPHP("/ff/classes/ffDB_Mongo/ffDb_MongoDB"));
@@ -52,7 +51,134 @@ class storageMongodb {
         $storage->convertData("ID", "_id");
         $storage->convertWhere("ID", "_id");
     }
+	public function convertFields($fields, $flag = false)
+	{
+		$res = array();
+    	$struct = $this->storage->getParam("struct");
 
+		if(is_array($fields) && count($fields)) {
+			foreach ($fields AS $name => $value) {
+				if ($name == "key") {
+					$name 															= $this->config["key"];
+				} elseif(strpos($name, "key") === 1) {
+					$name 															= substr($name, 0,1) . $this->config["key"];
+				} elseif ($flag == "select" && strpos($value, ".") > 0) {
+					$name 															= substr($value, 0, strpos($value, "."));
+					$value 															= true;
+				}
+				if($flag == "select" && !is_array($value)) {
+					$arrValue 														= explode(":", $value, 2);
+					$value 															= ($arrValue[0] ? $arrValue[0] : true);
+				}
+
+				if($flag == "sort") {
+					$res["sort"][$name] 												= ($value == "DESC"
+																						? -1
+																						: 1
+																					);
+					continue;
+				}
+
+				$field 																= $this->storage->normalizeField($name, $value);
+
+				if($field["res"]) {
+					$res 															= $field["res"];
+					continue;
+				}
+				switch($flag) {
+					case "select":
+						$res["select"][$field["name"]] 								= ($field["value"]
+																						? true
+																						: false
+																					);
+						break;
+					case "insert":
+						$res["insert"][$field["name"]] 								= $field["value"];
+						break;
+					case "update":
+						$res["update"]['$set'][$field["name"]] 						= $field["value"];
+						break;
+					case "where":
+						if(!is_array($value))
+							$value 													= $field["value"];
+
+						if($field["name"] == $this->config["key"])
+							$value 													= $this->convertID($value);
+
+						$res["where"][$field["name"]] 								= $value;
+
+						if(is_array($struct[$field["name"]])) {
+							$struct_type = "array";
+						} else {
+							$arrStructType = explode(":", $struct[$field["name"]], 2);
+							$struct_type = $arrStructType[0];
+						}
+
+						switch ($struct_type) {
+							case "arrayOfNumber":                                                                         //array
+							case "array":                                                                                //array
+								//search
+								if (is_array($value) && count($value)) {
+									if(!$this->storage->isAssocArray($value)) {
+										$res["where"][$field["name"]] 						= array(
+																						($field["not"] ? '$nin' : '$in') => $value
+																					);
+									}
+								} else {
+									unset($res["where"][$field["name"]]);
+								}
+								break;
+							case "boolean":
+								if ($field["not"] && $value !== null) {                                                //not
+									$res["where"][$field["name"]] 							= array(
+																						'$ne' => $value
+																					);
+								}
+								break;
+							case "date":
+							case "number":
+								if ($field["not"] && $value !== null) {                                                //not
+									$res["where"][$field["name"]] 							= array(
+																						'$ne' => $value
+																					);
+								}
+								if (is_array($value) && count($value)) {
+									$res["where"][$field["name"]] 							= array(
+																						($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
+																							? $value
+																							: array_map('intval', $value)
+																						)
+																					);
+								}
+								break;
+							case "string":
+							default:
+								if (is_array($value) && count($value)) {
+									$res["where"][$field["name"]] 							= array(
+																						($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
+																							? $value
+																							: array_map('strval', $value)
+																						)
+																					);
+								} elseif ($field["not"]) {                                                        //not
+									if($value) {
+										$res["where"][$field["name"]] 						= array(
+																						'$ne' => $value
+																					);
+									} else {
+										unset($res["where"][$field["name"]]);
+									}
+								}
+							//string
+						}
+						break;
+					default:
+				}
+			}
+		}
+
+		return $res;
+	}
     public function getDevice()
     {
         return $this->device;
@@ -61,37 +187,74 @@ class storageMongodb {
     {
         return $this->config;
     }
-    private function setConfig($config = null)
-    {
-        $this->config = $this->storage->getConfig($this::TYPE);
+	private function setConfig()
+	{
+		$this->config = $this->storage->getConfig($this::TYPE);
+		if(!$this->config["name"])
+		{
+			$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
+				? $this->config["prefix"]
+				: $this::PREFIX
+			);
 
-        if (!$this->config["name"])
-        {
-            if (is_file($this->storage->getAbsPathPHP("/config")))
-            {
-                require_once($this->storage->getAbsPathPHP("/config"));
+			if (is_file($this->storage->getAbsPathPHP("/config")))
+			{
+				require_once($this->storage->getAbsPathPHP("/config"));
+				$this->config["prefix"] = $prefix;
+				$this->config["host"] = (defined($prefix . "HOST")
+					? constant($prefix . "HOST")
+					: "localhost"
+				);
+				$this->config["name"] = (defined($prefix . "NAME")
+					? constant($prefix . "NAME")
+					:  ""
+				);
+				$this->config["username"] = (defined($prefix . "USER")
+					? constant($prefix . "USER")
+					: ""
+				);
+				$this->config["password"] = (defined($prefix . "PASSWORD")
+					? constant($prefix . "PASSWORD")
+					: ""
+				);
+			}
+		}
 
-                $this->config["host"] = (defined("FF_NOSQL_HOST")
-                    ? FF_NOSQL_HOST
-                    : "localhost"
-                );
-                $this->config["name"] = (defined("FF_NOSQL_NAME")
-                    ? FF_NOSQL_NAME
-                    : ""
-                );
-                $this->config["username"] = (defined("FF_NOSQL_USER")
-                    ? FF_NOSQL_USER
-                    : ""
-                );
-                $this->config["password"] = (defined("FF_NOSQL_PASSWORD")
-                    ? FF_NOSQL_PASSWORD
-                    : ""
-                );
-            }
-        }
-    }
-    private function setData($data = null)
-    {
-        $this->data = $this->storage->getData("result", $data);
-    }
+	}
+	private function getObjectID($value)
+	{
+		if ($value instanceof \MongoDB\BSON\ObjectID) {
+			$res = $value;
+		} else {
+			try {
+				$res = new \MongoDB\BSON\ObjectID($value);
+			} catch (\Exception $e) {
+				return false;
+			}
+		}
+		return $res;
+	}
+	private function convertID($keys) {
+		if(is_array($keys)) {
+			foreach($keys AS $subkey => $subvalue) {
+				if(is_array($subvalue)) {
+					foreach($subvalue AS $i => $key) {
+						$ID = $this->getObjectID($key);
+						if($ID)
+							$res[$subkey][] = $ID;
+					}
+				} else {
+					$ID = $this->getObjectID($subvalue);
+					if($ID)
+						$res[] = $ID;
+				}
+			}
+		} else {
+			$ID = $this->getObjectID($keys);
+			if($ID)
+				$res = $ID;
+		}
+
+		return $res;
+	}
 }

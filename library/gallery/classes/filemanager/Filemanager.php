@@ -36,7 +36,7 @@ class Filemanager extends vgCommon
     const SEARCH_DEFAULT                                                = Filemanager::SEARCH_IN_KEY;
 
     protected $services                                                 = array(                //servizi per la scrittura o lettura della notifica
-        "fs"                                                            => false
+        "fs"                                                            => null
     );
     protected $controllers                                              = array(
         "fs"                                                            => array(
@@ -59,12 +59,14 @@ class Filemanager extends vgCommon
      * @param null $var
      * @return Filemanager|null
      */
-    public static function getInstance($service = null, $path = null, $var = null)
+    public static function getInstance($services = null, $path = null, $var = null)
     {
         if (self::$singleton === null) {
-            self::$singleton                                            = new Filemanager($path, $service);
+            self::$singleton                                            = new Filemanager($services, $path, $var);
         } else {
-            self::$singleton->services["fs"]                            = $service;
+			if($services)
+				self::$singleton->setServices($services);
+
             self::$singleton->path                                      = $path;
             self::$singleton->var                                       = $var;
         }
@@ -77,9 +79,11 @@ class Filemanager extends vgCommon
      * @param null $path
      * @param null $var
      */
-    public function __construct($service = null, $path = null, $var = null)
+    public function __construct($services = null, $path = null, $var = null)
     {
-        $this->services["fs"]                                           = $service;
+		if($services)
+			$this->setServices($services);
+
         $this->path                                                     = $path;
         $this->var                                                      = $var;
     }

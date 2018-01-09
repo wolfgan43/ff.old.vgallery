@@ -29,8 +29,7 @@ class Storage extends vgCommon
 {
     static $singleton                   = null;
     
-    private $disk_path                  = null;
-    protected $services                 = array(               
+    protected $services                 = array(
                                             "sql"               => null
                                         );     
     protected $controllers              = array(
@@ -57,6 +56,7 @@ class Storage extends vgCommon
                                                 , "username"    => null
                                                 , "password"    => null
                                                 , "name"        => null
+												, "prefix"		=> null
                                                 , "table"       => null
                                                 , "key"         => null
                                             )
@@ -69,45 +69,47 @@ class Storage extends vgCommon
                                                 , "username"    => null
                                                 , "password"    => null
                                                 , "name"        => null
+												, "prefix"		=> null
                                                 , "table"       => null
                                                 , "key"         => null
                                             )
-                                        ); 
+                                        );
+    protected $struct					= array();
     private $action                     = null;
     private $data                       = array();
-    private $update                     = array();
+    private $set                     	= array();
     private $where                      = null;
+	private $sort                      	= null;
     private $table                      = null;
+    private $reader						= null;
     private $result                     = null;
 
-    public static function getInstance($services = null, $connectors = null)
+    public static function getInstance($services = null, $params = null)
 	{
 		if (self::$singleton === null)
-			self::$singleton = new Storage($services, $connectors);
+			self::$singleton = new Storage($services, $params);
         else {
             if($services)
-                self::$singleton->setParam("services", $services);
+                self::$singleton->setServices($services);
 
-            if($connectors)
-                self::$singleton->setParam("connectors", $connectors);            
+			self::$singleton->setParams($params);
         }
 		return self::$singleton;
 	} 
     
-    public function __construct($services = null, $connectors = null) {
+    public function __construct($services = null, $params = null) {
         if($services)
-            $this->setParam("services", $services);
+            $this->setServices($services);
 
-        if($connectors)
-            $this->setParam("connectors", $connectors);
+		$this->setParams($params);
 
         $this->loadControllers(__DIR__, $services);
     }
 
-    public function lookup($where = null, $table = null, $fields = null)
+    public function lookup($table, $where = null, $fields = null, $sort = null)
     {
         $res = array();
-        $this->read($where, $table, $fields);
+        $this->read($where, $fields, $sort, $table);
         if(is_array($this->result) && count($this->result))
         {
             foreach($this->result AS $service => $data)
@@ -121,51 +123,71 @@ class Storage extends vgCommon
             : $res[0];
     }
 
-    public function read($where = null, $table = null, $fields = null)
+    public function read($where = null, $fields = null, $sort = null, $table = null)
     {
+
         $this->clearResult();
         if($this->isError()) 
             return $this->isError();
         else {
             $this->action               = "read";
             $this->where                = $where;
+			$this->sort                	= $sort;
             $this->table                = $table;
             $this->setData($fields);
 
             $this->controller();
         }
 
-        return $this->getResult();
+        return $this->getResult($this->reader);
     }
-    
-    public function update($data = null, $where = null, $table = null)
+
+    public function insert($data = null, $table = null)
+	{
+		$this->clearResult();
+		if($this->isError())
+			return $this->isError();
+		else {
+			$this->action               = "insert";
+			$this->table                = $table;
+			$this->setData($data);
+
+			$this->controller();
+		}
+
+		return $this->getResult();
+	}
+
+	public function update($set = null, $where = null, $table = null)
     {
         $this->clearResult();
         if($this->isError()) 
             return $this->isError();
         else {
             $this->action               = "update";
-            $this->where                = $where;
             $this->table                = $table;
-            $this->setData($data);
+            $this->setData($set, "set");
+			$this->setData($where, "where");
 
-            $this->controller();
+
+			$this->controller();
         }
 
         return $this->getResult();
     }
     
-    public function write($data = null, $where = null, $table = null)
+    public function write($insert = null, $update = null, $table = null)
     {
         $this->clearResult();
 
-        if($this->isError()) 
+        if($this->isError())
             return $this->isError();
         else {
             $this->action               = "write";
-            $this->where                = $where;
             $this->table                = $table;
-            $this->setData($data);
+            $this->setData($insert);
+			$this->setData($update["set"], "set");
+			$this->setData($update["where"], "where");
 
             $this->controller();
         }
@@ -228,7 +250,29 @@ class Storage extends vgCommon
     {
         $this->convertParam($source, $dest, "where");
     }
-
+	private function getColorPalette($index = null) {
+    	$colors = array(
+			"EF5350"
+			, "EC407A"
+			, "AB47BC"
+			, "7E57C2"
+			, "5C6BC0"
+			, "42A5F5"
+			, "29B6F6"
+			, "26C6DA"
+			, "26A69A"
+			, "66BB6A"
+			, "9CCC65"
+			, "D4E157"
+			, "FFEE58"
+			, "FFCA28"
+			, "FFA726"
+		);
+    	return ($index === null
+			? $colors
+			: $colors[$index]
+		);
+	}
     private function convertParam($source, $dest, $param) 
     {
         if($this->$param[$source]) {
@@ -236,7 +280,43 @@ class Storage extends vgCommon
             unset($this->$param[$source]);
         }
     }
-    
+    private function getQuery($driver)
+	{
+		$config                                                 = $driver->getConfig();
+
+		$query["key"] 											= $config["key"];
+		$query["from"]                                          = ($this->table
+			? $this->table
+			: $config["table"]
+		);
+
+		if($this->action == "read") {
+			$query 												= $query + $driver->convertFields($this->data, "select");
+		}
+		if($this->action == "insert" || $this->action == "write") {
+			$query 												= $query + $driver->convertFields($this->data, "insert");
+		}
+		if($this->action == "update" || $this->action == "write") {
+			$query 												= $query + $driver->convertFields($this->set, "update");
+		}
+		if($this->action == "read" || $this->action == "update" || $this->action == "write") {
+			$query 												= $query + $driver->convertFields($this->where, "where");
+		}
+		if($this->action == "read") {
+			$query 												= $query + $driver->convertFields($this->sort, "sort");
+		}
+
+		if(!$config["name"])
+			$this->isError($driver::TYPE . "_database_connection_failed");
+
+		if(!$query["key"])
+			$this->isError($driver::TYPE . "_key_missing");
+
+		if(!$query["from"])
+			$this->isError($driver::TYPE . "_table_missing");
+
+		return $query;
+	}
     private function controller()
     {
         foreach($this->services AS $controller => $services)
@@ -244,14 +324,16 @@ class Storage extends vgCommon
             $this->isError("");
 
             $funcController = "controller_" . $controller;
-            $this->$funcController((is_array($services)
-                ? $services["service"]
-                : $services
-            ));
+            $service = $this->$funcController(is_array($services)
+				? $services["service"]
+				: $services
+			);
 
-            if($this->action == "read" && $this->result)
-                break;
-        }    
+            if($this->action == "read" && is_array($this->result[$service])) {
+            	$this->reader = $service;
+				break;
+			}
+        }
     }
     private function controller_sql($service = null)
     {
@@ -266,17 +348,7 @@ class Storage extends vgCommon
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
-            $config                                                     = $driver->getConfig();
-
-            $query["from"]                                              = ($this->table
-                                                                            ? $this->table
-                                                                            : $config["table"]
-                                                                        );
-            if(!$config["name"])
-                $this->isError($type . "_database_connection_failed");
-
-            if(! $query["from"])
-                $this->isError($type . "_table_missing");
+            //$config                                                     = $driver->getConfig();
 
             if(!$db)
                 $this->isError($type. "_no_DB");
@@ -284,80 +356,109 @@ class Storage extends vgCommon
             if($this->isError()) {
                 $this->result[$service] = $this->isError();
             } else {
-                $query["select"]                                        = $this->fields2string($this->data, $db);
-                $query["where"]                                         = $this->fields2string($this->where, $db, " AND ");
+            	$query = $this->getQuery($driver);
 
                 switch($this->action)
                 {
                     case "read":
-                        if(! $query["select"]["head"])
-                             $query["select"]["head"] = "*";
+						$this->result[$service] = array();
+                        if($query["select"])
+							$query["select"] .= ", `" . $query["key"] . "`";
+						else
+                            $query["select"] = "*";
 
-                        if(!$query["where"]["complete"])
-                            $query["where"]["complete"] = " 1 ";
+                        if(!$query["where"])
+                            $query["where"] = " 1 ";
 
-                        $sSQL = "SELECT " . $query["select"]["head"] . " 
+                        $sSQL = "SELECT " . $query["select"] . " 
                                 FROM " .  $query["from"] . "
-                                WHERE " . $query["where"]["complete"];
+                                WHERE " . $query["where"]
+								. ($query["sort"]
+									? " ORDER BY " . $query["sort"]
+									: ""
+								);
                         $db->query($sSQL);
                         if($db->nextRecord())
                         {
                             do {
-                                $this->result[$service][] = $db->record;
+								$this->result[$service]["keys"][] = $db->record[$query["key"]];
+                                //unset($db->record[$query["key"]]);
+								$this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
                             } while($db->nextRecord());
                         }
                         break;
-                    case "update":
-                        $sSQL = "SELECT " . $config["key"] . " 
-                                FROM " .  $query["from"] . "
-                                WHERE " . $query["where"]["complete"];
-                        $db->query($sSQL);
-                        if($db->nextRecord())
-                            $res = $db->record;
-
-                        if($res)
-                        {
-                           $sSQL = "UPDATE " .  $query["from"] . " SET 
-                                        " . $query["select"]["complete"] . "
-                                    WHERE " . $config["key"] . " = " . $db->toSql($res[$config["key"]]);
-                           $db->execute($sSQL);
-
-                           $this->result[$service] = true;
-                        } elseif($query["select"]) {
-                            $sSQL = "INSERT INTO " .  $query["from"] . "
+					case "insert":
+						if($query["insert"])
+						{
+							$sSQL = "INSERT INTO " .  $query["from"] . "
                                 (
-                                    " . $query["select"]["head"] . "
+                                    " . $query["insert"]["head"] . "
                                 ) VALUES (
-                                    " . $query["select"]["body"] . "
+                                    " . $query["insert"]["body"] . "
                                 )";
-                            $db->execute($sSQL);
-                            $this->result[$service] = array(
-                                $config["key"] => $db->getInsertID(true)
-                            );
-                        }
+							$db->execute($sSQL);
+							$this->result[$service] = array(
+								"keys" => $db->getInsertID(true)
+							);
+						}
+						break;
+                    case "update":
+						if($query["update"] && $query["where"])
+						{
+							$sSQL = "SELECT " . $query["key"] . " 
+									FROM " .  $query["from"] . "
+									WHERE " . $query["where"];
+							$db->query($sSQL);
+							$res = $this->extractKeys($db->getRecordset(), $query["key"]);
 
+							if(is_array($res))
+							{
+							   $sSQL = "UPDATE " .  $query["from"] . " SET 
+											" . $query["update"] . "
+										WHERE " . $query["key"] . " IN(" . $db->toSql(implode("," , $res), "Text", false) . ")";
+							   $db->execute($sSQL);
+
+							   $this->result[$service] = array(
+								   "keys" => $res
+							   );
+							} else {
+								$this->result[$service] = false;
+							}
+						}
                         break;
                     case "write":
-                        if($query["where"])
-                        {
-                           $sSQL = "UPDATE " .  $query["from"] . " SET 
-                                        " . $query["select"]["complete"] . "
-                                    WHERE " . $query["where"]["complete"];
-                           $db->execute($sSQL);
+						if($query["update"] && $query["where"])
+						{
+							$sSQL = "SELECT " . $query["key"] . " 
+									FROM " .  $query["from"] . "
+									WHERE " . $query["where"];
+							$db->query($sSQL);
+							$res = $this->extractKeys($db->getRecordset(), $query["key"]);
+						}
 
-                           $this->result[$service] = true;
+						if(is_array($res))
+						{
+                           	$sSQL = "UPDATE " .  $query["from"] . " SET 
+                                        " . $query["update"] . "
+                                    WHERE " . $query["key"] . " IN(" . $db->toSql(implode("," , $res), "Text", false) . ")";
+                           	$db->execute($sSQL);
+                           	$this->result[$service] = array(
+								"keys" => $res
+								, "action" => "update"
+							);
                         }
-                        else
+                        elseif($query["insert"])
                         {
                             $sSQL = "INSERT INTO " .  $query["from"] . "
                                 (
-                                    " . $query["select"]["head"] . "
+                                    " . $query["insert"]["head"] . "
                                 ) VALUES (
-                                    " . $query["select"]["body"] . "
+                                    " . $query["insert"]["body"] . "
                                 )";
                             $db->execute($sSQL);
                             $this->result[$service] = array(
-                                $config["key"] => $db->getInsertID(true)
+								"keys" => $db->getInsertID(true)
+								, "action" => "insert"
                             );
                         }
                         break;
@@ -365,7 +466,7 @@ class Storage extends vgCommon
                         if($query["where"])
                         {
                             $sSQL = "DELETE FROM " .  $query["from"] . "  
-                                    WHERE " . $query["where"]["complete"];
+                                    WHERE " . $query["where"];
                             $db->execute($sSQL);
 
                             $this->result[$service] = true;
@@ -375,6 +476,8 @@ class Storage extends vgCommon
                 }
             }
         }
+
+        return $service;
     }
     private function controller_nosql($service = null)
     {
@@ -389,13 +492,7 @@ class Storage extends vgCommon
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
-            $config                                                     = $driver->getConfig();
-
-            if(!$config["name"])
-                $this->isError($type . "_database_connection_failed");
-
-            if(!$config["table"])
-                $this->isError($type . "_table_missing");
+           // $config                                                     = $driver->getConfig();
 
             if(!$db)
                 $this->isError($type . "_no_DB");
@@ -406,65 +503,85 @@ class Storage extends vgCommon
                 //da normalizzare i campi in ingresso esempio:
                 //gestire calcoli hit = hit +1
                 //gestire doppi in un set field array(22,22,22) users
-
-                switch($this->action)
+				$query = $this->getQuery($driver);
+				switch($this->action)
                 {
                     case "read":
+                    	$select = $query["select"];
+						$select[$query["key"]] = true;
+
                         $db->query(array(
-                            "select" => $this->data
-                            , "from" => $config["table"]
-                            , "where" => $this->where
+                            "select" 	=> $select
+                            , "from" 	=> $query["from"]
+                            , "where" 	=> $query["where"]
+							, "sort" 	=> $query["sort"]
                         ));
+
                         if($db->nextRecord())
                         {
                             do {
-                                $this->result[$service][] = $db->record;
+								$this->result[$service]["keys"][] = $db->record[$query["key"]];
+                                $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
                             } while($db->nextRecord());
                         }
                         break;
+					case "insert":
+						if($query["insert"])
+						{
+							$db->insert($query["insert"], $query["from"]);
+							$this->result[$service] = array(
+								"keys" 				=> $db->getInsertID(true)
+							);
+						}
+						break;
                     case "update":
-                        $db->query(array(
-                            "select" => array($config["key"] => 1)
-                            , "from" => $config["table"]
-                            , "where" => $this->where
-                        ));
-                        if($db->nextRecord())
-                            $res = $db->record;
+						if($query["update"] && $query["where"])
+						{
+							$db->update(array(
+								"set" 				=> $query["update"]
+								, "where" 			=> $query["where"]
+							), $query["from"]);
 
-                        if($res)
-                        {
-                            $db->update(array(
-                                "set" => $this->data
-                                , "where" => array($config["key"] => $res[$config["key"]])
-                            ), $config["table"]);
-
-                           $this->result[$service] = true;
-                        } elseif($this->data) {
-                            $db->insert($this->data, $config["table"]);
-                            $this->result[$service] = array(
-                                $config["key"] => $db->getInsertID(true)
-                            );
-                        }
+							$this->result[$service] = array(
+								"keys" 				=> $db->getInsertID(true)
+							);
+						}
                         break;
                     case "write":
-                        if($this->where)
+						if($query["update"] && $query["where"])
+						{
+							$db->query(array(
+								"select"			=> array($query["key"] => 1)
+								, "from" 			=> $query["from"]
+								, "where" 			=> $query["where"]
+							));
+							$res = $this->extractKeys($db->getRecordset(), $query["key"]);
+						}
+
+						if(is_array($res)) {
+							$db->update(array(
+								"set" 				=> $query["update"]
+								, "where" 			=> $driver->convertFields(array($query["key"] => $res), "where")
+							), $query["from"]);
+
+							$this->result[$service] = array(
+								"keys" 				=> $res
+								, "action" 			=> "update"
+							);
+						}
+                        elseif($query["insert"])
                         {
-                            $db->update(array(
-                                "set" => $this->data
-                                , "where" => $this->where
-                            ), $config["table"]);
-                           $this->result[$service] = true;
-                        }
-                        else
-                        {
-                            $db->insert($this->data, $config["table"]);
-                            $this->result[$service] = true;
+							$db->insert($query["insert"], $query["from"]);
+							$this->result[$service] = array(
+								"keys" 				=> $db->getInsertID(true)
+								, "action" 			=> "insert"
+							);
                         }
                         break;
                     case "delete":
-                        if($this->where)
+                        if($query["where"])
                         {
-                            $db->delete($this->where, $config["table"]);
+                            $db->delete($query["where"], $query["from"]);
                             $this->result[$service] = true;
                         }
                         break;
@@ -472,6 +589,8 @@ class Storage extends vgCommon
                 }
             }
         }
+
+		return $service;
     }
     private function controller_fs($service = null)
     {
@@ -488,7 +607,7 @@ class Storage extends vgCommon
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
-            $config                                                     = $driver->getConfig();
+            //$config                                                     = $driver->getConfig();
 
             if($this->isError()) {
                 $this->result[$service] = $this->isError();
@@ -512,48 +631,340 @@ class Storage extends vgCommon
             }
         }
 
+		return $service;
+
     }
     private function clearResult() 
     {
         $this->data                                                     = array();
         $this->action                                                   = null;
         $this->where                                                    = null;
+		$this->sort                                                    	= null;
         $this->table                                                    = null;
+		$this->reader 													= null;
         $this->result                                                   = null;
 
         $this->isError("");
     }
 
-    private function getResult()
+    private function getResult($service = null)
     {
         return ($this->isError()
             ? $this->isError()
-            : $this->result
+            : ($service
+            	? $this->result[$service]
+				: $this->result
+			)
         );
     }
+	private function fields2output($record, $prototype = null) {
 
-    private function fields2string($fields, $db, $sep_complete = ", ", $sep_head = ", ", $sep_body = ", ", $op = "=")
-    {
-        if(is_array($fields) && count($fields))
-        {
-            foreach($fields AS $name => $value)
-            {
-                if(is_array($value))
-                    $plain_value = $db->toSql(implode(",",  array_unique($value)));
-                elseif(strpos($value, "~") === 0)
-                    $plain_value = substr($value, 1);
-                else
-                    $plain_value = $db->toSql($value);
-                
-                $res["complete"][$name]     = $name . " " . $op ." " . $plain_value;
-                $res["head"][$name]         = $name;
-                $res["body"][$name]         = $plain_value;
-            }
-            return array(
-                "head" => implode($sep_head, $res["head"])
-                , "body" => implode($sep_body, $res["body"])
-                , "complete" => implode($sep_complete, $res["complete"])
-            );
-        }
-    }
+    	if($prototype) {
+			$res = array_fill_keys(array_keys(array_filter($prototype)), "");
+    		if(is_array($prototype)) {
+    			foreach ($prototype AS $name => $value) {
+					$arrValue = null;
+    				$arrType = explode(":", $value, 2);
+    				$field = $arrType[0];
+    				$toField = $arrType[1];
+
+    				if(strpos($field, ".") > 0) {
+    					$arrValue = explode(".", $field);
+    					if(is_array($record[$arrValue[0]])) {
+							$res[$name] = $record[$arrValue[0]][$arrValue[1]];
+						} elseif($record[$arrValue[0]]) {
+    						$subvalue = json_decode($record[$arrValue[0]]);
+    						if($subvalue)
+								$res[$name] = $subvalue[$arrValue[1]];
+						}
+					} else {
+						$res[$name] = $record[$name];
+					}
+
+					if(!$toField) {
+						$struct = ($arrValue && is_array($this->struct[$arrValue[0]])
+							? ($this->struct[$arrValue[0]][$arrValue[1]]
+								? $this->struct[$arrValue[0]][$arrValue[1]]
+								: $this->struct[$arrValue[0]]["default"]
+							)
+							: (is_array($this->struct[$name])
+								? $this->struct[$name]["default"]
+								: $this->struct[$name]
+							)
+						);
+
+						$arrStruct = explode(":", $struct, 2);
+						$toField = $arrStruct[1];
+					}
+
+					if($toField) {
+						$res[$name] = $this->to($res[$name], $toField, $name);
+					}
+				}
+			} else {
+				$res[$prototype] = $record[$prototype];
+			}
+		} else {
+    		$res = $record;
+		}
+
+		return $res;
+	}
+	private function to($source, $conversion, $name) {
+    	switch($conversion) {
+			case "toImage":
+				if($source === true) {
+					$res = '<i></i>';
+				} elseif(strpos($source, "/") === 0) {
+					if(is_file(DISK_UPDIR . $source)) {
+						$res = '<img src="' . CM_SHOWFILES . $source . '" />';
+					} elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images" . $source)) {
+						$res = '<img src="' . CM_SHOWFILES . "/" . FRONTEND_THEME . "/images" . $source . '" />';
+					}
+				} elseif(strpos($source, "<") === 0) {
+					$res = $source;
+				} elseif(strpos($source, "#") !== false) {
+					$arrSource = explode("#", $source);
+					$hex = ($arrSource[1]
+						? $arrSource[1]
+						: $this->getColorPalette(rand(0,14))
+					);
+					$res = '<span style="background-color: #' . $hex . ';">' . $arrSource[0] . '</span>';
+				} elseif($source && function_exists("cm_getClassByFrameworkCss")) {
+					$res = cm_getClassByFrameworkCss($source, "icon-tag");
+				}
+				break;
+			case "toTimeElapsed":
+				$time = time() - $source; // to get the time since that moment
+				$time = ($time < 1) ? 1 : $time;
+				$day = 86400;
+				$min = 60;
+				if($time < 2 * $day) {
+					if($time < $min ) {
+						$res = ffTemplate::_get_word_by_code("about") . " " . fftemplate::_get_word_by_code("a") . " " . fftemplate::_get_word_by_code("minute") . " " . ffTemplate::_get_word_by_code("ago");
+					} else if($time > $day ) {
+						$res = ffTemplate::_get_word_by_code("yesterday") . " " . fftemplate::_get_word_by_code("at") . " " . date("G:i", $source);
+					} else {
+						$tokens = array(
+							31536000 	=> 'year',
+							2592000 	=> 'month',
+							604800 		=> 'week',
+							86400 		=> 'day',
+							3600 		=> 'hour',
+							60 			=> 'minute',
+							1 			=> 'second'
+						);
+
+						foreach ($tokens as $unit => $text) {
+							if ($time < $unit) continue;
+							$res = floor($time / $unit);
+							$res .= ' ' . fftemplate::_get_word_by_code($text . (($res > 1) ? 's' : '')) . " " . ffTemplate::_get_word_by_code("ago");
+							break;
+						}
+					}
+					break;
+				}
+
+
+			case "toDateTime":
+				$lang = FF_LOCALE;
+				$ffRes = new ffData($source, "Timestamp");
+				$res = $ffRes->getValue("Date", $lang);
+
+				if($lang == "ENG") {
+					$prefix = "+";
+					$res = "+" . $res;
+				} else {
+					$prefix = "/";
+				}
+
+				$conv = array(
+					$prefix . "01/" => " " . ffTemplate::_get_word_by_code("January") . " "
+					, $prefix . "02/" => " " . ffTemplate::_get_word_by_code("February") . " "
+					, $prefix . "03/" => " " . ffTemplate::_get_word_by_code("March") . " "
+					, $prefix . "04/" => " " . ffTemplate::_get_word_by_code("April") . " "
+					, $prefix . "05/" => " " . ffTemplate::_get_word_by_code("May") . " "
+					, $prefix . "06/" => " " . ffTemplate::_get_word_by_code("June") . " "
+					, $prefix . "07/" => " " . ffTemplate::_get_word_by_code("July") . " "
+					, $prefix . "08/" => " " . ffTemplate::_get_word_by_code("August") . " "
+					, $prefix . "09/" => " " . ffTemplate::_get_word_by_code("September") . " "
+					, $prefix . "10/" => " " . ffTemplate::_get_word_by_code("October") . " "
+					, $prefix . "11/" => " " . ffTemplate::_get_word_by_code("November") . " "
+					, $prefix . "12/" => " " . ffTemplate::_get_word_by_code("December") . " "
+				);
+				$res = str_replace(array_keys($conv), array_values($conv), $res);
+				if($prefix)
+					$res = str_replace("/", ", ", $res);
+				$res .= " " . fftemplate::_get_word_by_code("at") . " " . fftemplate::_get_word_by_code("hours") . " " . $ffRes->getValue("Time", FF_LOCALE);
+
+				break;
+			case "toDate":
+				$ffRes = new ffData($source, "Timestamp");
+				$res = $ffRes->getValue("Date", FF_LOCALE);
+				break;
+			case "toTime":
+				$ffRes = new ffData($source, "Timestamp");
+				$res = $ffRes->getValue("Time", FF_LOCALE);
+				break;
+			case "toString":
+				if($source) {
+					if(is_string($source)) {
+						$res = $source;
+					} else {
+						$res = $name;
+					}
+				} else {
+					$res = "";
+				}
+				break;
+			default:
+				$res = $source;
+		}
+
+		return $res;
+	}
+	public function isAssocArray(array $arr)
+	{
+		if (array() === $arr) return false;
+		return array_keys($arr) !== range(0, count($arr) - 1);
+	}
+	public function normalizeField($name, $value) {
+    	static $fields = array();
+
+    	if(1 || !$fields[$name]) {
+			$not = false;
+			if (strpos($name, "!") === 0) {
+				$name = substr($name, 1);
+				$not = true;
+			}
+
+			/*if(!is_array($value)) {
+				$arrValue = explode(":", $value, 2);
+				$value = $arrValue[0];
+			}*/
+			if(is_array($this->struct[$name])) {
+				$struct_type = "array";
+			} else {
+				$arrStructType = explode(":", $this->struct[$name], 2);
+				$struct_type = $arrStructType[0];
+			}
+
+
+			switch($struct_type) {
+				case "arrayOfNumber":																			//array
+				case "array":																			//array
+					if(strrpos($value, "++") === strlen($value) -2) {								//++ to array
+						//skip
+					} elseif(strrpos($value, "--") === strlen($value) -2) {							//-- to array
+						//skip
+					} elseif(strpos($value, "+") === 0) {
+						$res["update"]['$addToSet'][$name] = substr($value, 1);
+					} elseif(is_array($value)) {
+						if ($struct_type == "arrayOfNumber")                                            //array number to array
+							$fields[$name] = array_map('intval', $value);
+						else
+							$fields[$name] = $value;                                                            //array to array
+					} elseif(is_bool($value)) {                                                                //boolean to array
+						$fields[$name] = array((int)$value);
+					} elseif(is_numeric($value) || $struct_type == "arrayOfNumber") {
+						if (strpos($value, ".") !== false || strpos($value, ",") !== false)    //double to array
+							$fields[$name] = array((double)$value);
+						else                                                                                //int to array
+							$fields[$name] = array((int)$value);
+					} elseif(strtotime($value)) {															//date to array
+						$fields[$name] = array($value);
+					} elseif($value == "empty") {                                                            //empty to array
+						$fields[$name] = array();
+					} else {                                                                                //other to array
+						$fields[$name] = array((string)$value);
+					}
+
+					break;
+				case "boolean":																			//boolean
+					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to boolean
+						//skip
+					} elseif(strrpos($value, "--") === strlen($value) -2) {                            //-- to boolean
+						//skip
+					} elseif(strpos($value, "+") === 0) {												//+ to boolean
+						//skip
+					} elseif(is_array($value)) {															//array to boolean
+						//skip
+					} elseif(is_bool($value)) {                                                            //boolean to boolean
+						$fields[$name] = $value;
+					} elseif(is_numeric($value)) {															//number to boolean
+						$fields[$name] = (bool)$value;
+					} elseif($value == "empty") {                                                            //empty seq to boolean
+						$fields[$name] = false;
+					} else {                                                                                    //other to boolean
+						$fields[$name] = (bool)$value;
+					}
+					break;
+				case "date":																			//date
+					$fields[$name] = $value;
+					break;
+				case "number":																			//number
+					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to number
+						$res["update"]['$inc'][$name] = 1;
+					} elseif(strrpos($value, "--") === strlen($value) -2) {                                //-- to number
+						$res["update"]['$inc'][$name] = -1;
+					} elseif(strpos($value, "+") === 0) {                                            //+ to number
+						$res["update"]['$concat'][$name] = array('$' . $name, ",", substr($value, 1));
+					} elseif(is_array($value)) {																//array to number
+						//skip
+					} elseif(is_bool($value)) {                                                                //boolean to number
+						$fields[$name] = (int)$value;
+					} elseif(strtotime($value)) {                                                                //date to number
+						$fields[$name] = strtotime($value);
+					} elseif (strpos($value, ".") !== false || strpos($value, ",") !== false) {    //double to number
+						$fields[$name] = (double)$value;
+					} elseif($value == "empty") {                                                                //empty to number
+						$fields[$name] = 0;
+					} else {
+						$fields[$name] = (int)$value;                                                        //other to number
+					}
+					break;
+				case "string":																			//string
+				default:
+					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to string
+						$res["update"]['$concat'][$name] = array('$' . $name, "+1");
+					} elseif(strrpos($value, "--") === strlen($value) -2){                                //-- to string
+						$res["update"]['$concat'][$name] = array('$' . $name, "-1");
+					} elseif(strpos($value, "+") === 0){                                                //+ to string
+						$res["update"]['$concat'][$name] = array('$' . $name, ",", substr($value, 1));
+					} elseif(is_array($value)) {
+						if($this->isAssocArray($value))														//array assoc to string
+							$fields[$name] = json_encode($value);
+						else																				//array seq to string
+							$fields[$name] = implode(",", array_unique($value));
+					} elseif(is_bool($value)) {                                                                //boolean to string
+						$fields[$name] = (string)($value ? "1" : "0");
+					} elseif(is_numeric($value)) {															//number to string
+						$fields[$name] = (string)$value;
+					} elseif($value == "empty") {                                                            //empty seq to string
+						$fields[$name] = "";
+					} else {                                                                                //other to string
+						$fields[$name] = (string)$value;
+					}
+			}
+		}
+
+    	return array(
+    		"value" => $fields[$name]
+			, "name" => $name
+			, "not" => $not
+			, "res" => $res
+		);
+	}
+
+
+    private function extractKeys($recordset, $key) {
+    	if(is_array($recordset) && count($recordset)) {
+    		foreach($recordset AS $record) {
+    			if($record[$key])
+    				$res[] = $record[$key];
+			}
+		}
+
+		return $res;
+	}
 }

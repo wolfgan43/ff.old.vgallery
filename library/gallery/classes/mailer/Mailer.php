@@ -35,17 +35,17 @@ class Mailer extends vgCommon
     protected $domain                   = DOMAIN_NAME;
     protected $lang                     = null;
     protected $notify                   = null;
-    protected $debug                    = array(
-        "email"         => null
-    , "fields"      => null
-    , "owner"       => null
-    , "enable"      => false
-    );
+    protected $debug_data               = array(
+											"email"         => null
+											, "fields"      => null
+											, "owner"       => null
+											, "enable"      => false
+										);
     protected $send_copy                = false; //invert mail
     protected $storage                  = array(
-        "ID"                            => 0
-    , "obj"                         => null
-    );
+											"ID"           	=> 0
+											, "obj"         => null
+										);
 
     protected $theme                    = FRONTEND_THEME;
     protected $template                 = null;
@@ -80,15 +80,15 @@ class Mailer extends vgCommon
     protected $owner                    = null;
 
     protected $services                 = array(                //servizi per la scrittura o lettura della notifica
-        "phpmailer"                         => false
+        "phpmailer"                         => null
     );
     protected $controllers              = array(
-        "phpmailer"                         => array(
+        "email"                     => array(
             "default"                   => "localhost"
-        , "services"                => null
-        , "storage"                 => array(
-                "sql"                 => null
-            )
+			, "services"                => null
+			, "storage"                 => array(
+				"sql" 					=> null
+			)
         )
     );
     protected $controllers_rev          = array();
@@ -96,56 +96,56 @@ class Mailer extends vgCommon
         "connectors"                    => array(
             "email"                     => array(
                 "host"                  => null
-            , "username"            => null
-            , "password"            => null
-            , "auth"                => false
-            , "port"                => null
-            , "secure"              => null
+				, "username"            => null
+				, "password"            => null
+				, "auth"                => false
+				, "port"                => null
+				, "secure"              => null
 
             )
         , "sql"                       => array(
                 "host"                  => null
-            , "name"                => null
-            , "username"            => null
-            , "password"            => null
-            , "table"               => "email"
-            , "key"                 => "name"
+				, "name"                => null
+				, "username"            => null
+				, "password"            => null
+				, "table"               => "email"
+				, "key"                 => "name"
             )
         , "nosql"                   => array(
                 "host"                  => null
-            , "name"                => null
-            , "username"            => null
-            , "password"            => null
-            , "table"               => "email"
-            , "key"                 => "name"
+				, "name"                => null
+				, "username"            => null
+				, "password"            => null
+				, "table"               => "email"
+				, "key"                 => "name"
             )
         )
     , "storage"                     => array(
             "struct"                    => array(
                 "table"                 => "email"
-            , "key"                 => "name"
-            , "fields"              => array(
+				, "key"                 => "name"
+				, "fields"              => array(
                     "ID"                => "ID"
-                , "name"            => "name"
-                , "subject"         => "subject"
-                , "notify"          => "enable_notify"
-                , "from_name"       => "from_name"
-                , "from_email"      => "from_email"
-                , "template"        => "tpl_email_path"
-                , "fields_debug"     => "fields_example"
-                , "owner_debug"     => "owner_example"
-                , "email_debug"     => "email_debug"
+					, "name"            => "name"
+					, "subject"         => "subject"
+					, "notify"          => "enable_notify"
+					, "from_name"       => "from_name"
+					, "from_email"      => "from_email"
+					, "template"        => "tpl_email_path"
+					, "fields_debug"     => "fields_example"
+					, "owner_debug"     => "owner_example"
+					, "email_debug"     => "email_debug"
                 )
             )
         , "address"                 => array(
                 "table"                 => "email_address"
-            , "key"                 => "ID_email"
-            , "fields"              => array(
+				, "key"                 => "ID_email"
+				, "fields"              => array(
                     "ID"                => "ID"
-                , "ID_email"        => "ID_email"
-                , "name"            => "name"
-                , "email"           => "email"
-                , "type"            => "type"
+					, "ID_email"        => "ID_email"
+					, "name"            => "name"
+					, "email"           => "email"
+					, "type"            => "type"
                 )
             )
         )
@@ -158,8 +158,9 @@ class Mailer extends vgCommon
     private $tpl_text_path              = null;
     private $tpl_text                   = null;
     private $result                     = array();
+    private $exTime						= 0;
 
-    public static function getInstance($params)
+    public static function getInstance($params, $controller = null)
     {
         if (self::$singleton === null) {
             self::$singleton = new Mailer($params);
@@ -169,6 +170,9 @@ class Mailer extends vgCommon
 
             self::$singleton->setParams($params);
         }
+		if($controller)
+			self::$singleton->setController("email", $controller);
+
         return self::$singleton;
     }
 
@@ -179,8 +183,6 @@ class Mailer extends vgCommon
             $params = array("name" => $params);
 
         $this->setParams($params);
-        $this->setReferer(true);
-
         $this->loadControllers(__DIR__);
     }
 
@@ -196,21 +198,19 @@ class Mailer extends vgCommon
      * @param null $settings
      * @return array|null
      */
-    public function send($message, $to = null, $from = null, $cc = null, $bcc = null, $subject = null, $actions = null, $attach = null, $settings = null)
+    public function send($message = null, $subject = null, $to = null, $from = null, $cc = null, $bcc = null, $actions = null, $attach = null, $referer = null)
     {
+		$start = profiling_stopwatch();
+
         $this->clearResult($from);
 //todo: $notify da fare e $send_copy e $actions e $users e $groups e $referer
+		$this->setMessage($message, $subject, $actions, $attach, $referer);
 
-        if(!$message)
-            $this->isError("mailer_body_required");
+		$this->loadConfig();
+		$this->loadTemplate();
 
         if(!$this->isError())
         {
-            $this->loadConfig();
-            $this->setMessage($message);
-            $this->loadTemplate();
-            $this->subject                      = $subject;
-
             $this->addAddress($from             , "from");
             $this->addAddress($to               , "to");
             $this->addAddress($cc               , "cc");
@@ -230,6 +230,20 @@ class Mailer extends vgCommon
             }
         }
 
+        $this->exTime = profiling_stopwatch($start);
+
+        cache_writeLog($this->debug_backtrace(__FILE__) . "\n"
+			. "URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"] . "\n"
+			. "name (struct from db): " . $this->name . "\n"
+			. "tpl: " . $this->template . " (" . $this->tpl_html_path . ")" . "\n"
+			. " subject: " . $this->subject . "\n"
+			. " from: " . print_r($this->from, true)
+			. " to: " . print_r($this->to, true)
+			. " cc: " . print_r($this->cc, true)
+			. " bcc: " . print_r($this->bcc, true)
+			. " Result: " . print_r($this->getResult(), true)
+		, "email" . ($this->isError() ? "_error" : ""));
+
         return $this->getResult();
     }
 
@@ -237,92 +251,132 @@ class Mailer extends vgCommon
     {
         $this->title                            = $title;
     }
-    public function setMessage($message)
+    public function setMessage($message, $subject, $actions = null, $attach = null, $referer = null)
     {
         if(is_array($message))
         {
-            if($message["theme"])
-                $this->theme                    = $message["theme"];
-            if($message["template"])
-                $this->template                 = $message["template"];
-            if($message["pre"])
-                $this->pre                      = $message["pre"];
-            if($message["post"])
-                $this->post                     = $message["post"];
-            if($message["content"])
-                $this->content                  = $message["content"];
-            if($message["fields"])
-                $this->fields                   = $message["fields"];
-            if($message["attach"])
-                $this->attach                   = $message["attach"];
-            if($message["actions"])
-                $this->actions                  = $message["actions"];
+			$this->name                    		= $message["name"];
+			if($message["theme"])
+				$this->theme                    	= $message["theme"];
 
+			$this->template                 	= $message["template"];
+			$this->pre                      	= $message["pre"];
+			$this->post                     	= $message["post"];
+			$this->content                  	= $message["content"];
+			$this->fields                   	= $message["fields"];
         } else {
-            $this->content                      = $message;
+			if(strpos($message, " ") === false)
+				$this->name                     = $message;
+			else
+            	$this->content                  = $message;
+
+            $message 							= array();
         }
+
+		$this->subject							= ($subject
+													? $subject
+													: $message["subject"]
+												);
+
+		$this->setAttach(			 	 $attach
+													? $attach
+													: $message["attach"]
+												);
+		$this->setActions(						$actions
+													? $actions
+													: $message["actions"]
+												);
+		$this->setReferer(						$referer
+			? $referer
+			: $message["referer"]
+		);
     }
 
     public function setReferer($referer)
     {
-        $this->referer                          = ($referer === true
-                                                    ?  $_SERVER["HTTP_REFERER"]
-                                                    : $referer
-                                                );
-    }
-    public function addAttach($attach)
-    { //da fare con oggetto
-        $this->attach[]                         = $attach;
-    }
-    public function addActions($actions)
-    {
-        $this->actions[]                        = $actions;
-    }
-    public function addUsers($users)
-    {
-        $this->addTo($users, "users");
-    }
+    	if($referer) {
+			$this->referer                   	= $referer;
+		} else {
+			$stack 								= debug_backtrace();
+			$firstFrame 						= $stack[count($stack) - 1];
 
-    public function addGroups($groups)
-    {
-        $this->addTo($groups, "groups");
+			$this->referer 						= str_replace($this->getDiskPath(), "", $firstFrame['file']);
+		}
     }
-    public function addAddress($address, $type = "to", $name = null)
+	public function setAttach($attach, $reset = true)
+	{
+		if($reset)
+			$this->attach = array();
+
+		if(is_array($attach)) {
+			foreach($attach AS $name => $value) {
+				$this->addAttach($value, $name);
+			}
+		} elseif(strlen($attach)) {
+			$this->addAttach($attach);
+		}
+	}
+	public function addAttach($attach, $name = null)
+	{
+		if(!$name)
+			$name 								= $attach;
+
+		$this->attach[$name]                    = $attach;
+	}
+	public function setActions($actions, $reset = true)
+	{//todo: da fare con le calltoactions
+		if($reset)
+			$this->actions = array();
+
+		if(is_array($actions)) {
+			foreach($actions AS $action) {
+				$this->addAction($action);
+			}
+		} elseif($actions) {
+			$this->debug("action missing data:" . $actions);
+		}
+	}
+	public function addAction($action)
+	{//todo: da fare con le calltoactions
+		$this->actions[] = $action;
+	}
+	public function addAddress($address, $type = "to", $name = null)
     { //da fare con oggetto
         if(is_array($address))
         {
             if(array_key_exists("email", $address))
             {
-                $addr = array(
+				$this->setAddress(array(
                     "email" => $address["email"]
-                , "name" => ($name ? $name :$address["name"])
-                );
+                	, "name" => ($name ? $name : ($address["name"] ? $address["name"] : $address["email"]))
+                ), $type);
             } elseif(array_key_exists("0", $address)) {
                 foreach($address AS $addr)
                 {
-                    if($addr["email"])
+                    if(array_key_exists("email", $addr))
                     {
                         $this->setAddress(array(
                             "email" => $addr["email"]
-                        , "name" => ($addr["name"] ? $addr["name"] : $addr["email"])
+                        	, "name" => ($addr["name"] ? $addr["name"] : $addr["email"])
                         ), $type);
-                    } else {
+                    } elseif(strlen($addr)) {
+						$this->setAddress(array(
+							"email" => $addr
+							, "name" => $addr
+						), $type);
+					} else {
                         $this->debug("wrong_email", $addr);
                     }
                 }
-                return null;
             }
         } elseif($address) {
-            $addr = array(
+			$this->setAddress(array(
                 "email" => $address
-            , "name" => ($name ? $name : $address)
-            );
-        }
-
-        if($addr["email"])
-            $this->setAddress($addr, $type);
-        else
-            $this->debug("wrong_email", $addr);
+            	, "name" => ($name ? $name : $address)
+            ), $type);
+        } else {
+			$this->debug("email_address_empty");
+		}
     }
     public function setFields($fields, $type = "struct")
     {
@@ -367,7 +421,7 @@ class Mailer extends vgCommon
             ? ffTemplate::_get_word_by_code("yes")
             : ffTemplate::_get_word_by_code("no")
         );
-        $headers_mail["settings"]["debug"]                                                  = $this->debug;
+        $headers_mail["settings"]["debug"]                                                  = $this->debug_data;
         $headers_mail["settings"]["lang"]                                                   = $this->lang;
         $headers_mail["settings"]["domain"]                                                 = $this->domain;
         $headers_mail["settings"]["prefix"]                                                 = $this->prefix;
@@ -394,7 +448,7 @@ class Mailer extends vgCommon
 
 
 
-
+/*
         if (is_array($arrAddress) && count($arrAddress)) {
             foreach ($arrAddress AS $arrAddress_type => $arrAddress_value) {
                 if (is_array($arrAddress_value) && count($arrAddress_value)) {
@@ -528,29 +582,26 @@ class Mailer extends vgCommon
 
             $tpl_header->set_var("email_template_title", ffTemplate::_get_word_by_code("email_template_explanation_tag"));
             $preview_header_tag = $tpl_header->rpparse("main", false);
-        }
+        }*/
     }
     private function setAddress($addr, $type)
     {
         if($addr) {
             switch ($type) {
                 case "to":
-                    if(is_array($this->to) && count($this->to) > 0)
-                        $this->cc[$addr["email"]] = $addr;
-                    else
-                        $this->to[$addr["email"]] = $addr;
+					$this->to[$addr["email"]] 			= $addr;
                     break;
                 case "from":
-                    if(is_array($this->to) && count($this->to) > 0)
+                    if(is_array($this->from) && count($this->from) > 0)
                         $this->isError("mailer_from_must_be_one");
                     else
-                        $this->from[$addr["email"]] = $addr;
+                        $this->from[$addr["email"]] 	= $addr;
                     break;
                 case "cc":
-                    $this->cc[$addr["email"]] = $addr;
+                    $this->cc[$addr["email"]] 			= $addr;
                     break;
                 case "bcc":
-                    $this->bcc[$addr["email"]] = $addr;
+                    $this->bcc[$addr["email"]] 			= $addr;
                     break;
             }
         }
@@ -562,49 +613,62 @@ class Mailer extends vgCommon
     private function getResult()
     {
         return ($this->isError()
-            ? $this->isError()
-            : $this->result
+            ? array(
+				"error" => $this->isError()
+				, "exTime" => $this->exTime
+			)
+            : array(
+				"result" => $this->result
+				, "exTime" => $this->exTime
+			)
         );
     }
     private function loadConfig($service = "email")
     {
         require_once($this->getAbsPathPHP("/storage/Storage", true));
 
-        $connectors = $this->controllers[$service]["storage"];
-        foreach($connectors AS $type => $data)
-        {
-            if(!$data)
-            {
-                $connectors[$type] = array(
-                    "service" => null
-                , "connector" => $this->struct["connectors"][$type]
-                );
+        if($this->name) {
+			$connectors = $this->controllers[$service]["storage"];
+			foreach ($connectors AS $type => $data) {
+				if (!$data) {
+					$connectors[$type] = array(
+						"service" => null
+					, "connector" => $this->struct["connectors"][$type]
+					);
 
-            }
-        }
+				}
+			}
 
-        $this->storage["obj"] = Storage::getInstance($connectors);
+			$this->storage["obj"] = Storage::getInstance($connectors);
+			$struct = $this->storage["obj"]->lookup($this->struct["storage"]["struct"]["table"]
+				, array(
+					$this->getField($this->struct["storage"]["struct"]["key"], "struct") => $this->name
+				));
 
-        $struct = $this->storage["obj"]->lookup(array(
-            $this->getField($this->struct["storage"]["struct"]["key"], "struct") => $this->name
-        ), $this->struct["storage"]["struct"]["table"]);
-
-        if(!$struct)
-            $struct = $this->makeAccount(); //TODO: da implementare
+			if (!$struct)
+				$struct = $this->makeAccount(); //TODO: da implementare
+		}
 
         if($struct)
         {
-            $this->subject              = $struct[$this->struct["storage"]["struct"]["fields"]["subject"]];
-            $this->notify               = $struct[$this->struct["storage"]["struct"]["fields"]["notify"]];
-            $this->template             = $struct[$this->struct["storage"]["struct"]["fields"]["template"]];
-            $this->from                 = array(
+        	if(!$this->subject)
+            	$this->subject              = $struct[$this->struct["storage"]["struct"]["fields"]["subject"]];
+
+			if(!$this->template)
+				$this->template             = $struct[$this->struct["storage"]["struct"]["fields"]["template"]];
+
+			if(!$this->notify)
+				$this->notify               = $struct[$this->struct["storage"]["struct"]["fields"]["notify"]];
+
+			if(!$this->from)
+				$this->from[$struct[$this->struct["storage"]["struct"]["fields"]["from_email"]]] = array(
                 "name" => $struct[$this->struct["storage"]["struct"]["fields"]["from_name"]]
-            , "email" => $struct[$this->struct["storage"]["struct"]["fields"]["from_email"]]
+				, "email" => $struct[$this->struct["storage"]["struct"]["fields"]["from_email"]]
             );
 
-            $this->debug["fields"]      = $struct[$this->struct["storage"]["struct"]["fields"]["fields_debug"]];
-            $this->debug["owner"]       = $struct[$this->struct["storage"]["struct"]["fields"]["owner_debug"]];
-            $this->debug["email"]       = $struct[$this->struct["storage"]["struct"]["fields"]["email_debug"]];
+            $this->debug_data["fields"]      = $struct[$this->struct["storage"]["struct"]["fields"]["fields_debug"]];
+            $this->debug_data["owner"]       = $struct[$this->struct["storage"]["struct"]["fields"]["owner_debug"]];
+            $this->debug_data["email"]       = $struct[$this->struct["storage"]["struct"]["fields"]["email_debug"]];
 
             $this->storage["ID"]        = $struct["ID"];
 
@@ -635,28 +699,45 @@ class Mailer extends vgCommon
         /*
          * Resolve template Path
          */
-        if($this->template)
-        {
-            if(is_file($this->getAbsPath($this->template)))
-            {
-                $this->tpl_html_path = $this->getAbsPath($this->template);
-            } elseif($this->theme && is_file($this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/" . $this->template))) {
-                $this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/" . $this->template);
-            } elseif($this->theme && is_file($this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/" . $this->template . "/email.tpl"))) {
-                $this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/" . $this->template . "/email.tpl");
-            }
-        } else {
-            if($this->theme && is_file($this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/email.tpl"))) {
-                $this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/email.tpl");
-            } else {
-                $this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this::THEME_DEFAULT . "/contents/email/email.tpl");
-            }
-        }
 
-        if($this->tpl_html_path)
-        {
-            $this->tpl_html = ffTemplate::factory(ffCommon_dirname($this->tpl_html_path));
-            $this->tpl_html->load_file(basename($this->tpl_html_path), "main");
+		if ($this->template) {
+			if (is_file($this->getAbsPath($this->template))) {
+				$this->tpl_html_path = $this->getAbsPath($this->template);
+			} elseif (strpos($this->template, "/") === false && $this->theme && is_file($this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/" . $this->template . "/email.tpl"))) {
+				$this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/" . $this->template . "/email.tpl");
+			} elseif ($this->theme && is_file($this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/" . $this->template))) {
+				$this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/" . $this->template);
+			}
+		}
+
+		if($this->content) {
+			if($this->tpl_html_path) {
+				$this->fields["pre"] .= $this->content;
+				$this->content = null;
+			} else {
+				$this->tpl_html = ffTemplate::factory();
+				$this->tpl_html->load_content($this->content, "main");
+				$this->tpl_text = ffTemplate::factory();
+				$this->tpl_text->load_content($this->content, "main");
+			}
+		}
+
+		if(!$this->tpl_html_path) {
+			if ($this->theme && is_file($this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/email.tpl"))) {
+				$this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this->theme . "/contents/email/email.tpl");
+			} else {
+				$this->tpl_html_path = $this->getAbsPath(FF_THEME_DIR . "/" . $this::THEME_DEFAULT . "/contents/email/email.tpl");
+			}
+		}
+
+		if($this->tpl_html_path) {
+			$this->tpl_html = ffTemplate::factory(ffCommon_dirname($this->tpl_html_path));
+			$this->tpl_html->load_file(basename($this->tpl_html_path), "main");
+			if(is_file(ffCommon_dirname($this->tpl_html_path) . "/email.txt"))
+				$this->tpl_text_path = ffCommon_dirname($this->tpl_html_path) . "/email.txt";
+		}
+
+		if($this->tpl_html) {
             $this->tpl_html->set_var("site_path", FF_SITE_PATH);
             $this->tpl_html->set_var("site_updir", SITE_UPDIR);
             $this->tpl_html->set_var("domain_inset", $this->domain);
@@ -665,10 +746,7 @@ class Mailer extends vgCommon
             $this->tpl_html->set_var("email_name", $this->name);
             $this->tpl_html->set_var("language_inset", FF_LOCALE);
 
-            if(is_file(ffCommon_dirname($this->tpl_html_path) . "/email.txt"))
-            {
-                $this->tpl_text_path = ffCommon_dirname($this->tpl_html_path) . "/email.txt";
-
+            if($this->tpl_text_path) {
                 $this->tpl_text = ffTemplate::factory(ffCommon_dirname($this->tpl_text_path));
                 $this->tpl_text->load_file(basename($this->tpl_text_path), "main");
                 $this->tpl_text->set_var("site_path", FF_SITE_PATH);
@@ -691,7 +769,7 @@ class Mailer extends vgCommon
     {
         $type                                                           = "email";
         if(!$service)
-            $service                                                    = $this->controllers["phpmailer"]["default"];
+            $service                                                    = $this->controllers[$type]["default"];
 
         if($service)
         {
@@ -734,7 +812,8 @@ class Mailer extends vgCommon
             $mail->SMTPSecure                                           = $this->smtp["secure"];
             $mail->SMTPAutoTLS                                          = false;
 
-            $from = array_pop($this->from);
+            $froms 														= array_values($this->from);
+			$from 														= $froms[0];
 
             $mail->FromName                                             = $from["name"];
 
@@ -925,15 +1004,6 @@ class Mailer extends vgCommon
         $this->result = $rc;
     }
 
-
-
-    private function addTo($IDs, $type = "users")
-    {
-        if(is_array($IDs))
-            $this->$type = array_merge($this->$type, $IDs);
-        elseif($IDs)
-            array_push($this->$type, $IDs);
-    }
     private function clearResult($from = null)
     {
         if($from)
@@ -949,7 +1019,163 @@ class Mailer extends vgCommon
 
     private function makeAccount()
     {
+    	return;
+		$email_name = $email;
+		$enable_notify = false;
 
+		if(!(strlen($tpl_email_path) && is_dir(FF_DISK_PATH . $tpl_email_path))) {
+			$tpl_email_path = clone_template_mail($email_name);
+		}
+
+		$default_from["name"] = A_FROM_NAME;
+		$default_from["mail"] = A_FROM_EMAIL;
+
+		$sSql = "INSERT 
+	                    INTO `email` 
+	                    (
+	                        ID
+	                        , name
+	                        , tpl_email_path
+	                        , from_name
+	                        , from_email
+	                        , enable_notify
+	                        , owner
+	                    ) 
+	                    VALUES 
+	                    (
+	                        ''
+	                        , " . $dbtemp->toSql($email_name, "Text") . "
+	                        , " . $dbtemp->toSql($tpl_email_path, "Text") . "
+	                        , " . $dbtemp->toSql($default_from["name"], "Text") . "
+	                        , " . $dbtemp->toSql($default_from["mail"], "Text") . "
+	                        , " . $dbtemp->toSql($enable_notify, "Number") . "
+	                        , " . $dbtemp->toSql(0, "Number") . "
+	                    )";
+		$dbtemp->execute($sSql);
+		$ID_mail = $dbtemp->getInsertID(true);
+
+		if(!verifyMailbox(CC_FROM_EMAIL)) {
+			$sSql = "SELECT * FROM `email_address` WHERE email = " . $dbtemp->toSql(CC_FROM_EMAIL, "Text");
+			$dbtemp->query($sSql);
+			if($dbtemp->nextRecord()) {
+				$ID_CC = $dbtemp->getField("ID")->getValue();
+				$default_cc = array(
+					"name" => $dbtemp->getField("name", "Text", true)
+				, "mail" => $dbtemp->getField("email", "Text", true)
+				);
+			} else {
+				$sSql = "INSERT 
+		                        INTO `email_address` 
+		                        (
+		                            ID
+		                            , name
+		                            , email
+		                            , uid
+		                        ) 
+		                        VALUES 
+		                        (
+		                            ''
+		                            , " . $dbtemp->toSql(CC_FROM_NAME, "Text") . "
+		                            , " . $dbtemp->toSql(CC_FROM_EMAIL, "Text") . "
+		                            , " . $dbtemp->toSql(0, "Number") . "
+		                        )";
+				$dbtemp->execute($sSql);
+				$ID_CC = $dbtemp->getInsertID(true);
+				$default_cc = array(
+					"name" => CC_FROM_NAME
+				, "mail" => CC_FROM_EMAIL
+				);
+			}
+
+			if($ID_CC) {
+				$sSql = "SELECT * 
+			                FROM `email_rel_address` 
+			                WHERE 
+			                    ID_email = " . $dbtemp->toSql($ID_mail, "Number") . "
+			                    AND ID_address = " . $dbtemp->toSql($ID_CC, "Number") . "
+			                    AND type = " . $dbtemp->toSql("cc", "Text");
+				$dbtemp->query($sSql);
+				if(!$dbtemp->nextRecord()) {
+					$sSql = "INSERT 
+			                        INTO `email_rel_address` 
+			                        (
+			                            ID
+			                            , ID_email
+			                            , ID_address
+			                            , type
+			                        ) 
+			                        VALUES 
+			                        (
+			                            ''
+			                            , " . $dbtemp->toSql($ID_mail, "Number") . "
+			                            , " . $dbtemp->toSql($ID_CC, "Number") . "
+			                            , " . $dbtemp->toSql("cc", "Text") . "
+			                        )";
+					$dbtemp->execute($sSql);
+				}
+			}
+		}
+		if(!verifyMailbox(BCC_FROM_EMAIL)) {
+			$sSql = "SELECT * FROM `email_address` WHERE email = " . $dbtemp->toSql(BCC_FROM_EMAIL, "Text");
+			$dbtemp->query($sSql);
+			if($dbtemp->nextRecord()) {
+				$ID_BCC = $dbtemp->getField("ID")->getValue();
+				$default_bcc = array(
+					"name" => $dbtemp->getField("name", "Text", true)
+				, "mail" => $dbtemp->getField("email", "Text", true)
+				);
+			} else {
+				$sSql = "INSERT 
+		                        INTO `email_address` 
+		                        (
+		                            ID
+		                            , name
+		                            , email
+		                            , uid
+		                        ) 
+		                        VALUES 
+		                        (
+		                            ''
+		                            , " . $dbtemp->toSql(BCC_FROM_NAME, "Text") . "
+		                            , " . $dbtemp->toSql(BCC_FROM_EMAIL, "Text") . "
+		                            , " . $dbtemp->toSql(0, "Number") . "
+		                        )";
+				$dbtemp->execute($sSql);
+				$ID_BCC = $dbtemp->getInsertID(true);
+				$default_bcc = array(
+					"name" => BCC_FROM_NAME
+				, "mail" => BCC_FROM_EMAIL
+				);
+			}
+
+			if($ID_BCC) {
+				$sSql = "SELECT * 
+			                FROM `email_rel_address` 
+			                WHERE 
+			                    ID_email = " . $dbtemp->toSql($ID_mail, "Number") . "
+			                    AND ID_address = " . $dbtemp->toSql($ID_BCC, "Number") . "
+			                    AND type = " . $dbtemp->toSql("bcc", "Text");
+				$dbtemp->query($sSql);
+				if(!$dbtemp->nextRecord()) {
+					$sSql = "INSERT 
+			                        INTO `email_rel_address` 
+			                        (
+			                            ID
+			                            , ID_email
+			                            , ID_address
+			                            , type
+			                        ) 
+			                        VALUES 
+			                        (
+			                            ''
+			                            , " . $dbtemp->toSql($ID_mail, "Number") . "
+			                            , " . $dbtemp->toSql($ID_BCC, "Number") . "
+			                            , " . $dbtemp->toSql("bcc", "Text") . "
+			                        )";
+					$dbtemp->execute($sSql);
+				}
+			}
+		}
     }
     function process_mail_field($value, $prefix = null, $type = null, $language = null)
     {

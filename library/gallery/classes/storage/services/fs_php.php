@@ -31,14 +31,12 @@ class storagePhp
 
     private $device                                         = null;
     private $config                                         = null;
-    private $data                                           = null;
     private $storage                                        = null;
 
-    public function __construct($storage, $data = null, $config = null)
+    public function __construct($storage)
     {
         $this->storage = $storage;
-        $this->setConfig($config);
-        $this->setData($data);
+        $this->setConfig();
 
         if (!class_exists("Filemanager"))
             require_once($this->storage->getAbsPathPHP("/filemanager/Filemanager", true));
@@ -54,12 +52,8 @@ class storagePhp
     {
         return $this->config;
     }
-    private function setConfig($config = null)
+    private function setConfig()
     {
         $this->config = $this->storage->getConfig($this::TYPE);
-    }
-    private function setData($data = null)
-    {
-        $this->data = $this->storage->getData("result", $data);
     }
 }

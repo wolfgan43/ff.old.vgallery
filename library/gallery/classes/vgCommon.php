@@ -29,6 +29,9 @@ abstract class vgCommon
 {
     const PHP_EXT                       = "php";
 
+	protected $services 				= null;
+	protected $controllers 				= null;
+
     private $error                      = null;
     private $debug                      = array();
     private $disk_path                  = null;
@@ -37,7 +40,9 @@ abstract class vgCommon
                                             , "frontend"    => "site"
                                         );
 
-
+	public function getDiskPath() {
+		return $this->disk_path;
+	}
     public function getTheme($name)
     {
         return $this->theme[$name];
@@ -64,9 +69,6 @@ abstract class vgCommon
     {
         if($this->controllers[$controller])
         {
-            if(!$service)
-                $service = $this->controllers[$controller]["default"];
-
             $this->services[$controller] = $service;
         }
     }
@@ -78,17 +80,45 @@ abstract class vgCommon
         if($this->debug)
             return $this->debug;
     }
+    public function debug_backtrace($exclude_file = null)
+	{
+		$stack 								= debug_backtrace();
+		foreach($stack AS $script) {
+			if($script["file"] != __FILE__
+				&& $script["file"] != $exclude_file
+				&& basename($script["file"]) != "common.php"
+				&& basename($script["file"]) != "config.php"
+			) {
+				$res = str_replace(array($this->getDiskPath(), "/index.php"), "", $script['file']);
+				break;
+			}
+		}
+		return $res;
+	}
     public function isError($error = null) 
     {
         if($error !== null)
         {
             $this->error = $error;
-            $this->debug["error"][] = $error;
+            $this->debug["error"][] 			= $error;
         }
         if($this->error)
             return $this->error;
     }
-    public function setParams($params) 
+	public function setServices($services) {
+		$this->services 						= null;
+		if(is_array($services)) {
+			foreach($services AS $service => $controller) {
+				$this->addService($service, $controller);
+			}
+		} elseif(strlen($services)) {
+			$this->addService($services);
+		}
+	}
+	public function setController($name, $default) {
+		$this->controllers[$name]["default"] = $default;
+	}
+    public function setParams($params)
     {
         if(is_array($params) && count($params))
         {
