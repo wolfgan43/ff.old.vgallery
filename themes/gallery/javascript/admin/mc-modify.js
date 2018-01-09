@@ -73,7 +73,7 @@ function getWhois(domainName) {
 		success: function(data) {
 			if(data.WhoisRecord !== undefined) {
 				if(data.WhoisRecord.dataError == "") {
-					jQuery("#MCDomainModify_data .whois LEGEND").html(whoisLegendTitle + \'<span class="auto-whois">Domain Found</span>\'); 
+					jQuery("#MCDomainModify_data .whois LEGEND").html(whoisLegendTitle + '<span class="auto-whois">Domain Found</span>');
 					
 					var registrarName = data.WhoisRecord.registryData.registrarName;
 					var createdDate = data.WhoisRecord.registryData.createdDateNormalized.split(" ")[0].split("-");
@@ -98,10 +98,10 @@ function getWhois(domainName) {
 
 					jQuery("#MCDomainModify_expiration_date").val(expiresDate[2] + "/" + expiresDate[1] + "/" + expiresDate[0]);
 				} else {
-					jQuery("#MCDomainModify_data .whois LEGEND").html(whoisLegendTitle + \'<span class="auto-whois">\' + data.WhoisRecord.dataError + \'</span>\'); 
+					jQuery("#MCDomainModify_data .whois LEGEND").html(whoisLegendTitle + '<span class="auto-whois">' + data.WhoisRecord.dataError + '</span>');
 				}
 			} else {
-				jQuery("#MCDomainModify_data .whois LEGEND").html(whoisLegendTitle + \'<span class="auto-whois">Auto Detect Service Not Available</span>\'); 
+				jQuery("#MCDomainModify_data .whois LEGEND").html(whoisLegendTitle + '<span class="auto-whois">Auto Detect Service Not Available</span>');
 			}
 		}
 	});

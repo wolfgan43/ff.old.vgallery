@@ -64,14 +64,18 @@ ul {
 	opacity: 0.7;
 	pointer-events: none;
 }
-
+.loading > * {
+    visibility: hidden;
+}
 .loading:after {
   content:"";
   display: block;
   position:absolute;
-  top:25%;
   left:50%;
-  font-size: 90px;
+  top:50%;
+  /*font-size: 90px;
+   top:25%;
+  */
   text-indent: -9999em;
   overflow: hidden;
   width: 1em;
@@ -179,6 +183,9 @@ ul {
   position: relative;
   max-width: 100%;
   margin: 30px auto 0;
+}
+.ff-modal-small {
+    max-width: 500px;
 }
 
 .ff-modal-highlight {
