@@ -734,7 +734,7 @@ function StaticModify_on_done_action($component, $action) {
             default:
         }
         
-		if(($action == "insert" || $action == "update") && check_function("set_field_permalink"))
+		if(!$component->user_vars["is_home"] && ($action == "insert" || $action == "update") && check_function("set_field_permalink"))
 			set_field_permalink("static_pages", $component->key_fields["ID"]->getValue());
 
         //UPDATE CACHE

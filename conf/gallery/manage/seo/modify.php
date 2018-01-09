@@ -584,10 +584,10 @@ $cm->oPage->addContent($oRecord);
 //$cm->oPage->addContent('<div class="spellcheck ' . cm_getClassByFrameworkCss(array(9), "push") . " " . cm_getClassByFrameworkCss(array(3), "col") . '" style="position:absolute;"></div>');
 $cm->oPage->addContent('<div class="spellcheck ' . cm_getClassByFrameworkCss(array(4), "col") . '"></div>');
 			
-$cm->oPage->tplAddJs("ff.cms.seo", "ff.cms.seo.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools");
-if(is_file(FF_THEME_DISK_PATH . "/" . THEME_INSET . "/javascript/tools/stopwords/ff.cms.seo.stopwords." . strtolower(LANGUAGE_INSET) . ".js"))
-	$cm->oPage->tplAddJs("ff.cms.seo.stopWords", "ff.cms.seo.stopwords." . strtolower(LANGUAGE_INSET) . ".js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/stopwords");
-
+$cm->oPage->tplAddJs("ff.cms.seo", "seo.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo");
+if(is_file(FF_THEME_DISK_PATH . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo/stopwords/" . strtolower(LANGUAGE_INSET) . ".js")) {
+	$cm->oPage->tplAddJs("ff.cms.seo.stopWords", strtolower(LANGUAGE_INSET) . ".js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo/stopwords");
+}
 $js = '<script type="text/javascript">
         jQuery(function() {
             ' . $js . '
@@ -618,7 +618,7 @@ $js = '<script type="text/javascript">
       		if(!lang)
       			lang = "' . strtolower(LANGUAGE_INSET) . '";
 
-			ff.pluginLoad("ff.cms.libs.stopWords." + lang, "' . FF_THEME_DIR . '/' . THEME_INSET . '/javascript/tools/stopwords/ff.cms.seo.stopwords." + lang + ".js", function() {
+			ff.pluginLoad("ff.cms.seo.stopWords." + lang, "' . FF_THEME_DIR . '/' . THEME_INSET . '/javascript/tools/ff.cms.seo/stopwords/" + lang + ".js", function() {
 				var keyCompare = {};
 	            if(jQuery(that).closest(".seo-page").find(".smart-url INPUT").length)
 	                keyCompare["Smart Url"] = jQuery(that).closest(".seo-page").find(".smart-url INPUT").val().replace(/-/g, " ");
@@ -631,11 +631,11 @@ $js = '<script type="text/javascript">
 	            if(jQuery(that).closest(".seo-page").find(".header INPUT").length)
 	                keyCompare["H1"] = jQuery(that).closest(".seo-page").find(".header INPUT").val();
 
-	            if(jQuery.isFunction(ff.cms.libs.stopWords[lang])) {
-                    ff.cms.seo.stopWords = ff.cms.libs.stopWords[lang];
+	           /* if(jQuery.isFunction(ff.cms.seo.stopWords[lang])) {
+                    ff.cms.seo.stopWords = ff.cms.seo.stopWords[lang];
 	            } else {
                     ff.cms.libs.stopWords[lang] = ff.cms.seo.stopWords;
-	            }
+	            }*/
 
 	            var seoPage = (jQuery(that).closest(".seo-page").length
 	            	? jQuery(jQuery(that).closest(".seo-page").find(".check-keywords INPUT, .check-keywords TEXTAREA"))
@@ -646,12 +646,12 @@ $js = '<script type="text/javascript">
         	});      	
       	}
         
-        ff.pluginLoad("ff.cms.seo", "' . FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo.js" . '", function() {
+        ff.pluginLoad("ff.cms.seo", "' . FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/ff.cms.seo/seo.js" . '", function() {
 				jQuery("#' . $js_container_id . ' .page-meta INPUT, #' . $js_container_id . ' .page-meta TEXTAREA").on("keyup", function() {
 					var that = this;
 					var lang = jQuery("#' . $js_container_id . ' li.active").text();
 					lang = lang.trim().substring(0, 3).toLowerCase();
-					console.log("ASD");
+
 					if(jQuery(that).hasClass("loaded")) {
 						keyWordsCheck(that, lang);
 					}

@@ -522,7 +522,7 @@ if(!strlen($strError)) {
         	case "anagraph":
 		        $clone_schema = array(
                     "anagraph" => array(
-                            "anagraph" => array("compare_key" => "ID", "return_ID" => "") 
+                            "anagraph" => array("compare_key" => "ID", "return_ID" => "", "exclude_fields" => array("meta_title_alt" => true, "meta_description" => true))
                             , "anagraph_rel_nodes_fields" => array("compare_key" => "ID_nodes", "use_return_ID" => "ID_nodes")
                             , "rel_nodes_src" => array("real_table" => "rel_nodes", "use_return_ID" => "ID_node_src", "compare_str" => "
                                                                     (`rel_nodes`.`ID_node_src` = " . $db_gallery->toSql($ID_vgallery_nodes, "Number") . " 
@@ -548,7 +548,7 @@ if(!strlen($strError)) {
         	case "vgallery":
 		        $clone_schema = array(
                     "vgallery" => array(
-                            "vgallery_nodes" => array("compare_key" => "ID", "return_ID" => "") 
+                            "vgallery_nodes" => array("compare_key" => "ID", "return_ID" => "", "exclude_fields" => array("meta_title_alt" => true, "meta_description" => true))
                             , "vgallery_rel_nodes_fields" => array("compare_key" => "ID_nodes", "use_return_ID" => "ID_nodes")
                             , "vgallery_nodes_rel_groups" => array("compare_key" => "ID_vgallery_nodes", "use_return_ID" => "ID_vgallery_nodes")
                             , "rel_nodes_src" => array("real_table" => "rel_nodes", "use_return_ID" => "ID_node_src", "compare_str" => "
@@ -665,7 +665,9 @@ if(!strlen($strError)) {
 	if($path == "/" && $vgallery_name_old == $vgallery_name) {
 		$cm->oPage->addContent(ffTemplate::_get_word_by_code("vgallery_main"));
 	} else {
-	    //if(!($limit_level > 1)) {
+		$framework_css = cm_getFrameworkCss();
+
+		//if(!($limit_level > 1)) {
 	        //$vgallery_parent_old = "/" . $vgallery_name;
 	    //}
 	    
@@ -994,7 +996,6 @@ if(!strlen($strError)) {
 			}
 	        
 
-				
 	        /****
 	        * Load Fields
 	        */ 
@@ -1260,10 +1261,10 @@ if(!strlen($strError)) {
 																			);					
 				    switch($db_gallery->getField("field_fluid_backoffice", "Number", true)) {
 				        case -1:
-				            $tmp_field["framework_css"]["component"]       	= "row" . ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
+				            $tmp_field["framework_css"]["component"]       	= "row" . ($framework_css["is_fluid"] ? "-fluid" : "");
 				            break;
 				        case -2:
-				            $tmp_field["framework_css"]["component"]       	= "row" . ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : "");
+				            $tmp_field["framework_css"]["component"]       	= "row" . ($framework_css["is_fluid"] ? "-fluid" : "");
 				            break; 
 				        case -3:
 				            break;
@@ -2722,8 +2723,8 @@ if(!strlen($strError)) {
 		    		$oRecord->framework_css["actions"]["col"] = array(4);
 
 		        $js .= '
-		            jQuery("FIELDSET.grp-sys").wrapAll(\'<div class="group-system' . ($cm->oPage->framework_css ? " " . cm_getClassByFrameworkCss(array(4), "col") : "") . '" />\'); 
-		            jQuery("FIELDSET.grp-std").wrapAll(\'<div class="group-standard' . ($cm->oPage->framework_css ? " " . cm_getClassByFrameworkCss(array(8), "col") : "") . '" />\');
+		            jQuery("FIELDSET.grp-sys").wrapAll(\'<div class="group-system' . ($framework_css ? " " . cm_getClassByFrameworkCss(array(4), "col") : "") . '" />\'); 
+		            jQuery("FIELDSET.grp-std").wrapAll(\'<div class="group-standard' . ($framework_css ? " " . cm_getClassByFrameworkCss(array(8), "col") : "") . '" />\');
 		        ';
 		    }
 
@@ -2760,6 +2761,7 @@ if(!strlen($strError)) {
 }
   
 function VGalleryNodesModify_on_do_action($component, $action) {
+	$globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
 
     if($action == "insert" || $action == "update") {
@@ -2773,6 +2775,7 @@ function VGalleryNodesModify_on_do_action($component, $action) {
 	                && (is_array($field_value->value) || strlen($field_value->value->getValue()))
 	            ) {
 	                if($field_value->user_vars["data_type"] == "relationship") {
+						$globals->cache["refresh"]["nodes"] = array_replace($globals->cache["refresh"]["nodes"], explode(",", $field_value->getValue()));
 	                	switch($field_value->user_vars["data_source"]) {
 	                		case "anagraph":
 			                    $sSQL = "SELECT " . (strlen($field_value->user_vars["data_limit"])
@@ -2930,6 +2933,7 @@ function VGalleryNodesModify_on_do_action($component, $action) {
         if(isset($component->form_fields["tags"])) {
             $str_compare_tag = "";
             $arrTags = explode(",", $component->form_fields["tags"]->getValue());
+			$globals->cache["refresh"]["tags"] = array_replace($globals->cache["refresh"]["tags"], $arrTags);
             if(is_array($arrTags) && count($arrTags)) {
                 foreach($arrTags AS $tag_value) {
                     if(strlen($tag_value)) {
@@ -3024,7 +3028,10 @@ function VGalleryNodesModify_on_do_action($component, $action) {
             }
 
             $component->form_fields["tags"]->setValue($str_compare_tag);
-        }    
+        }
+		if(isset($component->form_fields["cats"])) {
+			$globals->cache["refresh"]["cats"] = array_replace($globals->cache["refresh"]["cats"], explode(",", $component->form_fields["cats"]->getValue()));
+		}
     }
     
     switch($action) {
@@ -3079,6 +3086,7 @@ function VGalleryNodesModify_on_do_action($component, $action) {
 
 function VGalleryNodesModify_on_done_action($component, $action) {
 	$cm = cm::getInstance();
+	$globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
         //ffErrorHandler::raise("aad", E_USER_ERROR, null, get_defined_vars());
 
@@ -3315,6 +3323,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                         }
                     }
                     if(check_function("process_mail")) {
+						$strField = "";
                         $rc = process_mail(email_system("Notify Insert VGallery " . $component->user_vars["src"]["settings"]["name"]), "", NULL, NULL, $fields, null, null, null, false, false, true);
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_ID") . '</label>' . $ID_node . '</div>';
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_name") . '</label>' . $item_name . '</div>';
@@ -3593,6 +3602,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                         }
                     }
                     if(check_function("process_mail")) {
+						$strField = "";
                         $rc = process_mail(email_system("Notify Update VGallery " . $component->user_vars["src"]["settings"]["name"]), "", NULL, NULL, $fields, null, null, null, false, false, true);
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_ID") . '</label>' . $ID_node . '</div>';
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_name") . '</label>' . $item_name . '</div>';
@@ -3676,20 +3686,25 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                 }
             }
         }
-		
-		
-		$ID_vgallery = $component->user_vars["ID_vgallery"];
+
+		$globals->cache["refresh"]["nodes"][] = $ID_node;
+		$globals->cache["refresh"]["paths"][] = "/search";
+
 		if(check_function("refresh_cache")) {
 			if(is_array($arrPermalink) && count($arrPermalink)) {
-                refresh_cache("V", $ID_node, $action, $arrPermalink);
+				$globals->cache["refresh"]["paths"] = $globals->cache["refresh"]["paths"] + $arrPermalink;
 			} else {
-				refresh_cache(
-                    "V"
-                    , $ID_node
-                    , $action
-                    , $component->user_vars["permalink"]
-                );
+				$globals->cache["refresh"]["paths"][] = $component->user_vars["permalink"];
 			}
+
+			refresh_cache(
+				"V"
+				, $globals->cache["refresh"]["nodes"]
+				, $action
+				, $globals->cache["refresh"]["paths"]
+				, $globals->cache["tags"]
+				, $globals->cache["cats"]
+			);
 		}
 
 		//remove cache of relationship
