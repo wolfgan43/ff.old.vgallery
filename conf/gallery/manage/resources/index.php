@@ -22,7 +22,7 @@ setJsRequest("cluetipclick");
 setJsRequest($layout["settings"]["AREA_GALLERY_MENU_PLUGIN"]);
 
 if(check_function("system_set_js"))
-    system_set_js($cm->oPage, "/", false, null, USE_ADMIN_AJAX);
+    system_set_js($cm->oPage, "/", false);
 
 if(check_function("process_gallery_menu"))
 	$res = process_gallery_menu("/", NULL, $layout, DISK_UPDIR, true);

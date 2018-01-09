@@ -48,7 +48,7 @@ if ($db_gallery->nextRecord()) {
     $framework_css_name = $framework_css["name"];
 }*/
 
-$framework_css = $cm->oPage->framework_css;
+$framework_css = cm_getFrameworkCss();
 $template_framework = $framework_css["name"];
     
 $hide_source = false;

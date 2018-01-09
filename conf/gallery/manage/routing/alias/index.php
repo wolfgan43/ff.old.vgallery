@@ -54,7 +54,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("alias_status");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $cm->oPage->addContent($oGrid);

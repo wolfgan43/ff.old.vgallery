@@ -153,7 +153,7 @@ if(!$simple_interface) {
 	$oButton->url = "";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("vgallery_type_clone");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 }
 
@@ -163,7 +163,7 @@ if(MASTER_CONTROL && !$simple_interface) {
 	$oButton->action_type = "gotourl";
 	$oButton->url = "";
 	$oButton->aspect = "link";
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 	
 	$cm->oPage->addContent($oGrid, "rel", null, array("title" => ffTemplate::_get_word_by_code($src_type . "_type"))); 
@@ -222,7 +222,7 @@ if(MASTER_CONTROL && !$simple_interface) {
 	$oButton->url = "";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("vgallery_type_clone");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 
 	if(MASTER_CONTROL) {
@@ -232,7 +232,7 @@ if(MASTER_CONTROL && !$simple_interface) {
 		$oButton->url = "";
 		$oButton->aspect = "link";
 		$oButton->label = ffTemplate::_get_word_by_code("public");
-		$oButton->template_file = "ffButton_link_fixed.html";                           
+		$oButton->display_label = false;
 		$oGrid->addGridButton($oButton);
 	}
 

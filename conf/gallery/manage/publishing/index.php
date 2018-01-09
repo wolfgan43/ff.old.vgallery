@@ -69,7 +69,7 @@ if(AREA_PROPERTIES_SHOW_MODIFY) {
     $oButton->aspect = "link";
 	//$oButton->image = "layout_setting.png";
 	$oButton->label = ffTemplate::_get_word_by_code("layout_setting");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 
@@ -81,7 +81,7 @@ if(AREA_PUBLISHING_SHOW_DETAIL) {
     $oButton->aspect = "link";
 	//$oButton->image = "add.png";
 	$oButton->label = ffTemplate::_get_word_by_code("publishing_add");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 
@@ -93,7 +93,7 @@ if(AREA_PUBLISHING_SHOW_PREVIEW) {
     $oButton->aspect = "link";
 	//$oButton->image = "preview.png";
 	$oButton->label = ffTemplate::_get_word_by_code("preview");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 

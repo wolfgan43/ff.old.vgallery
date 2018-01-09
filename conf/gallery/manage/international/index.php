@@ -88,7 +88,7 @@ if(strpos(MASTER_SITE, DOMAIN_NAME) === false) {
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("revert");
 	//$oButton->image = "edit.png";
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 }
 $cm->oPage->addContent($oGrid, "rel", null, array("title" => ffTemplate::_get_word_by_code("International"))); 

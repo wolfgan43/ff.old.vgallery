@@ -374,8 +374,9 @@ $oField->required = true;
 $oRecord->addContent($oField, "general");
 
 $framework_css_multi_pairs = array();
-if(is_array($cm->oPage->framework_css_setting) && count($cm->oPage->framework_css_setting)) {
-	foreach($cm->oPage->framework_css_setting AS $framework_css => $framework_css_value) {
+$framework_css_setting = cm_getFrameworkCss_settings();
+if(is_array($framework_css_setting) && count($framework_css_setting)) {
+	foreach($framework_css_setting AS $framework_css => $framework_css_value) {
 		$framework_css_multi_pairs[$framework_css] = array(new ffData($framework_css), new ffData(ucfirst($framework_css)));
 		if(isset($framework_css_value["class-fluid"]))
 			$framework_css_multi_pairs[$framework_css . "~fluid"] = array(new ffData($framework_css . "-fluid"), new ffData(ucfirst($framework_css) . " Fluid"));
@@ -403,8 +404,9 @@ $oField->multi_pairs = $framework_css_multi_pairs;
 $oRecord->addContent($oField, "general");
 
 $font_icon_multi_pairs = array();
-if(is_array($cm->oPage->font_icon_setting) && count($cm->oPage->font_icon_setting)) {
-	foreach($cm->oPage->font_icon_setting AS $font_icon_key => $font_icon_value) {
+$font_icon_settings = cm_getFontIcon_settings();
+if(is_array($font_icon_settings) && count($font_icon_settings)) {
+	foreach($font_icon_settings AS $font_icon_key => $font_icon_value) {
 		$font_icon_multi_pairs[$font_icon_key] = array(new ffData($font_icon_key), new ffData(ucfirst($font_icon_key)));
 	}
 	ksort($font_icon_multi_pairs);

@@ -128,7 +128,7 @@ $oButton->action_type = "gotourl";
 $oButton->aspect = "link";
 //$oButton->image = "detail.png";
 $oButton->label = ffTemplate::_get_word_by_code("vgallery_nodes");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 if(AREA_SEO_SHOW_MODIFY) {
@@ -139,7 +139,7 @@ if(AREA_SEO_SHOW_MODIFY) {
     $oButton->aspect = "link";
     //$oButton->image = "seo.png";
     $oButton->label = ffTemplate::_get_word_by_code("seo");
-    $oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 
@@ -156,7 +156,7 @@ if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
     $oButton->aspect = "link";
 	//$oButton->image = "permissions.png";
 	$oButton->label = ffTemplate::_get_word_by_code("permissions");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 
@@ -166,7 +166,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("status");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 if(MASTER_CONTROL) {
@@ -175,7 +175,7 @@ if(MASTER_CONTROL) {
 	$oButton->action_type = "gotourl";
 	$oButton->url = "";
 	$oButton->aspect = "link";
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 }
 
@@ -272,7 +272,7 @@ if (AREA_VGALLERY_TYPE_SHOW_MODIFY) {
 	$oButton->url = "";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("vgallery_type_clone");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
   
 	$oButton = ffButton::factory($cm->oPage);
@@ -286,7 +286,7 @@ if (AREA_VGALLERY_TYPE_SHOW_MODIFY) {
 	    //$oButton->url = FF_SITE_PATH . $cm->oPage->page_path . "/nodes/[name_VALUE]" . "/permission?keys[ID]=[ID_vgallery_nodes_VALUE]&" . $oGrid->addit_record_param . "ret_url=" . urlencode($cm->oPage->getRequestUri());
 	}
     $oButton->aspect = "link";
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 	
     if(MASTER_CONTROL) {
@@ -295,7 +295,7 @@ if (AREA_VGALLERY_TYPE_SHOW_MODIFY) {
 	    $oButton->action_type = "gotourl";
 	    $oButton->url = "";
 	    $oButton->aspect = "link";
-	    $oButton->template_file = "ffButton_link_fixed.html";                           
+		$oButton->display_label = false;
 	    $oGrid->addGridButton($oButton);
 	}
 

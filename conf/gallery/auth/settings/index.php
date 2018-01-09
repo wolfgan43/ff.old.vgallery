@@ -79,7 +79,7 @@ $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify[Setting
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("edit");
 //$oButton->image = "edit.png";
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 

@@ -52,12 +52,13 @@ if($ID_type) {
                 FROM anagraph_type_group";
     $db_gallery->query($sSQL);
     if($db_gallery->nextRecord()) {
-        do {
+		$framework_css = cm_getFrameworkCss();
+		do {
             $arrAnagraphGroup[$db_gallery->getField("ID", "Number", true)] = array(
                 "name" => $db_gallery->getField("name", "Text", true)
                 , "smart_url" => ffcommon_url_rewrite($db_gallery->getField("name", "Text", true))
             );
-            if(is_array($cm->oPage->framework_css))
+            if(is_array($framework_css))
             {
                 $arrAnagraphGroup[$db_gallery->getField("ID", "Number", true)]["class"] = cm_getClassByFrameworkCss(array(
                         (int) $db_gallery->getField("grid_xs", "Number", true)
@@ -145,7 +146,8 @@ if($ID_type) {
 
 if($_REQUEST["keys"]["ID"])
 {
-    if(is_array($cm->oPage->framework_css))
+	$framework_css = cm_getFrameworkCss();
+    if(is_array($framework_css))
     {
         $text_class = cm_getClassByFrameworkCss(array(12), "col");
     }

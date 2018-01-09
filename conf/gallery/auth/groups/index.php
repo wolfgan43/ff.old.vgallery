@@ -95,7 +95,7 @@ if(AREA_USERS_SHOW_MODIFY) {
 	$oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/members?gid=[gid_VALUE]&ret_url=" . urlencode($cm->oPage->getRequestUri());
 	$oButton->aspect = "link";
 	//$oButton->image = "permissions.png";
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 }
 if(AREA_SETTINGS_CUSTOM_SHOW_MODIFY) {
@@ -108,7 +108,7 @@ if(AREA_SETTINGS_CUSTOM_SHOW_MODIFY) {
 	$oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/custom_settings?[KEYS]ret_url=" . urlencode($cm->oPage->getRequestUri());
 	$oButton->aspect = "link";
 	//$oButton->image = "permissions.png";
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 }
 if(AREA_SETTINGS_SHOW_MODIFY) {
@@ -120,7 +120,7 @@ if(AREA_SETTINGS_SHOW_MODIFY) {
 	$oButton->url = $cm->oPage->site_path . VG_SITE_PERMISSION . "/modify?gid=[gid_VALUE]&ret_url=" . urlencode($cm->oPage->getRequestUri());
 	$oButton->aspect = "link";
 	//$oButton->image = "permissions.png";
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 }
 $cm->oPage->addContent($oGrid);

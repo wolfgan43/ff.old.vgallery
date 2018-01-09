@@ -73,7 +73,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
 $oButton->label = "";
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid_thumb->addGridButton($oButton);
                         
 $cm->oPage->addContent($oGrid_thumb, "grptype", null, array("title" => ffTemplate::_get_word_by_code("vgallery_type_group_thumb"))); 
@@ -136,7 +136,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
 $oButton->label = "";
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid_detail->addGridButton($oButton);
                         
 $cm->oPage->addContent($oGrid_detail, "grptype", null, array("title" => ffTemplate::_get_word_by_code("vgallery_type_group_detail"))); 
@@ -198,7 +198,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
 $oButton->label = "";
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid_backoffice->addGridButton($oButton);
 
 $cm->oPage->addContent($oGrid_backoffice, "grptype", null, array("title" => ffTemplate::_get_word_by_code("vgallery_type_group_backoffice"))); 

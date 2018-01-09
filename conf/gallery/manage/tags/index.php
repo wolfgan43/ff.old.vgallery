@@ -254,7 +254,7 @@ if(AREA_SEO_SHOW_MODIFY) {
     $oButton->aspect = "link";
 	//$oButton->image = "seo.png";
 	$oButton->label = ffTemplate::_get_word_by_code("seo");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 

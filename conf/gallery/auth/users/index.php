@@ -536,7 +536,7 @@ if($db_gallery->nextRecord())
 		$oButton->aspect = "link";
 		//$oButton->image = "informations.png";
 		//$oButton->label = ffTemplate::_get_word_by_code("users_status");
-		$oButton->template_file = "ffButton_link_fixed.html";
+		$oButton->display_label = false;
 		$oGrid->addGridButton($oButton);
 
 		if(AREA_SHOW_ECOMMERCE) {
@@ -547,7 +547,7 @@ if($db_gallery->nextRecord())
 			$oButton->aspect = "link";
 			//$oButton->image = "informations.png";
 			$oButton->label = ffTemplate::_get_word_by_code("users_anagraph");
-			$oButton->template_file = "ffButton_link_fixed.html";
+			$oButton->display_label = false;
 			$oGrid->addGridButton($oButton);
 		}
 
@@ -559,7 +559,7 @@ if($db_gallery->nextRecord())
 		$oButton->aspect = "link";
 		//$oButton->image = "informations.png";
 		$oButton->label = ffTemplate::_get_word_by_code("users_additionaldata");
-		$oButton->template_file = "ffButton_link_fixed.html";
+		$oButton->display_label = false;
 		$oGrid->addGridButton($oButton);
 
 		if(AREA_SETTINGS_SHOW_MODIFY) {
@@ -570,7 +570,7 @@ if($db_gallery->nextRecord())
 			$oButton->aspect = "link";
 			//$oButton->image = "permissions.png";
 			$oButton->label = ffTemplate::_get_word_by_code("users_permission");
-			$oButton->template_file = "ffButton_link_fixed.html";
+			$oButton->display_label = false;
 			$oGrid->addGridButton($oButton);
 		}
 	}
@@ -608,15 +608,11 @@ function Users_on_before_parse_row($component) {
 	                AND ISNULL(module_form.name) = 0";
 	    $db->query($sSQL);
 	    if($db->nextRecord()) {
-			//$component->grid_buttons["history"]->image = "history.png";
 			$component->grid_buttons["additionaldata"]->url = $component->parent[0]->site_path . $component->parent[0]->page_path . "/additionaldata?keys[register-ID]=" . $component->key_fields["register-ID"]->getValue() . "&ret_url=" . urlencode($component->parent[0]->getRequestUri());
             $component->grid_buttons["additionaldata"]->class = "icon ico-customdata";
-		    //$component->grid_buttons["additionaldata"]->template_file = "ffButton_link_fixed.html";
 		} else {
-			//$component->grid_buttons["additionaldata"]->image = "icon ico-no-customdata.png";
 			$component->grid_buttons["additionaldata"]->url = "javascript:void(0);";
             $component->grid_buttons["additionaldata"]->class = "icon ico-no-customdata";
-		   // $component->grid_buttons["additionaldata"]->template_file = "ffButton_image.html";
 		}
 	    if(AREA_SHOW_ECOMMERCE) {
 		    $sSQL = "SELECT anagraph.ID AS ID
@@ -626,15 +622,11 @@ function Users_on_before_parse_row($component) {
 		                " . CM_TABLE_PREFIX . "mod_security_users.ID = " . $db->toSql($component->key_fields["register-ID"]->value);
 		    $db->query($sSQL);
 		    if($db->nextRecord()) {
-				//$component->grid_buttons["history"]->image = "history.png";
 				$component->grid_buttons["anagraph"]->url = $component->parent[0]->site_path . "/manage/anagraph/all/modify?keys[anagraph-ID]=" . $db->getField("ID", "Number", true) . "&ret_url=" . urlencode($component->parent[0]->getRequestUri());
 	            $component->grid_buttons["anagraph"]->class = "icon ico-anagraph";
-			    //$component->grid_buttons["additionaldata"]->template_file = "ffButton_link_fixed.html";
 			} else {
-				//$component->grid_buttons["additionaldata"]->image = "icon ico-no-customdata.png";
 				$component->grid_buttons["anagraph"]->url = "javascript:void(0);";
 	            $component->grid_buttons["anagraph"]->class = "icon ico-no-anagraph";
-			   // $component->grid_buttons["additionaldata"]->template_file = "ffButton_image.html";
 			}
 		}
 	    if(isset($component->grid_buttons["status"])) {

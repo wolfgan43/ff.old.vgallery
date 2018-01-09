@@ -1031,7 +1031,6 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 			//$oButton->image = "relationships.png";
 			$oButton->label = ffTemplate::_get_word_by_code("relationships");
-			$oButton->template_file = "ffButton_link_fixed.html";
 	        $oGrid_node->addGridButton($oButton);
 	    } */
 	    if(AREA_SEO_SHOW_MODIFY) {
@@ -1042,7 +1041,7 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 			//$oButton->image = "seo.png";
 			$oButton->label = ffTemplate::_get_word_by_code("seo");
-			$oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton);
 	    }
 	    if(ENABLE_STD_PERMISSION) {
@@ -1053,7 +1052,7 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 			//$oButton->image = "permissions.png";
 			$oButton->label = ffTemplate::_get_word_by_code("permissions");
-			$oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }
 	    if(AREA_PROPERTIES_SHOW_MODIFY) {
@@ -1064,7 +1063,7 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 	        //$oButton->image = "layout_setting.png";                           
 			$oButton->label = ffTemplate::_get_word_by_code("properties");
-			$oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }    
 	} elseif(strpos($cm->path_info, VG_SITE_MANAGE) === 0) {
@@ -1078,7 +1077,6 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 	        $oButton->label = ffTemplate::_get_word_by_code("relationships");
 	        //$oButton->image = "relationships.png";
-	        $oButton->template_file = "ffButton_link_fixed.html";                           
 	        $oGrid_node->addGridButton($oButton);
 	    } */
 	    if(AREA_VGALLERY_SHOW_SEO) {
@@ -1089,7 +1087,7 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 	        $oButton->label = ffTemplate::_get_word_by_code("seo");
 	        //$oButton->image = "seo.png";
-	        $oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton);
 	    }
 	    if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
@@ -1100,7 +1098,7 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 	        $oButton->label = ffTemplate::_get_word_by_code("permissions");
 	        //$oButton->image = "permissions.png";
-	        $oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }
 	    if(AREA_PROPERTIES_SHOW_MODIFY) {
@@ -1111,7 +1109,7 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 	        $oButton->label = ffTemplate::_get_word_by_code("properties");
 	        //$oButton->image = "layout_setting.png";
-	        $oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }    
 	    if(AREA_ECOMMERCE_SHOW_MODIFY && $enable_ecommerce) {
@@ -1123,7 +1121,7 @@ if(strlen($cm->real_path_info)) {
 	        $oButton->aspect = "link";
 			//$oButton->image = "shopping-cart.png";
 	        $oButton->label = ffTemplate::_get_word_by_code("shopping-cart");
-	        $oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }    
 	}
@@ -1134,7 +1132,7 @@ if(strlen($cm->real_path_info)) {
 	$oButton->url = "";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("vgallery_clone");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
 	$oGrid_node->addGridButton($oButton);
 	
 	if(AREA_VGALLERY_SHOW_VISIBLE) {
@@ -1144,7 +1142,7 @@ if(strlen($cm->real_path_info)) {
 	    $oButton->url = "";
 	    $oButton->aspect = "link";
 	    $oButton->label = ffTemplate::_get_word_by_code("status_frontend");
-	    $oButton->template_file = "ffButton_link_fixed.html";                           
+		$oButton->display_label = false;
 	    $oGrid_node->addGridButton($oButton, "last");
 	} 
 
@@ -1154,7 +1152,7 @@ if(strlen($cm->real_path_info)) {
 		$oButton->action_type = "gotourl";
 		$oButton->url = "";
 		$oButton->aspect = "link";
-		$oButton->template_file = "ffButton_link_fixed.html";                           
+		$oButton->display_label = false;
 		$oGrid_node->addGridButton($oButton, "last");
 	}
 
@@ -1370,7 +1368,6 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "relationships.png";
 				$oButton->label = ffTemplate::_get_word_by_code("relationships");
-				$oButton->template_file = "ffButton_link_fixed.html";                           
 	            $oGrid_dir->addGridButton($oButton);
 	        }  */
 	        if(AREA_VGALLERY_SHOW_SEO) {
@@ -1381,7 +1378,7 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "seo.png";
 				$oButton->label = ffTemplate::_get_word_by_code("seo");
-				$oButton->template_file = "ffButton_link_fixed.html";                           
+				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton);
 	        }
 	        if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
@@ -1392,7 +1389,7 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "permissions.png";
 				$oButton->label = ffTemplate::_get_word_by_code("permissions");
-				$oButton->template_file = "ffButton_link_fixed.html";                           
+				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }
 	        if(AREA_PROPERTIES_SHOW_MODIFY) {
@@ -1403,7 +1400,7 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "layout_setting.png";
 				$oButton->label = ffTemplate::_get_word_by_code("properties");
-				$oButton->template_file = "ffButton_link_fixed.html";                           
+				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }    
 	    } elseif(strpos($cm->path_info, VG_SITE_MANAGE) === 0) { 
@@ -1417,7 +1414,6 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "relationships.png";
 				$oButton->label = ffTemplate::_get_word_by_code("relationships");
-				$oButton->template_file = "ffButton_link_fixed.html";                           
 	            $oGrid_dir->addGridButton($oButton);
 	        }  */
 	        if(AREA_VGALLERY_SHOW_SEO) {
@@ -1428,7 +1424,7 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "seo.png";
 				$oButton->label = ffTemplate::_get_word_by_code("seo");
-				$oButton->template_file = "ffButton_link_fixed.html";                           
+				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton);
 	        }
 	        if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
@@ -1439,7 +1435,7 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "permissions.png";
 				$oButton->label = ffTemplate::_get_word_by_code("permissions");
-				$oButton->template_file = "ffButton_link_fixed.html";                           
+				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }
 	        if(AREA_PROPERTIES_SHOW_MODIFY) {
@@ -1450,7 +1446,7 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "layout_setting.png";
 				$oButton->label = ffTemplate::_get_word_by_code("properties");
-				$oButton->template_file = "ffButton_link_fixed.html";
+				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }    
 	        if(AREA_ECOMMERCE_SHOW_MODIFY && $enable_ecommerce) {
@@ -1462,7 +1458,7 @@ if(strlen($cm->real_path_info)) {
 	            $oButton->aspect = "link";
 	            //$oButton->image = "shopping-cart.png";
 	            $oButton->label = ffTemplate::_get_word_by_code("shopping_cart");
-	            $oButton->template_file = "ffButton_link_fixed.html";
+				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }    
 	    }
@@ -1473,7 +1469,7 @@ if(strlen($cm->real_path_info)) {
 	    $oButton->url = "";
 	    $oButton->aspect = "link";
 	    $oButton->label = ffTemplate::_get_word_by_code("vgallery_clone");
-	    $oButton->template_file = "ffButton_link_fixed.html";                           
+		$oButton->display_label = false;
 	    $oGrid_dir->addGridButton($oButton);
 	    
 	    if(AREA_VGALLERY_SHOW_VISIBLE) {
@@ -1493,7 +1489,7 @@ if(strlen($cm->real_path_info)) {
 		    $oButton->action_type = "gotourl";
 		    $oButton->url = "";
 		    $oButton->aspect = "link";
-		    $oButton->template_file = "ffButton_link_fixed.html";                           
+			$oButton->display_label = false;
 		    $oGrid_dir->addGridButton($oButton, "last");
 		}     
 	    $cm->oPage->addContent($oGrid_dir, "rel", null, array("title" => $vgallery_title . " - " . ffTemplate::_get_word_by_code("vgallery_dir_title"))); 

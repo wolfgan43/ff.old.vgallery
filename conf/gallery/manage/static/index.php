@@ -123,7 +123,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("status_frontend");
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 if(AREA_SEO_SHOW_MODIFY) {
@@ -134,7 +134,7 @@ if(AREA_SEO_SHOW_MODIFY) {
     $oButton->aspect = "link";
 	//$oButton->image = "seo.png";
 	$oButton->label = ffTemplate::_get_word_by_code("seo");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 if(ENABLE_STD_PERMISSION) {
@@ -145,7 +145,7 @@ if(ENABLE_STD_PERMISSION) {
     $oButton->aspect = "link";
 	//$oButton->image = "permissions.png";
 	$oButton->label = ffTemplate::_get_word_by_code("permissions");
-	$oButton->template_file = "ffButton_link_fixed.html";                           
+	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
 

@@ -66,7 +66,7 @@ $oButton->label = ffTemplate::_get_word_by_code("redirect_status");
 $oButton->action_type = "gotourl";
 $oButton->url = "";
 $oButton->aspect = "link";
-$oButton->template_file = "ffButton_link_fixed.html";                           
+$oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
 $cm->oPage->addContent($oGrid);
