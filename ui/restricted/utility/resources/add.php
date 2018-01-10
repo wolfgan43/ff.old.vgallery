@@ -190,8 +190,7 @@ if($type == "dir") {
 		$tpl->set_var("SezExecute", "");
 	} else {
 	    setJsRequest("uploadify");
-	    if(check_function("system_set_js"))
-            system_set_js($cm->oPage, "/", false);
+
 
 	    $tpl->set_var("max_upload", MAX_UPLOAD);
 	    $tpl->set_var("path_upload", $path);

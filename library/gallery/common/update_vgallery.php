@@ -29,7 +29,9 @@
     $arrTableAlt = array();
 	if(check_function("get_schema_def")) {
 		$schema = get_schema_def(false);
-	}  
+	}
+
+	$resources = array();
 
 	$vgallery_name = $component->user_vars["vgallery_name"];
 	$ID_vgallery = $component->user_vars["ID_vgallery"];
@@ -49,8 +51,8 @@
 					? ffCommon_url_rewrite(implode(" " , $component->user_vars["arrSmartUrl"][LANGUAGE_DEFAULT_ID]))
 					: $component->user_vars["name"]
 				)
-				: (isset($component->form_fields["seo_" . $lang_code ."_smart_url"])
-					? ffCommon_url_rewrite($component->form_fields["seo_" . $lang_code ."_smart_url"]->getValue())
+				: (isset($component->form_fields["seo_" . LANGUAGE_DEFAULT ."_smart_url"])
+					? ffCommon_url_rewrite($component->form_fields["seo_" . LANGUAGE_DEFAULT ."_smart_url"]->getValue())
 					: $component->user_vars["name_old"]
 				)
 			);
@@ -66,6 +68,7 @@
 //	    check_function("resolve_relationship");
 	    check_function("get_short_description");
 
+		$arrRel = array();
 		$arrMetaDescription = array();
 	    foreach($component->form_fields AS $field_key => $field_value) {
 	        $enable_smart_url = $field_value->user_vars["smart_url"];
@@ -282,21 +285,23 @@
 					$arrValue["new"] = vgallery_convert_resource($field_value->value->getValue(), $folder);
 				} else {
 					if($field_value->user_vars["data_type"] == "media") {
-					
 		                $arrFileValue = explode($field_value->file_separator, $field_value->getValue());
-						if(is_array($arrFileValue) && count($arrFileValue)) {
-							foreach($arrFileValue AS $file_key => $file_value) {
-								if(strlen($file_value) && !is_file(FF_DISK_PATH . $file_value)) {
-									$real_file_value = (basename($file_value) ? basename($file_value) : $file_value);
+						if($field_value->getValue()) {
+							if (is_array($arrFileValue) && count($arrFileValue)) {
+								foreach ($arrFileValue AS $file_key => $file_value) {
+									if (strlen($file_value) && !is_file(FF_DISK_PATH . $file_value)) {
+										$real_file_value = (basename($file_value) ? basename($file_value) : $file_value);
 
-									if(is_file($field_value->getFileFullPath($real_file_value, false))) {
-										$tmp_filename = $field_value->getFileFullPath($real_file_value, false);
+										if (is_file($field_value->getFileFullPath($real_file_value, false))) {
+											$tmp_filename = $field_value->getFileFullPath($real_file_value, false);
 
 
-										$arrFileValue[$file_key] = str_replace($field_value->getFileBasePath(), "", $tmp_filename);
+											$arrFileValue[$file_key] = str_replace($field_value->getFileBasePath(), "", $tmp_filename);
+										}
 									}
 								}
 							}
+							$resources[$field_value->user_vars["gallery_sub_dir"]] = $arrFileValue;
 						}
 			            $field_data = new ffData(implode(",", $arrFileValue), "Text");
 			    		//$field_data = $field_value->value;
@@ -399,20 +404,26 @@
 		                	} 
 
                             $arrFileValue = explode($field_value->file_separator, $field_value->getValue());
-                            if(is_array($arrFileValue) && count($arrFileValue)) {
-                                foreach($arrFileValue AS $file_key => $file_value) {
-                                    if(strlen($file_value) && !is_file(FF_DISK_PATH . $file_value)) {
-                                        $real_file_value = (basename($file_value) ? basename($file_value) : $file_value);
+							if($field_value->getValue()) {
+								if (is_array($arrFileValue) && count($arrFileValue)) {
+									foreach ($arrFileValue AS $file_key => $file_value) {
+										if (strlen($file_value) && !is_file(FF_DISK_PATH . $file_value)) {
+											$real_file_value = (basename($file_value) ? basename($file_value) : $file_value);
 
-                                        if(is_file($field_value->getFileFullPath($real_file_value, false))) {
-                                            $tmp_filename = $field_value->getFileFullPath($real_file_value, false);
+											if (is_file($field_value->getFileFullPath($real_file_value, false))) {
+												$tmp_filename = $field_value->getFileFullPath($real_file_value, false);
 
 
-                                            $arrFileValue[$file_key] = str_replace($field_value->getFileBasePath(), "", $tmp_filename);
-                                        }
-                                    }
-                                }
-                            }
+												$arrFileValue[$file_key] = str_replace($field_value->getFileBasePath(), "", $tmp_filename);
+											}
+										}
+									}
+								}
+								if(!is_array($resources[$field_value->user_vars["gallery_sub_dir"]]))
+									$resources[$field_value->user_vars["gallery_sub_dir"]] = $arrFileValue;
+								else
+									$resources[$field_value->user_vars["gallery_sub_dir"]] = array_merge($resources[$field_value->user_vars["gallery_sub_dir"]], $arrFileValue);
+							}
                             $field_data = new ffData(implode(",", $arrFileValue), "Text");
                             
 						    //$field_data = $field_value->value;
@@ -619,6 +630,21 @@
                 $db->execute($sSQL);
             }
         }
+
+		if(is_array($resources) && count($resources)) {
+			foreach($resources AS $resource_path => $resource) {
+				$files = glob(DISK_UPDIR . $component->user_vars["parent_old"] . "/" . $component->user_vars["name_old"] . $resource_path . "/*");
+
+				if(is_array($files) && count($files)) {
+					foreach ($files as $real_file) {
+						$file = str_replace(DISK_UPDIR, "" , $real_file);
+						if(!is_dir($real_file) && array_search($file, $resource) === false) {
+							@unlink($real_file);
+						}
+					}
+				}
+			}
+		}
 	}
 
    	if(isset($component->form_fields[$component->user_vars["src"]["field"]["place"]]) 
