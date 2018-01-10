@@ -308,7 +308,7 @@ function get_response_by_service($service, $params = null, $opt = null) {
 function get_response_include($include, $cm = null) {
 	if($cm) {
 		$cm->oPage->output_buffer = "";
-		require_once($include);
+		require($include);
 
 		if (is_array($cm->oPage->output_buffer))
 			$return = $cm->oPage->output_buffer;
@@ -316,7 +316,7 @@ function get_response_include($include, $cm = null) {
 			$return["html"] = $cm->oPage->output_buffer;
 		}
 	} else {
-		require_once($include);
+		require($include);
 	}
 
 	return $return;
