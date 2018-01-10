@@ -70,7 +70,18 @@
 	);	
     $schema["request"]["/api"] = array(
 		"get" => true
-	);	
+	);
+
+
+	$schema["request"]["/OneSignalSDKUpdaterWorker.js"] = array(
+		"get" => true
+	);
+	$schema["request"]["/OneSignalSDKWorker.js"] = array(
+		"get" => true
+	);
+
+
+
 	/*
 	$schema["request"]["/login/attivazione"] = array(
 		"get" => array(
@@ -152,7 +163,7 @@
   );  
   $schema["page"]["/login/social"] = array(
   	"name" => "login social"
-  	, "group" => "services"
+  	, "group" => "service"
   	, "cache" => false 					//user, group, true, false, Path start with /
   	, "cache_path" => null				//null, Path start with /
   	, "primary" => true 				//true, false
@@ -309,7 +320,8 @@
   	, "type" => "json"
   );
   $schema["page"]["/srv"] = array(
-  	"name" => "service"
+  	"name" => "srv"
+    , "group" => "service"
   	, "cache" => false 	
   	, "cache_path" => null			
   	, "primary" => false
@@ -318,7 +330,8 @@
   	, "type" => "json"
   );  
   $schema["page"]["/api"] = array(
-  	"name" => "service"
+  	"name" => "api"
+    , "group" => "service"
   	, "cache" => false 	
   	, "cache_path" => null			
   	, "primary" => false
@@ -348,8 +361,19 @@
   	, "restricted" => false 			
   	, "api" => false
   	, "type" => "html"
-  ); 
-  $schema["page"]["/block"] = array(
+  );
+  $schema["page"]["/applet"] = array(
+	"name" => "applet"
+	, "group" => "shard"
+	, "cache" => "user"
+	, "cache_path" => "/shard"
+	, "strip_path" => "/applet"
+	, "primary" => false
+	, "restricted" => false
+	, "api" => false
+	, "type" => "html"
+  );
+$schema["page"]["/block"] = array(
   	"name" => "block"
   	, "group" => "shard"
   	, "cache" => "user" 
@@ -491,7 +515,8 @@
   	, "restricted" => true 			
   	, "api" => false
   	, "type" => "html"
-  ); 
+  	, "theme" => "admin"
+  );
   $schema["page"]["/manage"] = array(
   	"name" => "manage"
   	, "group" => "console"
@@ -501,15 +526,16 @@
   	, "restricted" => true 			
   	, "api" => false
   	, "type" => "html"
+  	, "theme" => "admin"
   );
 
 $schema["error"] = array();
 $schema["error"]["rules"] = array(
     "*/index*" => '$1'
-, "wp-login*" => 401
-, "wp-*" => 403
-, "*.shtml" => 403
-, "[^a-z\-0-9/\.\_]+" => 400
+	, "wp-login*" => 401
+	, "wp-*" => 403
+	, "*.shtml" => 403
+	, "[^a-z\-0-9/\+\.\_]+" => 400
 );
 $schema["error"]["status"]["404"] = "/error";
 $schema["error"]["status"]["500"] = "/error";
