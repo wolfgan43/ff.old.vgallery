@@ -23,6 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
+
   function system_layer_shard($settings_path) {
   	$cm = cm::getInstance();
   	$db = ffDB_Sql::factory();
@@ -30,7 +31,7 @@
   	$globals = ffGlobals::getInstance("gallery");
 
 	$layout = null;
-	
+
 	$cm->oPage->page_js = array();
 	$cm->oPage->page_css = array();
 
@@ -48,19 +49,6 @@
         case "anagraph": 
         	$check_vgallery_dir = get_vgallery_is_dir(basename($settings_path), "/anagraph" . ffCommon_dirname($settings_path));    			
 
-	        /*if(1 || $layout["db"]["params"] > 0) {
-	            $arrAvailablePath = explode("/", $settings_path);
-	            if(count($arrAvailablePath) > 2) {
-	                $check_vgallery_dir = false; 
-	            } else {
-	                $check_vgallery_dir = true;
-	            }
-			} else {
-				if($settings_path)
-					$check_vgallery_dir = false;
-				else
-					$check_vgallery_dir = true;
-			}*/
         	$layout = (check_function("get_layout_settings")
                     	? get_layout_by_block("anagraph", $settings_path)
                     	: null
@@ -290,24 +278,31 @@
 			} else {
 				check_function("system_get_sections");
 				check_function("system_layer_gallery");
-				if(check_function("get_layout_settings"))
-					$layout_settings_popup = get_layout_settings(NULL, "ADMIN");
+				//if(check_function("get_layout_settings"))
+				//	$layout_settings_popup = get_layout_settings(NULL, "ADMIN");
 
-				$template = system_get_blocks(array("where" => array("smart_url" => basename($settings_path))));
+				$template = system_get_blocks(null, array(
+					"blocks" => array(
+						"name" => array(basename($settings_path) => true)
+					)
+				));
+
 				$layouts = array_values($template["blocks"]);
 				$layout = $layouts[0];
 
-				$main_section_params["js_custom_is_set"] = true;
+				//$main_section_params["js_custom_is_set"] = true;
 				$main_section_params["search"] = $globals->search;
 				$main_section_params["navigation"] = $globals->navigation;
 				$main_section_params["user_path"] = $layout["db"]["real_path"];
 				$main_section_params["settings_path"] = $layout["db"]["real_path"];
-				$buffer = system_block_process($layout, $main_section_params, $layout_settings_popup);
+				$buffer = system_block_process($layout, $main_section_params);
 
 				$main_section_params = $buffer["params"];
 				$main_section_params["count_block"]++;
 
-				$frame_buffer = $buffer["content"];
+
+
+				$frame_buffer = $buffer["pre"] . $buffer["content"] . $buffer["post"];
 /*
 				if(check_function("query_layout"))
 					$sSQL = query_layout_by_smart_url(basename($settings_path));
@@ -354,7 +349,7 @@
 						$main_section_params["user_path"] = $layout["db"]["real_path"];
 						$main_section_params["settings_path"] = $layout["db"]["real_path"];						
 						
-						$buffer = system_block_process($layout, $main_section_params, $layout_settings_popup);
+						$buffer = system_block_process($layout, $main_section_params);
 
 						$main_section_params = $buffer["params"];
 						$main_section_params["count_block"]++;

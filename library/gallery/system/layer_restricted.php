@@ -328,8 +328,8 @@ function system_layer_restricted($cm)
     if(check_function("system_ffrecord_process_print_button")) {
         ffRecord::addEvent("on_before_process_interface", "system_ffrecord_process_print_button" , ffEvent::PRIORITY_DEFAULT);
     }
-    
-    
+
+
     $menu_edit = array("modify" => "/modify");
 
     
@@ -617,7 +617,6 @@ function system_layer_admin($cm)
     $globals = ffGlobals::getInstance("gallery");
 
 	$cm->oPage->minify = false; //previene l'eliminazione degli invii a capo all'interno delle TEXTAREA
-        
 	if(check_function("set_header_page")) {
 		set_header_page(null, false, false, false, false); 	
 	}
@@ -768,6 +767,7 @@ function system_layer_manage($cm)
 	            if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
 	                get_file_permission(null, "vgallery_nodes", array_keys($vg_data));
 
+				$sSQL_cond = "";
 	            foreach($vg_data AS $vg_data_key => $vg_data_value) {
 	                if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
 	                    $file_permission = get_file_permission($vg_data_value["full_path"], "vgallery_nodes");
