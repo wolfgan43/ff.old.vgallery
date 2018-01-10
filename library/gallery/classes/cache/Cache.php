@@ -1017,35 +1017,49 @@ class Cache extends vgCommon
             $page_key                                           = "/" . $arrSettings_path[0];
         } elseif(isset($schema["page"][$arrSettings_path[count($arrSettings_path) - 1]])) {
             $res                                                = $schema["page"][$arrSettings_path[count($arrSettings_path) - 1]];
-        } else {
-            //$tmp_user_path = $user_path;
-            do {
+        } else { //todo: da testare
+			$arrPageMatch = array_filter($schema["page"], function($page) use ($settings_user_path) {
+				return ($page["router"]
+					? preg_match("#" . preg_quote($page["router"]["source"], "#") . "#i", $settings_user_path)
+					: false
+				);
+			});
 
-                if(isset($schema["page"][$settings_user_path])) {
-                    $res                                        = $schema["page"][$settings_user_path];
-                    $page_key                                   = $settings_user_path;
-                    break;
-                }
-            } while($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path))); //todo: DS check
+			if(is_array($arrPageMatch) && count($arrPageMatch)) {
+				ksort($arrPageMatch);
+
+				$res = reset($arrPageMatch);
+				$page_key = key($arrPageMatch);
+			} else {
+				//$tmp_user_path = $user_path;
+				do {
+
+					if (isset($schema["page"][$settings_user_path])) {
+						$res = $schema["page"][$settings_user_path];
+						$page_key = $settings_user_path;
+						break;
+					}
+				} while ($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path))); //todo: DS check
+			}
         }
 
         if(strpos($user_path, $res["strip_path"]) === 0) {
             $user_path                                          = substr($user_path, strlen($res["strip_path"]));
-            if(!$user_path)
-                $user_path                                      = "/";
-        }
+	        if(!$user_path)
+	            $user_path                                      = "/";
+		}
 
-        if($resAlias) {
-            $res["alias"]                                       = $resAlias["alias"];
-            if($resAlias["redirect"] === false && $_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]) {
-                $alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
-                if($alias_flip["/" . $arrSettings_path[0]]) {
-                    $resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
-                }
-            }
+		if($resAlias) {
+			$res["alias"]                                       = $resAlias["alias"];
+			if($resAlias["redirect"] === false && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"] && strpos($_SERVER["HTTP_HOST"], "www.") === 0) {
+				$alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
+				if($alias_flip["/" . $arrSettings_path[0]]) {
+					$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
+				}
+			}
 
-            $res["redirect"]                                    = $resAlias["redirect"];
-        }
+			$res["redirect"]                                    = $resAlias["redirect"];
+		}
 
         $res["user_path"]                                       = $user_path;
 
@@ -1504,7 +1518,7 @@ class Cache extends vgCommon
 	 * @param int $precision
 	 * @return array
 	 */
-	public function token_repair($token, $user_permission = null, $expire = null, $renew= true, $precision = 8) {
+	function cache_token_repair($token, $user_permission = null, $expire = null, $renew= true, $precision = 8) {
 		$u = array();
 		$token_user = "t";
 		if(!$user_permission) {
