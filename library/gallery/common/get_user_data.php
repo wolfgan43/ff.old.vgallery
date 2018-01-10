@@ -531,6 +531,7 @@
 				$ID = get_session("UserNID");
 
 			if(!array_key_exists($type, $data) || !array_key_exists($ID, $data[$type])) {
+				$str_field = "";
 				if(is_array($schema[$type]) && count($schema[$type])) {
 					foreach($schema[$type] AS $field_key => $field_sql) {
 						if(strlen($str_field))
@@ -633,22 +634,27 @@
 	}
 
     
-    function user2anagraph($smart_url = null) {
+    function user2anagraph($user_key = null, $type = "user") {
         $db = ffDB_Sql::factory();
 
-        if(!$smart_url)
-        	$user = get_session("user_permissions");
+		if(!$user_key)
+			$user = get_session("user_permission");
 
         if(!$user["anagraph"])
         {
             $user["anagraph"] = array();
 
+			if (is_numeric($user_key) && $user_key > 0) {
+				$sWhere = "anagraph." . ($type == "user" ? "uid" : "ID") . " = " . $db->toSql($user_key, "Number");
+			} elseif (strpos($user_key, "@") !== false) {
+				$sWhere = "anagraph.email = " . $db->toSql($user_key);
+			} else {
+				$sWhere = "anagraph.smart_url = " . $db->toSql($user_key);
+			}
+
             $sSQL = "SELECT anagraph.*
                     FROM anagraph
-                    WHERE " . ($smart_url
-                        ? "anagraph.smart_url = " . $db->toSql($smart_url)
-                        : "anagraph.uid = " . $db->toSql($user["ID"], "Number")
-                    );
+                    WHERE " . $sWhere;
             $db->query($sSQL);
             if($db->nextRecord()) {
                 $user["anagraph"] = $db->record;
@@ -702,8 +708,8 @@
                     }
                 } 
                 
-                if(!$smart_url)
-                	set_session("user_permissions", $user);
+                if(!$user_key)
+                	set_session("user_permission", $user);
             }
         }
         

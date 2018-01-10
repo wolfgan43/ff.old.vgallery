@@ -498,7 +498,7 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
 	
         $cache["sid"][$db->getField("sid", "Text", true)] = (strlen($smart_url) ? $smart_url : true);
         set_session("cache", $cache);
-        
+
 		if($cache["sid"][$db->getField("sid", "Text", true)] === true) {
 			return $db->getField("sid", "Text", true);	
 		} else {
@@ -532,7 +532,7 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
 
             return $key;
 		} else {
-			return $new_sid;
+			return false;
 		}
 	}
 	

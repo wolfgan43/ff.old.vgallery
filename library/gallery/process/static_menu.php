@@ -935,8 +935,8 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
         $tpl->set_var("SezError", "");
     }
 
-	$res["pre"] 								= $block["tpl"]["header"];
-	$res["post"] 								= $block["tpl"]["footer"];    
+	$res["pre"] 								= $block["tpl"]["pre"];
+	$res["post"] 								= $block["tpl"]["post"];
     if(is_array($menu_params["template"]) && count($menu_params["template"])) {
     	$res["template"] 						= $menu_params["template"];
     	$res["template"]["offcanvas"] 			= $tpl->rpparse("main", false);
@@ -950,14 +950,14 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 
 /*    if($layout_settings["AREA_STATIC_MENU_OFFCANVAS"])
     {
-        $template["offcanvas"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
+        $template["offcanvas"] = $block["tpl"]["pre"] . $tpl->rpparse("main", false) . $block["tpl"]["post"];
         $res["content"] = '<nav class="tab-bar hide-for-large-up"> 
                                 <a class="menu-icon ' . $menu_params["class"]["class_menu_toggle"] . '">
                                     <span></span>
                                 </a>
                             </nav>';
     } else { 
-		$res["content"] = $block["tpl"]["header"] . $tpl->rpparse("main", false) . $block["tpl"]["footer"];
+		$res["content"] = $block["tpl"]["pre"] . $tpl->rpparse("main", false) . $block["tpl"]["post"];
     }
 	if(is_array($template) && count($template))
 		$res["template"] = $template;

@@ -620,10 +620,10 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
 
     if($params["output"]) {
         $res = array(
-    		"pre" => $block["tpl"]["header"]
-    		, "post" => $block["tpl"]["footer"]
+    		"pre" => $block["tpl"]["pre"]
+    		, "post" => $block["tpl"]["post"]
     		, "content" => $buffer
-            , "default" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+            , "default" => $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
             , "params" => $vg_father["request_params"]
             , "js_request" => array_keys($arrJsRequest)
         );
@@ -634,10 +634,10 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
             return $res[$params["output"]];
     } else {
     	return array(
-			"pre" 			=> $block["tpl"]["header"]
-			, "post" 		=> $block["tpl"]["footer"]
+			"pre" 			=> $block["tpl"]["pre"]
+			, "post" 		=> $block["tpl"]["post"]
 			, "content" 	=> $buffer
-			, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+			, "default" 	=> $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
 		);
     }
 }

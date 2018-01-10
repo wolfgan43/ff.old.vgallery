@@ -504,7 +504,7 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 	    if(check_function("set_template_var")) 
 	        $block = get_template_header($user_path, $admin_menu, $layout, $tpl);
         
-	    $res["content"] = $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"];
+	    $res["content"] = $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"];
     } else {
     
     

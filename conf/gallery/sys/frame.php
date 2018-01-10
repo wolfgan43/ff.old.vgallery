@@ -134,7 +134,7 @@ if(is_array($sys["module"]) && count($sys["module"]))
 			if(check_function("set_template_var"))
 				$block = get_template_header($settings_path, $admin_menu, $layout_value);
 			
-			$tmp_buffer = $block["tpl"]["header"] . $tmp_buffer .  $block["tpl"]["footer"];
+			$tmp_buffer = $block["tpl"]["pre"] . $tmp_buffer .  $block["tpl"]["post"];
 		}
 		
 		$res["content"] .= $tmp_buffer;

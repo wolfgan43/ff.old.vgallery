@@ -236,8 +236,8 @@ function process_vgallery_menu_group($user_path, $group_menu, $search_param = ""
     }
 
     
-	$res["pre"] 								= $block["tpl"]["header"];
-	$res["post"] 								= $block["tpl"]["footer"];    
+	$res["pre"] 								= $block["tpl"]["pre"];
+	$res["post"] 								= $block["tpl"]["post"];
     if(is_array($menu_params["template"]) && count($menu_params["template"])) {
     	$res["template"] 						= $menu_params["template"];
     	$res["template"]["offcanvas"] 			= $tpl->rpparse("main", false);

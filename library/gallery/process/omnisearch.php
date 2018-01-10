@@ -194,9 +194,9 @@ function process_omnisearch($user_path, &$layout)
 
 	$buffer = $tpl->rpparse("main", false);
     return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
+		"pre" 			=> $block["tpl"]["pre"]
+		, "post" 		=> $block["tpl"]["post"]
 		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+		, "default" 	=> $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
 	);	
 }

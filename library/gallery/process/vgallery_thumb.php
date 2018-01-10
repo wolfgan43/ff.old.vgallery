@@ -1042,10 +1042,10 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 
     if($params["output"]) {
     	$res = array("nodes" => $arrKeyNode
-    					, "pre" => $block["tpl"]["header"]
-    					, "post" => $block["tpl"]["footer"]
+    					, "pre" => $block["tpl"]["pre"]
+    					, "post" => $block["tpl"]["post"]
     					, "content" => $buffer
-                        , "default" => $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+                        , "default" => $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
                         , "params" => $vg_father["request_params"]
                         , "js_request" => array_keys($arrJsRequest)
                     );
@@ -1056,10 +1056,10 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
         	return $res[$params["output"]]; 
     } else {
 	    return array(
-			"pre" 			=> $block["tpl"]["header"]
-			, "post" 		=> $block["tpl"]["footer"]
+			"pre" 			=> $block["tpl"]["pre"]
+			, "post" 		=> $block["tpl"]["post"]
 			, "content" 	=> $buffer
-			, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+			, "default" 	=> $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
 		);
     }
 }

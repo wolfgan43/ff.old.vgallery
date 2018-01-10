@@ -161,12 +161,12 @@ function get_template_header($user_path, $admin_menu = null, $layout = null, &$t
 			$str_id = 'id="' . $real_father . '"' . $str_id;
 		//$block["class"]["custom"] = $custom_class;
 
-		$block["tpl"]["header"] = '<div ' . $str_id . $str_class . $str_properties . '>'; 
-		$block["tpl"]["footer"] = '</div>';
+		$block["tpl"]["pre"] = '<div ' . $str_id . $str_class . $str_properties . '>';
+		$block["tpl"]["post"] = '</div>';
 
 		if($layout["wrap"]) {
-			$block["tpl"]["header"] .= '<div class="' . $layout["wrap"] . '">'; 
-			$block["tpl"]["footer"] .= '</div>';
+			$block["tpl"]["pre"] .= '<div class="' . $layout["wrap"] . '">';
+			$block["tpl"]["post"] .= '</div>';
 		}		
 	}
 
@@ -175,13 +175,18 @@ function get_template_header($user_path, $admin_menu = null, $layout = null, &$t
 
 function get_admin_bar($arrAdmin = null, $url = null) {
 	$cm = cm::getInstance();
-	static $js_isset = false;
+	/*static $js_isset = false;
 	if(!$js_isset) {
 		$cm->oPage->tplAddJs("ff.cms.bar.block");
+		//todo: da togliere e metter nella request asincrona
 
 		$js_isset = true;
-	}
+	}*/
+	$sid = set_sid(json_encode($arrAdmin), $arrAdmin["admin"]["unic_name"]);
 	if(is_array($arrAdmin) && count($arrAdmin)) {
-		return  FF_SITE_PATH . $url . "?sid=" . set_sid(json_encode($arrAdmin), $arrAdmin["admin"]["unic_name"]);
+		if($url)
+			return  FF_SITE_PATH . $url . "?sid=" . $sid;
+		else
+			return $sid;
 	}
 }

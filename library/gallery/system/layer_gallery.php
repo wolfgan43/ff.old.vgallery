@@ -357,7 +357,7 @@ function system_process_page_blocks($blocks, $params, &$template)
 						*/	 
 						$block = get_template_header(null, false, $template["blocks"][$ID_block]);  
 
-						$buffer["content"] = $block["tpl"]["header"] . "{" . $template["blocks"][$ID_block]["smart_url"] . "}" . $block["tpl"]["footer"];
+						$buffer["content"] = $block["tpl"]["pre"] . "{" . $template["blocks"][$ID_block]["smart_url"] . "}" . $block["tpl"]["post"];
 		            } else {
 						$buffer = system_block_process($template["blocks"][$ID_block], $params);
 						$params = $buffer["params"];
@@ -1014,8 +1014,8 @@ function system_block_process($layout, $params = array()) {
 		if(check_function("set_template_var"))
 			$block = get_template_header($params["user_path"], null, $layout, $tpl);
 
-		$res["pre"] 		= $block["tpl"]["header"];
-		$res["post"] 		= $block["tpl"]["footer"];
+		$res["pre"] 		= $block["tpl"]["pre"];
+		$res["post"] 		= $block["tpl"]["post"];
 		$res["content"] 	= "";
 		$res["default"] 	= $res["pre"] . $res["content"] . $res["post"];
 
@@ -1293,8 +1293,8 @@ function system_block_process($layout, $params = array()) {
 						$block = get_template_header($params["user_path"], $admin_menu, $layout, $tpl, $block);
 					}
 
-					$res["pre"] 		= $block["tpl"]["header"];
-					$res["post"] 		= $block["tpl"]["footer"];
+					$res["pre"] 		= $block["tpl"]["pre"];
+					$res["post"] 		= $block["tpl"]["post"];
 					
 					$res["default"] 	= $res["pre"] . $res["content"] .  $res["post"];
                 }  
@@ -1735,8 +1735,8 @@ function system_block_process($layout, $params = array()) {
 				if(check_function("set_template_var"))
 					$block = get_template_header($globals->user_path, $admin_menu, $layout);
 				
-				$res["pre"] 		= $block["tpl"]["header"];
-				$res["post"] 		= $block["tpl"]["footer"];
+				$res["pre"] 		= $block["tpl"]["pre"];
+				$res["post"] 		= $block["tpl"]["post"];
 				
 				$res["default"] 	= $res["pre"] . $res["content"] .  $res["post"];
                 break;

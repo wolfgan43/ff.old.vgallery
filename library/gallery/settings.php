@@ -70,7 +70,32 @@
 	);	
     $schema["request"]["/api"] = array(
 		"get" => true
-	);	
+	);
+
+
+	$schema["request"]["/OneSignalSDKUpdaterWorker.js"] = array(
+		"get" => true
+	);
+	$schema["request"]["/OneSignalSDKWorker.js"] = array(
+		"get" => true
+	);
+
+
+
+	/*
+	$schema["request"]["/login/attivazione"] = array(
+		"get" => array(
+			"frmAction"
+			, "sid"
+		)
+	);
+	$schema["request"]["/login/recuperapassword"] = array(
+		"get" => array(
+			"frmAction"
+			, "sid"
+		)
+	);*/
+
     $schema["locale"] = array();
     $schema["locale"]["lang"] = array();
     $schema["locale"]["lang"] = array(
@@ -137,12 +162,12 @@
   );  
   $schema["page"]["/login/social"] = array(
   	"name" => "login social"
-  	, "group" => "services"
+  	, "group" => "service"
   	, "cache" => false 					//user, group, true, false, Path start with /
   	, "cache_path" => null				//null, Path start with /
   	, "primary" => true 				//true, false
   	, "restricted" => false 			//true, false
-  	, "api" => "login"					//ture, false, private, public, login
+  	, "api" => "login"					//ture, false, private, public
   	, "type" => "mixed"					//mixed, html, json, xml, media
   );  
   
@@ -215,7 +240,7 @@
   	, "cache" => true 	
   	, "cache_client" => "noxhr"
   	, "cache_path" => "/search"
-  	, "strip_path" => "/search"
+  	//, "strip_path" => "/search" //eredita i blochhi omonimi
   	, "primary" => true
   	, "restricted" => false 		
   	, "api" => false
@@ -248,21 +273,10 @@
   	, "exit" => true 
   );
 
-  $schema["page"]["/dialog"] = array(
-        "name" => "dialog"
-        , "cache" => true
-        , "cache_path" => null
-        , "primary" => true
-        , "restricted" => true
-        , "api" => false
-        , "type" => "html"
-        , "seo" => false
-        , "theme" => "site"
-    );
 
-$schema["page"]["/"] = array(
+  $schema["page"]["/"] = array(
   	"name" => "public"
-  	, "cache" => true 	
+  	, "cache" => "guest"
   	, "cache_client" => "noxhr"			
   	, "primary" => true
   	, "restricted" => false 			
@@ -316,24 +330,33 @@ $schema["page"]["/"] = array(
   	, "type" => "json"
   );
   $schema["page"]["/srv"] = array(
-  	"name" => "service"
-  	, "group" => "services"
+  	"name" => "srv"
+  	, "group" => "service"
   	, "cache" => false 	
   	, "cache_path" => null			
   	, "primary" => false
   	, "restricted" => false 			
   	, "api" => false
   	, "type" => "json"
+  	, "router" => array(
+	  "source" => "^(/srv|/restricted/srv)(.*)"
+	  , "destination" => "/conf/gallery/sys/services$2"
+  	)
   );  
   $schema["page"]["/api"] = array(
   	"name" => "api"
-  	, "group" => "services"
+  	, "group" => "service"
   	, "cache" => false 	
   	, "cache_path" => null			
   	, "primary" => false
   	, "restricted" => false 			
   	, "api" => false
   	, "type" => "json"
+  	, "router" => array(
+  		"source" => "(?!^/updater/check/file(.*))/api(/[^/]*)(.*)"
+	  	, "destination" => "/conf/gallery/api$2/index.php$3"
+  	)
+
   );  
   $schema["page"]["/cm/showfiles.php"] = array(
   	"name" => "resource"
@@ -357,8 +380,19 @@ $schema["page"]["/"] = array(
   	, "restricted" => false 			
   	, "api" => false
   	, "type" => "html"
-  ); 
-  $schema["page"]["/block"] = array(
+  );
+  $schema["page"]["/applet"] = array(
+	"name" => "applet"
+	, "group" => "shard"
+	, "cache" => "user"
+	, "cache_path" => "/shard"
+	, "strip_path" => "/applet"
+	, "primary" => false
+	, "restricted" => false
+	, "api" => false
+	, "type" => "html"
+  );
+$schema["page"]["/block"] = array(
   	"name" => "block"
   	, "group" => "shard"
   	, "cache" => "user" 
@@ -529,10 +563,10 @@ $schema["page"]["/"] = array(
 $schema["error"] = array();
 $schema["error"]["rules"] = array(
     "*/index*" => '$1'
-, "wp-login*" => 401
-, "wp-*" => 403
-, "*.shtml" => 403
-, "[^a-z\-0-9/\.\_]+" => 400
+	, "wp-login*" => 401
+	, "wp-*" => 403
+	, "*.shtml" => 403
+	, "[^a-z\-0-9/\+\.\_]+" => 400
 );
 $schema["error"]["status"]["404"] = "/error";
 $schema["error"]["status"]["500"] = "/error";

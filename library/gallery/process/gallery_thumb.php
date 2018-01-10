@@ -385,10 +385,10 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
 		$buffer = ($enable_error ? ffTemplate::_get_word_by_code("gallery_is_hidden_by_properties") : "");
 	    return array(
-			"pre" 			=> $block["tpl"]["header"]
-			, "post" 		=> $block["tpl"]["footer"]
+			"pre" 			=> $block["tpl"]["pre"]
+			, "post" 		=> $block["tpl"]["post"]
 			, "content" 	=> $buffer
-			, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+			, "default" 	=> $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
 		);		
     }
 
@@ -1312,10 +1312,10 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
     }
 
 	return array(
-		"pre" 			=> $block["tpl"]["header"]
-		, "post" 		=> $block["tpl"]["footer"]
+		"pre" 			=> $block["tpl"]["pre"]
+		, "post" 		=> $block["tpl"]["post"]
 		, "content" 	=> $buffer
-		, "default" 	=> $block["tpl"]["header"] . $buffer . $block["tpl"]["footer"]
+		, "default" 	=> $block["tpl"]["pre"] . $buffer . $block["tpl"]["post"]
 	);		
 }
 
