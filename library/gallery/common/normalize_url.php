@@ -74,7 +74,7 @@ function normalize_url_by_current_lang($user_path, $prefix = true, $abs_url = fa
 		);
 		
 		
-		substr($domain_name, 0, strpos($domain_name, "."));
+		//substr($domain_name, 0, strpos($domain_name, "."));
 		$prefix_url = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $domain;
 	}
 		

@@ -2,6 +2,8 @@
 function system_set_css($oPage, $setting_path, $css_no_cascading = false, $include_ff = false) 
 {
     $globals = ffGlobals::getInstance("gallery");
+	$framework_css = cm_getFrameworkCss();
+	$font_icon = cm_getFontIcon();
 
     if ($oPage->theme == FRONTEND_THEME && is_file($oPage->disk_path . FF_THEME_DIR . "/" . THEME_INSET . "/css/" . "main" . ".css")) {
         $oPage->tplAddCss("gallerydefault"
@@ -17,7 +19,7 @@ function system_set_css($oPage, $setting_path, $css_no_cascading = false, $inclu
                     );
     }
 
-    if(is_array($oPage->font_icon)) {
+    if(is_array($font_icon)) {
         if(is_file($oPage->disk_path . FF_THEME_DIR . "/" . $oPage->theme . "/css/" . "font-icon" . ".css"))
         {
             $oPage->tplAddCss("font-icon"
@@ -47,10 +49,10 @@ function system_set_css($oPage, $setting_path, $css_no_cascading = false, $inclu
         }
 	}
 	    
-    if (is_array($oPage->framework_css)) {
-    	if(is_file($oPage->disk_path . FF_THEME_DIR . "/" . THEME_INSET . "/css/" . "ff-" . $oPage->framework_css["name"] . ".css")) {
-	        $oPage->tplAddCss("ff-" . $oPage->framework_css["name"]
-                            , "ff-" . $oPage->framework_css["name"] . ".css"
+    if (is_array($framework_css)) {
+    	if(is_file($oPage->disk_path . FF_THEME_DIR . "/" . THEME_INSET . "/css/" . "ff-" . $framework_css["name"] . ".css")) {
+	        $oPage->tplAddCss("ff-" . $framework_css["name"]
+                            , "ff-" . $framework_css["name"] . ".css"
                             , FF_THEME_DIR . "/" . THEME_INSET . "/css"
                             , "stylesheet"
                             , "text/css"
