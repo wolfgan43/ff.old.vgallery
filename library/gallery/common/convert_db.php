@@ -65,7 +65,7 @@ function convert_db($collation, $character_set, $database_name = null, $db = nul
 		}
 
 		foreach($table AS $table_key => $table_value) {
-			$sSQL = "ALTER TABLE `" . $db->toSql($table_key, "Text", false) . "` ENGINE = MyISAM DEFAULT CHARACTER SET " . $db->toSql($character_set, "Text", false) . " COLLATE " . $db->toSql($collation, "Text", false);
+			$sSQL = "ALTER TABLE `" . $db->toSql($table_key, "Text", false) . "` DEFAULT CHARACTER SET " . $db->toSql($character_set, "Text", false) . " COLLATE " . $db->toSql($collation, "Text", false);
 			$db->execute($sSQL);
 			
 			$sSQL = "DESCRIBE `" . $db->toSql($table_key, "Text", false) . "`";

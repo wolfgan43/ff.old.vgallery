@@ -28,6 +28,8 @@ function system_set_media($oPage, $setting_path, $admin = false, $include_media 
     $globals = ffGlobals::getInstance("gallery");
 
 	if($oPage->theme == FRONTEND_THEME) {
+		$oPage->tplAddJs("ff.cms");
+
 		if($admin) {
 	        $oPage->widgetLoad("dialog");
 	        $oPage->widgets["dialog"]->process(
@@ -51,9 +53,7 @@ function system_set_media($oPage, $setting_path, $admin = false, $include_media 
 	            )
 	            , $oPage
 	        );
-			$oPage->tplAddJs("ff.cms.bar");
-		} else {
-			$oPage->tplAddJs("ff.cms");
+			//$oPage->tplAddJs("ff.cms.bar"); //non e necesario perche al momento caricato in set_template_var con ff.cms.bar.block
 		}
 		
 		$oPage->tplAddcss("ff.cms.reset");
@@ -179,19 +179,19 @@ function system_set_media_cascading($return = false) {
 		foreach($arrSettingsPath AS $filename) {
 			if($globals->html["pages"]["/" . $filename . ".html"])
 				$globals->page["template"]["path"] = "/" . $filename . ".html";
-		
+
 			if(!$globals->media_exception["js"][$filename]) {
 				if($globals->js["frontend"]["/events/" . $filename . ".js"]) {
 					$js_embed = system_set_js_event($base_path . "/javascript/events", $filename . ".js");
 					if($js_embed) {
 						$js_key = "event_" . $filename;
-						if($return) {
-							$res .= $js_embed;
-						} else {
+						//if($return) {
+						//	$res .= $js_embed;
+						//} else {
 							$cm->oPage->tplAddJs($js_key, array(
         						"embed" => $js_embed
 					        ));					
-						}
+						//}
 					}
 				}
 
@@ -252,9 +252,9 @@ function system_set_media_cascading($return = false) {
 				// CSS di Livello
 				$css_key = $filename;
 				if($globals->css["frontend"]["/" . $filename . ".css"]) {
-					if($return) {
-						$res .= "ff.injectCSS('" . $css_key . "', '" . FF_SITE_PATH . $base_path . "/css/" . $filename . ".css'); ";
-					} else {				
+					//if($return) {
+					//	$res .= "ff.injectCSS('" . $css_key . "', '" . FF_SITE_PATH . $base_path . "/css/" . $filename . ".css'); ";
+					//} else {
 						$cm->oPage->tplAddCss($css_key, array(
 								"path" => $base_path . "/css"
 								, "file" => $filename . ".css"
@@ -262,7 +262,7 @@ function system_set_media_cascading($return = false) {
 
 						if($skip_cache)
             				$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . ".css");
-					}
+					//}
 				}
 				// CSS di Livello di lingua
 				$css_key = $filename . "-" . $lang_name;
@@ -351,64 +351,84 @@ function system_set_media_cascading($return = false) {
 			}			
 		}
 	}
-	
+
 	if($return) {
 		if (is_array($cm->oPage->page_css) && count($cm->oPage->page_css))
         {
+			$buffer = "";
         	foreach($cm->oPage->page_css AS $priority => $css) {
         		foreach($css AS $key => $value) {
-        			///if($value["async"] != $cm->isXHR())
-        			//	continue;
+					if(array_key_exists($key, $globals->media_exception["css"]))
+						continue;
 
-        			$css_path = "";
-        			if($value["path"] === null) 
-        				$value["path"] = $cm->oPage->getThemePath();
-        			
-        			$css_path = $value["path"];
-        			
-        			if($value["file"]) {
-        				$css_path .= "/" . $value["file"];
-        				
-        				$res .= '<link href="' . $css_path .'" rel="stylesheet" type="text/css" />';
-					}
-        			if($value["embed"])
-        				$res .= '<style type="' . $value["type"] . '">' . $value["embed"] . "</style>";
+					$embed = "";
+
+					if($value["path"] === null)
+						$value["path"] = $cm->oPage->getThemePath();
+					if(!$value["file"] === null && $value["version"])
+						$value["file"] = $value["version"] . "/" . $key . ".css";
+
+					if($value["file"]) {
+						$css_path = $value["path"] . "/" . $value["file"];
+						$file = (strpos($css_path, "http") === 0
+								? ""
+								: FF_DISK_PATH
+							) . $css_path;
+						$embed = @file_get_contents($file);
+
+						$embed = cm_convert_url_in_abs_by_content($embed, $file);
+					} elseif($value["embed"])
+						$embed = $value["embed"];
+
+					$buffer .= $embed;
+
+					$media_keys["css"][] = $key;
 				}
         	}
+
+        	if($buffer) {
+				$res .= '<script>ff.libSets("css", ' . json_encode($media_keys["css"]) . '); </script>';
+				$res .= '<style type="text/css">' . $buffer . "</style>";
+			}
 		}
 
  		if (is_array($cm->oPage->page_js) && count($cm->oPage->page_js))
         {
-        	$loaded_libs = array();
+			$buffer = "";
         	foreach($cm->oPage->page_js AS $priority => $js) {
         		foreach($js AS $key => $value) {
-        			//if($value["async"] != $cm->isXHR())
-        			//	continue;
+					if(array_key_exists($key, $globals->media_exception["js"]))
+						continue;
 
-        			$js_path = "";
-        			if($value["path"] === null) 
-        				$value["path"] = $cm->oPage->getThemePath();
-        			
-        			$js_path = $value["path"];
-        			
-        			if($value["file"]) {
-        				$js_path .= "/" . $value["file"];
+					$embed = "";
 
-        				$res .= '<script src="' . $js_path . '"></script>';
-					}        				
-        			if($value["embed"])
-        				$res .= '<script>' . $value["embed"] . '</script>';
-        				
-        			$loaded_libs[$key] = 'ff.libSet("js", "' . $key . '");';
+					if($value["path"] === null)
+						$value["path"] = $cm->oPage->getThemePath();
+
+					if(!$value["file"] && $value["version"])
+						$value["file"] = $value["version"] . "/" . $key . ".js";
+
+					if($value["file"]) {
+						$js_path = $value["path"] . "/" . $value["file"];
+						$file = (strpos($js_path, "http") === 0
+								? ""
+								: FF_DISK_PATH
+							) . $js_path;
+						$embed = @file_get_contents($file);
+					} elseif($value["embed"])
+						$embed = $value["embed"];
+
+					$buffer .= $embed;
+
+					$media_keys["js"][] = $key;
 				}
         	}
-        	if(count($loaded_libs)) {
-        		$res = '<script>' . implode(" ", $loaded_libs) . '</script>' . $res;
-        					
 
-        	}
-		}	
-	
+        	if($buffer) {
+				$res .= '<script>ff.libSets("js", ' . json_encode($media_keys["js"]) . '); ' . $buffer . '</script>';
+			}
+		}
+
 	} else {
 		if(!$above_the_fold && $globals->css["frontend"]["/above-the-fold.css"])
 			$above_the_fold = "above-the-fold.css";
@@ -418,7 +438,7 @@ function system_set_media_cascading($return = false) {
 		}
 	
 	}
-	
+
 	if($globals->page["template"]["path"])
 	{
 		$tpl = ffTemplate::factory(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/pages" . ffCommon_dirname($globals->page["template"]["path"]));

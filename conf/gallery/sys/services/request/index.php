@@ -119,7 +119,6 @@ if(is_array($req) && count($req)) {
 	);*/
 
 
-
     foreach($req AS $service_name => $service) {
 		$arrShard 					= explode("/", ltrim($service_name, "/"), 2);
 		$service["opt"]["type"]		= $arrShard[0];
@@ -263,7 +262,20 @@ if(is_array($req) && count($req)) {
 }
 
 if(check_function("system_set_media")) {
+	if($_REQUEST["css"])
+		$css = json_decode($_REQUEST["css"]);
+
+	if(is_array($css))
+		$globals->media_exception["css"] = array_fill_keys($css, true);
+
+	if($_REQUEST["js"])
+		$js = json_decode($_REQUEST["js"]);
+
+	if(is_array($js))
+		$globals->media_exception["js"] = array_fill_keys($js, true);
+
 	$media = system_set_media_cascading(true);
+
 	if($media) {
 		$response["assets"] = $media;
 	}

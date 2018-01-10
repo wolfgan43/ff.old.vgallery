@@ -463,15 +463,16 @@ function process_vgallery_father($params, $mode = "thumb")
 				$vg_father["nodes"][$unic_id_node]["created"] 									= $father["created"]; 
 				$vg_father["nodes"][$unic_id_node]["last_update"] 								= $father["last_update"]; 
 				$vg_father["nodes"][$unic_id_node]["published"] 								= $father["published_at"]; 
-				$vg_father["nodes"][$unic_id_node]["owner"] 									= $ID_owner; 
-				
+				$vg_father["nodes"][$unic_id_node]["owner"] 									= $ID_owner;
+				$vg_father["seo"]["owner"] 														= $ID_owner;
+
 				$vg_father["nodes"][$unic_id_node]["class"] 									= $father["class"]; //$db->getField("class", "Text", true);
 				$vg_father["nodes"][$unic_id_node]["highlight"] 								= null;
 				$vg_father["nodes"][$unic_id_node]["is_wishlisted"] 							= false;
 
 
 				$vg_father["nodes"][$unic_id_node]["tags"] 										= $father["tags"]; //$db->getField("tags", "Text", true);
-                $vg_father["seo"]["tags"]["primary"]                                            = $vg_father["nodes"][$unic_id_node]["tags"];
+                $vg_father["seo"]["tags"]["primary"]                                            = $father["tags"];
                 $vg_father["nodes"][$unic_id_node]["referer"]                                   = $father["referer"];
 
 				if (array_key_exists("permalink", $father)) {
@@ -1000,7 +1001,8 @@ function process_vgallery_father($params, $mode = "thumb")
 					$vg_father["nodes"][$unic_id_node]["created"] 												= $father["created"]; 
 					$vg_father["nodes"][$unic_id_node]["last_update"] 											= $father["last_update"]; 
 					$vg_father["nodes"][$unic_id_node]["published"] 											= $father["published_at"]; 
-					$vg_father["nodes"][$unic_id_node]["owner"] 												= $ID_owner; 
+					$vg_father["nodes"][$unic_id_node]["owner"] 												= $ID_owner;
+					$vg_father["seo"]["owner"] 																	= $ID_owner;
 				    $vg_father["nodes"][$unic_id_node]["class"]													= $father["class"]; //$db->getField("class", "Text", true);
 				    $vg_father["nodes"][$unic_id_node]["highlight"]["container"] 								= $father["highlight_container"]; //$db->getField("highlight_container", "Text", true);
 
@@ -1016,7 +1018,7 @@ function process_vgallery_father($params, $mode = "thumb")
 				    //$vg_father["nodes"][$unic_id_node]["enable_multilang_visible"] 							= $db->getField("enable_multilang_visible", "Number", true);
 
 				    $vg_father["nodes"][$unic_id_node]["tags"] 													= $father["tags"]; //$db->getField("tags", "Text", true);
-                    $vg_father["seo"]["tags"]["primary"]                                         				= $vg_father["nodes"][$unic_id_node]["tags"];
+                    $vg_father["seo"]["tags"]["primary"]                                         				= $father["tags"];
                     $vg_father["nodes"][$unic_id_node]["referer"]                                               = $father["referer"];
 				    
 					if (array_key_exists("permalink", $father)) {
@@ -1266,8 +1268,10 @@ function process_vgallery_father($params, $mode = "thumb")
 		} else {
 		    $enable_multilang = ($vg_father["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT);
 		}
-
-		$vg_father["permission"]["visible"] = check_mod($file_permission, 1, $enable_multilang, AREA_VGALLERY_SHOW_MODIFY);
+		$vg_father["permission"]["visible"] = ($params["template_skip_hide"]
+			? true
+			: check_mod($file_permission, 1, $enable_multilang, AREA_VGALLERY_SHOW_MODIFY)
+		);
     } else {
 		if ($vg_father["permission"]["owner"] == get_session("UserNID"))
 		    $vg_father["permission"]["is_owner"] = true;
@@ -4351,8 +4355,8 @@ function process_vgallery_node(&$vg_father, $settings, $vg_field = null) {
 
 				$vg_data[$unic_id_node]["is_wishlisted"] = false;
 				$vg_data[$unic_id_node]["tags"] = $node["tags"];
-                if($vg_data[$unic_id_node]["tags"])
-                    $vg_father["seo"]["tags"]["secondary"]                              .= ($vg_father["seo"]["tags"]["secondary"] ? "," : "") . $vg_data[$unic_id_node]["tags"];                
+                //if($vg_data[$unic_id_node]["tags"])
+                //    $vg_father["seo"]["tags"]["secondary"]                              .= ($vg_father["seo"]["tags"]["secondary"] ? "," : "") . $vg_data[$unic_id_node]["tags"];
 				//$vg_data[$unic_id_node]["enable_multilang_visible"]                           = $node["enable_multilang_visible"];
 				//$vg_data[$unic_id_node]["owner"]                                           		= $node["owner"];
 				$vg_data[$unic_id_node]["data"] = $node["data"];
