@@ -33,30 +33,30 @@
 	}
 
 	$layout = null;
-	
+
 	$cm->oPage->page_js = array();
 	$cm->oPage->page_css = array();
 
 	//$globals->cache["data_blocks"] = array(); // x cache_page
 
 	/*if(substr_count($settings_path, "/") > 1) {
-	    $arrSettingsPath = explode("/", trim($settings_path, "/")); 
+	    $arrSettingsPath = explode("/", trim($settings_path, "/"));
 		$request_type = $arrSettingsPath[0];
 		unset($arrSettingsPath[0]);
 
-		$settings_path = "/" . implode("/", $arrSettingsPath); 
+		$settings_path = "/" . implode("/", $arrSettingsPath);
 	}*/
 
 	system_load_resources();
-	
+
     switch($globals->page["name"]) {
-        case "anagraph": 
-        	$check_vgallery_dir = get_vgallery_is_dir(basename($settings_path), "/anagraph" . ffCommon_dirname($settings_path));    			
+        case "anagraph":
+        	$check_vgallery_dir = get_vgallery_is_dir(basename($settings_path), "/anagraph" . ffCommon_dirname($settings_path));
 
 	        /*if(1 || $layout["db"]["params"] > 0) {
 	            $arrAvailablePath = explode("/", $settings_path);
 	            if(count($arrAvailablePath) > 2) {
-	                $check_vgallery_dir = false; 
+	                $check_vgallery_dir = false;
 	            } else {
 	                $check_vgallery_dir = true;
 	            }
@@ -83,14 +83,14 @@
 	                        , "template_skip_hide" => true
 	                    )
 	                    , $layout
-	                );            
+	                );
 	            }
         	} else {
 				if(check_function("process_vgallery_view")) {
 		            $frame_buffer = process_vgallery_view(
 		                $settings_path
 		                , "anagraph"
-		                , array(	
+		                , array(
 		                    "vgallery_name" => "anagraph"
 		                    , "output" => "content"
 	                        , "search" => $globals->search
@@ -98,8 +98,8 @@
 	                        , "template_skip_hide" => true
 		                )
 		                , $layout
-		            );	
-				}        	
+		            );
+				}
         	}
 
             break;
@@ -120,7 +120,7 @@
                         , "template_skip_hide" => true
                     )
                     , $layout
-                );            
+                );
             }
             break;
     	case "publish":
@@ -132,7 +132,7 @@
             if(is_array($publish) && count($publish) == 2) {
                 $publishing = array();
                 $publishing["ID"] = $publish[1];
-                $publishing["src"]= $publish[0];              
+                $publishing["src"]= $publish[0];
     			if(check_function("process_vgallery_thumb")) {
 					$frame_buffer = process_vgallery_thumb(
 		                null
@@ -144,10 +144,10 @@
 		                    , "template_skip_hide" => true
 		                )
 		                , $layout
-		            );    		
+		            );
 				}
 			}
-    		break;    		
+    		break;
         case "marker":
             if(check_function("process_vgallery_thumb")) {
             	$arrMap = explode("_", basename($settings_path));
@@ -160,15 +160,15 @@
                     $db->query($sSQL);
                     if($db->nextRecord()) {
                         $data_limit = $db->getField("description_limit", "Text", true);
-                        
-                        
+
+
                         /**
                         * all
                         * selected vgallery
                         * anagraph
                         */
                         $contest = $db->getField("contest", "Text", true);
-                        
+
                     }
 
                     $sSQL = "SELECT module_maps_marker.ID_node
@@ -179,12 +179,13 @@
                                 WHERE module_maps_marker.smart_url = " . $db->toSql($arrMap[1]);
                     $db->query($sSQL);
                     if($db->nextRecord()) {
+						$frame_buffer = "";
                         do {
                             $vgallery_name = $db->getField("vgallery_name", "Text", true);
                             $markers[$vgallery_name]["nodes"][] = $db->getField("ID_node", "Number", true);
                             if($data_limit) {
                                 $markers[$vgallery_name]["fields"] = explode(",", $data_limit);
-                            } 
+                            }
                         } while($db->nextRecord());
 
                         if(is_array($markers) && count($markers) && check_function("get_layout_settings")) {
@@ -221,8 +222,8 @@
             $layout = array(
                 "ID" => 0
                 , "prefix" => "menu"
-            );            
-        
+            );
+
             if(check_function("process_gallery_menu_child"))
                 $frame_buffer = process_gallery_menu_child($settings_path, null, null, $layout);
             break;
@@ -239,12 +240,12 @@
                 $frame_buffer = process_landing_tag_content_by_type($landing_path, $landing_group);
 
                 //$frame_buffer = $landingpage["content"];
-            }        
+            }
         	break;
         case "block":
-		default:     
-			$arrSettingsPath = explode("/", trim($settings_path, "/")); 
-     
+		default:
+			$arrSettingsPath = explode("/", trim($settings_path, "/"));
+
 			if(0) {
     			//da fare gestione schema per i moduli
     		} elseif(count($arrSettingsPath) > 1) {
@@ -252,13 +253,13 @@
 				$arrVgalleryBlock = array(
     				"vgallery_name" => $arrSettingsPath[1]
     				, "settings_path" => "/" . implode("/", $arrSettingsPath)
-    			); 
+    			);
 
     			$layout = (check_function("get_layout_settings")
 				            ? get_layout_by_block("vgallery", $arrVgalleryBlock["settings_path"])
 				            : null
 						);
-	            $check_vgallery_dir = get_vgallery_is_dir(basename($arrVgalleryBlock["settings_path"]), ffCommon_dirname($arrVgalleryBlock["settings_path"]));    			
+	            $check_vgallery_dir = get_vgallery_is_dir(basename($arrVgalleryBlock["settings_path"]), ffCommon_dirname($arrVgalleryBlock["settings_path"]));
 				if($check_vgallery_dir) {
 					if(check_function("process_vgallery_thumb")) {
 						$frame_buffer = process_vgallery_thumb(
@@ -273,14 +274,14 @@
 			                    , "settings_thumb" => true
 			                )
 			                , $layout
-			            );    		
+			            );
 					}
 				} else {
 					if(check_function("process_vgallery_view")) {
 		                $frame_buffer = process_vgallery_view(
 		                    $arrVgalleryBlock["settings_path"]
 		                    , "vgallery"
-		                    , array(	
+		                    , array(
 		                        "vgallery_name" => $arrVgalleryBlock["vgallery_name"]
 		                        , "output" => "content"
 	                        	, "search" => $globals->search
@@ -288,15 +289,41 @@
 	                            , "template_skip_hide" => true
 		                    )
 		                    , $layout
-		                );	
+		                );
 					}
 				}
-			} else {      
-			
+			} else {
+				check_function("system_get_sections");
+				check_function("system_layer_gallery");
+				//if(check_function("get_layout_settings"))
+				//	$layout_settings_popup = get_layout_settings(NULL, "ADMIN");
+
+				$template = system_get_blocks(null, array(
+					"blocks" => array(
+						"name" => array(basename($settings_path) => true)
+					)
+				));
+
+				$layouts = array_values($template["blocks"]);
+				$layout = $layouts[0];
+
+				//$main_section_params["js_custom_is_set"] = true;
+				$main_section_params["search"] = $globals->search;
+				$main_section_params["navigation"] = $globals->navigation;
+				$main_section_params["user_path"] = $layout["db"]["real_path"];
+				$main_section_params["settings_path"] = $layout["db"]["real_path"];
+				$buffer = system_block_process($layout, $main_section_params);
+
+				$main_section_params = $buffer["params"];
+				$main_section_params["count_block"]++;
+
+				$frame_buffer = $buffer["pre"] . $buffer["content"] . $buffer["post"];
+
+				/*
 				if(check_function("query_layout"))
 					$sSQL = query_layout_by_smart_url(basename($settings_path));
 
-				if(strlen($sSQL))					
+				if(strlen($sSQL))
 				{
 					$db->query($sSQL);
 					if($db->nextRecord() && check_function("system_layer_gallery")) {
@@ -338,36 +365,36 @@
 							$layout["db"]["params"] = $layout["params"];
 							$layout["db"]["real_path"] = $db->getField("real_path", "Text", true);
 						}
-						
+
 						$main_section_params["search"] = $globals->search;
 						$main_section_params["navigation"] = $globals->navigation;
 
 						$main_section_params["user_path"] = $layout["db"]["real_path"];
-						$main_section_params["settings_path"] = $layout["db"]["real_path"];						
-						
+						$main_section_params["settings_path"] = $layout["db"]["real_path"];
+
 						$buffer = system_block_process($layout, $main_section_params);
 
 						$main_section_params = $buffer["params"];
 						$main_section_params["count_block"]++;
 						$frame_buffer = $buffer["default"];
 					}
-				}
+				}*/
 			}
-    }  
+    }
 
 	if(check_function("system_set_media")) {
 	    $media = system_set_media_cascading(true);
 
 	    $frame_buffer = preg_replace("/\n\s*/", "\n", $frame_buffer) . $media;
 	}
- 
+
 	if(!defined("DISABLE_CACHE") && $frame_buffer && check_function("system_set_cache_page")) {
 		//system_write_cache_page($globals->page["user_path"], $main_section_params["count_block"]);
-		system_set_cache_page($frame_buffer, $main_section_params["count_block"]);  
+		system_set_cache_page($frame_buffer, $main_section_params["count_block"]);
 	}
-  	
-  	
-  	return ($frame_buffer 
+
+
+  	return ($frame_buffer
   		? $frame_buffer
   		: true
   	);

@@ -31,17 +31,17 @@ function system_init($cm) {
 	if($path_info == "/index" || !$path_info)
 	    $path_info = "/";
 
-	$globals->user_path 	= $path_info;
-	$globals->page 			= cache_get_page_properties($path_info, true);
-	$globals->locale 		= cache_get_locale($globals->page, DOMAIN_NAME); //pulisce il percorso dalla lingua
-    $globals->selected_lang = FF_LOCALE;
+	$globals->user_path 				= $path_info;
+	$globals->page 						= cache_get_page_properties($path_info, true);
+	$globals->locale 					= cache_get_locale($globals->page, DOMAIN_NAME); //pulisce il percorso dalla lingua
+    $globals->selected_lang 			= FF_LOCALE;
 
-	define ("MOD_SEC_GUEST_USER_ID", "2");
-	define ("MOD_SEC_GUEST_USER_NAME", "guest");
-	define ("MOD_SEC_GUEST_GROUP_ID", "2");
-	define ("MOD_SEC_GUEST_GROUP_NAME", "guests"); 	
+	define ("MOD_SEC_GUEST_USER_ID"		, "2");
+	define ("MOD_SEC_GUEST_USER_NAME"	, "guest");
+	define ("MOD_SEC_GUEST_GROUP_ID"	, "2");
+	define ("MOD_SEC_GUEST_GROUP_NAME"	, "guests");
 
-	define("CM_DONT_RUN_LAYOUT", true);
+	define("CM_DONT_RUN_LAYOUT"			, true);
 
 	$cm_layout_vars = array(
     	"theme" 						=> ($globals->page["theme"]
@@ -86,8 +86,8 @@ function system_init($cm) {
 	
 	if($globals->page["restricted"]) {
 		$cm_layout_vars["exclude_form"] = false;
-		$cm_layout_vars["compact_js"] = false;
-		$cm_layout_vars["compact_css"] = false;
+		$cm_layout_vars["compact_js"] 	= false;
+		$cm_layout_vars["compact_css"] 	= false;
 	}
 
 	cm::getInstance()->layout_vars = $cm_layout_vars;
@@ -260,13 +260,6 @@ function system_init($cm) {
         $area = "BACKOFFICE";
     else
     	$area = "FRONTEND";
-
-    global $ff_global_setting;
-
-    $ff_global_setting["ffPage"]["jquery_ui_theme"] = ($cm_layout_vars["framework_css"]
-    	? false
-    	: "base"
-    );
 
     define("MOD_SEC_SOCIAL_GOOGLE_APP_NAME", $globals->settings["MOD_SEC_SOCIAL_GOOGLE_APP_NAME"]);
     define("MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID", $globals->settings["MOD_SEC_SOCIAL_GOOGLE_CLIENT_ID"]);

@@ -29,12 +29,13 @@ define("TRACE_DISK_PATH", FF_DISK_PATH); // dirname(dirname(dirname(__DIR__))));
 function system_trace($action, $url = null, $get = null, $action_value = null, $visitor = null) {
     if(!$visitor)
         $visitor = system_trace_get_visitor();
-    
+
     if($visitor)
     {
         if(!$url) {
-            $url = $_SERVER["REQUEST_URI"];
+            $url = $_SERVER["PATH_INFO"];
 		}
+
 		if(!$get) {
 			$get = $_GET;
 		}
@@ -74,7 +75,8 @@ function system_trace($action, $url = null, $get = null, $action_value = null, $
                     $detect["platform"] = $browser->getPlatform();
                 }
 
-                $page = cache_get_page_stats();
+                $pages = cache_get_page_stats($url, $get);
+				$page = $pages[0];
 
                 $trace = array(
                     "visitor" => $visitor["unique"]
@@ -95,23 +97,26 @@ function system_trace($action, $url = null, $get = null, $action_value = null, $
                         "title" => $page["title"]
                         , "description" => $page["meta"]["description"]["content"]
                         , "tags" => (is_array($page["tags"]) ? $page["tags"] : array())
-                        , "keywords" => (is_array($page["keywords"]) ? $page["keywords"] : array())
+						, "author" => $page["author"]
                     )
                     , "user" => array(
                         "id" => $user_permission["ID"]
                         , "name" => $user_permission["name"]
                         , "surname" => $user_permission["surname"]
+						, "avatar" => $user_permission["avatar"]
                         , "email" => $user_permission["email"]
                     )
                     , "created" => time()
                 );
-				
-                if(is_file(TRACE_DISK_PATH . "/config.php")) {
-                    require_once(TRACE_DISK_PATH . "/config.php");
+
+                if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
+                    require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
 
                     if(defined("TRACE_MONGO_DATABASE_NAME")) 
                     {
-            			require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+        				if(!class_exists("ffDB_MongoDB"))
+            				require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+
                         $db = new ffDB_MongoDB();
                         $db->on_error = "ignore";
                         
@@ -244,7 +249,7 @@ function system_trace_isCrawler($user_agent)
 		'GenericBot' => 'bot',
 		'GenericCrawler' => 'crawler'
 	);
- 
+
  	if($user_agent === null)
  		$user_agent = $_SERVER["HTTP_USER_AGENT"];
  	
@@ -459,8 +464,8 @@ function system_trace_notify_via_push($message, $to, $params) {
     $response = curl_exec($ch);
     curl_close($ch);
     
-	if(is_file(TRACE_DISK_PATH . "/config.php")) {
-        require_once(TRACE_DISK_PATH . "/config.php");
+	if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
+        require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
         
         $notify = array(
             "uid"       => $to["uid"]
@@ -479,12 +484,14 @@ function system_trace_notify_via_push($message, $to, $params) {
 
         if(defined("TRACE_MONGO_DATABASE_NAME")) 
         {
-            require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+        	if(!class_exists("ffDB_MongoDB"))
+            	require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+
             $db = new ffDB_MongoDB();
             $db->on_error = "ignore";
 
             $db->connect(TRACE_MONGO_DATABASE_NAME, TRACE_MONGO_DATABASE_HOST, TRACE_MONGO_DATABASE_USER, TRACE_MONGO_DATABASE_PASSWORD);
-            $db->insert($notify, TRACE_NOTIFY_TABLE_NAME);
+            $db->insert($notify, NOTIFY_TABLE_NAME);
         }
         
         if(defined("TRACE_DATABASE_NAME")) 
@@ -497,7 +504,7 @@ function system_trace_notify_via_push($message, $to, $params) {
 
             if($db->connect(TRACE_DATABASE_NAME, TRACE_DATABASE_HOST, TRACE_DATABASE_USER, TRACE_DATABASE_PASSWORD)) 
             {
-                $sSQL = "INSERT INTO `" . TRACE_NOTIFY_TABLE_NAME . "`
+                $sSQL = "INSERT INTO `" . NOTIFY_TABLE_NAME . "`
                             (
                                 `ID`
                                 , ID_dest
@@ -540,8 +547,9 @@ function system_trace_notify_via_mail($message, $to) {
 }
 
 function system_trace_notify_via_server($message, $to, $params) {
-	if(is_file(TRACE_DISK_PATH . "/config.php")) {
-        require_once(TRACE_DISK_PATH . "/config.php");
+	$dest = "";
+	if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
+        require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
 
         if(isset($to["uid"])) {
             $dest = system_trace_notify_get_user($dest, $to, array("ID"));
@@ -560,6 +568,7 @@ function system_trace_notify_via_server($message, $to, $params) {
         }
 
         if(is_array($dest["uid"]) && count($dest["uid"])) {
+			$uid_list = "";
             foreach($dest["uid"] AS $index => $value) {
                 if(strlen($uid_list))
                     $uid_list .= ",";
@@ -583,7 +592,9 @@ function system_trace_notify_via_server($message, $to, $params) {
 
         if(defined("TRACE_MONGO_DATABASE_NAME")) 
         {
-            require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+        	if(!class_exists("ffDB_MongoDB"))
+            	require_once(TRACE_DISK_PATH . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+
             $db = new ffDB_MongoDB();
             $db->on_error = "ignore";
 
@@ -591,7 +602,7 @@ function system_trace_notify_via_server($message, $to, $params) {
             if(!$params["single"]) {
                 $db->query(array(
                     "select" => array("ID" => 1)
-                    , "from" => TRACE_NOTIFY_TABLE_NAME
+                    , "from" => NOTIFY_TABLE_NAME
                     , "where" => array(
                         "uid" => $notify["uid"]
                         , "gid" => $notify["gid"]
@@ -605,11 +616,11 @@ function system_trace_notify_via_server($message, $to, $params) {
                     $db->update(array(
                             "set" => array("hit" => "+1")
                             , "where" => array("ID" => $ID)
-                        ), TRACE_NOTIFY_TABLE_NAME);
+                        ), NOTIFY_TABLE_NAME);
                 }
             }
             if(!$ID) {
-                $db->insert($notify, TRACE_NOTIFY_TABLE_NAME);
+                $db->insert($notify, NOTIFY_TABLE_NAME);
             }
         }
         
@@ -625,7 +636,7 @@ function system_trace_notify_via_server($message, $to, $params) {
             {
                 if(!$params["single"]) {
                     $db->query("SELECT ID
-                                FROM `" . TRACE_NOTIFY_TABLE_NAME . "`
+                                FROM `" . NOTIFY_TABLE_NAME . "`
                                 WHERE ID_dest = " . $db->toSql($notify["uid"], "Text") . "
                                     AND gid = " . $db->toSql($notify["gid"], "Text") . "
                                     AND message = " . $db->toSql($notify["message"], "Text") . "
@@ -634,7 +645,7 @@ function system_trace_notify_via_server($message, $to, $params) {
                     if($db->nextRecord()) {
                         $ID = $db->getField("ID", "Number", true);
 
-                        $sSQL = "UPDATE `" . TRACE_NOTIFY_TABLE_NAME . "` SET
+                        $sSQL = "UPDATE `" . NOTIFY_TABLE_NAME . "` SET
                                     hit = (hit + 1)
                                 WHERE ID = " . $db->toSql($ID, "Number");
 
@@ -642,7 +653,7 @@ function system_trace_notify_via_server($message, $to, $params) {
                 }
 
                 if(!strlen($sSQL)) {
-                    $sSQL = "INSERT INTO `" . TRACE_NOTIFY_TABLE_NAME . "`
+                    $sSQL = "INSERT INTO `" . NOTIFY_TABLE_NAME . "`
                         (
                             `ID`
                             , ID_dest
@@ -682,8 +693,8 @@ function system_trace_notify_via_server($message, $to, $params) {
 }
 
 function system_trace_get_notify($path = "", $exclude = array()) {
-	if(is_file(TRACE_DISK_PATH . "/config.php")) {
-		require_once(TRACE_DISK_PATH . "/config.php");
+	if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
+		require_once(TRACE_DISK_PATH . "/conf/gallery/config/trace.php");
 		if(!class_exists("ffDB_Sql"))
 			require_once(TRACE_DISK_PATH . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
 
@@ -692,6 +703,7 @@ function system_trace_get_notify($path = "", $exclude = array()) {
 		
 		if($db->connect(TRACE_DATABASE_NAME, TRACE_DATABASE_HOST, TRACE_DATABASE_USER, TRACE_DATABASE_PASSWORD)) 
 		{
+			$sSQL_where = "";
 			$user_permission = get_session("user_permission");
 			$sSQL_where .= " AND (FIND_IN_SET(" . $db->toSql(get_session("UserNID"), "Number") . ", ID_dest) OR FIND_IN_SET( " . $db->toSql($user_permission["primary_gid"], "Number") . ", gid) OR (ID_dest = '' AND gid = ''))";
 			

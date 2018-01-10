@@ -247,12 +247,16 @@ function system_layer_gallery($oPage = null)
                 //$admin_menu["sys"]["ret_url"] = $ret_url;
 
                 if(check_function("set_template_var"))
-                	$template["buffer"]["admin"] = '<input class="ajaxcontent" type="hidden" value="'.  get_admin_bar($admin_menu, VG_SITE_FRAME . (strpos($ret_url, "?") ? substr($ret_url, 0, strpos($ret_url, "?")) : $ret_url)) . '" />';
+					$oPage->properties_body["data-admin"] = get_admin_bar($admin_menu);
+
+//                if(check_function("set_template_var"))
+ //               	$template["buffer"]["admin"] = '<input class="ajaxcontent" type="hidden" value="'.  get_admin_bar($admin_menu, VG_SITE_FRAME . (strpos($ret_url, "?") ? substr($ret_url, 0, strpos($ret_url, "?")) : $ret_url)) . '" />';
 
 //                $serial_admin_menu = json_encode($admin_menu);
  //               $oPage->tpl_layer[0]->set_var("admin", '<input class="ajaxcontent" type="hidden" value="'. FF_SITE_PATH . VG_SITE_FRAME . (strpos($ret_url, "?") ? substr($ret_url, 0, strpos($ret_url, "?")) : $ret_url) . "?sid=" . set_sid($serial_admin_menu) . '" />');
             }
         }
+
         if($oPage->tpl_layer)
 			$oPage->output_buffer = system_parse_page($template);
     } else {
@@ -355,48 +359,49 @@ function system_process_page_blocks($blocks, $params, &$template)
 
 						$buffer["content"] = $block["tpl"]["header"] . "{" . $template["blocks"][$ID_block]["smart_url"] . "}" . $block["tpl"]["footer"];
 		            } else {
-						$buffer = system_block_process($template["blocks"][$ID_block], $params); 
+						$buffer = system_block_process($template["blocks"][$ID_block], $params);
 						$params = $buffer["params"];
 
 						if(array_key_exists("template", $buffer))
 							$template = array_replace_recursive ($template, $buffer["template"]);                                            
 		            }
 					if(strlen($buffer["content"])) {
+						$params["count_block"]++;
+
+						if($params["main_content"]
+							&& strlen($buffer["content"])
+							&& (count($template["stats"]["main_section"]) > 1 || $template["blocks"][$ID_block]["use_in_content"] > 0)
+						) {
+							$params["count_block_content"]++;
+							$params["reset_content_by_user"] = false;
+						}
+
+						if(!defined("SKIP_VG_LAYOUT"))
+						{
+							$template["buffer"]["blocks"][$block_key]["pre"] 														= $buffer["pre"];
+							$template["buffer"]["blocks"][$block_key]["post"] 														= $buffer["post"];
+						}
+
+						$template["buffer"]["blocks"][$block_key]["ID"]																= $template["blocks"][$ID_block]["ID"];
+						$template["buffer"]["blocks"][$block_key]["type"]															= $template["blocks"][$ID_block]["type_class"];
+						$template["buffer"]["blocks"][$block_key]["group"]															= $template["blocks"][$ID_block]["type_group"];
+						$template["buffer"]["blocks"][$block_key]["plugins"]														= $template["blocks"][$ID_block]["plugins"];
+						$template["buffer"]["blocks"][$block_key]["class"]															= $template["blocks"][$ID_block]["class"];
+						if(!$params["no_content"]) {
+							if(!$template["blocks"][$ID_block]["ajax"])
+								$template["buffer"]["blocks"][$block_key]["content"]												= $template["blocks"][$ID_block]["fixed_pre_content"] . $buffer["content"] . $template["blocks"][$ID_block]["fixed_post_content"];
+							//Append Blocks into Section
+							if($params["section_key"])
+								$template["buffer"]["sections"][$params["section_key"]]["content"] 									.= $template["buffer"]["blocks"][$block_key]["pre"]
+																																		. $template["buffer"]["blocks"][$block_key]["content"]
+																																		. $template["buffer"]["blocks"][$block_key]["post"];
+						}
+
+						//Section block count++
+						if($params["ID_section"])
+							$template["sections"][$params["ID_section"]]["processed_block"]++;
+
 						if($template["blocks"][$ID_block]["ajax"]) {
-							$params["count_block"]++;
-
-							if($params["main_content"]
-								&& strlen($buffer["content"])
-								&& (count($template["stats"]["main_section"]) > 1 || $template["blocks"][$ID_block]["use_in_content"] > 0)
-							) {
-								$params["count_block_content"]++;
-								$params["reset_content_by_user"] = false;
-							}
-
-							if(!defined("SKIP_VG_LAYOUT"))
-							{
-								$template["buffer"]["blocks"][$block_key]["pre"] 														= $buffer["pre"];
-								$template["buffer"]["blocks"][$block_key]["post"] 														= $buffer["post"];
-							}
-
-							$template["buffer"]["blocks"][$block_key]["ID"]																= $template["blocks"][$ID_block]["ID"];
-							$template["buffer"]["blocks"][$block_key]["type"]															= $template["blocks"][$ID_block]["type_class"];
-							$template["buffer"]["blocks"][$block_key]["group"]															= $template["blocks"][$ID_block]["type_group"];
-							$template["buffer"]["blocks"][$block_key]["plugins"]														= $template["blocks"][$ID_block]["plugins"];
-							$template["buffer"]["blocks"][$block_key]["class"]															= $template["blocks"][$ID_block]["class"];
-							if(!$params["no_content"]) {
-								$template["buffer"]["blocks"][$block_key]["content"]													= $template["blocks"][$ID_block]["fixed_pre_content"] . $buffer["content"] . $template["blocks"][$ID_block]["fixed_post_content"];
-								//Append Blocks into Section
-								if($params["section_key"])
-									$template["buffer"]["sections"][$params["section_key"]]["content"] 									.= $template["buffer"]["blocks"][$block_key]["pre"]
-																																			. $template["buffer"]["blocks"][$block_key]["content"]
-																																			. $template["buffer"]["blocks"][$block_key]["post"];
-							}
-
-							//Section block count++
-							if($params["ID_section"])
-								$template["sections"][$params["ID_section"]]["processed_block"]++;
-
 							//Page Shard count++
 							$template["stats"]["processed_shard"]++;
 						}
@@ -407,10 +412,11 @@ function system_process_page_blocks($blocks, $params, &$template)
 				}
 
 				//store key in buffer and prevend rerender blocks
-				$template["blocks"][$ID_block]["processed"] 																		= $block_key;
+				$template["blocks"][$ID_block]["processed"] 																			= $block_key;
 			}
 	    }
 	}
+
 	return $params;
 }
 
@@ -424,7 +430,7 @@ function system_process_page_sections($sections = null, $params, &$template)
 	if(!$params["user_path"])
         $params["user_path"]                            = $globals->user_path;
 
-    if(is_array($sections) && count($sections)) 
+    if(is_array($sections) && count($sections))
     {
     	$is_xhr = $cm->isXHR();
         foreach($sections AS $key => $value) 
@@ -451,7 +457,7 @@ function system_process_page_sections($sections = null, $params, &$template)
 			else 
 			{
 	            $params["main_content"] = $template["sections"][$ID_section]["is_main"];
-	            
+
 	            if($is_xhr && !$params["main_content"])
 	                continue;
 
@@ -464,11 +470,10 @@ function system_process_page_sections($sections = null, $params, &$template)
 
 	            $params["section_key"] = $section_key;
 	            $params["ID_section"] = $ID_section;
-	            
+
 	            if($template["sections"][$ID_section]["blocks"])
 					$params = system_process_page_blocks($template["sections"][$ID_section]["blocks"], $params, $template);
 
-					
 				if($params["main_content"] && !$params["skip_landing_page"]) 
 				{
 					/**
@@ -586,6 +591,8 @@ function system_process_page_sections($sections = null, $params, &$template)
 
 function system_process_page_layers($layers = null, $params, &$template)
 {
+	$globals = ffGlobals::getInstance("gallery");
+
 	if(!$layers)
 		$layers = $template["layers"];
 
@@ -605,6 +612,8 @@ function system_process_page_layers($layers = null, $params, &$template)
 
         	if(!$template["layers"][$ID_layer])
         		continue;
+
+			$globals->cache["layer_blocks"][] = $template["layers"][$ID_layer]["ID"]; //array X cache_page
 
         	$params["layer_key"] = $layer_key;
         	$params["ID_layer"] = $ID_layer;
@@ -664,7 +673,7 @@ function system_pre_process_page($params = null/*, $process_page = false*/)
 	* Process Structure
 	*/
 	if(check_function("system_get_sections")) {
-        $template = system_get_sections($params["limit_section"], $params["settings_path"], true);
+        $template = system_get_sections($params["limit_section"], true);
 
 		/**
 		* Init Modules
@@ -983,7 +992,12 @@ function system_block_process($layout, $params = array()) {
     $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
-    $res = array("content" => "");
+
+    $res = array(
+		"pre" 						=> ""
+		, "content" 				=> ""
+		, "post" 					=> ""
+	);
 
     $unic_id = $layout["prefix"] . $layout["ID"];
 
@@ -1742,6 +1756,6 @@ function system_block_process($layout, $params = array()) {
 
 	//$res["data_blocks"] = $layout["data_blocks"];
 	$res["params"] = $params;
-	
+
 	return $res;
 }
