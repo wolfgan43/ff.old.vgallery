@@ -26,7 +26,7 @@
 function system_set_cache_page($content) {
     $globals = ffGlobals::getInstance("gallery");
     $cache_file = $globals->cache["file"];
-    
+
     if(!defined("DISABLE_CACHE") && $globals->cache["enabled"] !== false) {
         $expires = time() + (60 * 60 * 24 * 1);
 
@@ -104,7 +104,7 @@ function system_write_cache_page($user_path, $contents) {
         $user_path = $globals->page["strip_path"] . $user_path;
 
     $cache = check_static_cache_page($user_path, $http_status_code);
-    
+
     $globals->cache = array_replace($globals->cache, $cache);
     //$globals->cache["sem"] = &$cache["sem"];
     
@@ -333,6 +333,271 @@ function system_write_cache_error_document($cache_file = null, $expires = null)
 }
 
 function system_write_cache_stats($buffer, $page = null, $expires = null) {
+	$cm = cm::getInstance();
+	$globals = ffGlobals::getInstance("gallery");
+
+	check_function("Storage");
+
+	//todo: Impostazioni di base da fare come oggetto
+	$service = "server";
+	$this_controllers = array(
+		"server" => array(
+			"default" => false
+			, "services" => null
+			, "storage" => array(
+				"nosql" => null
+				//, "fs" => null
+			)
+		)
+	);
+	$this_struct = array(
+		"connectors" => array(
+			"sql"                       => array(
+				"prefix"				=> "CACHE_DATABASE_"
+				, "table"               => "cache_pages"
+				, "key"                 => "ID"
+			)
+			, "nosql"                   => array(
+				"prefix"				=> "CACHE_MONGO_DATABASE_"
+				, "table"               => "cache_pages"
+				, "key"                 => "ID"
+			)
+			, "fs"                      => array(
+				"path"                  => "/cache/notify"
+				, "name"                => "title"
+				, "var"					=> "s"
+			)
+		)
+		, "table" => array(
+			"db" => array(
+				"title" 				=> "title"
+			)
+		)
+		, "type" => array(
+			"url"						=> "string"
+			, "get"						=> "array"
+			, "domain"					=> "string"
+			, "type"					=> "string"
+
+			, "title" 					=> "string"
+			, "description" 			=> "string"
+			, "cover"					=> array(
+				"url" 					=> "string:toImage"
+				, "width" 				=> "number"
+				, "height" 				=> "number"
+			)
+			, "author" 					=> array(
+				"id" 					=> "number"
+				, "avatar" 				=> "string:toImage"
+				, "name" 				=> "string"
+				, "url" 				=> "string"
+				, "tags"				=> array(
+					"primary" 			=> "arrayOfNumber"
+					, "secondary" 		=> "arrayOfNumber"
+				)
+				, "uid"					=> "number"
+			)
+			, "tags"					=> array(
+				"primary" 				=> "arrayOfNumber"
+				, "secondary" 			=> "arrayOfNumber"
+				, "rel" 				=> "arrayOfNumber"
+			)
+			, "meta"					=> "array"
+			, "links"					=> "array"
+			, "microdata"				=> "array"
+			, "js"						=> array(
+				"url" 					=> "string"
+				, "keys" 				=> "array"
+			)
+			, "css"						=> array(
+				"url" 					=> "string"
+				, "keys" 				=> "array"
+			)
+			, "international"			=> "array"
+			, "settings"				=> "array" 	//$globals->page
+			, "template_layers"			=> "array"	//$globals->cache["layer_blocks"]
+			, "template_sections"		=> "array"	//$globals->cache["section_blocks"]
+			, "template_blocks"			=> "array"	//$globals->cache["layout_blocks"]
+			, "template_ff"				=> "array"
+			, "keys_D"					=> "arrayOfNumber"
+			, "keys_G"					=> "array"
+			, "keys_M"					=> "array"
+			, "keys_S"					=> "array"
+			, "keys_T"					=> "array"
+			, "keys_V"					=> "arrayOfNumber"
+			, "http_status"				=> "number"
+			, "created"					=> "number"
+			, "last_update"				=> "number"
+			, "cache_last_update"		=> "number"
+			, "cache"					=> "array"
+		)
+	);
+	$struct = $this_controllers[$service]["struct"];
+
+	$connectors = $this_controllers[$service]["storage"];
+	foreach($connectors AS $type => $data)
+	{
+		if(!$data)
+		{
+			$connectors[$type] = array(
+				"service" => null
+				, "connector" => $this_struct["connectors"][$type]
+			);
+		}
+	}
+	$storage = Storage::getInstance($connectors, array(
+		"struct" => $this_struct["type"]
+	));
+
+	//codice operativo
+	$created 							= time();
+
+	$tags = array(
+		"primary" 					=> array()
+		, "secondary" 				=> array()
+		, "rel" 					=> array()
+	);
+
+	if(is_array($globals->seo) && count($globals->seo)) {
+		foreach($globals->seo AS $seo_type => $seo_data)
+		{
+			if($seo_type == "current")
+				continue;
+
+			if($seo_data["tags"]["primary"])
+				$tags["primary"] 	= array_replace($tags["primary"], array_fill_keys(explode(",", $seo_data["tags"]["primary"]), true));
+			if($seo_data["tags"]["secondary"])
+				$tags["secondary"] 	= array_replace($tags["secondary"], array_fill_keys(explode(",", $seo_data["tags"]["secondary"]), true));
+			if($seo_data["tags"]["rel"])
+				$tags["rel"] 		= array_replace($tags["rel"], array_fill_keys(explode(",", $seo_data["tags"]["rel"]), true));
+		}
+	}
+
+	if(is_array($cm->oPage->page_js) && count($cm->oPage->page_js)) {
+		$page_js 					= $cm->oPage->page_js;
+	}
+
+	if(is_array($cm->oPage->page_css) && count($cm->oPage->page_css)) {
+		$page_css 					= array_diff($cm->oPage->page_css, $globals->links);
+	}
+
+	$s = array(
+		"url"						=> $globals->cache["user_path"]
+		, "get"						=> $_GET /* (is_array($globals->request) && count($globals->request)
+										? $globals->request
+										: array()
+									) da approfondire*/
+		, "domain"					=> DOMAIN_INSET
+		, "type"					=> $globals->seo["current"]
+
+		, "title" 					=> $cm->oPage->title
+		, "description" 			=> $cm->oPage->page_meta["description"]["content"]
+		, "cover"					=> array_filter($globals->cover)
+		, "author" 					=> $globals->author
+		, "tags"					=> array(
+			"primary" 				=> (is_array($tags["primary"]) && count($tags["primary"])
+										? array_keys($tags["primary"])
+										: array()
+									)
+			, "secondary" 			=> (is_array($tags["secondary"]) && count($tags["secondary"])
+										? array_keys($tags["secondary"])
+										: array()
+									)
+			, "rel" 				=> (is_array($tags["rel"]) && count($tags["rel"])
+										? array_keys($tags["rel"])
+										: array()
+									)
+		)
+		, "meta"					=> $cm->oPage->page_meta
+		, "links"					=> $globals->links
+		, "microdata"				=> $globals->microdata
+		, "js"						=> array(
+			"url" 					=> (is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"])
+										? $cm->oPage->page_defer["js"][0]
+										: ""
+									)
+			, "keys" 				=> $page_js
+		)
+		, "css"						=> array(
+			"url" 					=> (is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"])
+										? $cm->oPage->page_defer["css"][0]
+										: ""
+									)
+			, "keys" 				=> $page_css
+		)
+		, "international"			=> ffTemplate::_get_word_by_code("", null, null, true)
+		, "settings"				=> $globals->page
+		, "template_layers"			=> $globals->cache["layer_blocks"]
+		, "template_sections"		=> $globals->cache["section_blocks"]
+		, "template_blocks"			=> (is_array($globals->cache["layout_blocks"]) && count($globals->cache["layout_blocks"])
+										? array_keys($globals->cache["layout_blocks"])
+										: array()
+									)
+		, "template_ff"				=> $globals->cache["ff_blocks"]
+		, "keys_D"					=> (is_array($globals->cache["data_blocks"]["D"]) && count($globals->cache["data_blocks"]["D"])
+										? array_keys($globals->cache["data_blocks"]["D"])
+										: array()
+									)
+		, "keys_G"					=> (is_array($globals->cache["data_blocks"]["G"]) && count($globals->cache["data_blocks"]["G"])
+										? array_keys($globals->cache["data_blocks"]["G"])
+										: array()
+									)
+		, "keys_M"					=> (is_array($globals->cache["data_blocks"]["M"]) && count($globals->cache["data_blocks"]["M"])
+										? array_keys($globals->cache["data_blocks"]["M"])
+										: array()
+									)
+		, "keys_S"					=> (is_array($globals->cache["data_blocks"]["S"]) && count($globals->cache["data_blocks"]["S"])
+										? array_keys($globals->cache["data_blocks"]["S"])
+										: array()
+									)
+		, "keys_T"					=> (is_array($globals->cache["data_blocks"]["T"]) && count($globals->cache["data_blocks"]["T"])
+										? array_keys($globals->cache["data_blocks"]["T"])
+										: array()
+									)
+		, "keys_V"					=> (is_array($globals->cache["data_blocks"]["V"]) && count($globals->cache["data_blocks"]["V"])
+										? array_keys($globals->cache["data_blocks"]["V"])
+										: array()
+									)
+		, "http_status"				=> $globals->http_status
+		, "created"					=> $created
+		, "last_update"				=> $created
+		, "cache_last_update"		=> $created
+		, "cache"					=> str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
+	);
+
+	//print_r($s);
+//	die();
+
+
+	$res = $storage->write(
+		$s
+		, array(
+			"set" => array(
+				"title" 				=> $cm->oPage->title
+				, "description" 		=> $cm->oPage->page_meta["description"]["content"]
+
+				, "keys_D"				=> $s["keys_D"]
+				, "keys_G"				=> $s["keys_G"]
+				, "keys_M"				=> $s["keys_M"]
+				, "keys_S"				=> $s["keys_S"]
+				, "keys_T"				=> $s["keys_T"]
+				, "keys_V"				=> $s["keys_V"]
+				, "http_status"			=> $s["http_status"]
+				, "last_update"	        => $created
+				, "cache"				=> "+" . str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
+			)
+			, "where" => array(
+				"url" 					=> $globals->cache["user_path"]
+				, "domain" 				=> DOMAIN_INSET
+				, "get" 				=> $_GET
+			)
+		)
+	);
+
+	return $buffer;
+}
+
+function system_write_cache_stats_old($buffer, $page = null, $expires = null) {
     $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
 
@@ -343,12 +608,11 @@ function system_write_cache_stats($buffer, $page = null, $expires = null) {
         $expires = time() + (60 * 60 * 24 * 1);
     
     $s = array();
-    if(is_file($globals->cache["file"]["cache_path"] . "/stats.php")) {
-    	$output = exec("php -l " . addslashes($globals->cache["file"]["cache_path"] . "/stats.php"));
-		if(strpos($output, "No syntax errors") === 0)
-    		require($globals->cache["file"]["cache_path"] . "/stats.php");
-	}
-    
+
+	check_function("Filemanager");
+
+	$fs = new Filemanager("php", $globals->cache["file"]["cache_path"] . "/stats.php", "s");
+
     $s[$page]["tags"] = array();
     if(is_array($globals->seo) && count($globals->seo)) {
         foreach($globals->seo AS $seo_type => $seo_data)
@@ -399,7 +663,9 @@ function system_write_cache_stats($buffer, $page = null, $expires = null) {
            // $buffer = str_replace($cm->oPage->page_defer["js"][0], $res_path . ".js", $buffer);
         }
         
-    }               
+    }
+	$fs->write($s);
+
     cm_filecache_write($globals->cache["file"]["cache_path"], "stats.php", "<?php\n" . '$s = ' . var_export($s, true) . ";", $expires);
     
     return $buffer;
