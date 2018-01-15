@@ -100,13 +100,6 @@ function get_thumb($path, $params = array(), $res = null)
     		$thumb_settings["thumb"]["name"] 																= $thumb_settings["thumb"]["width"] . $operation . $thumb_settings["thumb"]["height"];
 	}
     $skip_fs_check = false;
-   /* if (defined("CDN_STATIC") && CDN_STATIC
-		&& defined("CDN_STATIC_IMAGE") && strlen(CDN_STATIC_IMAGE) && CDN_STATIC_IMAGE != $params["showfiles_path"]
-    ) {
-    
-		$params["showfiles_path"] = CDN_STATIC_IMAGE;
-		$skip_fs_check = true;
-    }*/
 
     if(substr(CM_SHOWFILES, 0, 7) == "http://" || substr(CM_SHOWFILES, 0, 8) == "https://" || substr(CM_SHOWFILES, 0, 2) == "//")
     	$skip_fs_check = true;

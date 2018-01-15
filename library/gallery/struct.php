@@ -103,107 +103,107 @@
 	);
   
   	$def["anagraph"] = array(
-        		"table" 							=> "anagraph"
-        		, "type" 							=> "anagraph"
-                , "icon" 							=> "vg-gallery"
-                , "class" 							=> "content"
-                , "label" 							=> ffTemplate::_get_word_by_code("modify_gallery_seo")
-                , "cache" => array(
-					"type" 							=> "A"
-				)
-        		, "field" => array(
-        			"lang" 							=> false
-        			, "permalink" 					=> "permalink"
-        			, "smart_url" 					=> "smart_url"
-        			, "title" 						=> "meta_title"
-        			, "header" 						=> false
-        			, "description" 				=> "meta_description"
+		"table" 							=> "anagraph"
+		, "type" 							=> "anagraph"
+		, "icon" 							=> "vg-gallery"
+		, "class" 							=> "content"
+		, "label" 							=> ffTemplate::_get_word_by_code("modify_gallery_seo")
+		, "cache" => array(
+			"type" 							=> "A"
+		)
+		, "field" => array(
+			"lang" 							=> false
+			, "permalink" 					=> "permalink"
+			, "smart_url" 					=> "smart_url"
+			, "title" 						=> "meta_title"
+			, "header" 						=> false
+			, "description" 				=> "meta_description"
 
-                    , "robots"                      => "meta_robots"
-                    , "canonical"                   => "meta_canonical"
-                    , "meta"                        => "meta"
-                    , "referer"                     => "referer"
-                    , "httpstatus"                  => "httpstatus"
-                      
-        			, "keywords" 					=> "keywords"
-        			, "permalink_parent" 			=> "parent"
-        			, "visible" 					=> "visible"
-        			, "alt_url" 					=> false
-        			, "isbn" 						=> false
+			, "robots"                      => "meta_robots"
+			, "canonical"                   => "meta_canonical"
+			, "meta"                        => "meta"
+			, "referer"                     => "referer"
+			, "httpstatus"                  => "httpstatus"
 
-        			, "parent" 						=> "parent"
-        			, "name"						=> "smart_url"
-        			, "clone" 						=> false
-        			, "public" 						=> false
-        			, "is_dir" 						=> false
-        			, "last_update" 				=> "last_update"
-        			, "created" 					=> "created"
-        			, "owner" 						=> "owner"
-        			, "tags" 						=> "tags"
-        			, "place" 						=> false
-        			, "ID_place" 					=> false
-        			, "priority" 					=> "priority"
-        			, "cats" 						=> false
-        			, "order" 						=> "order"
-        			, "ID_type" 					=> "ID_type"
-        			, "ID_category" 				=> false
-        			, "ajax" 						=> false
-        		)
-        		, "sql" => array(
-        			"select" => array(        	
-        				"ID_vgallery" 				=> 0
-        				, "vgallery_name" 			=> "'anagraph'"
-        				, "is_dir" 					=> "0"
-        			)
-        			, "where" => array(
-        				"public" 					=> ""
-        			)
-        		)
-        		, "seo" => array(
-        			"table" 						=> "anagraph"
-        			, "primary_table" 				=> "anagraph"
-        			, "primary_parent" 				=> "parent"
-        			, "primary_permalink" 			=> "permalink"
-        			, "rel_key"						=> "ID"
-        			, "rel_lang" 					=> false
-        			, "rel_field" 					=> false
-        			
-        			, "permalink" 					=> "permalink"
-        			, "smart_url" 					=> "smart_url"
-        			, "title" 						=> "meta_title"
-        			, "header" 						=> false
-        			, "description" 				=> "meta_description"
+			, "keywords" 					=> "keywords"
+			, "permalink_parent" 			=> "parent"
+			, "visible" 					=> "visible"
+			, "alt_url" 					=> false
+			, "isbn" 						=> false
 
-                    , "robots"                      => "meta_robots"
-                    , "canonical"                   => "meta_canonical"
-                    , "meta"                        => "meta"
-                    , "httpstatus"                  => "httpstatus"
-                    
-        			, "keywords" 					=> "keywords"
-        			, "permalink_parent" 			=> false
-        			, "visible" 					=> "visible"
-        			, "alt_url" 					=> false
-        		)        	
-        		, "settings" => array(
-        			"limit_type" 					=> false
-        			, "limit_level" 				=> 1
-        			, "insert_on_lastlevel" 		=> true
-        			, "ID_vgallery" 				=> 0
-        			, "enable_highlight" 			=> true
-        			, "show_owner_by_categories" 	=> false
-        			, "show_isbn" 					=> false
-        			, "enable_multilang" 			=> false
-        			, "drag_sort_node_enabled" 		=> false
-        			, "drag_sort_dir_enabled" 		=> false
-        			, "enable_tag" 					=> -1
-        			, "enable_tab" 					=> false
-        			, "prefix_file_system" 			=> ""
-        			, "enable_model" 				=> false
-        			, "enable_adv_group" 			=> false
-        			, "enable_adv_visible" 			=> false
-        			, "enable_seo" 					=> true
-        		)
-	        );
+			, "parent" 						=> "parent"
+			, "name"						=> "smart_url"
+			, "clone" 						=> false
+			, "public" 						=> false
+			, "is_dir" 						=> false
+			, "last_update" 				=> "last_update"
+			, "created" 					=> "created"
+			, "owner" 						=> "owner"
+			, "tags" 						=> "tags"
+			, "place" 						=> false
+			, "ID_place" 					=> false
+			, "priority" 					=> "priority"
+			, "cats" 						=> false
+			, "order" 						=> "order"
+			, "ID_type" 					=> "ID_type"
+			, "ID_category" 				=> false
+			, "ajax" 						=> false
+		)
+		, "sql" => array(
+			"select" => array(
+				"ID_vgallery" 				=> 0
+				, "vgallery_name" 			=> "'anagraph'"
+				, "is_dir" 					=> "0"
+			)
+			, "where" => array(
+				"public" 					=> ""
+			)
+		)
+		, "seo" => array(
+			"table" 						=> "anagraph"
+			, "primary_table" 				=> "anagraph"
+			, "primary_parent" 				=> "parent"
+			, "primary_permalink" 			=> "permalink"
+			, "rel_key"						=> "ID"
+			, "rel_lang" 					=> false
+			, "rel_field" 					=> false
+
+			, "permalink" 					=> "permalink"
+			, "smart_url" 					=> "smart_url"
+			, "title" 						=> "meta_title"
+			, "header" 						=> false
+			, "description" 				=> "meta_description"
+
+			, "robots"                      => "meta_robots"
+			, "canonical"                   => "meta_canonical"
+			, "meta"                        => "meta"
+			, "httpstatus"                  => "httpstatus"
+
+			, "keywords" 					=> "keywords"
+			, "permalink_parent" 			=> false
+			, "visible" 					=> "visible"
+			, "alt_url" 					=> false
+		)
+		, "settings" => array(
+			"limit_type" 					=> false
+			, "limit_level" 				=> 1
+			, "insert_on_lastlevel" 		=> true
+			, "ID_vgallery" 				=> 0
+			, "enable_highlight" 			=> true
+			, "show_owner_by_categories" 	=> false
+			, "show_isbn" 					=> false
+			, "enable_multilang" 			=> false
+			, "drag_sort_node_enabled" 		=> false
+			, "drag_sort_dir_enabled" 		=> false
+			, "enable_tag" 					=> -1
+			, "enable_tab" 					=> false
+			, "prefix_file_system" 			=> ""
+			, "enable_model" 				=> false
+			, "enable_adv_group" 			=> false
+			, "enable_adv_visible" 			=> false
+			, "enable_seo" 					=> true
+		)
+	);
   	$def["files"] = array( //DA FINIRE
         		"table" 							=> "files"
         		, "type" 							=> "files"

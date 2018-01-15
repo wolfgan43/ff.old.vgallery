@@ -47,7 +47,8 @@ function system_gallery_error_document($settings_path) {
     require_once(FF_DISK_PATH . "/conf/gallery/updater/check/exclude_fs." . FF_PHP_EXT);
     
     $skip_fs = false;
-    if(is_array($fs_exclude) && count($fs_exclude)) {
+	/** @var include $fs_exclude */
+	if(is_array($fs_exclude) && count($fs_exclude)) {
         foreach($fs_exclude AS $fs_exclude_key => $fs_exclude_value) {
             if(basename($fs_exclude_key) != "uploads" && strpos($_SERVER["REQUEST_URI"], $fs_exclude_key) === 0) {
                 $skip_fs = true;
@@ -72,6 +73,7 @@ function system_gallery_error_document($settings_path) {
                 
                 $arrRealPath = explode("/", $real_path);
                 if(is_array($arrRealPath) && count($arrRealPath)) {
+					$new_real_path = "";
                     foreach($arrRealPath AS $arrRealPath_value) {
                         if(strlen($arrRealPath_value)) {
                             $new_real_path .= "/" . ffCommon_url_rewrite($arrRealPath_value);

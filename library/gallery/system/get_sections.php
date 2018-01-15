@@ -122,7 +122,7 @@ function system_get_layers($selective = NULL) {
     return $arrLayer;
 }
 
-function system_get_sections($selective = NULL) {
+function system_get_sections($selective = NULL, $process_blocks = false) {
     $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
     $db = ffDB_Sql::factory();
@@ -270,8 +270,9 @@ function system_get_sections($selective = NULL) {
 		});				
 	}
 
-    if(is_array($cm->oPage->framework_css))
-        $template["container"]["class"] = $cm->oPage->framework_css["class"]["container"];
+	$framework_css = cm_getFrameworkCss();
+    if(is_array($framework_css))
+        $template["container"]["class"] = $framework_css["class"]["container"];
     else
         $template["container"]["class"] = "container";
 
@@ -281,80 +282,124 @@ function system_get_sections($selective = NULL) {
     
     if(AREA_SHOW_NAVBAR_ADMIN)
     	$template["navadmin"] = $template["sections"];
-    
+
+	if($process_blocks)
+		$template = system_get_blocks($template);
+
     return $template;
 }
 
-function system_get_blocks($template) {
+function system_get_blocks($template, $where = null) {
+	if(defined("SKIP_VG_CONTENT"))
+		return $template;
+
+	$globals = ffGlobals::getInstance("gallery");
 	$db = ffDB_Sql::factory();
-    $globals = ffGlobals::getInstance("gallery");
 
 	check_function("get_class_by_grid_system");
 
-	$userNID 													= get_session("UserNID");
+	$shards 																	= array();
+	$query 																		= null;
+	$userNID 																	= get_session("UserNID");
 	$params = array(
-		"is_guest" 												=> (!$userNID || $userNID == MOD_SEC_GUEST_USER_ID) && $globals->page["cache"] != "guest"
-		, "settings_path" 										=> $globals->settings_path
+		"is_guest" 																=> (!$userNID || $userNID == MOD_SEC_GUEST_USER_ID) && $globals->page["cache"] != "guest"
 		, "flags" => array(
-			"ajax" 												=> true
-			, "path" 											=> true
-			, "visible" 										=> true
+			"ajax" 																=> false
+			, "path" 															=> false
+			, "preload"															=> $where["preload"]
+			, "xhr"																=> $where["xhr"]
 		)
 	);
 
-    if(is_array($template["where"]) && count($template["where"])) {
-		foreach ($template["where"] AS $key => $value) {
-			switch ($key) {
-				case "smart_url":
-					$query["where"]["smart_url"] 				=  (is_array($value)
-																	? "layout.smart_url IN('" . implode("','", $value) . "')"
-																	: "layout.smart_url = " . $db->toSql($value)
-																);
-					$query["group"][] 							= "layout.ID";
-					$params["flags"]["ajax"]					= false;
-					$params["flags"]["path"] 					= false;
-					$params["flags"]["visible"]					= false;
-					break;
-				case "path":
-					$query["where"]["path"] 					= $db->toSql($value, "Text") . " LIKE CONCAT(layout_path.ereg_path, IF(layout_path.cascading, '%', ''))";
-					$query["join"]["path"] 						= "INNER JOIN layout_path ON layout_path.ID_layout = layout.ID";
-					$params["flags"]["visible"]					= false;
-					break;
-				default:
+	if(!$where)
+		$where 																	= $globals->page["template"]["blocks"];
+	elseif($where) {
+		if(is_array($where))
+			$settings_path = $where["path"];
+		else
+			$settings_path = $where;
+	}
+
+	if($where) {
+		//todo: da convertire in id il params. Al momento viene passato lo smart-url della categoria ma non matcha perche si aspetta l'ID
+		if($where["anagraph"]) {
+			$shards 															= $shards + $where["anagraph"];
+			$arrWhere[] 														= "(layout.params IN('" . implode("', '", array_keys($where["anagraph"])) . "')
+																					AND layout.value = 'anagraph'
+																				)";
+		}
+		//todo: misteriosamente non torna alcun elemento
+		if(is_array($where["vgallery"]) && count($where["vgallery"])) {
+			$shards 															= $shards + $where["vgallery"];
+			foreach($where["vgallery"] AS $vgallery_path => $vgallery_name) {
+				$vgallery[basename($vgallery_name)][] 							= $vgallery_path;
 			}
+			foreach($vgallery AS $vgallery_name => $vgallery_path) {
+				$arrWhere[] 													= "(layout.params IN('" . implode("', '", $vgallery_path) . "')
+																					AND layout.value = " . $db->toSql($vgallery_name) . "
+																				)";
+			}
+
+		}
+		if($where["blocks"]["key"])
+			$arrWhere[] 														= "layout.ID IN(" . implode(", ", $where["blocks"]["key"]) . ")";
+
+		$arrName 																= array();
+		if(is_array($where["blocks"]["name"])) {
+			$shards 															= $shards + $where["blocks"]["name"];
+			$arrName 															= $where["blocks"]["name"];
+		}
+		if(is_array($where["unknown"])) {
+			$shards 															= $shards + $where["unknown"];
+			$arrName 															= $arrName + $where["unknown"];
+		}
+		if(count($arrName))
+			$arrWhere[] 														= "layout.smart_url IN('" . implode("', '", array_keys($arrName)) . "')";
+
+		if(is_array($arrWhere) && count($arrWhere)) {
+			$query["group"][] 													= "layout.ID";
+			$query["where"]["custom"]											= " (" . implode(" OR ", $arrWhere) . ") ";
 		}
 	}
 
-	if(!$query) {
-		$query["where"]["path"] 								= $db->toSql($params["settings_path"]) . " LIKE CONCAT(layout_path.ereg_path, IF(layout_path.cascading, '%', ''))";
+	if (!$query && $template["sections"]) {
+    	if(!$settings_path)
+			$settings_path														= $globals->settings_path;
+
+		$section_set 															= $db->toSql(implode(",", array_keys($template["sections"])), "Text", false);
+
+		$query["where"]["location"] 											= "layout.ID_location IN(" . $section_set . ")";
+		$query["order"][] 														= "FIELD(layout.ID_location, " . $section_set . ")";
 	}
 
-	if ($template["sections"]) {
-		$section_set = $db->toSql(implode(",", array_keys($template["sections"])), "Text", false);
+	if($settings_path) {
+		$params["flags"]["path"]												= true;
+		$params["flags"]["ajax"]												= true;
 
-		$query["where"]["location"] 							= "layout.ID_location IN(" . $section_set . ")";
-		$query["order"][] 										= "FIELD(layout.ID_location, " . $section_set . ")";
+		$query["join"]["path"] 													= "INNER JOIN layout_path ON layout_path.ID_layout = layout.ID";
+		$query["where"]["path"] 												= $db->toSql($settings_path) . " LIKE CONCAT(layout_path.ereg_path, IF(layout_path.cascading, '%', ''))";
 	}
+
 
     if($query) {
-		$block_type_loaded 										= system_get_block_type();
-		$query["select"][] 										= "layout.*";
-		$query["order"][] 										= "layout.`order`";
-		$query["order"][] 										= "layout.ID";
+		$block_type_loaded 														= system_get_block_type();
+
+		$query["select"][] 														= "layout.*";
+		$query["order"][] 														= "layout.`order`";
+		$query["order"][] 														= "layout.ID";
 
 		if($params["flags"]["path"]) {
-			$query["select"][] = "layout_path.class 			AS block_class";
-			$query["select"][] = "layout_path.default_grid 		AS block_default_grid";
-			$query["select"][] = "layout_path.grid_md 			AS block_grid_md";
-			$query["select"][] = "layout_path.grid_sm 			AS block_grid_sm";
-			$query["select"][] = "layout_path.grid_xs 			AS block_grid_xs";
-			$query["select"][] = "layout_path.fluid 			AS block_fluid";
-			$query["select"][] = "layout_path.wrap 				AS block_wrap";
-			$query["select"][] = "layout_path.ereg_path			AS path";
-			$query["select"][] = "layout_path.visible 			AS visible";
+			$query["select"][] 													= "layout_path.class 			AS block_class";
+			$query["select"][] 													= "layout_path.default_grid 	AS block_default_grid";
+			$query["select"][] 													= "layout_path.grid_md 			AS block_grid_md";
+			$query["select"][] 													= "layout_path.grid_sm 			AS block_grid_sm";
+			$query["select"][] 													= "layout_path.grid_xs 			AS block_grid_xs";
+			$query["select"][] 													= "layout_path.fluid 			AS block_fluid";
+			$query["select"][] 													= "layout_path.wrap 			AS block_wrap";
+			$query["select"][] 													= "layout_path.ereg_path		AS path";
+			$query["select"][] 													= "layout_path.visible 			AS visible";
 
-			$query["join"]["path"] 								= "INNER JOIN layout_path ON layout_path.ID_layout = layout.ID";
-			$query["order"][] 									= "layout_path.ID";
+			$query["order"][] 													= "layout_path.ID";
 
 		}
 
@@ -379,17 +424,22 @@ function system_get_blocks($template) {
 	        $arrLayoutSettings 													= array();
 	        
 			do {
+				$block_prefix 													= "L";
 				$ID_block														= $db->getField("ID", "Number", true);
+				$block_name														= $db->getField("smart_url", "Text", true);
 				$ID_block_type													= $db->getField("ID_type", "Number", true);
 				$block_type_smart_url 											= $block_type_loaded["rev"][$ID_block_type];
 				$ID_section 													= $db->getField("ID_location", "Number", true);
 	            $block_type 													= $block_type_loaded[$block_type_smart_url]["name"]; //$db->getField("type", "Text", true);
 				$block_value 													= $db->getField("value", "Text", true);
 				$block_params 													= $db->getField("params", "Text", true);
-				$block_smart_url 												= $db->getField("smart_url", "Text", true);
+				$block_smart_url												= ($block_name
+																					? $block_name
+																					: $block_prefix . $ID_block
+																				);
 
-				if($block_type == "ECOMMERCE" && strpos($params["settings_path"], VG_SITE_CART) === 0)
-					continue;
+				//if($block_type == "ECOMMERCE" && strpos($settings_path, VG_SITE_CART) === 0)
+				//	continue;
 
 				if($params["flags"]["path"]) {
 					$path 														= $db->getField("path", "Text", true);
@@ -399,13 +449,19 @@ function system_get_blocks($template) {
 					if(!$block_path)
 						$block_path 											= "/";
 					$block_visible 												= $db->getField("visible", "Number", true);
-					$block_relevance 											= ($block_path == $params["settings_path"]
+					$block_relevance 											= ($block_path == $settings_path
 																					? -999
-																					: substr_count($params["settings_path"], "/") - substr_count($block_path, "/")
+																					: substr_count($settings_path, "/") - substr_count($block_path, "/")
 																				);
-					$block_diff 												= (strlen($params["settings_path"]) - strlen($block_path));
+					$block_diff 												= (strlen($settings_path) - strlen($block_path));
 				}
 				if(!array_key_exists($ID_block, $template["blocks"])) {
+					if($block_name && $globals->page["template"]["unknown"][$block_name]) {
+						$globals->page["template"]["blocks"]["vars"][$block_name] = $ID_block;
+						$globals->page["template"]["found"][$block_name] = "blocks";
+						unset($globals->page["template"]["unknown"][$block_name]);
+					}
+
 					$arrLayoutSettings["ID_block"][] = $ID_block;
 	                $arrLayoutSettings["ID_type"][] = $ID_block_type;			
 
@@ -464,13 +520,6 @@ function system_get_blocks($template) {
 						//$template["resources"]["css"]["embed"][$block_smart_url] = $db->getField("css", "Text", true);
 					}
 
-					// Si presume che vengano caricati da file questi
-					//if($db->getField("js", "Text", true))
-					//	$template["resources"]["js"]["embed"][$block_smart_url] = $db->getField("js", "Text", true);
-
-					//if($db->getField("css", "Text", true))
-					//	$template["resources"]["css"]["embed"][$block_smart_url] = $db->getField("css", "Text", true);
-																									
 					if($block_type == "ECOMMERCE"
 	                    || (!$params["is_guest"]
 	                        && ($block_type == "LOGIN"
@@ -494,7 +543,7 @@ function system_get_blocks($template) {
 		                    $globals->ecommerce["id"] 							= "cart" . $template["sections"][$ID_section]["name"] . $template["blocks"][$ID_block]["prefix"] . $ID_block;
 		                    $globals->ecommerce["unic_id"] 						= $template["blocks"][$ID_block]["prefix"] . $ID_block;								
 						}
-	                }																			
+	                }
 				}
 
 				if($params["flags"]["path"]) {
@@ -535,35 +584,782 @@ function system_get_blocks($template) {
 	            $arrLayoutSettings["data"] = get_layout_settings($arrLayoutSettings["ID_block"], $arrLayoutSettings["ID_type"]);
 			}
 
-			if($params["flags"]["visible"]) {
+			if($params["flags"]["path"]) {
 				$template["blocks"] = array_filter($template["blocks"], function(&$block) use (&$template, $arrLayoutSettings) {
 					if($template["navadmin"])
-						$template["navadmin"][$block["ID_section"]]["layouts"][$block["ID"]] 	= $block;
+						$template["navadmin"][$block["ID_section"]]["layouts"][$block["ID"]] 				= $block;
 
 					if($block["visible"]) {
+						if(!$block["ajax"]) {
+							$template["blocks_by_type"][$block["type"]]["layouts"][$block["smart_url"]] 	= $block;
+							if($block["type"] == "PUBLISHING") {
+								$arrPublishing = explode("_", $block["db"]["value"]);
+								$template["blocks_by_type"][$block["type"]]["keys"][$arrPublishing[0]][] 	= $arrPublishing[1];
+							} else {
+								$template["blocks_by_type"][$block["type"]]["keys"][$block["db"]["value"]] 	= ($block["db"]["params"]
+																												? $block["db"]["params"]
+																												: $block["db"]["value"]
+																											);
+							}
+						}
 						if(!$template["primary_section"] && $template["sections"][$block["ID_section"]]["is_main"])
-							$template["primary_section"] 										= $block["ID_section"];
+							$template["primary_section"] 													= $block["ID_section"];
 
-						$template["sections"][$block["ID_section"]]["layouts"][$block["ID"]] 	= null;
-						$block["settings"] 														= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
-																									? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
-																									: $arrLayoutSettings["data"][$block["type"] . "-0"]
-																								);
+						$template["sections"][$block["ID_section"]]["layouts"][$block["ID"]] 				= null;
+						$block["settings"] 																	= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
+																												? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
+																												: $arrLayoutSettings["data"][$block["type"] . "-0"]
+																											);
 						return true;
 					}
 				});
 			} else {
 				foreach($template["blocks"] AS $ID_block => $block) {
-					$template["blocks"][$ID_block]["settings"] 									= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
-																									? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
-																									: $arrLayoutSettings["data"][$block["type"] . "-0"]
-																								);
+					$template["blocks_by_type"][$block["type"]]["layouts"][$block["smart_url"]] 			= $block;
+					if($block["type"] == "PUBLISHING") {
+						$arrPublishing = explode("_", $block["db"]["value"]);
+						$template["blocks_by_type"][$block["type"]]["keys"][$arrPublishing[0]][]			= $arrPublishing[1];
+					} else {
+						$template["blocks_by_type"][$block["type"]]["keys"][$block["db"]["value"]] 			= ($block["db"]["params"]
+																												? $block["db"]["params"]
+																												: $block["db"]["value"]
+																											);
+					}
+					$template["blocks"][$ID_block]["settings"] 												= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
+																												? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
+																												: $arrLayoutSettings["data"][$block["type"] . "-0"]
+																											);
 				}
 			}
 	    }
 	}
+	//$params["flags"]["preload"] = 1;
+	if($params["flags"]["preload"] && is_array($template["blocks_by_type"]) && count($template["blocks_by_type"])) {
+		$template["buffer"] = array(
+			"container" 			=> array()
+			, "blocks" 				=> array()
+		);
+
+		$params = array(
+			"main_content" 			=> false
+			, "user_path" 			=> $globals->user_path
+			, "settings_path" 		=> $globals->settings_path
+			, "search" 				=> $globals->search
+			, "navigation" 			=> $globals->navigation
+			, "xhr" 				=> $params["flags"]["xhr"]
+			, "prefix" 				=> $shards
+			, "user_path_shard" 	=> $globals->user_path_shard //non usata realmente ffl e page in path
+		);
+//$template["main_section"]
+
+		foreach($template["blocks_by_type"] AS $type => $blocks) {
+			$callback = (function_exists("system_block_" . $type)
+				? "system_block_" . $type
+				: "system_block_WIDGET"
+			);
+
+			$template["buffer"]["blocks"] = $template["buffer"]["blocks"] + call_user_func_array(
+				$callback
+				, array(
+					$blocks["layouts"]
+					, $params
+					, $blocks["keys"]
+				)
+			);
+		}
+	}
 
   	return $template;
+}
+function system_block_parse($layout, $buffer, $xhr = false, $start = false, $error = null) {
+	if($error) {
+		$res["error"] 		= $error["content"];
+		$res["status"] 		= $error["status"];
+	}
+	if($xhr) {
+		$res["target"] 		= "#" .$layout["prefix"] . $layout["ID"];
+		$res["html"] 		= $buffer["content"];
+	} else {
+		$res["pre"] 		= $buffer["pre"];
+		$res["content"] 	= $buffer["content"];
+		$res["post"] 		= $buffer["post"];
+	}
+
+	if($start && DEBUG_PROFILING === true) {
+		$res["exTime"] = profiling_stopwatch($start);
+	}
+	return $res;
+}
+function system_block_STATIC_PAGE_BY_DB($layouts, $params = array(), $data_storage = null) {
+	check_function("process_static_page");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+function system_block_STATIC_PAGE_BY_FILE($layouts, $params = array(), $data_storage = null) {
+	check_function("process_static_page");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_GALLERY($layouts, $params = array(), $data_storage = null) {
+	check_function("get_file_permission");
+	check_function("process_gallery_thumb");
+	check_function("process_gallery_view");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = null;
+		$error = null;
+		if (strlen($layout["db"]["real_path"]) && $layout["db"]["real_path"] != "/") {
+			if (strlen($layout["db"]["params"]) && strpos($layout["db"]["real_path"], $layout["db"]["params"]) === 0) {
+				$available_path = substr($layout["db"]["real_path"], strlen($layout["db"]["params"]));
+			} else {
+				if (strpos($params["settings_path"], stripslash($layout["db"]["real_path"])) === 0) {
+					$available_path = substr($params["settings_path"], strlen(stripslash($layout["db"]["real_path"])));
+				} else {
+					$available_path = $params["settings_path"];
+				}
+			}
+		} else {
+			$available_path = $params["settings_path"];
+		}
+
+		$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+		if ((!$params["main_content"] || $layout["use_in_content"] == "-1") && $real_path === false && strlen($available_path) && $available_path != "/") {
+			do {
+				$available_path = ffCommon_dirname($available_path);
+				$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+				if ($real_path !== false)
+					break;
+			} while ($available_path != "/");
+		}
+
+		/*if(!$params["main_content"] || (strpos($params["settings_path"], stripslash($layout["db"]["value"]) . $available_path) === 0 && is_dir(DISK_UPDIR . $params["settings_path"]))
+		) {
+			$valid_gallery_path = true;
+		} else {
+			$valid_gallery_path = true;
+		}*/
+
+		if ($real_path) {
+			if (!is_dir($real_path)) {
+				$available_path = $layout["db"]["value"];
+				$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]));
+			} else {
+				if (strpos($available_path, $layout["db"]["value"]) === 0) {
+					$available_path = stripslash(substr($available_path, strlen($layout["db"]["value"])));
+				} else {
+					$available_path = stripslash($layout["db"]["value"]) . stripslash($available_path);
+				}
+			}
+
+			if ($available_path == "")
+				$available_path = "/";
+
+			if (ENABLE_STD_PERMISSION)
+				$file_permission = get_file_permission($available_path, "files", null, true);
+
+			//File permessi Cartella (controllo se l'utente ha diritti di lettura)
+			if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+				if (is_dir($real_path)) {
+					$rst_file = array();
+					$rst_dir = array();
+					$arr_real_path = glob($real_path . "/*");
+					if (is_array($arr_real_path) && count($arr_real_path)) {
+						foreach ($arr_real_path AS $real_file) {
+							$file = str_replace(DISK_UPDIR, "", $real_file);
+							$description = "";
+							if ((is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH /*&& basename($real_file) != GALLERY_TPL_PATH*/) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
+								if (ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+									$file_permission = get_file_permission($file);
+								if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+									$rst_dir[$file]["permission"] = $file_permission;
+								}
+							}
+						}
+					}
+					$rst_item = array_merge($rst_dir, $rst_file);
+					$buffer = process_gallery_thumb($rst_item, $available_path, NULL, $params["user_path"], NULL, $layout);
+				} elseif (is_file($real_path)) {
+					$buffer = process_gallery_view($available_path, NULL, $params["user_path"], $layout);
+				}
+				if ($params["page_invalid"] === null) {
+					$params["page_invalid"] = false;
+				}
+			} else {
+				$error["content"] = ffTemplate::_get_word_by_code("error_access_denied");
+				$error["status"] = "404";
+			}
+		}
+
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start, $error);
+	}
+
+	return $res;
+}
+
+function system_block_MODULE($layouts, $params = array(), $data_storage = null) {
+	$cm = cm::getInstance();
+
+	check_function("set_template_var");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = null;
+		if (isset($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
+			if (is_array($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
+				$cm->oPage->tpl[0]->set_var("WidgetsContent", $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["headers"]);
+				$cm->oPage->tpl[0]->parse("SectWidgetsHeaders", true);
+
+				$buffer["content"] = /*$cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["headers"] .*/
+					$cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["html"] /*. $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["footers"]*/
+				;
+
+				$cm->oPage->tpl[0]->set_var("WidgetsContent", $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["footers"]);
+				$cm->oPage->tpl[0]->parse("SectWidgetsFooters", true);
+			} else {
+				$buffer["content"] = $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])];
+			}
+
+			unset($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]);
+		}
+		if (!strlen($buffer["content"]) && isset($cm->oPage->contents["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
+			$buffer["content"] = $cm->oPage->contents["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["data"];
+			unset($cm->oPage->contents["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]);
+		}
+
+		if (is_object($buffer["content"])) {
+			if (isset($cm->oPage->components_buffer[$buffer["content"]->id])) {
+				$buffer["content"] = /*$cm->oPage->components_buffer[$buffer["content"]->id]["headers"] .*/
+					$cm->oPage->components_buffer[$buffer["content"]->id]["html"] /*. $cm->oPage->components_buffer[$buffer["content"]->id]["footers"]*/
+				;
+			} else {
+				$buffer["content"] = "";
+			}
+		}
+		if (strlen($buffer["content"])) {
+			setJsRequest($layout["settings"]["AREA_MODULE_PLUGIN"]);
+			/**
+			 * Admin Father Bar
+			 */
+			if (AREA_MODULES_SHOW_MODIFY) {
+				$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
+				$admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
+				$admin_menu["admin"]["class"] = $layout["type_class"];
+				$admin_menu["admin"]["group"] = $layout["type_group"];
+				$admin_menu["admin"]["adddir"] = "";
+				$admin_menu["admin"]["addnew"] = "";
+				$admin_menu["admin"]["modify"] = "";
+				$admin_menu["admin"]["delete"] = "";
+				$admin_menu["admin"]["extra"] = "";
+
+				$admin_menu["admin"]["ecommerce"] = "";
+				if (AREA_LAYOUT_SHOW_MODIFY) {
+					$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
+					$admin_menu["admin"]["layout"]["type"] = $layout["type"];
+				}
+				$admin_menu["admin"]["setting"] = ""; //$layout["type"];
+				if (MODULE_SHOW_CONFIG) {
+					$admin_menu["admin"]["module"]["value"] = $layout["db"]["value"];
+					$admin_menu["admin"]["module"]["params"] = $layout["db"]["params"];
+				}
+				if (is_dir(FF_DISK_PATH . "/conf/gallery/modules/" . $layout["db"]["value"] . "/extra"))
+					$admin_menu["admin"]["module"]["extra"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/modules/" . $layout["db"]["value"] . "/extra/" . $layout["db"]["params"];
+				else
+					$admin_menu["admin"]["module"]["extra"] = "";
+
+				$admin_menu["sys"]["path"] = $params["user_path"];
+				$admin_menu["sys"]["type"] = "admin_toolbar";
+				$admin_menu["sys"]["ret_url"] = $_SERVER["REQUEST_URI"];
+			}
+
+			set_cache_data("M", $layout["db"]["value"] . "-" . $layout["db"]["params"]);
+			//$globals->cache["data_blocks"]["M" . "" . "-" . md5($layout["db"]["value"] . "-" . $layout["db"]["params"])] = $layout["db"]["value"] . "-" . $layout["db"]["params"];
+
+			/**
+			 * Process Block Header
+			 */
+			$tpl = null;
+			$block["class"]["type"] = $layout["db"]["value"];
+			$block["class"]["default"] = $layout["db"]["params"];
+
+			$block = get_template_header($params["user_path"], $admin_menu, $layout, $tpl, $block);
+
+			$buffer["pre"] 			= $block["tpl"]["pre"];
+			$buffer["post"] 		= $block["tpl"]["post"];
+		}
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_VIRTUAL_GALLERY($layouts, $params = array(), $data_storage = null)
+{
+	check_function("vgallery_init");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach ($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = vgallery_init($params, $layout, $data_storage);
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_PUBLISHING($layouts, $params = array(), $data_storage = null) {
+	check_function("process_gallery_thumb");
+	check_function("process_vgallery_thumb");
+	check_function("set_template_var");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = null;
+		$publish = explode("_", $layout["db"]["value"]);
+		if (is_array($publish) && count($publish) == 2) {
+			$publishing = array();
+			$publishing["ID"] = $publish[1];
+			$publishing["src"] = $publish[0];
+
+			$source_user_path = $layout["db"]["params"]
+				? $layout["db"]["params"]
+				: (strlen($layout["db"]["real_path"]) && $layout["db"]["real_path"] != "/"
+					? $layout["db"]["real_path"]
+					: NULL
+				);
+			if ($publish[0] == "gallery") {
+				$buffer = process_gallery_thumb(NULL, NULL, NULL, $source_user_path, $publishing, $layout);
+			} elseif ($publish[0] == "vgallery" || $publish[0] == "anagraph") {
+				$buffer = process_vgallery_thumb(
+					NULL
+					, "publishing"
+					, array(
+						"source_user_path" => $source_user_path
+					, "user_path" => $params["user_path"]
+					, "allow_insert" => false
+					, "publishing" => $publishing
+					)
+					, $layout
+				);
+			}
+		}
+
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_VGALLERY_MENU($layouts, $params = array(), $data_storage = null) {
+	check_function("process_vgallery_menu");
+
+	// @todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$part_virtual_path = explode("/", $layout["db"]["value"]);
+		$vgallery_name = $part_virtual_path[1];
+		unset($part_virtual_path[0]);
+		unset($part_virtual_path[1]);
+
+		$virtual_path = "/" . implode("/", $part_virtual_path);
+
+		$source_user_path = $layout["db"]["params"]
+			? $layout["db"]["params"]
+			: (strlen($layout["settings"]["AREA_VGALLERY_START_PATH"])
+				? $layout["settings"]["AREA_VGALLERY_START_PATH"]
+				: $layout["db"]["real_path"]
+			);
+
+		if($virtual_path != ffCommon_dirname($virtual_path)) {
+			$source_user_path = str_replace($virtual_path, "", $source_user_path);
+		}
+
+		$buffer = process_vgallery_menu($virtual_path, $vgallery_name, $source_user_path, $layout);
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return  $res;
+}
+
+function system_block_GALLERY_MENU($layouts, $params = array(), $data_storage = null) {
+	check_function("process_gallery_menu");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		if ($layout["settings"]["AREA_DIRECTORIES_SHOW_ONLYHOME"]) {
+			$available_path = $layout["db"]["value"];
+			$source_user_path = $layout["db"]["params"]
+				? $layout["db"]["params"]
+				: NULL;
+		} else {
+			if ($layout["db"]["real_path"] != "/") {
+				if (strpos($params["settings_path"], $layout["db"]["real_path"]) === 0) {
+					$available_path = substr($params["settings_path"], strlen($layout["db"]["real_path"]));
+				} else {
+					$available_path = $params["settings_path"];
+				}
+			} else {
+				$available_path = $params["settings_path"];
+			}
+
+			$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+			if ($real_path === false && $available_path != "/") {
+				do {
+					$available_path = ffCommon_dirname($available_path);
+					$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+					if ($real_path !== false)
+						break;
+				} while ($available_path != "/");
+			}
+
+			$source_user_path = $layout["db"]["params"]
+				? $layout["db"]["params"] . stripslash($available_path)
+				: NULL;
+
+			if (!is_dir($real_path)) {
+				$available_path = $layout["db"]["value"];
+			} else {
+				if (strpos($available_path, $layout["db"]["value"]) === 0) {
+					$available_path = stripslash(substr($available_path, strlen($layout["db"]["value"])));
+				} else {
+					$available_path = stripslash($layout["db"]["value"]) . stripslash($available_path);
+				}
+			}
+
+			if ($available_path == "")
+				$available_path = "/";
+		}
+
+		$buffer = process_gallery_menu($available_path, $source_user_path, $layout);
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_STATIC_PAGES_MENU($layouts, $params = array(), $data_storage = null) {
+	check_function("process_static_menu");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		if ($layout["db"]["value"] == "/home")
+			$layout["db"]["value"] = "/";
+
+		if ($layout["settings"]["AREA_STATIC_FOLLOW_PATH"] && (strlen($layout["db"]["value"]) && strpos($params["settings_path"], $layout["db"]["value"]) === 0)) {
+			if ($layout["settings"]["AREA_STATIC_SHOW_ONLYHOME"]) {
+				if (strlen(stripslash($layout["db"]["value"])) && strpos($params["settings_path"], $layout["db"]["value"]) === 0) {
+					$tmp_ArrPath = explode("/", substr($params["settings_path"], strlen($layout["db"]["value"])));
+					$virtual_path = $layout["db"]["value"] . "/" . $tmp_ArrPath[1];
+				} else {
+					$tmp_ArrPath = explode("/", $params["settings_path"]);
+					$virtual_path = "/" . $tmp_ArrPath[1];
+				}
+			} else {
+				$virtual_path = $params["settings_path"];
+			}
+		} else {
+			$virtual_path = $layout["db"]["value"];
+		}
+
+		$buffer = process_static_menu($virtual_path, $params["user_path"], null, $layout);
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_VGALLERY_GROUP($layouts, $params = array(), $data_storage = null) {
+	$db = ffDB_Sql::factory();
+
+	check_function("get_vgallery_group");
+	check_function("process_vgallery_menu_group");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = null;
+		if($layout["db"]["real_path"] != "/") {
+			if($layout["db"]["real_path"] == $params["settings_path"]) {
+				$available_path = "";
+			} else {
+				$available_path = str_replace($layout["db"]["real_path"] . "/", "/", $params["settings_path"]);
+			}
+		} else
+			$available_path = $params["settings_path"];
+
+
+		//$virtual_path = stripslash($available_path);
+
+		$virtual_path = stripslash($layout["db"]["params"]) . stripslash($available_path);
+		if(strlen($virtual_path)) {
+			$vgallery_group = get_vgallery_group(basename($params["user_path"]));
+			if($vgallery_group) {
+				$params["user_path"] = ffCommon_dirname($params["user_path"]);
+				$virtual_path = ffCommon_dirname($virtual_path);
+			}
+
+			$sSQL = "SELECT vgallery_groups.ID
+									, CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name) AS full_path
+								FROM vgallery_nodes 
+									INNER JOIN vgallery_fields ON vgallery_fields.ID_type = vgallery_nodes.ID_type
+									INNER JOIN vgallery_groups_fields ON vgallery_groups_fields.ID_fields = vgallery_fields.ID
+									INNER JOIN vgallery_groups ON vgallery_groups.ID = vgallery_groups_fields.ID_group
+								WHERE 
+									vgallery_groups.ID_menu = " . $db->toSql($layout["db"]["value"]) . "
+									AND " . $db->toSql($virtual_path) . " LIKE CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name, '%')
+								ORDER BY LENGTH(CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name)) DESC
+								LIMIT 1";
+			$db->query($sSQL);
+			if($db->nextRecord()) {
+				$real_path = str_replace($db->getField("full_path", "Text", true), "", $virtual_path);
+				$real_user_path = $params["user_path"];
+				if(strlen($real_path)) {
+					do {
+						$real_user_path = ffcommon_dirname($params["user_path"]);
+						$real_path = ffcommon_dirname($real_path);
+					} while($real_path != "/");
+
+				}
+
+				$buffer = process_vgallery_menu_group($real_user_path, $layout["db"]["value"], null, $layout);
+			}
+		}
+
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_WIDGET($layouts, $params = array(), $data_storage = null) {
+	check_function("process_gallery_menu");
+	check_function("set_template_var");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		switch ($layout["type"]) {
+			case "ECOMMERCE":
+				if (check_function("ecommerce_cart_widget"))
+					$buffer = ecommerce_cart_widget($params["user_path"], $layout);
+				break;
+			case "LANGUAGES":
+				if (check_function("process_language"))
+					$buffer = process_language(LANGUAGE_INSET, $params["user_path"], $layout);
+				break;
+			case "SEARCH":
+				if (check_function("process_omnisearch"))
+					$buffer = process_omnisearch($params["user_path"], $layout);
+				break;
+			case "LOGIN":
+				if (check_function("process_login"))
+					$buffer = process_login($params["user_path"], $layout);
+				break;
+			case "ORINAV":
+				if (check_function("process_breadcrumb"))
+					$buffer = process_breadcrumb($params["user_path"], $params["settings_path"], $layout["db"]["real_path"], $layout);
+				break;
+			default:
+				ffErrorHandler::raise("lost static pages type: [" . $layout["type"] . "]", E_USER_WARNING, NULL, NULL);
+		}
+
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_COMMENT($layouts, $params = array(), $data_storage = null) {
+	$cm = cm::getInstance();
+
+	check_function("process_gallery_menu");
+	check_function("set_template_var");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = null;
+		if(AREA_COMMENT_SHOW_MODIFY) {
+			$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
+			$admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
+			$admin_menu["admin"]["class"] = $layout["type_class"];
+			$admin_menu["admin"]["group"] = $layout["type_group"];
+			$admin_menu["admin"]["adddir"] = "";
+			$admin_menu["admin"]["addnew"] = "";
+			$admin_menu["admin"]["modify"] = "";
+			$admin_menu["admin"]["delete"] = "";
+			$admin_menu["admin"]["extra"] = "";
+			$admin_menu["admin"]["ecommerce"] = "";
+			if(AREA_LAYOUT_SHOW_MODIFY) {
+				$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
+				$admin_menu["admin"]["layout"]["type"] = $layout["type"];
+			}
+			if(AREA_SETTINGS_SHOW_MODIFY) {
+				$admin_menu["admin"]["setting"] = ""; //$layout["type"];
+			}
+			if(MODULE_SHOW_CONFIG) {
+				$admin_menu["admin"]["module"]["value"] = $layout["db"]["value"];
+				$admin_menu["admin"]["module"]["params"] = $layout["db"]["params"];
+			}
+			$admin_menu["sys"]["path"] = $params["user_path"];
+			$admin_menu["sys"]["type"] = "admin_toolbar";
+			$admin_menu["sys"]["ret_url"] = $_SERVER["REQUEST_URI"];
+		}
+
+		if(isset($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
+			if(is_array($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
+				$cm->oPage->tpl[0]->set_var("WidgetsContent", $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["headers"]);
+				$cm->oPage->tpl[0]->parse("SectWidgetsHeaders", true);
+
+				$buffer["content"] = /*$cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["headers"] .*/ $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["html"] /*. $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["footers"]*/;
+
+				$cm->oPage->tpl[0]->set_var("WidgetsContent", $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["footers"]);
+				$cm->oPage->tpl[0]->parse("SectWidgetsFooters", true);
+			} else {
+				$buffer["content"] = $cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])];
+			}
+			unset($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]);
+		}
+		if(!strlen($buffer["content"]) && isset($cm->oPage->contents["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
+			$buffer["content"] = $cm->oPage->contents["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]["data"];
+			unset($cm->oPage->contents["MD-" . $layout["location"] . "-" . "comment" . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])]);
+		}
+
+		/**
+		 * Process Block Header
+		 */
+		$tpl = null;
+		$block = get_template_header($params["user_path"], $admin_menu, $layout, $tpl);
+
+		$buffer["pre"] 			= $block["tpl"]["pre"];
+		$buffer["post"] 		= $block["tpl"]["post"];
+
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_USER($layouts, $params = array(), $data_storage = null) {
+	check_function("process_user_menu");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		$buffer = process_user_menu(null, null, AREA_SHOW_ECOMMERCE, $params["user_path"], $layout);
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
+}
+
+function system_block_FORMS_FRAMEWORK($layouts, $params = array(), $data_storage = null) {
+	check_function("process_forms_framework");
+	check_function("set_template_var");
+
+	//todo:  multi blocks by type da togliere ciclo
+	foreach($layouts AS $ID_layout => $layout) {
+		$start = profiling_stopwatch();
+		if (AREA_FORMS_FRAMEWORK_SHOW_MODIFY) {
+			$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
+			$admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
+			$admin_menu["admin"]["class"] = $layout["type_class"];
+			$admin_menu["admin"]["group"] = $layout["type_group"];
+			$admin_menu["admin"]["adddir"] = "";
+			$admin_menu["admin"]["addnew"] = "";
+			$admin_menu["admin"]["modify"] = "";
+			$admin_menu["admin"]["delete"] = "";
+			$admin_menu["admin"]["extra"] = "";
+			$admin_menu["admin"]["ecommerce"] = "";
+			if (AREA_LAYOUT_SHOW_MODIFY) {
+				$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
+				$admin_menu["admin"]["layout"]["type"] = $layout["type"];
+			}
+			if (AREA_SETTINGS_SHOW_MODIFY) {
+				$admin_menu["admin"]["setting"] = "";
+			}
+
+			$admin_menu["sys"]["path"] = $params["user_path"];
+			$admin_menu["sys"]["type"] = "admin_toolbar";
+			$admin_menu["sys"]["ret_url"] = $_SERVER["REQUEST_URI"];
+		}
+
+		$buffer = process_forms_framework($layout["db"]["value"], $layout["db"]["params"], $params["user_path"], $layout);
+
+		/**
+		 * Process Block Header
+		 */
+		$block = get_template_header($params["user_path"], $admin_menu, $layout);
+
+		$buffer["pre"] 			= $block["tpl"]["pre"];
+		$buffer["post"] 		= $block["tpl"]["post"];
+
+		$res[($params["prefix"][$ID_layout]
+				? $params["prefix"][$ID_layout] . "/"
+				: ""
+			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+	}
+
+	return $res;
 }
 
 function system_get_block_type($name = null)

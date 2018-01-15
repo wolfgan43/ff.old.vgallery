@@ -108,7 +108,7 @@ function update_vgallery_seo($smart_url, $ID_item, $ID_lang, $meta_description =
     		
     	if(is_array($smart_url)) 
     	{
-    		if(!$smart_url["smart_url"]) {
+			if($smart_url["smart_url"] === null) {
     			$smart_url["smart_url"] = ffCommon_url_rewrite($smart_url["title"]);
 			}
     	} 
@@ -782,7 +782,8 @@ function update_vgallery_seo_multi($primary_meta, $ID_item, $ID_lang, $meta_desc
 		}
 		$res["permalink_parent"] = $permalink_parent;
 
-		if($res["smart_url"] && $params["permalink"]) {
+		if($res["smart_url"] && $res["permalink_parent"] && $params["permalink"]) {
+			$permalink = stripslash($res["permalink_parent"] . "/" . $res["smart_url"]);
 			if(!$params["skip_primary_lang"]
 				|| ($ID_lang != LANGUAGE_DEFAULT_ID
 					&& (!$limit || $limit == "lang")

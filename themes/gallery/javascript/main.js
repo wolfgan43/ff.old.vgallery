@@ -1,8 +1,35 @@
+/**
+ *   VGallery: CMS based on FormsFramework
+ Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ * @package VGallery
+ * @subpackage core
+ * @author Alessandro Stucchi <wolfgan@gmail.com>
+ * @copyright Copyright (c) 2004, Alessandro Stucchi
+ * @license http://opensource.org/licenses/gpl-3.0.html
+ * @link https://github.com/wolfgan43/vgallery
+ */
 ff.cms = (function () {
 	var debug = (jQuery("#adminPanel").length > 0) || (window.location.search.indexOf("__debug__") >= 0);
 	var countBlock = 0;
 	var cacheBlock = {};
     var service = null;
+    var serviceDefer = {};
+    var serviceTimer = false;
+    var ajaxRequests = {};
 
 	var updateQueryString = function (uri, key, value, st) {
 	  if(!st)
@@ -144,9 +171,10 @@ ff.cms = (function () {
 				        jQuery(elem).html(jQuery(data).html());
 			        //itemElem = jQuery(elem);
 			}
-			jQuery("head").append(jQuery(data).nextAll("LINK"));
-            jQuery("head").append(jQuery(data).nextAll("STYLE"));
-			jQuery("head").append(jQuery(data).nextAll("SCRIPT"));
+			jQuery("head").append(jQuery("LINK,STYLE,SCRIPT", data));
+            //jQuery("head").append(jQuery(data).nextAll("LINK"));
+            //jQuery("head").append(jQuery(data).nextAll("STYLE"));
+            //jQuery("head").append(jQuery(data).nextAll("SCRIPT"));
 
 			//jQuery(itemID).attr("id"			, itemAttr["id"]);
 			jQuery(itemID).attr("data-admin"	, jQuery(data).attr("data-admin"));
@@ -234,7 +262,8 @@ ff.cms = (function () {
                 	query = (query ? query + "&" : "") +  new Date().getTime();
                 }
 
-				jQuery.ajax({
+                var index = "xhr-" + Date.now();
+                ajaxRequests[index] = jQuery.ajax({
 			        async: true,
 			        type: "GET",
 			        url: pathname,
@@ -273,6 +302,8 @@ ff.cms = (function () {
 			            default:
 			        }
 			    }).always(function() {
+                    delete ajaxRequests[index];
+
                     if(blockUI)
 					    ff.cms.unblockUI(elem);
 
@@ -348,7 +379,7 @@ ff.cms = (function () {
       		jQuery(window).unbind("scroll.lazyBlock");
 		};
 
-		jQuery('INPUT.ajaxcontent[type=hidden]').each(function() {
+		/*jQuery('INPUT.ajaxcontent[type=hidden]').each(function() {
 		    var link = jQuery(this).val();
 		    var elem = jQuery(this);
 		    var eventName = jQuery(this).attr("data-ename") || undefined;
@@ -356,7 +387,7 @@ ff.cms = (function () {
 		    var id = jQuery(this).attr("id");
 
 		    loadAjax(link, elem, false, "after", eventName);
-		});
+		});*/
 
 		jQuery(document).on("click.ajaxcontent", "a.ajaxcontent", function(e) {
 			e.preventDefault();
@@ -389,8 +420,8 @@ ff.cms = (function () {
                     }
             	case "load":
             	case "reload":
-            	    ff.cms.get(link, "#" + id);
-             		loadAjax(link, jQuery(this), arrAjaxOnReady[1], "replace", eventName);
+            	    ff.cms.get(link);
+             		//loadAjax(link, jQuery(this), arrAjaxOnReady[1], "replace", eventName);
 					break;
             	case "preload":
             		if(!jQuery(this).is(":visible"))
@@ -425,98 +456,395 @@ ff.cms = (function () {
             processLazyBlock();
 		    //setTimeout("jQuery(window).scroll()", 400); //da trovare una soluzione migliore
 		}
+
+		if(jQuery("BODY").data("admin")) {
+		    ff.cms.get("admin", {"target": "BODY"}, {"sid" : jQuery("BODY").data("admin")}
+            , {"inject" : "prepend"}
+            );
+        }
 	};
-	var loadReq = function(target) {
-		var deferReq = {};
-		if(service) {
-			jQuery.ajax({
+	var loadReq = function(target, reset) {
+        var socket = 1;
+        var req = null;
+        if(reset && serviceTimer) {
+            serviceTimer = true;
+        }
+        if(target) {
+            if(typeof target == "object") {
+                if (debug)
+                    console.info("Service Set", target);
+
+                req = target;
+
+                target = false;
+            } else {
+                if (debug && serviceDefer[target])
+                    console.info("Service Defer (" + target + "): " + serviceDefer[target]["status"] + " [exec]", serviceDefer[target]["req"]);
+
+                if (serviceDefer[target] && serviceDefer[target]["status"] == "pending" && serviceDefer[target]["req"].length) {
+                    req = {};
+                    serviceDefer[target]["req"].each(function (i, name) {
+                        req[name] = service[name];
+                        if (req[name]["keys"] && req[name]["response"])
+                            delete req[name]["response"];
+                    });
+                    serviceDefer[target]["status"] = "running";
+                    serviceDefer[target]["req"] = [];
+
+                    if (debug)
+                        console.info("Service Defer (" + target + "): " + serviceDefer[target]["status"], serviceDefer[target]["req"]);
+                }
+            }
+        } else {
+            req = service;
+            if(debug)
+                console.info("Service All: " + document.readyState + " [exec]", service);
+        }
+
+		if(req) {
+			var index = "xhr-" + Date.now();
+			ajaxRequests[index] = jQuery.ajax({
 				async: true,
 				type: "POST",
 				url: "/srv/request",
-				data: "params=" + (target ? JSON.stringify(target) : JSON.stringify(service)),
+				data: "params=" + encodeURIComponent(JSON.stringify(req)),
 				dataType : "json",
 				cache: true
 			}).done(function(response) {
-				if(response) {
-					for(var name in response) {
-						var result = null;
-						if(!service[name]) service[name] = {};
+                if (target !== false && response) {
+                	var assets = {
+                		"libs" : ""
+						, "js" : []
+						, "css" : []
+					};
+                    var globalVars = {
+                        "selector" : {}
+                        , "data" : {}
+                    };
 
-                        if(service[name]["tpl"] && service[name]["tpl"]["target"]) {
-                            var target = service[name]["tpl"]["target"];
-                            var tplVars = response[name][service[name]["tpl"]["vars"]] || response[name]["vars"];
-                            var tplProperties = response[name][service[name]["tpl"]["properties"]] || response[name]["properties"];
-                            var html = response[name]["html"] || "";
-                            if(!html && jQuery(service[name]["tpl"]["target"]).length)
-                                html = jQuery(service[name]["tpl"]["target"]).html();
+                    for (var name in response) {
+                        switch(name) {
+                            case "assets":
+                                assets["libs"] = response[name];
+                                break;
+                            default:
 
-                            if(html) {
-                                if (typeof tplProperties == "object") {
-                                    for (var propType in tplProperties) {
-                                        if (tplProperties.hasOwnProperty(propType)) {
-                                            for (var property in tplProperties[propType]) {
-                                                if (tplProperties[propType].hasOwnProperty(property)) {
-                                                    html = html.replaceAll('data-'+ propType + '="<!--' + property + '-->"', propType + '="' + tplProperties[propType][property] + '"');
+                                if (!service[name])
+                                    service[name] = {};
+
+                                if (response[name] && typeof response[name] == "object" && !Array.isArray(response[name])) {
+                                    var serviceTpl = service[name]["tpl"] || {};
+                                    var serviceOpt = service[name]["opt"] || {};
+
+                                    globalVars["selector"] = serviceTpl["vars"] || {};
+                                    switch (serviceTpl["template"]) {
+                                        case "text/template":
+                                            var target = serviceTpl["target"];
+                                            var source = serviceTpl["source"];
+
+                                            if (target && source) {
+                                                var html = "";
+                                                var tplRemove = [];
+                                                if (Array.isArray(response[name]["result"])) {
+                                                    response[name]["result"].each(function (i, item) {
+                                                        var tpl = jQuery(source).html();
+
+                                                        for (var property in item) {
+                                                            if (item.hasOwnProperty(property) && item[property]) {
+                                                                tpl = tpl.replaceAll("{{" + property + "}}", item[property]);
+                                                                if (!item[property])
+                                                                    tplRemove.push('*[data-if="' + property + '"]');
+                                                            }
+                                                        }
+                                                        html += tpl;
+                                                    });
+                                                } else {
+                                                    var tpl = jQuery(source).html();
+                                                    var tplVars = response[name][serviceTpl["vars"]] || response[name]["vars"];
+                                                    for (var property in tplVars) {
+                                                        if (tplVars.hasOwnProperty(property) && tplVars[property]) {
+                                                            tpl = tpl.replaceAll("{{" + property + "}}", tplVars[property]);
+                                                            if (!tplVars[property])
+                                                                tplRemove.push('*[data-if="' + property + '"]');
+                                                        }
+                                                    }
+                                                    html = tpl;
+                                                }
+
+                                                if (html) {
+                                                    var pattern = /{{([^}]+)}}/g;
+                                                    while (match = pattern.exec(html)) {
+                                                        tplRemove.push('*[data-if="' + match[1] + '"]');
+                                                        html = html.replaceAll("{{" + match[1] + "}}", "");
+                                                    }
+                                                    if (tplRemove.length) {
+                                                        html = jQuery(html);
+                                                        jQuery(tplRemove.join(","), html).remove();
+
+                                                    }
+
+                                                    if (serviceOpt["inject"] == "prepend")
+                                                        jQuery(target).prepend(html);
+                                                    else
+                                                        jQuery(target).append(html);
+                                                }
+                                                globalVars["data"]["counter"] = jQuery(target).children().length;
+                                            }
+                                            break;
+                                        case "text/x-handlebars-template":
+                                            var target = serviceTpl["target"];
+                                            var source = serviceTpl["source"];
+                                            var result = response[name]["result"] || null;
+
+                                            if (target && source) {
+                                                var html = "";
+                                                //ff.pluginLoad("Handlebars", "https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js", function () {
+                                                if (Array.isArray(result)) {
+                                                    result.each(function (i, item) {
+                                                        var tpl = jQuery(source).html();
+                                                        var template = Handlebars.compile(tpl);
+                                                        html += template(item);
+                                                    });
+                                                } else if (result) {
+                                                    var template = Handlebars.compile(tpl);
+                                                    html = template(result);
+                                                }
+
+                                                if (html) {
+                                                    if (serviceOpt["inject"] == "prepend")
+                                                        jQuery(target).prepend(html);
+                                                    else
+                                                        jQuery(target).append(html);
+                                                }
+
+                                                globalVars["data"]["counter"] = jQuery(target).children().length;
+                                                //});
+                                            }
+                                            break;
+                                        default:
+                                            var target = response[name]["target"] || serviceTpl["target"];
+                                            if (target) {
+                                                var source = response[name]["source"] || target;
+                                                var tplVars = response[name]["vars"];
+                                                var tplProperties = response[name][serviceTpl["properties"]] || response[name]["properties"];
+                                                var html = response[name]["html"];
+                                                if (!html) {
+                                                    var tpl = jQuery(source);
+
+                                                    jQuery("STYLE", tpl).appendTo(jQuery("head"));
+                                                    jQuery("SCRIPT", tpl).appendTo(jQuery("head"));
+
+                                                    html = jQuery(tpl).html();
+                                                }
+
+                                                if (html) {
+                                                    if (typeof tplProperties == "object") {
+                                                        for (var propType in tplProperties) {
+                                                            if (tplProperties.hasOwnProperty(propType)) {
+                                                                for (var property in tplProperties[propType]) {
+                                                                    if (tplProperties[propType].hasOwnProperty(property)) {
+                                                                        html = html.replaceAll('data-' + propType + '="<!--{{' + property + '}}-->"', propType + '="' + tplProperties[propType][property] + '"');
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    if (typeof tplVars == "object") {
+                                                        for (var property in tplVars) {
+                                                            if (tplVars.hasOwnProperty(property)) {
+                                                                if (globalVars["selector"][property])
+                                                                    globalVars["data"][property] = tplVars[property];
+
+                                                                html = html.replaceAll('<!--{{' + property + '}}-->', tplVars[property]);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    if (serviceOpt["inject"] == "prepend") {
+                                                        jQuery(target).prepend(html);
+                                                    } else if(serviceOpt["inject"] == "append") {
+                                                        jQuery(target).append(html);
+                                                    } else if (jQuery(source, html).length > 0) {
+                                                        if (source == target)
+                                                            jQuery(target).replaceWith(jQuery(source, html).html());
+                                                        else
+                                                            jQuery(target).html(jQuery(source, html).html());
+                                                    } else {
+                                                        jQuery(target).html(html);
+                                                    }
                                                 }
                                             }
-                                        }
                                     }
-                                }
-								if (typeof tplVars == "object") {
-									for (var property in tplVars) {
-										if (tplVars.hasOwnProperty(property)) {
-											html = html.replaceAll('<!--' + property + '-->', tplVars[property]);
-										}
-									}
-								}
 
-                                if(target) {
-                                    var header = response[name]["header"] || "";
-                                    var footer = response[name]["footer"] || "";
-                                    var output = header + html + footer;
-                                    if(output) {
-                                        if (jQuery(target, html).length > 0) {
-                                            jQuery(target).replaceWith(output);
-                                        } else {
-                                            jQuery(target).html(output);
+                                    if (target && service[name]["opt"]) {
+                                        switch (service[name]["opt"]["effect"]) {
+                                            case false:
+                                                jQuery(target).fadeIn();
+                                                break;
+                                            case "fadeInToggle":
+                                                jQuery(target).fadeToggle();
+                                                break;
+                                            case "slideDownToggle":
+                                                jQuery(target).slideToggle();
+                                                break;
+                                            case "slideUp":
+                                                jQuery(target).slideUp();
+                                                break;
+                                            case "slideDown":
+                                                jQuery(target).slideDown();
+                                                break;
+                                            case "hide":
+                                                jQuery(target).hide();
+                                                break;
+                                            case "show":
+                                                jQuery(target).show();
+                                                break;
+                                            case "fadeOut":
+                                                jQuery(target).show();
+                                                jQuery(target).fadeOut();
+                                            case "fadeIn":
+                                                jQuery(target).hide();
+                                                jQuery(target).fadeIn();
+                                                break;
+                                            default:
+                                        }
+
+                                        if (service[name]["opt"]["block"] === true) {
+                                            ff.cms.blockUI(target);
+                                        } else if (service[name]["opt"]["block"] === false) {
+                                            ff.cms.unblockUI(target);
+                                        }
+                                        // ff.lazyImg();
+                                    }
+
+
+                                    if (response[name]["result"]) { //da gestire i multi valori provenienti dalle chiamate asincrone con il timer
+                                        service[name]["response"] = response[name]["result"];
+                                    }
+                                    if (response[name]["keys"]) {
+                                        if (!service[name]["keys"])
+                                            service[name]["keys"] = [];
+
+                                        response[name]["keys"].each(function (i, key) {
+                                            if (service[name]["keys"].indexOf(key) < 0) {
+                                                service[name]["keys"].push(key);
+                                            }
+                                        });
+                                    }
+
+                                    if (response[name]["js"]) {
+                                        assets["js"].push(response[name]["js"]);
+                                    }
+                                    if (response[name]["css"]) {
+                                        assets["css"].push(response[name]["css"]);
+                                    }
+
+                                    if (response[name]["timer"]) {
+                                        if (!service[name]["opt"]) service[name]["opt"] = {};
+                                        service[name]["opt"]["timer"] = response[name]["timer"];
+                                    }
+                                    if (service[name]["opt"] && service[name]["opt"]["timer"]) {
+                                        service[name]["opt"]["timer"] = false;
+                                        if (!serviceDefer[response[name]["timer"]]) {
+                                            serviceDefer[response[name]["timer"]] = {
+                                                "req": []
+                                                , "status": "idle"
+                                            };
+                                        }
+                                        var timer = response[name]["timer"];
+                                        if (serviceDefer[timer]["req"].indexOf(name) < 0) {
+                                            serviceDefer[timer]["req"].push(name);
+
+                                            if (debug)
+                                                console.info("Service Defer (" + timer + "): " + serviceDefer[timer]["status"] + " [add queue]", serviceDefer[timer]["req"]);
+                                        }
+
+                                        if (serviceDefer[timer]["status"] == "idle") {
+                                            serviceDefer[timer]["status"] = "pending";
+
+                                            if (debug)
+                                                console.info("Service Defer (" + timer + "): " + serviceDefer[timer]["status"] + " [setTimeout]", serviceDefer[timer]["req"]);
+
+                                            setTimeout(function () {
+                                                ff.cms.loadReq(timer);
+                                            }, timer);
                                         }
                                     }
+                                } else {
+                                    if (response[name] !== null && debug)
+                                        console.warn("Request Service: the response is not a object " + name, response[name]);
+                                }
+
+								if(service[name]["callback"]) {
+                                    if (jQuery.isFunction(service[name]["callback"])) {
+                                        res = service[name]["callback"](response[name], globalVars);
+                                        if (res) globalVars = res;
+                                    } else {
+                                    	if(debug)
+                                            console.warn("Request Service: the callback is not a function " + name, service[name]);
+									}
+                                }
+                        }
+                    }
+
+                    if(globalVars["selector"]) {
+                        for (var property in globalVars["selector"]) {
+                            if (globalVars["selector"].hasOwnProperty(property)) {
+                                jQuery(globalVars["selector"][property]).hide();
+                                if(globalVars["data"][property]) {
+                                    jQuery(globalVars["selector"][property]).text(globalVars["data"][property]).removeClass("hidden").show();
                                 }
                             }
                         }
+                    }
+                    if(assets["libs"]) {
+                        jQuery(assets["libs"]).appendTo(jQuery("head"));
+                    }
+                    if (assets["js"].length) {
+                        jQuery('<script type="text/javascript">' + assets["js"].join(" ") + '</script>').appendTo(jQuery("head"));
+                    }
+                    if (assets["css"].length) {
+                        jQuery('<style type="text/css">' + assets["css"].join(" ") + '</style>').appendTo(jQuery("head"));
+                    }
+                }
+            }).always(function() {
+                delete ajaxRequests[index];
+                if(target) {
+                    if (serviceDefer[target]["req"].length) {
+                        serviceDefer[target]["status"] = "pending";
+                    } else {
+                        serviceDefer[target]["status"] = "idle";
+                    }
+                    if(debug)
+                        console.info("Service Defer (" + target + "): " + serviceDefer[target]["status"] + " [ajax done]", serviceDefer[target]["req"]);
 
-						if(service[name]["callback"])
-							service[name]["callback"](response[name], service[name]["params"]);
+                    if(isFinite(String(target))) {
+                        if (serviceDefer[target]["req"].length) {
+//                            serviceDefer[target]["status"] = "pending";
+                            if (debug)
+                                console.info("Service Defer (" + target + "): " + serviceDefer[target]["status"] + " [setTimeout]", serviceDefer[target]["req"]);
 
-						if(response[name]["result"] !== undefined)
-							result = response[name]["result"];
-						else
-							result = response[name];
+                            var timer = target;
+                            setTimeout(function () {
+                                ff.cms.loadReq(timer);
+                            }, timer);
+                        } else {
+//                            serviceDefer[target]["status"] = "idle";
 
-						if(result) { //da gestire i multi valori provenienti dalle chiamate asincrone con il timer
-							service[name]["response"] = result;
-						}
+                        }
+                    } else {
+                       // serviceDefer[target]["status"] = "completed";
 
-						if(response[name]["timer"]) {
-							if(!service[name]["opt"]) service[name]["opt"] = {};
-							service[name]["opt"]["timer"] = response[name]["timer"];
-						}
-						if(service[name]["opt"] && service[name]["opt"]["timer"]) {
-							service[name]["opt"]["timer"] = false;
-							if(!deferReq[response[name]["timer"]]) deferReq[response[name]["timer"]] = {};
+                    }
+                } else {
+                    if(debug)
+                        console.info("Service All: " + document.readyState + " [ajax done]", service);
+                }
 
-							deferReq[response[name]["timer"]][name] = service[name];
-						}
-					}
-
-					for(var time in deferReq) {
-						setTimeout(function() {
-							ff.cms.loadReq(deferReq[time]);
-						}, time);
-					}
-
-				}
 			}).fail(function(error) {
+            }).error(function (xmlHttpRequest, textStatus, errorThrown) {
+                if(xmlHttpRequest.readyState == 0 || xmlHttpRequest.status == 0)
+                    return;  // it's not really an error
 			});
 		}
 	};
@@ -530,44 +858,98 @@ ff.cms = (function () {
             "fn" : {},
             "e" : {},
             "libs" : {},
+            "debug" : function() {
+                debug = !debug;
+                return (debug ? "Start Debugging..." : "End Debug.");
+            },
+            "dump" : function() {
+                console.log({
+                    "service" : service
+                    , "defer" : serviceDefer
+                    , events : jQuery._data( jQuery(document)[0], 'events' )
+                    , timer: serviceTimer
+                });
+            },
             "initCMS" : function() {
-                    var that = this;
+				var that = this;
 
-                    jQuery("#above-the-fold").remove();
+				jQuery("#above-the-fold").remove();
 
-                    ff.fn.frame = function (params, data) {
-                        if(params.component !== undefined
-                            && data.html !== undefined
-                            && jQuery("#" + params.component).attr("id") !== undefined
-                        ) {
-                            ff.cms.widgetInit("#" + params.component);
+				ff.fn.frame = function (params, data) {
+					if(params.component !== undefined
+						&& data.html !== undefined
+						&& jQuery("#" + params.component).attr("id") !== undefined
+					) {
+						ff.cms.widgetInit("#" + params.component);
+					}
+				};
+				ff.pluginAddInit("ff.ajax", function () {
+					ff.ajax.addEvent({
+							"event_name" : "onUpdatedContent"
+							, "func_name" : ff.fn.frame
+					});
+					ff.ajax.addEvent({
+						"event_name"	: "onSuccess"
+						, "func_name"	: function (data, params, injectid) {
+							if (data.modules && data.modules.security && data.modules.security.loggedin) {
+								if(typeof ga !== "undefined") {
+									var tracker = ga.getAll()[0];
+									if (tracker) {
+										tracker.send('event', {'userId':  'u-' + data.modules.security.UserNID});
+									}
+								}
+
+							}
+						}
+					});
+				});
+
+				loadContent();
+				ff.cms.widgetInit("");
+				jQuery(window).on('beforeunload', function () {
+					ff.cms.abortXHR();
+				});
+
+                if(document.readyState == "complete") {
+                    serviceTimer = true;
+                    if (serviceDefer["complete"] && serviceDefer["complete"]["req"]) {
+                        serviceDefer["complete"]["status"] = "pending";
+                        loadReq("complete");
+
+                    }
+                } else {
+                    if(serviceDefer["loading"] && serviceDefer["loading"]["req"]) {
+                        serviceDefer["loading"]["status"] = "pending";
+                        loadReq("loading");
+                    }
+
+                    jQuery(document).on("ready", function(){
+                        if(serviceDefer["interactive"] && serviceDefer["interactive"]["req"]) {
+                            serviceDefer["interactive"]["status"] = "pending";
+                            loadReq("interactive");
                         }
-                    };
-                    ff.pluginAddInit("ff.ajax", function () {
-                        ff.ajax.addEvent({
-                                "event_name" : "onUpdatedContent"
-                                , "func_name" : ff.fn.frame
-                        });
-                        ff.ajax.addEvent({
-                            "event_name"	: "onSuccess"
-                            , "func_name"	: function (data, params, injectid) {
-                                if (data.modules && data.modules.security && data.modules.security.loggedin) {
-                                    if(typeof ga !== "undefined") {
-                                        var tracker = ga.getAll()[0];
-                                        if (tracker) {
-                                            tracker.send('event', {'userId':  'u-' + data.modules.security.UserNID});
-                                        }
-                                    }
+                        //loadReq();
 
-                                }
-                            }
-                        });
                     });
 
-                    loadContent();
-                    ff.cms.widgetInit("");
-					//loadReq();
-					setTimeout(loadReq, 200);
+                    jQuery(window).on("load", function (e) {
+                        serviceTimer = true;
+                        if (serviceDefer["complete"] && serviceDefer["complete"]["req"]) {
+                            serviceDefer["complete"]["status"] = "pending";
+                            loadReq("complete");
+                        }
+                    });
+				}
+            },
+            "abortXHR" : function() {
+                for (var xhr in ajaxRequests) {
+                    if (ajaxRequests.hasOwnProperty(xhr) && xhr.indexOf("xhr-") === 0) {
+                        ajaxRequests[xhr].abort();
+                    }
+                }
+                //ajaxRequests = {};
+
+                return ajaxRequests
             },
             "blockUI" : function(blockElem, jumpTo, noAjaxBlock) {
                 if(blockElem)
@@ -704,19 +1086,30 @@ ff.cms = (function () {
             "load" : function(link, elem, effect, mode, onClickCallback, blockUI, jumpUI) {
                 loadAjax(link, elem, effect, mode, onClickCallback, blockUI, jumpUI);
             },
-            "loadReq" : function(target) {
-            	loadReq(target);
+            "loadReq" : function(target, reset) {
+            	loadReq(target, reset);
             },
             "get" : function(name, callback, params, opt) {
                 var res = null;
+                if(!opt) opt = {};
 
                 if(!name) {
                     res = service;
                 } else {
                     if(!service) service = {};
 
-                    if(!service[name]) service[name] = {};
+                    if(service[name]) {
+                        service[name]["counter"] = (!service[name]["counter"]
+                                ? service[name]["counter"] = 2
+                                : service[name]["counter"]++
+                        );
+                        console.warn(name + " Already Exist: Old", service[name], " New", {"callback": callback, "params": params, "opt": opt});
+                        var url = name;
 
+                        name = name + "#" + service[name]["counter"];
+                    }
+
+                    service[name] = {};
                     if(callback) {
                         if(jQuery.isFunction(callback)) {
                             service[name]["callback"] = callback;
@@ -728,16 +1121,22 @@ ff.cms = (function () {
 
                                 tpl["target"] = callback["target"];
                                 tpl["vars"] = callback["vars"];
+                                if(callback["template"]) {
+                                    tpl["source"] = "#" + callback["template"];
+                                    tpl["template"] = jQuery(tpl["source"]).attr("type");
+                                }
                                 if (callback["callback"])
-                                    service[name]["callback"] = callback;
+                                    service[name]["callback"] = callback["callback"];
                             } else {
                                 tpl["target"] = callback;
                             }
                         }
                     } else {
-                        if(!opt) opt = {};
                         opt["async"] = true;
                     }
+
+                    if(url)
+                        opt["url"] = url;
 
                     if(tpl)
                         service[name]["tpl"] = tpl;
@@ -752,9 +1151,51 @@ ff.cms = (function () {
                         res = service[name]["response"];
                     else
                         res = service[name];
+
+					var queue = (0 && opt["priority"]
+						? document.readyState + "-" + opt["priority"]
+						: document.readyState
+					);
+					if(!serviceDefer[queue])
+						serviceDefer[queue] = {
+							"req" : []
+							, "status" : "idle"
+						};
+
+					if(serviceDefer[queue]["req"].indexOf(name) < 0) {
+						serviceDefer[queue]["req"].push(name);
+
+						if (debug)
+							console.info("Service Defer (" + queue + "): " + serviceDefer[queue]["status"] + " [add queue]", serviceDefer[queue]["req"]);
+					}
+
+					if(serviceTimer === true
+						&& serviceDefer[queue]["req"].length
+					) {
+						serviceDefer[queue]["status"] = "pending";
+						serviceTimer = setTimeout(function() {
+							ff.cms.loadReq(queue, true)
+						}, 100);
+					}
                 }
                 return res;
             },
+			"set" : function(name, params, opt, keys) {
+                var srv = {};
+
+                if(!opt)
+                    opt = service[name]["opt"];
+                if(!keys)
+                    keys = service[name]["keys"];
+
+                srv[name] = {
+                    "opt" : opt
+                    , "params" : params
+                    , "keys" : keys
+                };
+
+                loadReq(srv);
+			},
             "getBlock" : function(id, params, callback) {
                 if(id) {
                     var elem = jQuery("#" + id);
@@ -829,7 +1270,7 @@ ff.cms = (function () {
             history.replaceState(null, null, window.location.pathname.replace('//', '/') + window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "") + window.location.hash);
 
 	jQuery(function() {
-            ff.cms.initCMS();
+        ff.cms.initCMS();
 	});
 
 	return that;

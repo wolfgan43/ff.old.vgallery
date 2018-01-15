@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 	//define("CACHE_DISK_PATH", dirname(dirname(dirname(__DIR__))));
-	define("CACHE_LAST_VERSION", 0);
+	//define("CACHE_LAST_VERSION", 0);
 
     if(!function_exists("sys_getloadavg"))
     {
@@ -113,7 +113,7 @@
             return $schema;
     }    
     
-    function cache_get_page_properties($user_path, $page_type = null, $skip_locale = false) {
+    function cache_get_page_properties($user_path, $skip_locale = false) {
         //require(CACHE_DISK_PATH . "/library/gallery/settings.php");
         $schema = cache_get_settings();
 
@@ -150,9 +150,7 @@
             $lang                                               = $arrLocale["rev"]["lang"][$arrSettings_path[0]];
         }
 
-        if($page_type && isset($schema["page"][$page_type])) {
-            $res                                                = $schema["page"][$page_type];
-        } elseif(isset($schema["page"][$settings_user_path])) {
+        if(isset($schema["page"][$settings_user_path])) {
             $res                                                = $schema["page"][$settings_user_path];
             $page_key                                           = $settings_user_path;
         } elseif(isset($schema["page"]["/" . $arrSettings_path[0]] )) {
@@ -160,16 +158,30 @@
             $page_key                                           = "/" . $arrSettings_path[0];
         } elseif(isset($schema["page"][$arrSettings_path[count($arrSettings_path) - 1]])) {
             $res                                                = $schema["page"][$arrSettings_path[count($arrSettings_path) - 1]];
-        } else {
-            //$tmp_user_path = $user_path;
-            do {
+        } else { //todo: da testare
+			$arrPageMatch = array_filter($schema["page"], function($page) use ($settings_user_path) {
+				return ($page["router"]
+					? preg_match("#" . preg_quote($page["router"]["source"], "#") . "#i", $settings_user_path)
+					: false
+				);
+			});
 
-                if(isset($schema["page"][$settings_user_path])) {
-                    $res                                        = $schema["page"][$settings_user_path];
-                    $page_key                                   = $settings_user_path;
-                    break;
-                }
-            } while($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path))); //todo: DS check
+			if(is_array($arrPageMatch) && count($arrPageMatch)) {
+				ksort($arrPageMatch);
+
+				$res = reset($arrPageMatch);
+				$page_key = key($arrPageMatch);
+			} else {
+				//$tmp_user_path = $user_path;
+				do {
+
+					if (isset($schema["page"][$settings_user_path])) {
+						$res = $schema["page"][$settings_user_path];
+						$page_key = $settings_user_path;
+						break;
+					}
+				} while ($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path))); //todo: DS check
+			}
         }
 
         if(strpos($user_path, $res["strip_path"]) === 0) {
@@ -180,7 +192,7 @@
 		
 		if($resAlias) {
 			$res["alias"]                                       = $resAlias["alias"];
-			if($resAlias["redirect"] === false && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"]) {
+			if($resAlias["redirect"] === false && $_SERVER["SERVER_ADDR"] != $_SERVER["REMOTE_ADDR"] && strpos($_SERVER["HTTP_HOST"], "www.") === 0) {
 				$alias_flip                                     = array_flip($schema["alias"]); //fa redirect al dominio alias se il percorso e riservato ad un dominio alias
 				if($alias_flip["/" . $arrSettings_path[0]]) {
 					$resAlias["redirect"]                       = $alias_flip["/" . $arrSettings_path[0]] . substr($user_path, strlen("/" . $arrSettings_path[0]));
@@ -316,7 +328,65 @@
 
 		return $objToken["token"];
 	}
- 
+	function cache_token_repair($token, $user_permission = null, $expire = null, $renew= true, $precision = 8) {
+		$u = array();
+		$token_user = "t";
+		if(!$user_permission) {
+			// require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
+
+			$user_permission = $_SESSION[APPID . "user_permission"];
+		} elseif(!is_array($user_permission)) {
+			//todo: da fare con l'anagraph class
+			$user_permission = mod_security_get_user_data($user_permission, array("groups" => true));
+		}
+		$uid = $user_permission["ID"];
+		$account = ($user_permission["username_slug"]
+			? $user_permission["username_slug"]
+			: ($user_permission["username"]
+				? cache_url_rewrite($user_permission["username"])
+				: cache_url_rewrite($user_permission["email"])
+			)
+		);
+		$gid = ($user_permission["primary_gid_name"]
+			? $user_permission["primary_gid_name"]
+			: $user_permission["primary_gid_default_name"]
+		);
+
+		if(!$expire)
+			$expire = time() + (60 * 60 * 24 * 365);
+
+		$sep = ($precision == 8
+			? 11
+			: 4
+		);
+
+		$public = substr($token, 0, $sep);
+		$private = substr($token, $sep);
+
+		$objToken = array(
+			"expire" 		=> $expire
+			, "renew" 		=> $renew
+			, "stoken" 		=> null //irrecuperabile
+			, "private" 	=> $private
+			, "public"		=> $public
+			, "token"		=> $token
+		);
+
+		$u = array(
+			"account" 		=> $account
+			, "uid" 		=> $uid
+			, "group" 		=> $gid
+			, "uniqid" 		=> $objToken["private"]
+			, "expire" 		=> $objToken["expire"]
+			, "renew" 		=> $objToken["renew"]
+			, "addr"		=> $_SERVER["REMOTE_ADDR"]
+			, "agent" 		=> $_SERVER["HTTP_USER_AGENT"]
+		);
+
+		cache_token_write($u, $objToken, $token_user);
+
+		return $objToken;
+	}
 	function cache_token_renew($account, $objToken = null) {
     	if(!$objToken) {
     		$objToken = cache_token_generate($account);
@@ -472,7 +542,7 @@
 								cache_token_write($u, $objToken["public"]);
 							}
 						} else {
-							@unlink($fsToken["file"]);
+						//	@unlink($fsToken["file"]); //todo:da creare procedura per rigenerare i token per mailchimp
 							cache_token_destroy_session_cookie();
 //cache_writeLog("Destroy: " .  $cc . "  " .  $_COOKIE["_ut"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
 						}
@@ -994,7 +1064,7 @@
 			                    $res["get"]["query"][$req_key] = $req_key . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key]);
 							} elseif($arrRuleGet[$req_key] === false) {
 								$res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($req_value);
-							} elseif(!preg_match('/[^a-z\-0-9]/i', $req_key)) {
+							} elseif(!preg_match('/[^a-z\-0-9_\+]/i', $req_key)) {
 	                            $res["get"]["search"]["available_terms"][$req_key] = $req_value;
 	                            //$res["get"]["query"][$req_key] = $req_key . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key]);
 	                            $res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key]);
@@ -1423,7 +1493,136 @@
         return $fs->delete($key, $errorDocumentFile, Filemanager::SEARCH_IN_VALUE);
     }
 
-    function cache_get_page_stats($page_cache_path)
+	function cache_get_page_stats($user_path, $request)
+	{
+		//todo: Impostazioni di base da fare come oggetto
+		require_once (FF_DISK_PATH . "/library/gallery/classes/storage/Storage.php");
+
+		$service = "server";
+		$this_controllers = array(
+			"server" => array(
+				"default" 				=> false
+			, "services" 				=> null
+			, "storage" 				=> array(
+					"nosql" 			=> null
+					//, "fs" => null
+				)
+			)
+		);
+		$this_struct = array(
+			"connectors" => array(
+				"sql"                   => array(
+					"prefix"			=> "CACHE_DATABASE_"
+				, "table"               => "cache_pages"
+				, "key"                 => "ID"
+				)
+			, "nosql"                   => array(
+					"prefix"				=> "CACHE_MONGO_DATABASE_"
+				, "table"               => "cache_pages"
+				, "key"                 => "ID"
+				)
+			, "fs"                      => array(
+					"path"                  => "/cache/notify"
+				, "name"                => "title"
+				, "var"					=> "s"
+				)
+			)
+		, "table" => array(
+				"db" => array(
+					"title" 			=> "title"
+				)
+			)
+		, "type" => array(
+				"url"					=> "string"
+			, "get"						=> "array"
+			, "domain"					=> "string"
+			, "type"					=> "string"
+
+			, "title" 					=> "string"
+			, "description" 			=> "string"
+			, "cover"					=> array(
+					"url" 					=> "string:toImage"
+					, "width" 				=> "number"
+					, "height" 				=> "number"
+				)
+			, "author" 					=> array(
+					"id" 					=> "number"
+					, "avatar" 				=> "string:toImage"
+					, "name" 				=> "string"
+					, "url" 				=> "string"
+					, "tags"				=> array(
+						"primary" 			=> "arrayOfNumber"
+						, "secondary" 		=> "arrayOfNumber"
+					)
+				, "uid"					=> "number"
+				)
+			, "tags"					=> array(
+					"primary" 				=> "arrayOfNumber"
+				, "secondary" 			=> "arrayOfNumber"
+				, "rel" 				=> "arrayOfNumber"
+				)
+			, "meta"					=> "array"
+			, "links"					=> "array"
+			, "microdata"				=> "array"
+			, "js"						=> array(
+					"url" 					=> "string"
+				, "keys" 				=> "array"
+				)
+			, "css"						=> array(
+					"url" 					=> "string"
+				, "keys" 				=> "array"
+				)
+			, "international"			=> "array"
+			, "settings"				=> "array" 	//$globals->page
+			, "template_layers"			=> "array"	//$globals->cache["layer_blocks"]
+			, "template_sections"		=> "array"	//$globals->cache["section_blocks"]
+			, "template_blocks"			=> "array"	//$globals->cache["layout_blocks"]
+			, "template_ff"				=> "array"
+			, "keys_D"					=> "arrayOfNumber"
+			, "keys_G"					=> "array"
+			, "keys_M"					=> "array"
+			, "keys_S"					=> "array"
+			, "keys_T"					=> "array"
+			, "keys_V"					=> "arrayOfNumber"
+			, "http_status"				=> "number"
+			, "created"					=> "number"
+			, "last_update"				=> "number"
+			, "cache_last_update"		=> "number"
+			, "cache"					=> "array"
+			)
+		);
+		$struct = $this_controllers[$service]["struct"];
+
+		$connectors = $this_controllers[$service]["storage"];
+		foreach($connectors AS $type => $data)
+		{
+			if(!$data)
+			{
+				$connectors[$type] = array(
+					"service" 			=> null
+					, "connector" 		=> $this_struct["connectors"][$type]
+				);
+			}
+		}
+		$storage = Storage::getInstance($connectors, array(
+			"struct" 					=> $this_struct["type"]
+		));
+
+		$res = $storage->read(array(
+			"url" 						=> $user_path
+			, "domain" 					=> DOMAIN_INSET
+			, "get" 					=> $request
+		), array(
+			"title"						=> true
+			, "description"				=> true
+			, "tags"					=> true
+			, "author"					=> true
+			//, "author_tags"				=> "author.tags"
+		));
+
+		return $res["result"];
+	}
+    function cache_get_page_stats_old($page_cache_path)
     {
         require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
         $fs = new Filemanager("php", $page_cache_path . "/stats");
@@ -1657,7 +1856,7 @@
              }*/
             //define("CACHE_PAGE_STORING_PATH", $cache_file["cache_path"] . "/" . $cache_file["filename"]);
 
-            if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && defined("TRACE_VISITOR")) {
+            if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
                 require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
                 system_trace("pageview");
             }

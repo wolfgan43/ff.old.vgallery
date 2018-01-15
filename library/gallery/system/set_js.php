@@ -7,7 +7,7 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
 
     if($use_admin_ajax) {
     	$ncol = 6;
-    
+
         $oPage->widgetLoad("dialog");
         $oPage->widgets["dialog"]->process(
              "dialogManage"
@@ -49,9 +49,16 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
             , $oPage
         );*/
     }
-    
-    $oPage->tplAddJs("gallerymain", "main.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript", false, $cm->isXHR()); 
-    
+
+    $oPage->tplAddJs("mainjs", "main.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript", false, $cm->isXHR());
+    $gallerymain = $oPage->page_js["mainjs"];
+    unset($oPage->page_js["mainjs"]);
+    $index = array_search("ff.ffpage", array_keys($oPage->page_js)) + 1;
+
+	$oPage->page_js = array_slice($oPage->page_js, 0, $index, true) +
+		array("mainjs" => $gallerymain) +
+		array_slice($oPage->page_js, $index, count($oPage->page_js) - 1, true) ;
+
     if(check_function("system_get_js_layout"))
         $js_request = system_get_js_layout($oPage, $globals->js["request"], $setting_path, false);
 
@@ -61,6 +68,16 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
                 $oPage->tplAddJs($js_name, $js_name . ".js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/system", false, $cm->isXHR()); 
         }
     }
+
+	if(is_array($globals->js["link"]) && count($globals->js["link"])) {
+		foreach($globals->js["link"] AS $js_name => $js_path) {
+			$cm->oPage->tplAddJs($js_name, array(
+				"path" => ffCommon_dirname($js_path)
+			, "file" => basename($js_path)
+			));
+		}
+	}
+
     if(is_array($globals->js["tools"]) && count($globals->js["tools"])) {
         foreach($globals->js["tools"] AS $js_name => $js_enable) {
             if($js_enable && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools/" . $js_name . ".js"))
@@ -68,6 +85,14 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
         }
     }
 
+	if(is_array($globals->css["link"]) && count($globals->css["link"])) {
+		foreach($globals->css["link"] AS $css_name => $css_path) {
+			$cm->oPage->tplAddJs($css_name, array(
+				"path" => ffCommon_dirname($css_path)
+			, "file" => basename($css_path)
+			));
+		}
+	}
 
     if(is_array($globals->js["embed"]) && count($globals->js["embed"])) {
         foreach($globals->js["embed"] AS $js_name => $js_embed) {

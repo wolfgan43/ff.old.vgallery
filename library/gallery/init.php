@@ -139,13 +139,6 @@ function request_info($cm) {
 	}                                    
 }
 
-function ffTemplate_applets_on_loaded_file($tpl) {
-	$cm = cm::getInstance();
-
-	$cm->preloadApplets($tpl);
-	$cm->parseApplets($tpl);
-
-}
 
 
 

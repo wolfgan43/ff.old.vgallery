@@ -462,15 +462,16 @@ function process_vgallery_father($params, $mode = "thumb") {
 				$vg_father["nodes"][$unic_id_node]["created"] 									= $father["created"]; 
 				$vg_father["nodes"][$unic_id_node]["last_update"] 								= $father["last_update"]; 
 				$vg_father["nodes"][$unic_id_node]["published"] 								= $father["published_at"]; 
-				$vg_father["nodes"][$unic_id_node]["owner"] 									= $ID_owner; 
-				
+				$vg_father["nodes"][$unic_id_node]["owner"] 									= $ID_owner;
+				$vg_father["seo"]["owner"] 														= $ID_owner;
+
 				$vg_father["nodes"][$unic_id_node]["class"] 									= $father["class"]; //$db->getField("class", "Text", true);
 				$vg_father["nodes"][$unic_id_node]["highlight"] 								= null;
 				$vg_father["nodes"][$unic_id_node]["is_wishlisted"] 							= false;
 
 
 				$vg_father["nodes"][$unic_id_node]["tags"] 										= $father["tags"]; //$db->getField("tags", "Text", true);
-                $vg_father["seo"]["tags"]["primary"]                                            = $vg_father["nodes"][$unic_id_node]["tags"];
+                $vg_father["seo"]["tags"]["primary"]                                            = $father["tags"];
                 $vg_father["nodes"][$unic_id_node]["referer"]                                   = $father["referer"];
 
 				if (array_key_exists("permalink", $father)) {
@@ -503,7 +504,7 @@ function process_vgallery_father($params, $mode = "thumb") {
 				}
 				if (array_key_exists("keywords", $father)) {
 				    $vg_father["nodes"][$unic_id_node]["meta"]["keywords"] 						= $father["keywords"];
-						$vg_father["seo"]["meta"]["keywords"][] 									= $father["keywords"];
+				    $vg_father["seo"]["meta"]["keywords"][] 									= $father["keywords"];
 				}
                 
                 if ($father["meta"]) {
@@ -999,7 +1000,8 @@ function process_vgallery_father($params, $mode = "thumb") {
 					$vg_father["nodes"][$unic_id_node]["created"] 												= $father["created"]; 
 					$vg_father["nodes"][$unic_id_node]["last_update"] 											= $father["last_update"]; 
 					$vg_father["nodes"][$unic_id_node]["published"] 											= $father["published_at"]; 
-					$vg_father["nodes"][$unic_id_node]["owner"] 												= $ID_owner; 
+					$vg_father["nodes"][$unic_id_node]["owner"] 												= $ID_owner;
+					$vg_father["seo"]["owner"] 																	= $ID_owner;
 				    $vg_father["nodes"][$unic_id_node]["class"]													= $father["class"]; //$db->getField("class", "Text", true);
 				    $vg_father["nodes"][$unic_id_node]["highlight"]["container"] 								= $father["highlight_container"]; //$db->getField("highlight_container", "Text", true);
 
@@ -1015,7 +1017,7 @@ function process_vgallery_father($params, $mode = "thumb") {
 				    //$vg_father["nodes"][$unic_id_node]["enable_multilang_visible"] 							= $db->getField("enable_multilang_visible", "Number", true);
 
 				    $vg_father["nodes"][$unic_id_node]["tags"] 													= $father["tags"]; //$db->getField("tags", "Text", true);
-                    $vg_father["seo"]["tags"]["primary"]                                         				= $vg_father["nodes"][$unic_id_node]["tags"];
+                    $vg_father["seo"]["tags"]["primary"]                                         				= $father["tags"];
                     $vg_father["nodes"][$unic_id_node]["referer"]                                               = $father["referer"];
 				    
 					if (array_key_exists("permalink", $father)) {
@@ -1266,7 +1268,10 @@ function process_vgallery_father($params, $mode = "thumb") {
 		    $enable_multilang = ($vg_father["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT);
 		}
 
-		$vg_father["permission"]["visible"] = check_mod($file_permission, 1, $enable_multilang, AREA_VGALLERY_SHOW_MODIFY);
+		$vg_father["permission"]["visible"] = ($params["template_skip_hide"]
+			? true
+			: check_mod($file_permission, 1, $enable_multilang, AREA_VGALLERY_SHOW_MODIFY)
+		);
     } else {
 		if ($vg_father["permission"]["owner"] == get_session("UserNID"))
 		    $vg_father["permission"]["is_owner"] = true;
@@ -4163,7 +4168,7 @@ function process_vgallery_node(&$vg_father, $settings, $vg_field = null) {
 		if ($db->nextRecord()) {
 		    $pricelist = null;
 		    $count_files = 0;
-		    
+
 		    do {
 				/* if($vg_father["limit"]) { //CORREZIONE NUMERO ELEMENTI PUBBLICAZIONE
 				  if($count_files >= $vg_father["limit"]) {
@@ -4203,7 +4208,6 @@ function process_vgallery_node(&$vg_father, $settings, $vg_field = null) {
 
 				    $vg_data[$unic_id_node]["ID_cart_detail"] = null;
 				}
-
 				/**
 				 * Preload data if exists... 
 				 * prefix_field: 'data_'
@@ -4264,11 +4268,11 @@ function process_vgallery_node(&$vg_father, $settings, $vg_field = null) {
 					$globals->meta["geo.placename"] 									= $db->record["geo.placename"];
 				if($db->record["geo.region"])
 					$globals->meta["geo.region"] 										= $db->record["geo.region"];
-					
+
 				$count_files++;
 		    } while ($db->nextRecord());
 		}
-    } else {
+	} else {
 		//$vg_data = $vg_father["nodes"];
 		//print_r($vg_data);
 		if (is_array($vg_father["nodes"]) && count($vg_father["nodes"])) {
@@ -4326,10 +4330,9 @@ function process_vgallery_node(&$vg_father, $settings, $vg_field = null) {
 
 				$vg_data[$unic_id_node]["is_wishlisted"] = false;
 				$vg_data[$unic_id_node]["tags"] = $node["tags"];
-                if($vg_data[$unic_id_node]["tags"])
-                    $vg_father["seo"]["tags"]["secondary"]                              .= ($vg_father["seo"]["tags"]["secondary"] ? "," : "") . $vg_data[$unic_id_node]["tags"];                
+                //if($vg_data[$unic_id_node]["tags"])
+                //    $vg_father["seo"]["tags"]["secondary"]                              .= ($vg_father["seo"]["tags"]["secondary"] ? "," : "") . $vg_data[$unic_id_node]["tags"];
 				//$vg_data[$unic_id_node]["enable_multilang_visible"]                           = $node["enable_multilang_visible"];
-				//$vg_data[$unic_id_node]["owner"]                                           		= $node["owner"];
 				$vg_data[$unic_id_node]["data"] = $node["data"];
 
 
@@ -7248,27 +7251,6 @@ function process_vgallery_htmltag_field($vg_father, $field_params, $struct_data 
 			, "grid" => (strlen($field_params["field_grid"]) ? explode(",", $field_params["field_grid"]) : "")
 		), "grid", (isset($replace["class"]) ? $replace["class"] : null)); 
 	}    
-    /*
-    $field_grid = (strlen($field_params["field_grid"]) ? explode(",", $field_params["field_grid"]) : "");
-    switch ($field_params["field_fluid"]) {
-	case -1:
-	    $replace["class"]["grid_alt"] = cm_getClassByFrameworkCss("", "row" . ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : ""), "col");
-	    break;
-	case -2:
-	    $replace["class"]["grid_alt"] = cm_getClassByFrameworkCss("", "row" . ($cm->oPage->framework_css["is_fluid"] ? "-fluid" : ""), "col");
-	    break;
-	case -3:
-	    break;
-	case 1:
-	    break;
-	case 2:
-	    if ($field_grid)
-		$replace["class"]["grid"] = cm_getClassByFrameworkCss($field_grid, "col", array("skip-prepost" => true));
-	    break;
-	default:
-	    if ($field_grid)
-		$replace["class"]["grid"] = cm_getClassByFrameworkCss($field_grid, "col");
-    }*/
 
     if (!$tmp_data_field["htmltag"]["tag"])
 	$tmp_data_field["htmltag"]["tag"] = (global_settings("ENABLE_VGALLERY_HTMLTAG_AUTOMATIC") && $field_params["smart_url"] ? "h" . ($field_params["smart_url"] + $vg_father["enable_title"] + ($vg_father["mode"] == "thumb" ? ($vg_father["type"] == "publishing" ? 2 : 1

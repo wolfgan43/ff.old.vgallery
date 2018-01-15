@@ -29,9 +29,10 @@ function get_grid_system_params() {
 
 function get_grid_system_menu($type, $follow_default_setting = true, $is_child = false) {
 	$cm = cm::getInstance();
+	$framework_css = cm_getFrameworkCss();
 	if($follow_default_setting)
-		$template_framework = $cm->oPage->framework_css["name"];
-		
+		$template_framework = $framework_css["name"];
+
 	switch($type . ($is_child ? "-child" : "")) {
 		case "offcanvas":
 			$res = get_grid_system_menu_side_offcanvas($template_framework);
@@ -227,8 +228,9 @@ function get_grid_system_menu_side_offcanvas_child($template_framework, $side = 
 
 function get_grid_system_breadcrumb($follow_default_setting = true) {
 	$cm = cm::getInstance();
+	$framework_css = cm_getFrameworkCss();
 	if($follow_default_setting)
-		$template_framework = $cm->oPage->framework_css["name"];
+		$template_framework = $framework_css["name"];
 
     if(strlen($template_framework))
     {

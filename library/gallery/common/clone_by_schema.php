@@ -30,6 +30,7 @@
 		} else {
   			$db = ffDB_Sql::factory();
 
+			$return_ID = 0;
   			foreach($schema AS $schema_name => $schema_params) {
   				if(is_array($schema_params) && count($schema_params)) {
 					foreach($schema_params AS  $clone_key => $clone_value) { 
@@ -58,7 +59,7 @@
 									$schema[$schema_name][$clone_key]["compare"] .= ", ";
 								
 								$schema[$schema_name][$clone_key]["fields"][] = "`" . $field_name . "`";
-								if(isset($schema[$schema_name][$clone_key]["use_return_ID"]) && $schema[$schema_name][$clone_key]["use_return_ID"] == $field_name) {
+								if($return_ID && isset($schema[$schema_name][$clone_key]["use_return_ID"]) && $schema[$schema_name][$clone_key]["use_return_ID"] == $field_name) {
 									$schema[$schema_name][$clone_key]["compare"] .= "'" . $return_ID . "' AS `" . $field_name . "`";
 								} else {
 									$schema[$schema_name][$clone_key]["compare"] .= "`" . $db->toSql($real_table, "Text", false) . "`.`" . $field_name . "`"; 
