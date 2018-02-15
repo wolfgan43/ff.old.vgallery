@@ -23,7 +23,6 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-require_once(__DIR__ . "/../vgCommon.php");
 
 class Storage extends vgCommon
 {
@@ -282,6 +281,10 @@ class Storage extends vgCommon
     }
     private function getQuery($driver)
 	{
+		if (!is_array($this->data)) {
+			$this->isError("data is emmpty");
+			return array();
+		}
 		$config                                                 = $driver->getConfig();
 
 		$query["key"] 											= $config["key"];
@@ -559,10 +562,11 @@ class Storage extends vgCommon
 						}
 
 						if(is_array($res)) {
-							$db->update(array(
-								"set" 				=> $query["update"]
-								, "where" 			=> $driver->convertFields(array($query["key"] => $res), "where")
-							), $query["from"]);
+							$update 				= $driver->convertFields(array($query["key"] => $res), "where");
+							$update["set"] 			= $query["update"];
+							$update["from"] 		= $query["from"];
+
+							$db->update($update, $update["from"]);
 
 							$this->result[$service] = array(
 								"keys" 				=> $res

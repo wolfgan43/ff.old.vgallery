@@ -23,8 +23,25 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-class Trace
+class Trace extends vgCommon
 {
-    
-    
+	static $singleton                   = null;
+
+	public static function getInstance($params = null)
+	{
+		if (self::$singleton === null)
+			self::$singleton = new Trace($params);
+		else {
+			self::$singleton->setParams($params);
+		}
+		return self::$singleton;
+	}
+
+
+	public function __construct($params = null)
+	{
+		$this->setParams($params);
+	}
+
 }
+

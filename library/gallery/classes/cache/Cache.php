@@ -23,46 +23,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-require_once(__DIR__ . "/../vgCommon.php");
 
 class Cache extends vgCommon
 {
-    static $singleton                                                   = null;
-    private $Sem                                                        = array();
+	const BASE_PATH 					= "/cache";
 
-    protected $save_path                                                = null;
-    protected $status_code                                              = null;
-    protected $media                                                    = array(
-                                                                            "url" => "/media"
-                                                                            , "path" => "/cache/_thumb"
-                                                                            , "showfiles" => "/cm/showfiles.php"
-                                                                        );
-    private $base_path                                                  = "/cache";
-    private $schema                                                     = array();
+    static $singleton                 	= null;
 
-    private $protocol                                                   = "HTTP/1.0";
-    private $response_code                                              = 200;
-	private $request_uri                                              	= null;
-	private $query_string                                              	= null;
-	private $path_info                                              	= null;
+    private $Sem                        = array();
 
-	private $get                                              			= null;
-	private $post                                              			= null;
+    protected $save_path                = null;
+    protected $status_code              = null;
+    protected $media                    = array(
+                                        	"url" 							=> "/media"
+                                        	, "path" 						=> "/cache/_thumb"
+                                        	, "showfiles" 					=> "/cm/showfiles.php"
+                                        );
+    private $schema                     = array();
 
-    private $result                                                     = array();
+    private $protocol                   = "HTTP/1.0";
+    private $response_code              = 200;
+	private $request_uri                = null;
+	private $query_string               = null;
+	private $path_info                  = null;
+
+	private $get                        = null;
+	private $post                       = null;
+
+    private $result                     = array();
 
     /**
      * @param null $save_path
      * @param null $status_code
      * @return Cache|null
      */
-    public static function getInstance($save_path = null, $status_code = null)
+    public static function getInstance($services = null, $save_path = null)
     {
         if (self::$singleton === null) {
-            self::$singleton                                            = new Cache($save_path, $status_code);
+            self::$singleton                                            = new Cache($services, $save_path);
         } else {
-            self::$singleton->save_path                                 = $save_path;
-            self::$singleton->status_code                               = $status_code;
+			if($services)
+				self::$singleton->setServices($services);
+
         }
 
         return self::$singleton;
@@ -73,10 +75,11 @@ class Cache extends vgCommon
      * @param null $save_path
      * @param null $status_code
      */
-    public function __construct($save_path = null, $status_code = null)
+    public function __construct($services = null)
     {
-        $this->save_path                                                = $save_path;
-        $this->status_code                                              = $status_code;
+		if($services)
+			$this->setServices($services);
+
         $this->protocol                                                 = (isset($_SERVER['SERVER_PROTOCOL'])
                                                                             ? $_SERVER['SERVER_PROTOCOL']
                                                                             : $this->protocol
@@ -86,16 +89,15 @@ class Cache extends vgCommon
         register_shutdown_function(function() {
             $this->sem_release("shutdown");
         });
+
         $this->initRequest();
-    }
+		$this->loadControllers(__DIR__);
+	}
+
 
     public function run($user_path = null)
     {
-        if($this->save_path) { //da togliere
-            $path_info = $this->save_path;
-        } else {
-			$path_info = $this->user_path_allowed($user_path);
-		}
+		$path_info = $this->user_path_allowed($user_path);
 
         $cache_params = $this->get_page($path_info);
         if(is_array($cache_params)) { //da verificare il nocache
@@ -155,7 +157,7 @@ class Cache extends vgCommon
                 $this->http_response_code(404);
             }
 
-            $this->writeLog(" URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_apache");
+            Cache::log(" URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_apache");
             exit;
         }
 
@@ -193,15 +195,15 @@ class Cache extends vgCommon
             } elseif(!defined("DISABLE_CACHE")) {
                 if(is_array($schema["priority"]) && array_search($path_info, $schema["priority"]) !== false) {
                     @touch($cache_file["cache_path"] . "/" . $cache_file["primary"], time() + 10); //evita il multi loading di pagine in cache
-                    $this->writeLog($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_primary");
+					Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_primary");
                 } else {
                     $sem = $this->sem("update", true);
                     if($sem["acquired"]) {
                         @touch($cache_file["cache_path"] . "/" . $cache_file["primary"], time() + 10); //evita il multi loading di pagine in cache
-                        $this->writeLog($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update");
+						Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update");
                     } else {
                         $cache_file["invalid"] = false;
-                        $this->writeLog($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_queue");
+						Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_queue");
                     }
                     $this->Sem[] = $sem;
                 }
@@ -218,7 +220,7 @@ class Cache extends vgCommon
                 $cache_exit = true;
             }
         }
-
+		/*
         if($this->save_path) {
             // $this->sem_release();
             return array(
@@ -229,7 +231,7 @@ class Cache extends vgCommon
                 , "ff_count" => $ff_contents["count"]
                 , "sem" => &$this->Sem
             );
-        }
+        }*/
 
         if(defined("DEBUG_MODE") && isset($_REQUEST["__nocache__"])) {
             $_REQUEST["__CLEARCACHE__"] = true;
@@ -274,7 +276,6 @@ class Cache extends vgCommon
             if($cache_file["is_error_document"])
             {
                 //redirect
-                require_once($this->getAbsPathPHP("/ff/classes/ffDb_Sql/ffDb_Sql_mysqli"));
                 require_once($this->getAbsPathPHP("/library/gallery/system/gallery_redirect"));
 
                 system_gallery_redirect($path_info, $request["valid"]);
@@ -290,20 +291,6 @@ class Cache extends vgCommon
             $this->parse($cache_file, $cache_params["lang"], $cache_params["auth"], $request["get"]);
         }
     } //check_static_cache_page
-
-    //todo: da trovare e sistemare
-    /**
-     * @param $id
-     * @return string
-     */
-    public function get_page_by_id($id) {
-        $page = $this->get_settings("page");
-
-        if(isset($page["/" . $id]))
-            return "/" . $id;
-        else
-            return "/error";
-    }
 
     //todo: da trovare e sistemare
     /**
@@ -344,19 +331,6 @@ class Cache extends vgCommon
             return $schema[$type];
         else
             return $schema;
-    }
-
-    //todo: da trovare e sistemare
-    /**
-     * @param $page_cache_path
-     * @return array|bool|mixed|null
-     */
-    public function get_page_stats($page_cache_path)
-    {
-        require_once ($this->getAbsPathPHP("/library/" . $this->getTheme("cms") . "/classes/filemanager/Filemanager"));
-        $fs = new Filemanager("php", $page_cache_path . "/stats");
-
-        return $fs->read();
     }
 
     //todo: da trovare e sistemare
@@ -561,9 +535,9 @@ class Cache extends vgCommon
 
             if($rule["log"]) {
                 if(is_array($res["get"]["invalid"]))
-                    $this->writeLog("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["get"]["query"]) ? " GET: " . implode("&", $res["get"]["query"]) : "") . " GET INVALID: " . implode("&", $res["get"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["get"]["query"]) ? " GET: " . implode("&", $res["get"]["query"]) : "") . " GET INVALID: " . implode("&", $res["get"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
                 elseif($rule["get"] === false)
-                    $this->writeLog("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($get) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($get) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
             }
         }
 
@@ -630,9 +604,9 @@ class Cache extends vgCommon
 
             if($rule["log"]) {
                 if(is_array($res["post"]["invalid"]))
-                    $this->writeLog("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["post"]["query"]) ? " POST: " . implode("&", $res["post"]["query"]) : "") . " POST INVALID: " . implode("&", $res["post"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["post"]["query"]) ? " POST: " . implode("&", $res["post"]["query"]) : "") . " POST INVALID: " . implode("&", $res["post"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
                 elseif($rule["post"] === false)
-                    $this->writeLog("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($post) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($post) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
             }
         }
 
@@ -734,7 +708,7 @@ class Cache extends vgCommon
      */
     public function getAbsPathCache($path)
     {
-        return $this->getAbsPath($this->base_path . $path);
+        return $this->getAbsPath($this::BASE_PATH . $path);
     }
 
     /**
@@ -953,7 +927,7 @@ class Cache extends vgCommon
             readfile($target_file);
 
 			if(DEBUG_PROFILING === true)
-                profiling_stats("Cache lvl 1 (in cache) ");
+				Stats::benchmark("Cache lvl 1 (in cache)");
 
             exit;
         }
@@ -1522,8 +1496,6 @@ class Cache extends vgCommon
 		$u = array();
 		$token_user = "t";
 		if(!$user_permission) {
-			// require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
-
 			$user_permission = $_SESSION[APPID . "user_permission"];
 		} elseif(!is_array($user_permission)) {
 			//todo: da fare con l'anagraph class
@@ -1605,7 +1577,7 @@ class Cache extends vgCommon
 
         setcookie($name,  $objToken["token"],  $objToken["expire"], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure'], true);
 
-        //$this->writeLog("SET COOKIE: " . $_COOKIE["_ut"]  . " = " . $objToken["token"] . " exp: " . $objToken["expire"], "mio");
+        //Cache::log("SET COOKIE: " . $_COOKIE["_ut"]  . " = " . $objToken["token"] . " exp: " . $objToken["expire"], "mio");
     }
     /**
      * @param string $name
@@ -1712,7 +1684,7 @@ class Cache extends vgCommon
             if($token === null)
                 $token = $this->token_get_session_cookie();
 
-//			$this->writeLog("entro: " . $cc . "  " . $token . print_r($_SERVER, true) , "mio");
+//			Cache::log("entro: " . $cc . "  " . $token . print_r($_SERVER, true) , "mio");
 
             if($token) {
                 if(strpos($token, $token_user . "-") === 0) {
@@ -1732,10 +1704,10 @@ class Cache extends vgCommon
                 $fsToken = $this->token_get_file_token($objToken["public"], $type_token);
 
                 //$file_token = $dir_token . "/" . $prefix_token . $objToken["public"] . ".php";
-//	$this->writeLog("COOKIE: " . $cc . "  " . $_COOKIE["_ut"]  . " = " . $token, "mio");
+//	Cache::log("COOKIE: " . $cc . "  " . $_COOKIE["_ut"]  . " = " . $token, "mio");
                 if(is_file($fsToken["file"])) {
                     require($fsToken["file"]);
-//	$this->writeLog("FOUND: " . $cc . "  " . $file_token . " = " . $token, "mio");
+//	Cache::log("FOUND: " . $cc . "  " . $file_token . " = " . $token, "mio");
 
                     /** @var include $u */
                     if($u["uniqid"] == $objToken["private"]) {
@@ -1781,14 +1753,14 @@ class Cache extends vgCommon
 
                                 @unlink($fsToken["file"]);
 
-//$this->writeLog("REGEN: " . $cc . "  " . $objToken["new"]["token"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
+//Cache::log("REGEN: " . $cc . "  " . $objToken["new"]["token"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
                             } else {
                                 $this->token_write($u, $objToken["public"]);
                             }
                         } else {
                             @unlink($fsToken["file"]);
                             $this->token_destroy_session_cookie();
-//$this->writeLog("Destroy: " .  $cc . "  " .  $_COOKIE["_ut"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
+//Cache::log("Destroy: " .  $cc . "  " .  $_COOKIE["_ut"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
                         }
                     }
                 } else {
@@ -2064,7 +2036,7 @@ class Cache extends vgCommon
                     else
                         $acquired = @sem_acquire($sem, $nowait);
 
-                    $this->writeLog("GET:" . print_r(array(
+					Cache::log("GET:" . print_r(array(
                             "res" => $sem
                         , "acquired" => $acquired
                         , "namespace" => $namespace
@@ -2073,7 +2045,7 @@ class Cache extends vgCommon
                         , "remove" => $params["remove"]
                         ), true), "log_sem");
                 } else {
-                    $this->writeLog($namespace . " ERROR: " . print_r(error_get_last(), true), "log_error_sem");
+					Cache::log($namespace . " ERROR: " . print_r(error_get_last(), true), "log_error_sem");
                 }
             }
         }
@@ -2098,7 +2070,7 @@ class Cache extends vgCommon
                         if($sem["remove"] && $released !== false)
                             $removed = @sem_remove($sem["res"]);
 
-                        $this->writeLog("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "log_sem");
+						Cache::log("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "log_sem");
 
                         unset($this->Sem[$key]);
                     }
@@ -2116,14 +2088,14 @@ class Cache extends vgCommon
             $sem = @sem_get($params["key"]);
             if($sem) {
                 $is_removed = @sem_remove($sem);
-                $this->writeLog("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+				Cache::log("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
             }
             if($namespace != "create") {
                 $params = $this->sem_get_params("create");
                 $sem = @sem_get($params["key"]);
                 if($sem) {
                     $is_removed = @sem_remove($sem);
-                    $this->writeLog("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
                 }
             }
             if($namespace != "update") {
@@ -2131,7 +2103,7 @@ class Cache extends vgCommon
                 $sem = @sem_get($params["key"]);
                 if($sem) {
                     $is_removed = @sem_remove($sem);
-                    $this->writeLog("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
                 }
             }
             if($namespace) {
@@ -2139,14 +2111,14 @@ class Cache extends vgCommon
                 $sem = @sem_get($params["key"]);
                 if($sem) {
                     $is_removed = @sem_remove($sem);
-                    $this->writeLog("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
                 }
 
                 $params = $this->sem_get_params(null, true);
                 $sem = @sem_get($params["key"]);
                 if($sem) {
                     $is_removed = @sem_remove($sem);
-                    $this->writeLog("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
                 }
             }
         }
@@ -2229,7 +2201,6 @@ class Cache extends vgCommon
         $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1] . ".php";
         $key = str_replace("/cache", "", $params["path"]) . "/" . $cache_filename;
 
-        require_once ($this->getAbsPathPHP("/library/gallery/classes/filemanager/Filemanager"));
         $fs = new Filemanager("php");
 
         $page = $fs->read($key, $errorDocumentFile);
@@ -2247,7 +2218,6 @@ class Cache extends vgCommon
         $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1] . ".php";
         $key = $params["user_path"];
 
-        require_once ($this->getAbsPathCachePHP("/library/gallery/classes/filemanager/Filemanager"));
         $fs = new Filemanager("php");
 
         return $fs->delete($key, $errorDocumentFile, Filemanager::SEARCH_IN_VALUE);
@@ -2270,7 +2240,7 @@ class Cache extends vgCommon
 
         //system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
         if(defined("DEBUG_MODE")) {
-            $this->writeLog(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
+			Cache::log(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
         }
 
         $this->send_header_content(false, false, false, false);
@@ -2333,7 +2303,7 @@ class Cache extends vgCommon
                     if(is_numeric($action)) {
                         $this->http_response_code($action);
 
-                        $this->writeLog(" RULE: " . $rule . " ACTION: " . $action . " URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_badpath");
+						Cache::log(" RULE: " . $rule . " ACTION: " . $action . " URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_badpath");
                         exit;
                     } elseif($do_redirect && $action) {
                         $redirect = $action;
@@ -2694,25 +2664,30 @@ class Cache extends vgCommon
      * @param $string
      * @param string $filename
      */
-    public function writeLog($string, $filename = "log")
+    public static function log($string, $filename = "log") //writeLog
     {
-        //todo: da migliorare integrandolo con la classe filemanager
-        $file = $this->getAbsPathCache("/log/" . $filename . '.txt');
-        if(!is_file($file)) {
-            $set_mod = true;
-        }
-        if($handle = @fopen($file, 'a'))
-        {
-            if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
-            {
-                $this->isError("Failed Write File: " . $file);
-                $set_mod = false;
-            }
-            @fclose($handle);
+		if(DEBUG_LOG === true) {
+			$log_path = self::_getDiskPath() . self::BASE_PATH . "/logs";
+			if(!is_dir($log_path))
+				mkdir($log_path, 0777, true);
 
-            if($set_mod)
-                chmod($file, 0777);
-        }
+			$file = $log_path . '/' . date("Y-m-d") . "_" . $filename . '.txt';
+			if(!is_file($file)) {
+				$set_mod = true;
+			}
+
+			if($handle = @fopen($file, 'a'))
+			{
+				if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
+				{
+					$i18n_error = true;
+				}
+				@fclose($handle);
+
+				if($set_mod)
+					chmod($file, 0777);
+			}
+		}
     }
 
 
@@ -2748,13 +2723,13 @@ class Cache extends vgCommon
 				if(!is_dir($cache_file["cache_path"]))
 					@mkdir($cache_file["cache_path"], 0777, true);
 
-				$buffer = system_write_cache_stats($buffer);
+				system_write_cache_stats();
 				if ($cache_file["primary"] != $cache_file["gzip"])
 					cm_filecache_write($cache_file["cache_path"], $cache_file["primary"], $buffer, $expires);
 
 				cm_filecache_write($cache_file["cache_path"], $cache_file["gzip"], gzencode($buffer), $expires);
 
-				cache_writeLog($cache_file["cache_path"] . "/" . $cache_file["primary"], "log_saved");
+				Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"], "log_saved");
 			} else {
 				system_write_cache_error_document($cache_file);
 				if ($cache_file["noexistfileerror"]) {
@@ -2783,7 +2758,7 @@ class Cache extends vgCommon
 			cache_send_header_content(false, false);
 
 		if(DEBUG_PROFILING === true)
-			profiling_stats((defined("DISABLE_CACHE")
+			Stats::benchmark((defined("DISABLE_CACHE")
 				? "Cache lvl 2 (no cache) "
 				: "Cache lvl 3 (gen cache)"
 			));
@@ -3046,78 +3021,251 @@ class Cache extends vgCommon
 	 * @param null $expires
 	 * @return mixed
 	 */
-	function system_write_cache_stats($buffer, $page = null, $expires = null) {
+function system_write_cache_stats() {
 		$cm = cm::getInstance();
-		$globals = ffGlobals::getInstance("gallery");
+	$globals = ffGlobals::getInstance("gallery");
 
-		if(!$page)
-			$page = $globals->cache["user_path"] . "/" . str_replace("_XHR", "", $globals->cache["file"]["filename"]);
+	check_function("Storage");
 
-		if(!$expires)
-			$expires = time() + (60 * 60 * 24 * 1);
+	//todo: Impostazioni di base da fare come oggetto
+	$service = "server";
+	$this_controllers = array(
+		"server" => array(
+			"default" => false
+			, "services" => null
+			, "storage" => array(
+				"nosql" => null
+				//, "fs" => null
+			)
+		)
+	);
+	$this_struct = array(
+		"connectors" => array(
+			"sql"                       => array(
+				"prefix"				=> "CACHE_DATABASE_"
+				, "table"               => "cache_pages"
+				, "key"                 => "ID"
+			)
+			, "nosql"                   => array(
+				"prefix"				=> "CACHE_MONGO_DATABASE_"
+				, "table"               => "cache_pages"
+				, "key"                 => "ID"
+			)
+			, "fs"                      => array(
+				"path"                  => "/cache/notify"
+				, "name"                => "title"
+				, "var"					=> "s"
+			)
+		)
+		, "table" => array(
+			"db" => array(
+				"title" 				=> "title"
+			)
+		)
+		, "type" => array(
+			"url"						=> "string"
+			, "get"						=> "array"
+			, "domain"					=> "string"
+			, "action"					=> array(
+				"name"					=> "string"
+				, "value"				=> "string"
+			)
+			, "title" 					=> "string"
+			, "description" 			=> "string"
+			, "cover"					=> array(
+				"url" 					=> "string:toImage"
+				, "width" 				=> "number"
+				, "height" 				=> "number"
+			)
+			, "author" 					=> array(
+				"id" 					=> "number"
+				, "avatar" 				=> "string:toImage"
+				, "name" 				=> "string"
+				, "url" 				=> "string"
+				, "tags"				=> array(
+					"primary" 			=> "arrayOfNumber"
+					, "secondary" 		=> "arrayOfNumber"
+				)
+				, "uid"					=> "number"
+			)
+			, "tags"					=> array(
+				"primary" 				=> "arrayOfNumber"
+				, "secondary" 			=> "arrayOfNumber"
+				, "rel" 				=> "arrayOfNumber"
+			)
+			, "meta"					=> "array"
+			, "links"					=> "array"
+			, "microdata"				=> "array"
+			, "js"						=> array(
+				"url" 					=> "string"
+				, "keys" 				=> "array"
+			)
+			, "css"						=> array(
+				"url" 					=> "string"
+				, "keys" 				=> "array"
+			)
+			, "international"			=> "array"
+			, "settings"				=> "array" 	//$globals->page
+			, "template_layers"			=> "array"	//$globals->cache["layer_blocks"]
+			, "template_sections"		=> "array"	//$globals->cache["section_blocks"]
+			, "template_blocks"			=> "array"	//$globals->cache["layout_blocks"]
+			, "template_ff"				=> "array"
+			, "keys_D"					=> "arrayOfNumber"
+			, "keys_G"					=> "array"
+			, "keys_M"					=> "array"
+			, "keys_S"					=> "array"
+			, "keys_T"					=> "array"
+			, "keys_V"					=> "arrayOfNumber"
+			, "http_status"				=> "number"
+			, "created"					=> "number"
+			, "last_update"				=> "number"
+			, "cache_last_update"		=> "number"
+			, "cache"					=> "array"
+			, "user_vars"				=> "array"
+		)
+	);
+	$struct = $this_controllers[$service]["struct"];
 
-		$s = array();
-		if(is_file($globals->cache["file"]["cache_path"] . "/stats.php")) {
-			$output = exec("php -l " . addslashes($globals->cache["file"]["cache_path"] . "/stats.php"));
-			if(strpos($output, "No syntax errors") === 0)
-				require($globals->cache["file"]["cache_path"] . "/stats.php");
+	$connectors = $this_controllers[$service]["storage"];
+	foreach($connectors AS $type => $data)
+	{
+		if(!$data)
+		{
+			$connectors[$type] = array(
+				"service" => null
+				, "connector" => $this_struct["connectors"][$type]
+			);
 		}
-
-		$s[$page]["tags"] = array();
-		if(is_array($globals->seo) && count($globals->seo)) {
-			foreach($globals->seo AS $seo_type => $seo_data)
-			{
-				if($seo_type == "current")
-					continue;
-
-				if($seo_data["tags"]["primary"])
-					$s[$page]["tags"]["primary"] .= ($s[$page]["tags"]["primary"] ? "," : "") . $seo_data["tags"]["primary"];
-				if($seo_data["tags"]["secondary"])
-					$s[$page]["tags"]["secondary"] .= ($s[$page]["tags"]["secondary"] ? "," : "") . $seo_data["tags"]["secondary"];
-				if($seo_data["tags"]["rel"])
-					$s[$page]["tags"]["rel"] .= ($s[$page]["tags"]["rel"] ? "," : "") . $seo_data["tags"]["rel"];
-
-			}
-		}
-		$s[$page]["keywords"] = array();
-		$s[$page]["blocks"] = array(
-			"section" => $globals->cache["section_blocks"]
-		, "layout" => $globals->cache["layout_blocks"]
-		, "data" => $globals->cache["data_blocks"]
-		, "ff_blocks" => $globals->cache["ff_blocks"]
-		);
-		$s[$page]["hits"] = $s[$page]["hits"] + 1;
-
-		if(!$cm->isXHR()) {
-			$s[$page]["meta"] = $cm->oPage->page_meta;
-			$s[$page]["title"] = $cm->oPage->title;
-			$s[$page]["js"] = $cm->oPage->page_defer["js"];
-			$s[$page]["css"] = $cm->oPage->page_defer["css"];
-
-			$link_path = $globals->cache["file"]["cache_path"] . "/" . basename($globals->cache["file"]["cache_path"]);
-			$res_path = str_replace(CM_CACHE_PATH, "/asset", $link_path);
-			if(is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"]) == 1) {
-				$real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["css"][0]);
-
-				//symlink($real_file, $link_path . ".css");
-				//symlink(str_replace(".css", ".css.gz", $real_file), $link_path . ".css.gz");
-
-				// $buffer = str_replace($cm->oPage->page_defer["css"][0], $res_path . ".css", $buffer);
-			}
-			if(is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"]) == 1) {
-				$real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["js"][0]);
-
-				//symlink($real_file, $link_path . ".js");
-				//symlink(str_replace(".js", ".js.gz", $cm->oPage->page_defer["js"][0]), $link_path . ".js.gz");
-
-				// $buffer = str_replace($cm->oPage->page_defer["js"][0], $res_path . ".js", $buffer);
-			}
-
-		}
-		cm_filecache_write($globals->cache["file"]["cache_path"], "stats.php", "<?php\n" . '$s = ' . var_export($s, true) . ";", $expires);
-
-		return $buffer;
 	}
+	$storage = Storage::getInstance($connectors, array(
+		"struct" => $this_struct["type"]
+	));
+
+	//codice operativo
+	$created 							= time();
+
+	$tags = array(
+		"primary" 					=> array()
+		, "secondary" 				=> array()
+		, "rel" 					=> array()
+	);
+
+	if(is_array($cm->oPage->page_js) && count($cm->oPage->page_js)) {
+		$page_js 					= $cm->oPage->page_js;
+	}
+
+	if(is_array($cm->oPage->page_css) && count($cm->oPage->page_css)) {
+		$page_css 					= array_diff($cm->oPage->page_css, $globals->links);
+	}
+
+	$res = cache_get_request($_GET);
+	$get = $res["request"];
+
+	$s = array(
+		"url"						=> $globals->cache["user_path"]
+		, "get"						=> $get /* (is_array($globals->request) && count($globals->request)
+										? $globals->request
+										: array()
+									) da approfondire*/
+		, "domain"					=> DOMAIN_INSET
+		, "action"					=> array(
+			"name"					=> $globals->seo["current"]
+			, "value"				=> null
+		)
+		, "title" 					=> $cm->oPage->title
+		, "description" 			=> $cm->oPage->page_meta["description"]["content"]
+		, "cover"					=> array_filter($globals->cover)
+		, "author" 					=> $globals->author
+		, "tags"					=> $globals->tags
+		, "meta"					=> $cm->oPage->page_meta
+		, "links"					=> $globals->links
+		, "microdata"				=> $globals->microdata
+		, "js"						=> array(
+			"url" 					=> (is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"])
+										? $cm->oPage->page_defer["js"][0]
+										: ""
+									)
+			, "keys" 				=> $page_js
+		)
+		, "css"						=> array(
+			"url" 					=> (is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"])
+										? $cm->oPage->page_defer["css"][0]
+										: ""
+									)
+			, "keys" 				=> $page_css
+		)
+		, "international"			=> ffTemplate::_get_word_by_code("", null, null, true)
+		, "settings"				=> $globals->page
+		, "template_layers"			=> $globals->cache["layer_blocks"]
+		, "template_sections"		=> $globals->cache["section_blocks"]
+		, "template_blocks"			=> (is_array($globals->cache["layout_blocks"]) && count($globals->cache["layout_blocks"])
+										? array_keys($globals->cache["layout_blocks"])
+										: array()
+									)
+		, "template_ff"				=> $globals->cache["ff_blocks"]
+		, "keys_D"					=> (is_array($globals->cache["data_blocks"]["D"]) && count($globals->cache["data_blocks"]["D"])
+										? array_keys($globals->cache["data_blocks"]["D"])
+										: array()
+									)
+		, "keys_G"					=> (is_array($globals->cache["data_blocks"]["G"]) && count($globals->cache["data_blocks"]["G"])
+										? array_keys($globals->cache["data_blocks"]["G"])
+										: array()
+									)
+		, "keys_M"					=> (is_array($globals->cache["data_blocks"]["M"]) && count($globals->cache["data_blocks"]["M"])
+										? array_keys($globals->cache["data_blocks"]["M"])
+										: array()
+									)
+		, "keys_S"					=> (is_array($globals->cache["data_blocks"]["S"]) && count($globals->cache["data_blocks"]["S"])
+										? array_keys($globals->cache["data_blocks"]["S"])
+										: array()
+									)
+		, "keys_T"					=> (is_array($globals->cache["data_blocks"]["T"]) && count($globals->cache["data_blocks"]["T"])
+										? array_keys($globals->cache["data_blocks"]["T"])
+										: array()
+									)
+		, "keys_V"					=> (is_array($globals->cache["data_blocks"]["V"]) && count($globals->cache["data_blocks"]["V"])
+										? array_keys($globals->cache["data_blocks"]["V"])
+										: array()
+									)
+		, "http_status"				=> $globals->http_status
+		, "created"					=> $created
+		, "last_update"				=> $created
+		, "cache_last_update"		=> $created
+		, "cache"					=> str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
+		, "user_vars"				=> $globals->user_vars
+	);
+
+	//print_r($s);
+//	die();
+
+
+	$res = $storage->write(
+		$s
+		, array(
+			"set" => array(
+				"title" 				=> $cm->oPage->title
+				, "description" 		=> $cm->oPage->page_meta["description"]["content"]
+
+				, "keys_D"				=> $s["keys_D"]
+				, "keys_G"				=> $s["keys_G"]
+				, "keys_M"				=> $s["keys_M"]
+				, "keys_S"				=> $s["keys_S"]
+				, "keys_T"				=> $s["keys_T"]
+				, "keys_V"				=> $s["keys_V"]
+				, "http_status"			=> $s["http_status"]
+				, "last_update"	        => $created
+				, "cache"				=> "+" . str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
+			)
+			, "where" => array(
+				"url" 					=> $globals->cache["user_path"]
+				, "domain" 				=> DOMAIN_INSET
+				, "get" 				=> $get
+			)
+		)
+	);
+
+	//return $buffer;
+}
 
 	/**
 	 * @param $user
@@ -3407,4 +3555,23 @@ class Cache extends vgCommon
             )
         );
     }
+
+
+
+	//todo: da trovare e sistemare. Non usato nella classe
+	/**
+	 * @param $id
+	 * @return string
+	 */
+	public function get_page_by_id($id) {
+		$page = $this->get_settings("page");
+
+		if(isset($page["/" . $id]))
+			return "/" . $id;
+		else
+			return "/error";
+	}
 }
+
+
+
