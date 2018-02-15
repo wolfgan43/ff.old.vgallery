@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-require_once(__DIR__ . "/../vgCommon.php");
 
 class Filemanager extends vgCommon
 {

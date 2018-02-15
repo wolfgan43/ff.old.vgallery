@@ -23,7 +23,6 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-require_once(__DIR__ . "/../vgCommon.php");
 
 class Notifier extends vgCommon
 {
@@ -247,7 +246,6 @@ class Notifier extends vgCommon
 		$this->setParams($params);
 
         $this->loadControllers(__DIR__);        
-        $this->loadConfig();
          //da aggiungere inizializzazioni classe necessarie come anagraph
     }
     public function read($where = null, $fields = null, $sort = null)
@@ -257,8 +255,8 @@ class Notifier extends vgCommon
         if(!$this->isError())
         {
 			$service = "server";
-			$connectors = $this->controllers[$service]["storage"];
 			$struct = $this->controllers[$service]["struct"];
+			$connectors = $this->controllers[$service]["storage"];
             foreach($connectors AS $type => $data)
             {
                 if(!$data)
@@ -904,13 +902,6 @@ class Notifier extends vgCommon
 			)
         );
     }
-    private function loadConfig()
-    {
-        require_once($this->getAbsPathPHP("/storage/Storage", true));
-        require_once($this->getAbsPathPHP("/mailer/Mailer", true));
-    }
-
-
 
     private function get_users($users = null, $groups = null)
     {

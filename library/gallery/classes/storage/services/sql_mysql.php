@@ -39,9 +39,6 @@ class storageMysql
         $this->storage = $storage;
         $this->setConfig();
 
-        if (!class_exists("ffDB_Sql"))
-            require_once($this->storage->getAbsPathPHP("/ff/classes/ffDb_Sql/ffDb_Sql_mysqli"));
-
         $this->device = new ffDB_Sql();
         //$this->device->on_error = "ignore";
 

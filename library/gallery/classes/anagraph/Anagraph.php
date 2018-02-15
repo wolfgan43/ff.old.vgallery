@@ -24,7 +24,6 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-require_once(__DIR__ . "/../vgCommon.php");
 
 class Anagraph extends vgCommon
 {

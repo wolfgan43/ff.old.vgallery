@@ -37,9 +37,6 @@ class storageMongodb {
         $this->storage = $storage;
         $this->setConfig();
 
-        if (!class_exists("ffDB_MongoDB"))
-            require_once($storage->getAbsPathPHP("/ff/classes/ffDB_Mongo/ffDb_MongoDB"));
-
         $this->device = new ffDB_MongoDB();
         $this->device->on_error = "ignore";
 

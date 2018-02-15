@@ -28,20 +28,44 @@
 abstract class vgCommon 
 {
     const PHP_EXT                       = "php";
+    const SQL_PREFIX					= "FF_DATABASE_";
+	const NOSQL_PREFIX					= "MONGO_DATABASE_";
 
 	protected $services 				= null;
 	protected $controllers 				= null;
 
     private $error                      = null;
     private $debug                      = array();
-    private $disk_path                  = null;
+    static $disk_path                  = null;
     private $theme                      = array(
                                             "cms"           => "gallery"
                                             , "frontend"    => "site"
                                         );
 
+	public static function getPrefix($type)
+	{
+		switch ($type) {
+			case "sql":
+				return self::SQL_PREFIX;
+				break;
+			case "nosql":
+				return self::NOSQL_PREFIX;
+				break;
+			default;
+		}
+	}
+	protected static function _getDiskPath() {
+		if(!self::$disk_path) {
+			self::$disk_path = (defined("FF_DISK_PATH")
+				? FF_DISK_PATH
+				: str_replace("/library/gallery/classes", "", __DIR__)
+			);
+		}
+		return self::$disk_path;
+	}
+
 	public function getDiskPath() {
-		return $this->disk_path;
+		return $this::_getDiskPath();
 	}
     public function getTheme($name)
     {
@@ -51,18 +75,12 @@ abstract class vgCommon
     {
         return $this->getAbsPath($path . "." . $this::PHP_EXT, $use_class_path);
     }
+
     public function getAbsPath($path, $use_class_path = false)
     {
-        if(!$this->disk_path) {
-            if(defined("FF_DISK_PATH"))
-                $this->disk_path = FF_DISK_PATH;
-            else
-                $this->disk_path = str_replace("/library/gallery/classes", "", __DIR__);
-        }
-        
         return ($use_class_path
             ? __DIR__
-            : $this->disk_path
+            : $this::_getDiskPath()
         ) . $path;
     }    
     public function addService($controller, $service = null) 
@@ -115,8 +133,22 @@ abstract class vgCommon
 			$this->addService($services);
 		}
 	}
+
 	public function setController($name, $default) {
-		$this->controllers[$name]["default"] = $default;
+		if(is_array($default)) {
+			$this->controllers[$name]["storage"] = $default;
+		} else {
+			$this->controllers[$name]["default"] = $default;
+		}
+	}
+	public function getController($service, $param = null) {
+		return ($param
+			? $this->controllers[$service][$param]
+			: $this->controllers[$service]
+		);
+	}
+	public function getConnector($connector) {
+		$this->connectors[$connector];
 	}
     public function setParams($params)
     {
@@ -153,7 +185,14 @@ abstract class vgCommon
                         $this->controllers[$arrService[0]]["services"][] = $arrService[1];
                         
                         $this->controllers_rev[$arrService[1]] = $arrService[0];
-                    }
+                    } else {
+						$this->controllers[$arrService[0]] = array(
+																"default"                   => $arrService[1]
+																, "services"                => null
+																, "storage"                 => null
+																, "struct"					=> null
+															);
+					}
                 }
             }            
         }

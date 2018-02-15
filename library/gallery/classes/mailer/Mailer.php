@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-require_once(__DIR__ . "/../vgCommon.php");
 
 class Mailer extends vgCommon
 {
@@ -200,7 +199,7 @@ class Mailer extends vgCommon
      */
     public function send($message = null, $subject = null, $to = null, $from = null, $cc = null, $bcc = null, $actions = null, $attach = null, $referer = null)
     {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 
         $this->clearResult($from);
 //todo: $notify da fare e $send_copy e $actions e $users e $groups e $referer
@@ -230,7 +229,7 @@ class Mailer extends vgCommon
             }
         }
 
-        $this->exTime = profiling_stopwatch($start);
+        $this->exTime = Stats::stopwatch($start);
 
         cache_writeLog($this->debug_backtrace(__FILE__) . "\n"
 			. "URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"] . "\n"
@@ -625,8 +624,6 @@ class Mailer extends vgCommon
     }
     private function loadConfig($service = "email")
     {
-        require_once($this->getAbsPathPHP("/storage/Storage", true));
-
         if($this->name) {
 			$connectors = $this->controllers[$service]["storage"];
 			foreach ($connectors AS $type => $data) {
@@ -773,14 +770,6 @@ class Mailer extends vgCommon
 
         if($service)
         {
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmailer"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmaileroauth"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmaileroauthgoogle"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.smtp"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/class.pop3"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/extras/EasyPeasyICS"));
-            require_once($this->getAbsPathPHP("/library/phpmailer/extras/ntlm_sasl_client"));
-
             $controller                                                 = "mailer" . ucfirst($service);
             require_once($this->getAbsPathPHP("/mailer/services/" . $type . "_" . $service, true));
 
