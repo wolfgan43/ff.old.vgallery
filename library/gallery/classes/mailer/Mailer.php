@@ -184,7 +184,255 @@ class Mailer extends vgCommon
         $this->setParams($params);
         $this->loadControllers(__DIR__);
     }
-
+    
+    public function renderPreview($message = null, $subject = null) {
+        $this->clearResult($from);
+        //todo: $notify da fare e $send_copy e $actions e $users e $groups e $referer
+        $this->setMessage($message, $subject, $actions, $attach, $referer);
+        
+        $this->loadConfig();
+        $this->loadTemplate();
+        
+            $type                                                           = "email";
+            if(!$service)
+                $service                                                    = $this->controllers[$type]["default"];
+                
+                if($service)
+                {
+                    require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmailer"));
+                    require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmaileroauth"));
+                    require_once($this->getAbsPathPHP("/library/phpmailer/class.phpmaileroauthgoogle"));
+                    require_once($this->getAbsPathPHP("/library/phpmailer/class.smtp"));
+                    require_once($this->getAbsPathPHP("/library/phpmailer/class.pop3"));
+                    require_once($this->getAbsPathPHP("/library/phpmailer/extras/EasyPeasyICS"));
+                    require_once($this->getAbsPathPHP("/library/phpmailer/extras/ntlm_sasl_client"));
+                    
+                    $controller                                                 = "mailer" . ucfirst($service);
+                    require_once($this->getAbsPathPHP("/mailer/services/" . $type . "_" . $service, true));
+                    
+                    $driver                                                     = new $controller($this);
+                    
+                    $this->smtp                                                 = $driver->getConfig();
+                    $lang                                                       = ($this->lang
+                        ? $this->lang
+                        : FF_LOCALE
+                        );
+                    
+                    $mail                                                       = new phpmailer();
+                    $mail->SetLanguage(strtolower(substr($lang, 0, -1)), $this->getAbsPath("/library/phpmailer/language/"));
+                    $mail->Subject                                              = $this->process_mail_subject();
+                    $mail->CharSet                                              = strtolower(FF_DEFAULT_CHARSET);
+                    $mail->Encoding                                             = "quoted-printable";
+                    
+                    if($this->smtp["auth"]) {
+                        $mail->IsSMTP();
+                    } else {
+                        $mail->IsMail();
+                    }
+                    
+                    $mail->Host                                                 = $this->smtp["host"];
+                    $mail->SMTPAuth                                             = $this->smtp["auth"];
+                    $mail->Username                                             = $this->smtp["username"];
+                    $mail->Port                                                 = $this->smtp["port"];
+                    $mail->Password                                             = $this->smtp["password"];
+                    $mail->SMTPSecure                                           = $this->smtp["secure"];
+                    $mail->SMTPAutoTLS                                          = false;
+                    
+                    $froms 														= array_values($this->from);
+                    $from 														= $froms[0];
+                    
+                    $mail->FromName                                             = $from["name"];
+                    
+                    if (strpos($this->smtp["username"], "@") === false)
+                        $mail->From = $from["email"];
+                        else
+                            $mail->From = $this->smtp["username"];
+                            
+                            if ($this->smtp["username"] != $from["email"])
+                                $mail->AddReplyTo($from["email"], $from["name"]);
+                                
+                                if(is_array($this->to) && count($this->to))
+                                {
+                                    foreach($this->to AS $to)
+                                    {
+                                        $mail->addAddress($to["email"], $to["name"]);
+                                    }
+                                }
+                                
+                                if(is_array($this->cc) && count($this->cc))
+                                {
+                                    foreach($this->cc AS $cc)
+                                    {
+                                        $mail->addCC($cc["email"], $cc["name"]);
+                                    }
+                                }
+                                
+                                if(is_array($this->bcc) && count($this->bcc))
+                                {
+                                    foreach($this->bcc AS $bcc)
+                                    {
+                                        $mail->addBCC($bcc["email"], $bcc["name"]);
+                                    }
+                                }
+                                
+                                /**
+                                 * Process Owner
+                                 */
+                                $this->tpl_html->set_var("SezOwner", "");
+                                if (is_array($this->owner)) {
+                                    foreach ($this->owner AS $owner_label => $owner_value) {
+                                        if (!strlen($owner_value))
+                                            continue;
+                                            
+                                            $this->tpl_html->set_var("owner_label", $owner_label);
+                                            $this->tpl_html->set_var("owner", $owner_value);
+                                            
+                                            $this->tpl_html->set_var("owner_" . $owner_label, $owner_value);
+                                            $this->tpl_html->set_var("owner_" . $owner_label . "_label", $owner_label);
+                                            $this->tpl_html->parse("SezOwnerLabel", false);
+                                            $this->tpl_html->parse("SezOwner", true);
+                                    }
+                                } elseif (strlen($this->owner)) {
+                                    $this->tpl_html->set_var("owner", $this->owner);
+                                    $this->tpl_html->parse("SezOwner", false);
+                                }
+                                
+                                /**
+                                 * Process Fields
+                                 */
+                                if (is_array($this->fields))
+                                {
+                                    $count_group = 0;
+                                    $group_type = array("Table" => true);
+                                    foreach ($this->fields AS $fields_key => $fields_value)
+                                    {
+                                        $field_type = $fields_value["settings"]["type"];
+                                        if (is_array($fields_value) && count($fields_value))
+                                        {
+                                            $count_row = 0;
+                                            foreach ($fields_value AS $fields_value_key => $fields_value_value)
+                                            {
+                                                if (strtolower($fields_value_key) == "settings")
+                                                    continue;
+                                                    
+                                                    switch ($field_type)
+                                                    {
+                                                        case "Table":
+                                                            if (is_array($fields_value_value) && count($fields_value_value))
+                                                            {
+                                                                foreach ($fields_value_value AS $fields_value_value_key => $fields_value_value_value)
+                                                                {
+                                                                    if (strtolower($fields_value_value_key) == "settings")
+                                                                        continue;
+                                                                        
+                                                                        $this->parse_mail_field($fields_value_value_value, $fields_value_value_key, $field_type, $count_row);
+                                                                }
+                                                                
+                                                                $this->parse_mail_row($field_type, true);
+                                                            } else {
+                                                                $this->parse_mail_field($fields_value_value, $fields_key . "_" . $fields_value_key, $field_type);
+                                                                $this->parse_mail_row($field_type);
+                                                            }
+                                                            break;
+                                                        default:
+                                                            if (is_array($fields_value_value) && count($fields_value_value))
+                                                            {
+                                                                foreach ($fields_value_value AS $fields_value_value_key => $fields_value_value_value) {
+                                                                    if (strtolower($fields_value_value_key) == "settings")
+                                                                        continue;
+                                                                        
+                                                                        $this->parse_mail_field($fields_value_value_value, $fields_value_value_key, $field_type, $count_row);
+                                                                        
+                                                                }
+                                                                
+                                                                $this->parse_mail_row($field_type, true);
+                                                            } else {
+                                                                $this->parse_mail_field($fields_value_value, $fields_key . "_" . $fields_value_key, $field_type);
+                                                                $this->parse_mail_row($field_type);
+                                                            }
+                                                    }
+                                                    $count_row++;
+                                            }
+                                        } else {
+                                            $this->tpl_html->set_var($fields_key, $fields_value); //custom vars
+                                            if($this->tpl_text)
+                                                $this->tpl_text->set_var($fields_key, $fields_value); //custom vars
+                                        }
+                                        
+                                        $this->parse_mail_group($fields_key, $group_type, $field_type);
+                                        
+                                        $count_group++;
+                                    }
+                                    
+                                    $this->tpl_html->parse("SezFields", false);
+                                    if($this->tpl_text)
+                                        $this->tpl_text->parse("SezFields", false);
+                                }
+                                
+                                $this->tpl_html->set_var("pre_body", $this->pre);
+                                $this->tpl_html->set_var("post_body", $this->post);
+                                $this->tpl_html->set_var("real_name", $this->process_mail_field($this->name, null, "smart_url"));
+                                
+                                if($this->tpl_text)
+                                {
+                                    $this->tpl_text->set_var("pre_body", $this->pre);
+                                    $this->tpl_text->set_var("post_body", $this->post);
+                                    $this->tpl_text->set_var("real_name", $this->process_mail_field($this->name, null, "smart_url"));
+                                }
+                                
+                                if($this->tpl_html) {
+                                    $mail->IsHTML(true);
+                                    $mail->Body = $this->tpl_html->rpparse("main", false);
+                                    if($this->tpl_text)
+                                        $mail->AltBody = $this->tpl_text->rpparse("main", false);
+                                } else {
+                                    $mail->IsHTML(false);
+                                    $mail->Body = $this->tpl_text->rpparse("main", false);
+                                }
+                                
+                                /*
+                                 * Images
+                                 */
+                                if (is_dir(ffCommon_dirname($this->tpl_html_path) . "/images")) {
+                                    $arrEmailImages = glob(ffCommon_dirname($this->tpl_html_path) . "/images/*");
+                                    
+                                    if (is_array($arrEmailImages) && count($arrEmailImages)) {
+                                        foreach ($arrEmailImages AS $email_image) {
+                                            $mail->AddEmbeddedImage($email_image, basename($email_image), basename($email_image), 'base64', ffMimeContentType($email_image));
+                                        }
+                                    }
+                                }
+                                
+                                /*
+                                 * Attachment
+                                 */
+                                if (is_array($this->attach) && count($this->attach)) {
+                                    foreach ($this->attach AS $attach_key => $attach_value) {
+                                        if (is_file(DISK_UPDIR . $attach_value))
+                                            $mail->AddAttachment(DISK_UPDIR . $attach_value, $attach_key);
+                                    }
+                                }
+                                
+                                if (is_dir(ffCommon_dirname($this->tpl_html_path) . "/attach")) {
+                                    $arrEmailAttach = glob(ffCommon_dirname($this->tpl_html_path) . "/attach/*");
+                                    if (is_array($arrEmailAttach) && count($arrEmailAttach)) {
+                                        foreach ($arrEmailAttach AS $email_attach) {
+                                            $mail->AddAttachment($email_attach, basename($email_attach));
+                                        }
+                                    }
+                                }
+                                
+                                
+                                //$rc = $mail->Send();
+                                if (!$rc)
+                                    $this->isError($mail->ErrorInfo);
+                }
+                $rel_path = FF_THEME_DIR . "/" . $this->theme . "/contents/email/" . $this->template . "/images/";
+                return str_replace("cid:", $rel_path,$mail->Body);
+        
+    }
+    
+    
     /**
      * @param $message
      * @param null $to
