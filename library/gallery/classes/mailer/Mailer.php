@@ -231,7 +231,7 @@ class Mailer extends vgCommon
 
         $this->exTime = Stats::stopwatch($start);
 
-        cache_writeLog($this->debug_backtrace(__FILE__) . "\n"
+		Cache::log($this->debug_backtrace(__FILE__) . "\n"
 			. "URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"] . "\n"
 			. "name (struct from db): " . $this->name . "\n"
 			. "tpl: " . $this->template . " (" . $this->tpl_html_path . ")" . "\n"
@@ -640,7 +640,7 @@ class Mailer extends vgCommon
 			$struct = $this->storage["obj"]->lookup($this->struct["storage"]["struct"]["table"]
 				, array(
 					$this->getField($this->struct["storage"]["struct"]["key"], "struct") => $this->name
-				));
+				), $this->struct["storage"]["struct"]["fields"]);
 
 			if (!$struct)
 				$struct = $this->makeAccount(); //TODO: da implementare
