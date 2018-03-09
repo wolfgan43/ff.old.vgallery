@@ -144,13 +144,13 @@ function system_set_media_cascading($return = false) {
 	$base_path = FF_THEME_DIR . "/" . FRONTEND_THEME;
 	$browser_name = strtolower($browser["name"]);
 	$lang_name = strtolower(LANGUAGE_INSET) ;
-	$pathname = str_replace("/", "_", trim($setting_path, "/"));
+	/*$pathname = str_replace("/", "_", trim($setting_path, "/"));
 	$skip_cache = (defined("DISABLE_CACHE")
 					? true
 					: $globals->cache["enabled"] === false
 						? true
 						: false
-				);
+				);*/
 	
 	$arrSettingsPath = array();
 	if($setting_path != ffCommon_dirname($setting_path)) {
@@ -205,8 +205,8 @@ function system_set_media_cascading($return = false) {
 							, "file" => $filename . ".js"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $filename . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $filename . ".js");
+					//if($skip_cache)
+            			//$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $filename . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $filename . ".js");
 				}
 
 				// JS di Livello di lingua
@@ -217,8 +217,8 @@ function system_set_media_cascading($return = false) {
 							, "file" => $filename . "-" . $lang_name . ".js"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $filename . "-" . $lang_name . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $filename . "-" . $lang_name . ".js");
+					//if($skip_cache)
+            			//$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $filename . "-" . $lang_name . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $filename . "-" . $lang_name . ".js");
 				} 
 				
 				
@@ -230,8 +230,8 @@ function system_set_media_cascading($return = false) {
 							, "file" => $filename . ".js"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $browser_name . "/" . $filename . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $browser_name . "/" . $filename . ".js");
+					//if($skip_cache)
+            			//$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $browser_name . "/" . $filename . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $browser_name . "/" . $filename . ".js");
 				}
 				
 				// JS di Livello di lingua specifico per Browser
@@ -242,8 +242,8 @@ function system_set_media_cascading($return = false) {
 							, "file" => $filename . "-" . $lang_name . ".js"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $browser_name . "/" . $filename . "-" . $lang_name . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $browser_name . "/" . $filename . "-" . $lang_name . ".js");
+					//if($skip_cache)
+            			//$cm->oPage->override_js[$js_key] = $base_path . "/javascript/" . $browser_name . "/" . $filename . "-" . $lang_name . ".js" . "?" . filemtime(FF_DISK_PATH . $base_path . "/javascript/" . $browser_name . "/" . $filename . "-" . $lang_name . ".js");
 				} 
 			}
 			
@@ -262,8 +262,8 @@ function system_set_media_cascading($return = false) {
 								, "file" => $filename . ".css"
 							));
 
-						if($skip_cache)
-            				$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . ".css");
+						//if($skip_cache)
+            				//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . ".css");
 					}
 				}
 				// CSS di Livello di lingua
@@ -274,8 +274,8 @@ function system_set_media_cascading($return = false) {
 							, "file" => $filename . "-" . $lang_name . ".css"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . "-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . "-" . $lang_name . ".css");
+					//if($skip_cache)
+            			//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . "-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . "-" . $lang_name . ".css");
 				} 
 
 				// CSS di Livello specifico per Browser
@@ -286,8 +286,8 @@ function system_set_media_cascading($return = false) {
 							, "file" => $filename . ".css"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/". $filename . ".css");
+					//if($skip_cache)
+            			//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/". $filename . ".css");
 				}
 				// CSS di Livello di lingua specifico per Browser
 				$css_key = $browser_name . "_" . $filename . "-" . $lang_name;
@@ -297,8 +297,8 @@ function system_set_media_cascading($return = false) {
 							, "file" => $filename . "-" . $lang_name . ".css"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . "-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/". $filename . "-" . $lang_name . ".css");
+					//if($skip_cache)
+            			//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . "-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/". $filename . "-" . $lang_name . ".css");
 				} 				
 				
 				// CSS di Livello per la stampa
@@ -310,8 +310,8 @@ function system_set_media_cascading($return = false) {
 							, "css_media" => "print"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . "-print" . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . "-print" . ".css");
+					//if($skip_cache)
+            			//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . "-print" . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . "-print" . ".css");
 				}
 				// CSS di Livello di lingua per la stampa
 				$css_key = $filename . "-print-" . $lang_name;
@@ -322,8 +322,8 @@ function system_set_media_cascading($return = false) {
 							, "css_media" => "print"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . "-print-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . "-print-" . $lang_name . ".css");
+					//if($skip_cache)
+            			//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $filename . "-print-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $filename . "-print-" . $lang_name . ".css");
 				} 
 				
 				// CSS di Livello per la stampa specifico per Browser
@@ -335,8 +335,8 @@ function system_set_media_cascading($return = false) {
 							, "css_media" => "print"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . "-print" . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/" . $filename . "-print" . ".css");
+					//if($skip_cache)
+            			//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . "-print" . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/" . $filename . "-print" . ".css");
 				}
 				// CSS di Livello di lingua per la stampa specifico per Browser
 				$css_key = $browser_name . "_" . $filename . "-print-" . $lang_name;
@@ -347,8 +347,8 @@ function system_set_media_cascading($return = false) {
 							, "css_media" => "print"
 						));
 
-					if($skip_cache)
-            			$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . "-print-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/" . $filename . "-print-" . $lang_name . ".css");
+					//if($skip_cache)
+            			//$cm->oPage->override_css[$css_key] = $base_path . "/css/" . $browser_name . "/" . $filename . "-print-" . $lang_name . ".css" . "?" . filemtime(FF_DISK_PATH . $base_path . "/css/" . $browser_name . "/" . $filename . "-print-" . $lang_name . ".css");
 				}				
 			}			
 		}
