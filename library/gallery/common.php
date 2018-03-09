@@ -531,10 +531,9 @@ function get_sid($id, $smart_url = null, $return_key = false) {
 			&& array_key_exists($id, $cache["sid"])
 		) { 
 		    unset($cache["sid"][$id]);
-		    $cache_change++;
-		}
-		if($cache_change)    
+
 			set_session("cache", $cache);
+		}
 		
 		return $id;	
 	} else {
