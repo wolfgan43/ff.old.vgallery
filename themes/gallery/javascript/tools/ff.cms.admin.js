@@ -39,7 +39,7 @@ ff.cms.admin.makeNewUrl = function(target, altUrl, parentValue) {
     		parentValue = "";
 
     if(jQuery(target).val()) {
-		ff.pluginLoad("ff.ffField.slug", "/themes/restricted/ff/ffField/widgets/slug/slug.js", function(){
+		ff.pluginLoad("ff.ffField.slug", "/themes/responsive/ff/ffField/widgets/slug/slug.js", function(){
 		    var pre = (parentValue && parentValue != "/" ? "/" : "");
 			var slugName = ff.ffField.slug(target, undefined, pre);
 
