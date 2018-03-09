@@ -25,7 +25,7 @@
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden !important;
-	
+
 }
 
 .vg-toolbar .vg-layout-actions  { float:left; text-align:left; }
@@ -73,15 +73,15 @@
 
 .vg-layout-actions .vg-toggle LI LI {
 	background:#000;
-} 
+}
 
 .vg-layout-actions .vg-toggle LI LI A {
 	padding-right:10px;
-} 
+}
 
 .vg-layout-actions .vg-toggle LI LI A:hover {
 	background:#222;
-} 
+}
 
 
 .vg-layout-actions .vg-toggle LI A {
@@ -118,7 +118,7 @@
 
 .hb-right-bottom { transform:translateY(100%); }
 
-.vg-toolbar A { 
+.vg-toolbar A {
 	display:inline-block !important;
 	color:#fff !important;
 	padding:0 !important;
@@ -134,7 +134,7 @@
 	float:left;
 }
 
- .vg-toolbar A:hover { color:#fff !important; opacity:1; }
+.vg-toolbar A:hover { color:#fff !important; opacity:1; }
 
 .vg-layout-actions A {
 	width:32px;
@@ -154,22 +154,22 @@
 .vg-edit-actions { float:right;  text-align:right; white-space:nowrap; }
 .vg-edit-actions LI { display:inline-block; max-width:100%}
 
-.vg-edit-actions LI:nth-child(1):nth-last-child(2), 
+.vg-edit-actions LI:nth-child(1):nth-last-child(2),
 .vg-edit-actions LI:nth-child(2):nth-last-child(1) { max-width:50% }
 
-.vg-edit-actions LI:nth-child(1):nth-last-child(3), 
-.vg-edit-actions LI:nth-child(2):nth-last-child(2), 
+.vg-edit-actions LI:nth-child(1):nth-last-child(3),
+.vg-edit-actions LI:nth-child(2):nth-last-child(2),
 .vg-edit-actions LI:nth-child(3):nth-last-child(1) { max-width:33.3% }
 
-.vg-edit-actions LI :nth-child(1):nth-last-child(4), 
-.vg-edit-actions LI :nth-child(2):nth-last-child(3), 
-.vg-edit-actions LI:nth-child(3):nth-last-child(2), 
+.vg-edit-actions LI :nth-child(1):nth-last-child(4),
+.vg-edit-actions LI :nth-child(2):nth-last-child(3),
+.vg-edit-actions LI:nth-child(3):nth-last-child(2),
 .vg-edit-actions LI:nth-child(4):nth-last-child(1) { max-width:25% }
 
 
 .vg-edit-actions LI:last-child A { padding-right:10px !important; }
 
-.vg-edit-actions A>.fa-stack { font-size:8px; } 
+.vg-edit-actions A>.fa-stack { font-size:8px; }
 .vg-edit-actions A>.fa-stack .fa-plus { color:#222; line-height:35px; z-index:2;  }
 
 
@@ -183,3 +183,43 @@
 }
 
 /* end compact */
+
+.vg-toolbar {
+	z-index:100;
+	/*height:auto !important;*/
+	/*width:auto !important;*/
+	right:0;
+}
+
+.dropdown-menu .vg-toolbar,
+.vgmenu .vg-toolbar {
+	height:auto !important;
+	right:-100%;
+}
+
+.vg-item .vg-toolbar {
+	width:auto !important;
+}
+
+.vg-item .vg-toolbar LI {
+	line-height:1;
+}
+
+.vg-item .vg-toolbar LI A {
+	line-height:1;
+	padding:8px !important;
+}
+
+
+.vg-toolbar UL {
+	max-width:100% !important;
+	background:#222;
+}
+
+/*.vg-toolbar LI { line-height:1 }*/
+
+.vg-toolbar LI>A {
+	height:auto !important;
+	/*line-height:1;
+	padding:8px !important;*/
+}
