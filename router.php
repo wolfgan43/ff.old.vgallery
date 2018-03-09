@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Config Project
  */
-define("FF_SKIP_COMPONENTS", true);
 require_once("config.php");
 
 require_once(__CMS_DIR__ . "/library/gallery/system/cache.php");

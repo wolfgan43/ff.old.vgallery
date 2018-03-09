@@ -1,19 +1,19 @@
 /**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+ *   VGallery: CMS based on FormsFramework
+ Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  * @package VGallery
  * @subpackage core
@@ -44,8 +44,8 @@ ff.cms = (function () {
           }
 	  } else {
         if(value) {
-	  	    var separator = uri.indexOf(st) !== -1 ? "&" : st;	  	
-	        uri = uri + (uri.substr(uri.length - 1) == separator ? "" : separator) + key + "=" + value;   
+	  	    var separator = uri.indexOf(st) !== -1 ? "&" : st;
+	        uri = uri + (uri.substr(uri.length - 1) == separator ? "" : separator) + key + "=" + value;
         } else {
             uri = uri.trim("&");
         }
@@ -110,12 +110,12 @@ ff.cms = (function () {
 		var res = "";
 		if(targetid !== undefined) {
 			if(eval("typeof ff.cms.fn." + func) != "undefined" && jQuery.isFunction(eval("ff.cms.fn." + func))) {
-				res = eval("ff.cms.fn." + func + "('" + targetid + "')"); 
+				res = eval("ff.cms.fn." + func + "('" + targetid + "')");
 			} else {
 				if(debug)
 					console.error("ff.cms.fn." + func + " is not a plugin" + " (reference: " + (targetid ? targetid : "MainPage") + " )");
 			}
-		} else { 
+		} else {
 			if(debug)
 				console.error("Reference ID undefined in widgetProcess");
 		}
@@ -129,10 +129,10 @@ ff.cms = (function () {
 			case "append":
 				break;
 			case "replace":
-			default:   
+			default:
 		        jQuery(elem).html("Non trovato!");
-		}  
-		/* da arricchire*/  
+		}
+		/* da arricchire*/
     };
 	var parseBlock = function(elem, data, mode, effect) {
 		if(jQuery(elem).length) {
@@ -142,7 +142,7 @@ ff.cms = (function () {
 				data = jQuery("#" + itemID, data);
 
 			itemID = "#" + jQuery(data).attr("id");
-			
+
 			switch(mode) {
 				case "before":
 					jQuery(elem).before(data);
@@ -164,18 +164,18 @@ ff.cms = (function () {
 //			        jQuery(itemElem).remove();
 			        break;
 			    case "replace":
-			    default:   
+			    default:
 	                if(jQuery(data).attr("id") != jQuery(elem).attr("id") && jQuery(data).is(".block"))
 	                    jQuery(elem).html(jQuery(data).outerHTML());
 	                else
 				        jQuery(elem).html(jQuery(data).html());
 			        //itemElem = jQuery(elem);
 			}
-            jQuery("head").append(jQuery("LINK,STYLE,SCRIPT", data));
+			jQuery("head").append(jQuery("LINK,STYLE,SCRIPT", data));
             //jQuery("head").append(jQuery(data).nextAll("LINK"));
             //jQuery("head").append(jQuery(data).nextAll("STYLE"));
             //jQuery("head").append(jQuery(data).nextAll("SCRIPT"));
-			
+
 			//jQuery(itemID).attr("id"			, itemAttr["id"]);
 			jQuery(itemID).attr("data-admin"	, jQuery(data).attr("data-admin"));
 			jQuery(itemID).attr("data-src"		, jQuery(data).attr("data-src"));
@@ -188,7 +188,7 @@ ff.cms = (function () {
 				userCallback(undefined, itemID.replace("#", ""));
 
 			effect = ff.cms.widgetInit(itemID, effect);
-            
+
 			switch (effect) {
 				case false:
 					jQuery(itemID).fadeIn();
@@ -219,18 +219,18 @@ ff.cms = (function () {
 					jQuery(itemID).hide();
 					jQuery(itemID).fadeIn();
 			}
-            
+
             ff.lazyImg();
-			
+
 			return itemID;
-		}	
-	
+		}
+
 	};
 	var loadAjax = function(link, elem, effect, mode, onClickCallback, blockUI, jumpUI) {
 		var itemID = elem.attr("id");
         if(blockUI === undefined)
             blockUI = jQuery(elem).hasClass("blockui");
-            
+
         if(blockUI) {
             if(mode != "append" && mode != "prepend")
                 ff.cms.blockUI(elem, (jumpUI ? elem : false));
@@ -258,28 +258,28 @@ ff.cms = (function () {
                 var itemID = "#" + jQuery(elem).attr("id");
                 var pathname = link.split("?")[0];
                 var query = link.split("?")[1];
-                if(pathname == window.location.pathname) {
+                if(pathname == window.location.pathname) { //evita che le request xhr vengano cachate per 7 giorni
                 	query = (query ? query + "&" : "") +  new Date().getTime();
                 }
 
                 var index = "xhr-" + Date.now();
                 ajaxRequests[index] = jQuery.ajax({
-			        async: true,    
+			        async: true,
 			        type: "GET",
-			        url: pathname, 
+			        url: pathname,
 			        data: query,
 			        cache: true
 				}).done(function(data) {
 					if(data) {
-						var item = (typeof data == "object" 
+						var item = (typeof data == "object"
 							? data["html"] || ""
 							: data
 						);
-						
+
 						item = item.trim();
-						
+
 						cacheBlock[link] = item;
-						
+
 						itemID = parseBlock(elem, item, mode, effect);
 					} else {
                         parseError(elem, mode, effect);
@@ -291,8 +291,8 @@ ff.cms = (function () {
 	                    itemID = parseBlock(elem, item, mode, effect);
 			        }*/
 
-                        
-                        
+
+
 
 				}).fail(function(data) {
 			        switch(data.status) {
@@ -305,17 +305,17 @@ ff.cms = (function () {
                     delete ajaxRequests[index];
 
                     if(blockUI)
-					    ff.cms.unblockUI(elem); 
+					    ff.cms.unblockUI(elem);
 
                     if(onClickCallback)
-                        onClickCallback(itemID);  
+                        onClickCallback(itemID);
 				});
 			}
 		}
-	};	
+	};
 	var loadAjaxLink = function(elem, linkDefault, linkContainer, ajaxOnEvent, eventName) {
 		var arrAjaxOnEvent = ["load", "fadeIn"];
-			
+
 	    var callback = jQuery(elem).attr("data-callback");
 	    var effect = jQuery(elem).attr("data-effect");
 		var link = jQuery(elem).attr("data-src") || jQuery(elem).attr("href") || linkDefault;
@@ -323,7 +323,7 @@ ff.cms = (function () {
 		var targetID = "ajaxcontent";
 		if(!jQuery("#" + targetID).length) {
 			targetID = jQuery(container).attr("id") + targetID;
-			jQuery(container).after('<div id="' + targetID + '"></div>');		
+			jQuery(container).after('<div id="' + targetID + '"></div>');
 		}
 		if(linkContainer === undefined)
 			linkContainer = ".block";
@@ -333,7 +333,7 @@ ff.cms = (function () {
 	    }
 	    if(effect)
 	        arrAjaxOnEvent[1] = effect;
-	        
+
 	    if(callback) {
 	        try {
 	            eval("ff.cms.e." + id.replace(/[^a-zA-Z 0-9]+/g, "") + " = function() { " + callback + " }");
@@ -354,7 +354,7 @@ ff.cms = (function () {
 		                relContent = jQuery(this).attr("href");
 		            }
 		            if(relContent && jQuery(relContent).length && jQuery(relContent).hasClass("block")) {
-		                jQuery(relContent).hide(); 
+		                jQuery(relContent).hide();
 		            }
 
 		            jQuery(this).removeClass(ff.cms["class"]["current"]);
@@ -362,8 +362,8 @@ ff.cms = (function () {
 		        //jQuery(elem).closest("div").find("a").removeClass("selected");
 		        jQuery(elem).addClass(ff.cms["class"]["current"]);
 		    }
-		}	    
-	    loadAjax(link, jQuery("#" + targetID), arrAjaxOnEvent[1], "replace", eventName); 
+		}
+	    loadAjax(link, jQuery("#" + targetID), arrAjaxOnEvent[1], "replace", eventName);
 	};
 	var loadContent = function() {
 		var lazyBlock = [];
@@ -372,18 +372,18 @@ ff.cms = (function () {
 		    if (/*jQuery("#" + lazyBlock[i]).is(":visible") &&*/ ff.inView("#" + lazyBlock[i], 0.5) ) {
 				that.getBlock(lazyBlock[i], { "jumpUI" : false, "blockUI" : false});
 				lazyBlock.splice(i, 1);
-				i--;		    
+				i--;
 		    }
 		  }
       	  if(!lazyBlock.length)
-      		jQuery(window).unbind("scroll.lazyBlock");		  
-		};	
-		
+      		jQuery(window).unbind("scroll.lazyBlock");
+		};
+
 		/*jQuery('INPUT.ajaxcontent[type=hidden]').each(function() {
 		    var link = jQuery(this).val();
 		    var elem = jQuery(this);
 		    var eventName = jQuery(this).attr("data-ename") || undefined;
-		    
+
 		    var id = jQuery(this).attr("id");
 
 		    loadAjax(link, elem, false, "after", eventName);
@@ -391,16 +391,16 @@ ff.cms = (function () {
 
 		jQuery(document).on("click.ajaxcontent", "a.ajaxcontent", function(e) {
 			e.preventDefault();
-			
+
 			loadAjaxLink(this);
-			
+
 			return false;
 		});
-		
+
 		jQuery('.block').each(function() {
 			var arrAjaxOnReady = ["load", "fadeIn"];
 			var arrAjaxOnEvent = ["load", "fadeIn"];
-            
+
             var id = jQuery(this).attr("id");
             var link = jQuery(this).attr("data-src");
             var ajaxOnReady = jQuery(this).attr("data-ready");
@@ -413,15 +413,16 @@ ff.cms = (function () {
 				arrAjaxOnReady[0] = "";
 
 	        switch(arrAjaxOnReady[0]) {
-                case "inview":
-                    if(!ff.inView("#" + id, 0.5)) {
+            	case "inview":
+            	    if(!ff.inView("#" + id, 0.5)) {
                         lazyBlock.push(id);
                         break;
                     }
             	case "load":
             	case "reload":
-                    ff.cms.get(link);
-            		//loadAjax(link, jQuery(this), arrAjaxOnReady[1], "replace", eventName);
+            	    ff.cms.get(link);
+            	    //ff.cms.get(link, undefined, undefined, {"priority": "complete"});
+             		//loadAjax(link, jQuery(this), arrAjaxOnReady[1], "replace", eventName);
 					break;
             	case "preload":
             		if(!jQuery(this).is(":visible"))
@@ -448,22 +449,22 @@ ff.cms = (function () {
 
 					loadAjaxLink(this, link, undefined, ajaxOnEvent, eventName);
                 });
-            }                
+            }
 		});
-		
+
 		if(lazyBlock.length) {
-		    jQuery(window).bind("scroll.lazyBlock", processLazyBlock); 
+		    jQuery(window).bind("scroll.lazyBlock", processLazyBlock);
             processLazyBlock();
 		    //setTimeout("jQuery(window).scroll()", 400); //da trovare una soluzione migliore
 		}
 
 		if(jQuery("BODY").data("admin")) {
-            ff.cms.get("admin", {"target": "BODY"}, {"sid" : jQuery("BODY").data("admin")}
-                , {"inject" : "prepend"}
+		    ff.cms.get("admin", {"target": "BODY"}, {"sid" : jQuery("BODY").data("admin")}
+            , {"inject" : "prepend"}
             );
         }
 	};
-    var loadReq = function(target, reset) {
+	var loadReq = function(target, reset) {
         var socket = 1;
         var req = null;
         if(reset && serviceTimer) {
@@ -478,6 +479,20 @@ ff.cms = (function () {
 
                 target = false;
             } else {
+            	if(target === true) {
+            		if(serviceDefer["top"]) {
+                        target = "top";
+                    } else if(serviceDefer["complete"]) {
+                        target = "complete";
+                    } else if(serviceDefer["bottom"]) {
+                        target = "bottom";
+                    } else {
+            			return false;
+					}
+                    if(target)
+                    	serviceDefer[target]["status"] = "pending";
+				}
+
                 if (debug && serviceDefer[target])
                     console.info("Service Defer (" + target + "): " + serviceDefer[target]["status"] + " [exec]", serviceDefer[target]["req"]);
 
@@ -544,44 +559,37 @@ ff.cms = (function () {
 
                                             if (target && source) {
                                                 var html = "";
-                                                var tplRemove = [];
-                                                if (Array.isArray(response[name]["result"])) {
-                                                    response[name]["result"].each(function (i, item) {
-                                                        var tpl = jQuery(source).html();
 
-                                                        for (var property in item) {
-                                                            if (item.hasOwnProperty(property) && item[property]) {
-                                                                tpl = tpl.replaceAll("{{" + property + "}}", item[property]);
-                                                                if (!item[property])
-                                                                    tplRemove.push('*[data-if="' + property + '"]');
-                                                            }
-                                                        }
-                                                        html += tpl;
-                                                    });
-                                                } else {
-                                                    var tpl = jQuery(source).html();
-                                                    var tplVars = response[name][serviceTpl["vars"]] || response[name]["vars"];
-                                                    for (var property in tplVars) {
-                                                        if (tplVars.hasOwnProperty(property) && tplVars[property]) {
-                                                            tpl = tpl.replaceAll("{{" + property + "}}", tplVars[property]);
-                                                            if (!tplVars[property])
-                                                                tplRemove.push('*[data-if="' + property + '"]');
-                                                        }
-                                                    }
-                                                    html = tpl;
+                                                if (!Array.isArray(response[name]["result"])) {
+                                                    response[name]["result"] = new Array(response[name][serviceTpl["vars"]] || response[name]["vars"]);
                                                 }
+
+												response[name]["result"].each(function (i, item) {
+													var tplRemove = [];
+													var tpl = jQuery(source).html();
+
+													for (var property in item) {
+														if (item.hasOwnProperty(property) && item[property]) {
+															tpl = tpl.replaceAll("{{" + property + "}}", item[property]);
+															if (!item[property])
+																tplRemove.push('*[data-if="' + property + '"]');
+														}
+													}
+													if(tplRemove.length) {
+														tpl = jQuery(tpl);
+														jQuery(tplRemove.join(","), tpl).remove();
+														tpl = tpl.html();
+													}
+													html += tpl;
+												});
 
                                                 if (html) {
                                                     var pattern = /{{([^}]+)}}/g;
+
                                                     while (match = pattern.exec(html)) {
-                                                        tplRemove.push('*[data-if="' + match[1] + '"]');
                                                         html = html.replaceAll("{{" + match[1] + "}}", "");
                                                     }
-                                                    if (tplRemove.length) {
-                                                        html = jQuery(html);
-                                                        jQuery(tplRemove.join(","), html).remove();
 
-                                                    }
 
                                                     if (serviceOpt["inject"] == "prepend")
                                                         jQuery(target).prepend(html);
@@ -775,14 +783,14 @@ ff.cms = (function () {
                                         console.warn("Request Service: the response is not a object " + name, response[name]);
                                 }
 
-                                if(service[name]["callback"]) {
+								if(service[name]["callback"]) {
                                     if (jQuery.isFunction(service[name]["callback"])) {
                                         res = service[name]["callback"](response[name], globalVars);
                                         if (res) globalVars = res;
                                     } else {
-                                        if(debug)
+                                    	if(debug)
                                             console.warn("Request Service: the callback is not a function " + name, service[name]);
-                                    }
+									}
                                 }
                         }
                     }
@@ -833,21 +841,41 @@ ff.cms = (function () {
 
                         }
                     } else {
-                        // serviceDefer[target]["status"] = "completed";
+                       // serviceDefer[target]["status"] = "completed";
 
                     }
+
+                    loadReqNext(target);
                 } else {
                     if(debug)
                         console.info("Service All: " + document.readyState + " [ajax done]", service);
                 }
-
-            }).fail(function(error) {
+			}).fail(function(error) {
             }).error(function (xmlHttpRequest, textStatus, errorThrown) {
                 if(xmlHttpRequest.readyState == 0 || xmlHttpRequest.status == 0)
                     return;  // it's not really an error
-            });
+			});
+		}
+	};
+	var loadReqNext = function(target) {
+        var targetNext = false;
+        if(target =="top") {
+            if(serviceDefer["complete"])
+                targetNext = "complete";
+            else if(serviceDefer["bottom"])
+                targetNext = "bottom";
+        } else if(target =="complete") {
+            if (serviceDefer["bottom"])
+                targetNext = "bottom";
         }
-    };
+
+        if(targetNext) {
+            serviceDefer[targetNext]["status"] = "pending";
+            loadReq(targetNext);
+        } else {
+			serviceTimer = true;
+        }
+	};
 	var that = { // publics
             __ff : false, // used to recognize ff'objects
             "skipInit" : false,
@@ -858,64 +886,69 @@ ff.cms = (function () {
             "fn" : {},
             "e" : {},
             "libs" : {},
-			"debug" : function() {
-				debug = !debug;
-				return (debug ? "Start Debugging..." : "End Debug.");
-			},
-			"dump" : function() {
-				console.log({
-					"service" : service
-					, "defer" : serviceDefer
-					, events : jQuery._data( jQuery(document)[0], 'events' )
-					, timer: serviceTimer
-				});
-			},
+            "debug" : function() {
+                debug = !debug;
+                return (debug ? "Start Debugging..." : "End Debug.");
+            },
+            "dump" : function() {
+                console.log({
+                    "service" : service
+                    , "defer" : serviceDefer
+                    , events : jQuery._data( jQuery(document)[0], 'events' )
+                    , timer: serviceTimer
+                });
+            },
             "initCMS" : function() {
-                var that = this;
+				var that = this;
 
-                jQuery("#above-the-fold").remove();
+				jQuery("#above-the-fold").remove();
 
-                ff.fn.frame = function (params, data) {
-                    if(params.component !== undefined
-                        && data.html !== undefined
-                        && jQuery("#" + params.component).attr("id") !== undefined
-                    ) {
-                        ff.cms.widgetInit("#" + params.component);
-                    }
-                };
-                ff.pluginAddInit("ff.ajax", function () {
-                    ff.ajax.addEvent({
-                            "event_name" : "onUpdatedContent"
-                            , "func_name" : ff.fn.frame
-                    });
-                    ff.ajax.addEvent({
-                        "event_name"	: "onSuccess"
-                        , "func_name"	: function (data, params, injectid) {
-                            if (data.modules && data.modules.security && data.modules.security.loggedin) {
-                                if(typeof ga !== "undefined") {
-                                    var tracker = ga.getAll()[0];
-                                    if (tracker) {
-                                        tracker.send('event', {'userId':  'u-' + data.modules.security.UserNID});
-                                    }
-                                }
+				ff.fn.frame = function (params, data) {
+					if(params.component !== undefined
+						&& data.html !== undefined
+						&& jQuery("#" + params.component).attr("id") !== undefined
+					) {
+						ff.cms.widgetInit("#" + params.component);
+					}
+				};
+				ff.pluginAddInit("ff.ajax", function () {
+					ff.ajax.addEvent({
+							"event_name" : "onUpdatedContent"
+							, "func_name" : ff.fn.frame
+					});
+					ff.ajax.addEvent({
+						"event_name"	: "onSuccess"
+						, "func_name"	: function (data, params, injectid) {
+							if (data.modules && data.modules.security && data.modules.security.loggedin) {
+								if(typeof ga !== "undefined") {
+									var tracker = ga.getAll()[0];
+									if (tracker) {
+										tracker.send('event', {'userId':  'u-' + data.modules.security.UserNID});
+									}
+								}
 
-                            }
-                        }
-                    });
-                });
+							}
+						}
+					});
+				});
 
-                loadContent();
-                jQuery(window).on('beforeunload', function () {
-                    ff.cms.abortXHR();
-                });
+				loadContent();
+				ff.cms.widgetInit("");
+				jQuery(window).on('beforeunload', function () {
+					ff.cms.abortXHR();
+				});
 
                 if(document.readyState == "complete") {
+
+                    loadReq(true);
+
+                    /*
                     serviceTimer = true;
                     if (serviceDefer["complete"] && serviceDefer["complete"]["req"]) {
                         serviceDefer["complete"]["status"] = "pending";
                         loadReq("complete");
 
-                    }
+                    }*/
                 } else {
                     if(serviceDefer["loading"] && serviceDefer["loading"]["req"]) {
                         serviceDefer["loading"]["status"] = "pending";
@@ -932,13 +965,15 @@ ff.cms = (function () {
                     });
 
                     jQuery(window).on("load", function (e) {
-                        serviceTimer = true;
+                        loadReq(true);
+                        /*
+						serviceTimer = true;
                         if (serviceDefer["complete"] && serviceDefer["complete"]["req"]) {
                             serviceDefer["complete"]["status"] = "pending";
                             loadReq("complete");
-                        }
+                        }*/
                     });
-                }
+				}
             },
             "abortXHR" : function() {
                 for (var xhr in ajaxRequests) {
@@ -961,7 +996,7 @@ ff.cms = (function () {
 
                 if(!noAjaxBlock) {
                     if(!countBlock) {
-                        ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {			
+                        ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {
                             ff.ajax.blockUI();
                         });
                     }
@@ -970,13 +1005,13 @@ ff.cms = (function () {
                 }
             },
             "unblockUI" : function(blockElem, noAjaxBlock) {
-                if(blockElem) {    
+                if(blockElem) {
                     //jQuery(blockElem).css({"opacity": "", "pointer-events": ""});
                     jQuery(blockElem).removeClass("loading");
                 }
 
                 if(!noAjaxBlock) {
-                    countBlock--; 
+                    countBlock--;
                     if(!countBlock)
                         ff.ajax.unblockUI();
                 }
@@ -1042,16 +1077,16 @@ ff.cms = (function () {
                         itemSelector: '.vg-item',
                         layoutMode: 'fitRows',
                         filter: function() {
-                            return !term 
+                            return !term
 								|| (objTerm
-									? (objTerm.is("input") 
+									? (objTerm.is("input")
 										? jQuery(this).text().match( term )
-										: term == jQuery(this).attr("data-ffl") 
+										: term == jQuery(this).attr("data-ffl")
 									)
 									: true
 								);
                         }
-                    }); 
+                    });
                 });
             },
             "login" : {
@@ -1085,75 +1120,76 @@ ff.cms = (function () {
             "load" : function(link, elem, effect, mode, onClickCallback, blockUI, jumpUI) {
                 loadAjax(link, elem, effect, mode, onClickCallback, blockUI, jumpUI);
             },
-			"loadReq" : function(target, reset) {
-				loadReq(target, reset);
-			},
-			"get" : function(name, callback, params, opt) {
-				var res = null;
-				if(!opt) opt = {};
+            "loadReq" : function(target, reset) {
+            	loadReq(target, reset);
+            },
+            "get" : function(name, callback, params, opt) {
+                var res = null;
+                if(!opt) opt = {};
 
-				if(!name) {
-					res = service;
-				} else {
-					if(!service) service = {};
+                if(!name) {
+                    res = service;
+                } else {
+                    if(!service) service = {};
 
-					if(service[name]) {
-						service[name]["counter"] = (!service[name]["counter"]
-								? service[name]["counter"] = 2
-								: service[name]["counter"]++
-						);
-						console.warn(name + " Already Exist: Old", service[name], " New", {"callback": callback, "params": params, "opt": opt});
-						var url = name;
+                    if(service[name]) {
+                        service[name]["counter"] = (!service[name]["counter"]
+                                ? service[name]["counter"] = 2
+                                : parseInt(service[name]["counter"]) + 1
+                        );
+                        console.warn(name + " Already Exist: Old", service[name], " New", {"callback": callback, "params": params, "opt": opt});
+                        var url = name;
 
-						name = name + "#" + service[name]["counter"];
+                        name = name + "#" + service[name]["counter"];
+                    }
+
+                    service[name] = {};
+                    if(callback) {
+                        if(jQuery.isFunction(callback)) {
+                            service[name]["callback"] = callback;
+                        } else {
+                            var tpl = {};
+
+                            if(typeof(callback) == "object") {
+                                var tpl = {};
+
+                                tpl["target"] = callback["target"];
+                                tpl["vars"] = callback["vars"];
+                                if(callback["template"]) {
+                                    tpl["source"] = "#" + callback["template"];
+                                    tpl["template"] = jQuery(tpl["source"]).attr("type");
+                                }
+                                if (callback["callback"])
+                                    service[name]["callback"] = callback["callback"];
+                            } else {
+                                tpl["target"] = callback;
+                            }
+                        }
+                    } else if(callback === false) {
+                        opt["async"] = true;
+                        opt["priority"] = "bottom";
 					}
 
-					service[name] = {};
-					if(callback) {
-						if(jQuery.isFunction(callback)) {
-							service[name]["callback"] = callback;
-						} else {
-							var tpl = {};
+                    if(url)
+                        opt["url"] = url;
 
-							if(typeof(callback) == "object") {
-								var tpl = {};
+                    if(tpl)
+                        service[name]["tpl"] = tpl;
 
-								tpl["target"] = callback["target"];
-								tpl["vars"] = callback["vars"];
-								if(callback["template"]) {
-									tpl["source"] = "#" + callback["template"];
-									tpl["template"] = jQuery(tpl["source"]).attr("type");
-								}
-								if (callback["callback"])
-									service[name]["callback"] = callback["callback"];
-							} else {
-								tpl["target"] = callback;
-							}
-						}
-					} else {
-						opt["async"] = true;
-					}
+                    if(params)
+                        service[name]["params"] = params;
 
-					if(url)
-						opt["url"] = url;
+                    if(opt)
+                        service[name]["opt"] = opt;
 
-					if(tpl)
-						service[name]["tpl"] = tpl;
+                    if(service[name]["response"])
+                        res = service[name]["response"];
+                    else
+                        res = service[name];
 
-					if(params)
-						service[name]["params"] = params;
-
-					if(opt)
-						service[name]["opt"] = opt;
-
-					if(service[name]["response"])
-						res = service[name]["response"];
-					else
-						res = service[name];
-
-					var queue = (0 && opt["priority"]
-							? document.readyState + "-" + opt["priority"]
-							: document.readyState
+					var queue = (opt["priority"]
+						? opt["priority"]
+						: document.readyState
 					);
 					if(!serviceDefer[queue])
 						serviceDefer[queue] = {
@@ -1176,24 +1212,24 @@ ff.cms = (function () {
 							ff.cms.loadReq(queue, true)
 						}, 100);
 					}
-				}
-				return res;
-			},
+                }
+                return res;
+            },
 			"set" : function(name, params, opt, keys) {
-				var srv = {};
+                var srv = {};
 
-				if(!opt)
-					opt = service[name]["opt"];
-				if(!keys)
-					keys = service[name]["keys"];
+                if(!opt)
+                    opt = service[name]["opt"];
+                if(!keys)
+                    keys = service[name]["keys"];
 
-				srv[name] = {
-					"opt" : opt
-					, "params" : params
-					, "keys" : keys
-				};
+                srv[name] = {
+                    "opt" : opt
+                    , "params" : params
+                    , "keys" : keys
+                };
 
-				loadReq(srv);
+                loadReq(srv);
 			},
             "getBlock" : function(id, params, callback) {
                 if(id) {
@@ -1236,7 +1272,7 @@ ff.cms = (function () {
                             }
                         }
 
-                        if(params["page"]) {  
+                        if(params["page"]) {
                             linkParams.push("page=" + params["page"]);
                             linkHistory = ff.cms.updateUriParams("page", (params["page"] > 1 ? params["page"] : ""), linkHistory);
                         }
@@ -1265,12 +1301,13 @@ ff.cms = (function () {
                 }
             }
 	};
-	if(!debug)
-            history.replaceState(null, null, window.location.pathname.replace('//', '/') + window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "") + window.location.hash);
 
-	jQuery(function() {
+    if(!debug) //todo: bug genera 2 request fantarmi....
+        history.pushState(null, null, window.location.pathname.replace('//', '/') + window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "") + window.location.hash);
+
+    jQuery(function() {
         ff.cms.initCMS();
-	});
-	
+    });
+
 	return that;
 })();
