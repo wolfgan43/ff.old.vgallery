@@ -256,13 +256,14 @@ function updater_get_params($cm, $externals = false) {
 	}
 
 	$exceptions = updater_check_permission($sync, ($externals ? $realPathInfo : false));
+
 	return array(
 		"sync" 				=> $sync
 		, "sync_rev" 		=> $sync_rev
 		, "user_path" 		=> $realPathInfo
 		, "invalid" 		=> (is_array($exceptions) ? false : $exceptions)
-		, "exclude" 		=> $exceptions["exclude"]
-		, "include" 		=> $exceptions["include"]
+		, "exclude" 		=> (is_array($exceptions) ? $exceptions["exclude"] : null)
+		, "include" 		=> (is_array($exceptions) ? $exceptions["include"] : null)
 		, "db"				=> $db
 	);
 }
@@ -289,8 +290,9 @@ function updater_check_domain_client() {
 	if($db_updater->nextRecord()) {
 		$denied_check = "different_host";
 		do {
-			define("REAL_REMOTE_HOST", $db_updater->getField("nome", "Text", true));
-			if(REAL_REMOTE_HOST == REMOTE_HOST) {
+			if($db_updater->getField("nome", "Text", true) == REMOTE_HOST) {
+				define("REAL_REMOTE_HOST", $db_updater->getField("nome", "Text", true));
+
 				if($db_updater->getField("date_check", "Number", true)) {
 					$manifesto 						= array();
 					$fs_master_exclude 				= array();

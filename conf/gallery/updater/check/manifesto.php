@@ -95,12 +95,12 @@
         	)
         ); 
 
-        $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.blockui";
-        $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.uploadify";
+        //$manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.blockui";
+        //$manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.uploadify";
         $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.uploadifive";
         $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.tokeninput";
-        $manifesto_dep["external_plugin/jquery.blockui"] = true;
-        $manifesto_dep["external_plugin/jquery.uploadify"] = true;
+        //$manifesto_dep["external_plugin/jquery.blockui"] = true;
+        //$manifesto_dep["external_plugin/jquery.uploadify"] = true;
         $manifesto_dep["external_plugin/jquery.uploadifive"] = true;
         $manifesto_dep["external_plugin/jquery.tokeninput"] = true;
         $manifesto_dep["external_plugin/gmap3.markerclusterer"] = true;
@@ -224,7 +224,8 @@
                 }
             }
         }
-    }     
+    }
+
     //VGALLERY CORE
     if(is_dir(FF_DISK_PATH . "/conf/gallery") && is_dir(FF_DISK_PATH . "/library/gallery")) { 
         $manifesto["vgallery_cms"]["enable"] = true;
@@ -273,7 +274,7 @@
         $manifesto["vgallery_master_control"]["db"] = array();
     }
     //VGALLERY PLUGINS
-    $module_file = glob(FF_DISK_PATH . "/themes/gallery/javascript/plugin/*");
+    /*$module_file = glob(FF_DISK_PATH . "/themes/gallery/javascript/plugin/*");
     if(is_array($module_file) && count($module_file)) {
         foreach($module_file AS $real_file) {
             if(is_dir($real_file)) {
@@ -292,7 +293,7 @@
                 }
             }
         }
-    }   
+    }*/
 
     
     //VGALLERY MODULE
@@ -403,3 +404,6 @@
             }
         }
     }
+
+	if(is_array($fs_manifesto_exclude) && count($fs_manifesto_exclude))
+		$fs_master_exclude = $fs_manifesto_exclude;
