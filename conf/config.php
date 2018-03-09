@@ -31,11 +31,18 @@ if(defined("SHOWFILES_IS_RUNNING")) {
 	{
 		$res = null;
 
-		if (!function_exists("cache_writeLog")) {
-			require_once(FF_DISK_PATH . "/library/" . THEME_INSET . "/system/cache." . FF_PHP_EXT);
+		spl_autoload_register(function ($class) {
+			switch ($class) {
+				case "Cache":
+					require (__CMS_DIR__ . "/library/gallery/classes/" . strtolower($class) . "/" . $class . ".php");
+					break;
+				case "vgCommon":
+					require(__CMS_DIR__ . "/library/gallery/classes/" . $class . ".php");
+					break;
+			}
+		});
 
-			cache_writeLog("Mode: " . $mode . " URL: " . $_SERVER["HTTP_HOST"] . $user_path . " REFERER: " . $referer, "resource_missing");
-		}
+		Cache::log("Mode: " . $mode . " URL: " . $_SERVER["HTTP_HOST"] . $user_path . " REFERER: " . $referer, "resource_missing");
 
 		if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/conf/common.php")) {
 			require_once(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/conf/common.php");

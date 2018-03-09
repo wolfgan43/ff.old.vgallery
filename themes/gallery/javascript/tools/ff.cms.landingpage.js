@@ -86,11 +86,14 @@ ff.cms.landingPage = (function () {
 		, "load" : function(elem) {
 			var hash = jQuery(elem).attr("rel");
 			var partUrl = window.location.pathname.split('/');
-            var currentHash = ''; 
+            var currentHash = '';
 
-            if("/" + partUrl[partUrl.length - 2] != searchPage)
-            	currentHash = partUrl.splice(-1).join("");
-            	
+            if("/" + partUrl[1] == searchPage && partUrl.length > 3) {
+                currentHash = partUrl.splice(-1).join("");
+            } else if("/" + partUrl[1] != searchPage && partUrl.length > 2) {
+                currentHash = partUrl.splice(-1).join("");
+            }
+
             var url = partUrl.join('/');
             if(hash)
                 url += '/' + hash;

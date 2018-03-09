@@ -258,7 +258,7 @@ ff.cms = (function () {
                 var itemID = "#" + jQuery(elem).attr("id");
                 var pathname = link.split("?")[0];
                 var query = link.split("?")[1];
-                if(pathname == window.location.pathname) {
+                if(pathname == window.location.pathname) { //evita che le request xhr vengano cachate per 7 giorni
                 	query = (query ? query + "&" : "") +  new Date().getTime();
                 }
 
@@ -421,6 +421,7 @@ ff.cms = (function () {
             	case "load":
             	case "reload":
             	    ff.cms.get(link);
+            	    //ff.cms.get(link, undefined, undefined, {"priority": "complete"});
              		//loadAjax(link, jQuery(this), arrAjaxOnReady[1], "replace", eventName);
 					break;
             	case "preload":
@@ -478,6 +479,20 @@ ff.cms = (function () {
 
                 target = false;
             } else {
+            	if(target === true) {
+            		if(serviceDefer["top"]) {
+                        target = "top";
+                    } else if(serviceDefer["complete"]) {
+                        target = "complete";
+                    } else if(serviceDefer["bottom"]) {
+                        target = "bottom";
+                    } else {
+            			return false;
+					}
+                    if(target)
+                    	serviceDefer[target]["status"] = "pending";
+				}
+
                 if (debug && serviceDefer[target])
                     console.info("Service Defer (" + target + "): " + serviceDefer[target]["status"] + " [exec]", serviceDefer[target]["req"]);
 
@@ -544,44 +559,37 @@ ff.cms = (function () {
 
                                             if (target && source) {
                                                 var html = "";
-                                                var tplRemove = [];
-                                                if (Array.isArray(response[name]["result"])) {
-                                                    response[name]["result"].each(function (i, item) {
-                                                        var tpl = jQuery(source).html();
 
-                                                        for (var property in item) {
-                                                            if (item.hasOwnProperty(property) && item[property]) {
-                                                                tpl = tpl.replaceAll("{{" + property + "}}", item[property]);
-                                                                if (!item[property])
-                                                                    tplRemove.push('*[data-if="' + property + '"]');
-                                                            }
-                                                        }
-                                                        html += tpl;
-                                                    });
-                                                } else {
-                                                    var tpl = jQuery(source).html();
-                                                    var tplVars = response[name][serviceTpl["vars"]] || response[name]["vars"];
-                                                    for (var property in tplVars) {
-                                                        if (tplVars.hasOwnProperty(property) && tplVars[property]) {
-                                                            tpl = tpl.replaceAll("{{" + property + "}}", tplVars[property]);
-                                                            if (!tplVars[property])
-                                                                tplRemove.push('*[data-if="' + property + '"]');
-                                                        }
-                                                    }
-                                                    html = tpl;
+                                                if (!Array.isArray(response[name]["result"])) {
+                                                    response[name]["result"] = new Array(response[name][serviceTpl["vars"]] || response[name]["vars"]);
                                                 }
+
+												response[name]["result"].each(function (i, item) {
+													var tplRemove = [];
+													var tpl = jQuery(source).html();
+
+													for (var property in item) {
+														if (item.hasOwnProperty(property) && item[property]) {
+															tpl = tpl.replaceAll("{{" + property + "}}", item[property]);
+															if (!item[property])
+																tplRemove.push('*[data-if="' + property + '"]');
+														}
+													}
+													if(tplRemove.length) {
+														tpl = jQuery(tpl);
+														jQuery(tplRemove.join(","), tpl).remove();
+														tpl = tpl.html();
+													}
+													html += tpl;
+												});
 
                                                 if (html) {
                                                     var pattern = /{{([^}]+)}}/g;
+
                                                     while (match = pattern.exec(html)) {
-                                                        tplRemove.push('*[data-if="' + match[1] + '"]');
                                                         html = html.replaceAll("{{" + match[1] + "}}", "");
                                                     }
-                                                    if (tplRemove.length) {
-                                                        html = jQuery(html);
-                                                        jQuery(tplRemove.join(","), html).remove();
 
-                                                    }
 
                                                     if (serviceOpt["inject"] == "prepend")
                                                         jQuery(target).prepend(html);
@@ -836,17 +844,37 @@ ff.cms = (function () {
                        // serviceDefer[target]["status"] = "completed";
 
                     }
+
+                    loadReqNext(target);
                 } else {
                     if(debug)
                         console.info("Service All: " + document.readyState + " [ajax done]", service);
                 }
-
 			}).fail(function(error) {
             }).error(function (xmlHttpRequest, textStatus, errorThrown) {
                 if(xmlHttpRequest.readyState == 0 || xmlHttpRequest.status == 0)
                     return;  // it's not really an error
 			});
 		}
+	};
+	var loadReqNext = function(target) {
+        var targetNext = false;
+        if(target =="top") {
+            if(serviceDefer["complete"])
+                targetNext = "complete";
+            else if(serviceDefer["bottom"])
+                targetNext = "bottom";
+        } else if(target =="complete") {
+            if (serviceDefer["bottom"])
+                targetNext = "bottom";
+        }
+
+        if(targetNext) {
+            serviceDefer[targetNext]["status"] = "pending";
+            loadReq(targetNext);
+        } else {
+			serviceTimer = true;
+        }
 	};
 	var that = { // publics
             __ff : false, // used to recognize ff'objects
@@ -911,12 +939,16 @@ ff.cms = (function () {
 				});
 
                 if(document.readyState == "complete") {
+
+                    loadReq(true);
+
+                    /*
                     serviceTimer = true;
                     if (serviceDefer["complete"] && serviceDefer["complete"]["req"]) {
                         serviceDefer["complete"]["status"] = "pending";
                         loadReq("complete");
 
-                    }
+                    }*/
                 } else {
                     if(serviceDefer["loading"] && serviceDefer["loading"]["req"]) {
                         serviceDefer["loading"]["status"] = "pending";
@@ -933,11 +965,13 @@ ff.cms = (function () {
                     });
 
                     jQuery(window).on("load", function (e) {
-                        serviceTimer = true;
+                        loadReq(true);
+                        /*
+						serviceTimer = true;
                         if (serviceDefer["complete"] && serviceDefer["complete"]["req"]) {
                             serviceDefer["complete"]["status"] = "pending";
                             loadReq("complete");
-                        }
+                        }*/
                     });
 				}
             },
@@ -1101,7 +1135,7 @@ ff.cms = (function () {
                     if(service[name]) {
                         service[name]["counter"] = (!service[name]["counter"]
                                 ? service[name]["counter"] = 2
-                                : service[name]["counter"]++
+                                : parseInt(service[name]["counter"]) + 1
                         );
                         console.warn(name + " Already Exist: Old", service[name], " New", {"callback": callback, "params": params, "opt": opt});
                         var url = name;
@@ -1131,9 +1165,10 @@ ff.cms = (function () {
                                 tpl["target"] = callback;
                             }
                         }
-                    } else {
+                    } else if(callback === false) {
                         opt["async"] = true;
-                    }
+                        opt["priority"] = "bottom";
+					}
 
                     if(url)
                         opt["url"] = url;
@@ -1152,8 +1187,8 @@ ff.cms = (function () {
                     else
                         res = service[name];
 
-					var queue = (0 && opt["priority"]
-						? document.readyState + "-" + opt["priority"]
+					var queue = (opt["priority"]
+						? opt["priority"]
 						: document.readyState
 					);
 					if(!serviceDefer[queue])
@@ -1266,12 +1301,13 @@ ff.cms = (function () {
                 }
             }
 	};
-	if(!debug)
-            history.replaceState(null, null, window.location.pathname.replace('//', '/') + window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "") + window.location.hash);
 
-	jQuery(function() {
+    if(!debug) //todo: bug genera 2 request fantarmi....
+        history.pushState(null, null, window.location.pathname.replace('//', '/') + window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "") + window.location.hash);
+
+    jQuery(function() {
         ff.cms.initCMS();
-	});
+    });
 
 	return that;
 })();
