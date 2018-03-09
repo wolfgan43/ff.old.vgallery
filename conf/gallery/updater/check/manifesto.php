@@ -95,12 +95,12 @@
         	)
         ); 
 
-        $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.blockui";
-        $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.uploadify";
+        //$manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.blockui";
+        //$manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.uploadify";
         $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.uploadifive";
         $manifesto["forms_framework"]["dep"][] = "external_plugin/jquery.tokeninput";
-        $manifesto_dep["external_plugin/jquery.blockui"] = true;
-        $manifesto_dep["external_plugin/jquery.uploadify"] = true;
+        //$manifesto_dep["external_plugin/jquery.blockui"] = true;
+        //$manifesto_dep["external_plugin/jquery.uploadify"] = true;
         $manifesto_dep["external_plugin/jquery.uploadifive"] = true;
         $manifesto_dep["external_plugin/jquery.tokeninput"] = true;
         $manifesto_dep["external_plugin/gmap3.markerclusterer"] = true;
@@ -403,3 +403,6 @@
             }
         }
     }
+
+	if(is_array($fs_manifesto_exclude) && count($fs_manifesto_exclude))
+		$fs_master_exclude = $fs_manifesto_exclude;
