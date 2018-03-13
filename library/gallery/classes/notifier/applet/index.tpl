@@ -27,8 +27,11 @@
         <div class="dropdown-menu animated fadeOutUp" id="notification-dropdown">
             <div class="dropdown-header">
                 <span class="triangle"></span>
-                <span class="heading">Notifiche</span>
+                <span class="heading">{notifier_title}</span>
                 <span class="count ng-binding" id="dd-notifications-count"></span>
+            </div>
+            <div class="notification-empty hidden">
+                {notifier_not_found}
             </div>
             <div class="dropdown-body" id="notification-handle" >
 

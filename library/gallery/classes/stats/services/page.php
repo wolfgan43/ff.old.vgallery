@@ -31,7 +31,8 @@ class statsPage
 	private $stats                                        	= null;
 	private $services										= array(
 																"nosql" 					=> null
-																//, "fs" 					=> null
+																, "sql"						=> null
+																, "fs" 						=> null
 															);
 	private $connectors										= array(
 																"sql"                       => array(
@@ -39,8 +40,8 @@ class statsPage
 																	, "username"    		=> null
 																	, "password"   			=> null
 																	, "name"       			=> null
-																	, "prefix"				=> "CACHE_DATABASE_"
-																	, "table"               => "cache_pages"
+																	, "prefix"				=> "TRACE_DATABASE_"
+																	, "table"               => "trace_pages"
 																	, "key"                 => "ID"
 																)
 																, "nosql"                   => array(
@@ -48,14 +49,15 @@ class statsPage
 																	, "username"    		=> null
 																	, "password"    		=> null
 																	, "name"       			 => null
-																	, "prefix"				=> "CACHE_MONGO_DATABASE_"
+																	, "prefix"				=> "TRACE_MONGO_DATABASE_"
 																	, "table"               => "cache_pages"
 																	, "key"                 => "ID"
 																	)
 																, "fs"                      => array(
-																	"path"                  => "/cache/pages"
-																	, "name"                => "title"
-																	, "var"					=> "s"
+																	"service"				=> "php"
+																	, "path"                  => "/cache/pages"
+																	, "name"                => array("url")
+																	, "var"					=> null
 																	)
 															);
 	private $struct											= array(
@@ -64,10 +66,6 @@ class statsPage
 																, "domain"					=> "string"
 																, "type"					=> "string"
 																, "event"					=> "string"
-																	/*, "action"					=> array(
-																		"name"					=> "string"
-																		, "value"				=> "string"
-																	)*/
 																, "title" 					=> "string"
 																, "description" 			=> "string"
 																, "cover"					=> array(
@@ -91,6 +89,7 @@ class statsPage
 																	, "secondary" 			=> "arrayOfNumber"
 																	, "rel" 				=> "arrayOfNumber"
 																	)
+																, "owner"					=> "number"
 																, "meta"					=> "array"
 																, "links"					=> "array"
 																, "microdata"				=> "array"
@@ -141,35 +140,70 @@ class statsPage
 
 		$res = $storage->read($arrWhere, $arrFields);
 
-		if($set && is_array($res)) {
+		if($set && is_array($res["result"]) && count($res["result"]) == 1) {
 			$update = $this->set_vars($set, $arrWhere, $res["result"][0]["user_vars"]);
 		}
 
 		return $res;
 	}
 
-	public function get_vars($where = null, $fields = null) {
-		$pages = $this->get_stats($where);
+	public function sum_vars($where = null, $rules = null) {
+		$res = array();
+		$stats = $this->get_stats($where);
 
-		if(is_array($pages) && count($pages)) {
-			$page = $pages["result"][0];
-			if (is_array($fields) && count($fields)) {
-				foreach ($fields AS $field) {
-					if (array_key_exists($field, $page["user_vars"])) {
-						$res[$field] = $page["user_vars"][$field];
+		if(is_array($stats["result"]) && count($stats["result"])) {
+			$pages = $stats["result"];
+
+
+			foreach ($pages AS $page) {
+				$match = array();
+				$fields = array();
+				$user_vars = $page["user_vars"];
+				if (is_array($user_vars) && count($user_vars)) {
+					foreach ($user_vars AS $key => $value) {
+						foreach ($rules AS $rule) {
+							if (preg_match("/^" . str_replace(array("\*", "\?"), array("(.+)", "(.?)"), preg_quote($rule)) . "$/i", $key)) {
+								$res[$key] += $value;
+							}
+						}
 					}
 				}
-			} elseif (strlen($fields)) {
-				$res = (array_key_exists($fields, $page["user_vars"])
-					? $page["user_vars"][$fields]
-					: null
-				);
-			} else {
-				$res = $page["user_vars"];
 			}
 		}
 
 		return $res;
+	}
+
+	public function get_vars($where = null, $fields = null) {
+		$res = null;
+		$stats = $this->get_stats($where);
+
+		if(is_array($stats["result"]) && count($stats["result"])) {
+			$pages = $stats["result"];
+			$key = 0;
+//todo: da creare gli aggregati
+			if(!is_array($fields) && strlen($fields))
+				$fields = array($fields);
+
+			foreach($pages AS $page) {
+				if (is_array($fields) && count($fields)) {
+					foreach ($fields AS $field) {
+						if (array_key_exists($field, $page["user_vars"])) {
+							$res[$key][$field] = $page["user_vars"][$field];
+						}
+					}
+				} else {
+					$res[$key] = $page["user_vars"];
+				}
+
+				$key++;
+			}
+		}
+
+		return (count($res) > 1
+			? $res
+			: $res[0]
+		);
 	}
 
 	public function set_vars($set, $where = null, $old = null) {
@@ -225,8 +259,8 @@ class statsPage
 				, "description"				=> true
 				, "tags"					=> true
 				, "author"					=> true
+				, "owner"					=> true
 				, "user_vars"				=> true
-				//, "author_tags"				=> "author.tags"
 			);
 		}
 
@@ -276,6 +310,7 @@ class statsPage
 			, "cover"					=> array_filter($globals->cover)
 			, "author" 					=> $author
 			, "tags"					=> $globals->tags
+			, "owner"					=> $globals->author["id"]
 			, "meta"					=> $cm->oPage->page_meta
 			, "links"					=> $globals->links
 			, "microdata"				=> $globals->microdata
@@ -340,7 +375,7 @@ class statsPage
 		$page["update"]["set"] = array(
 			"title" 					=> $cm->oPage->title
 			, "description" 			=> $cm->oPage->page_meta["description"]["content"]
-
+			, "owner"					=> $globals->author["id"]
 			, "keys_D"					=> $page["insert"]["keys_D"]
 			, "keys_G"					=> $page["insert"]["keys_G"]
 			, "keys_M"					=> $page["insert"]["keys_M"]
@@ -413,8 +448,8 @@ class statsPage
 	{
 		foreach($this->connectors AS $name => $connector) {
 			if(!$connector["name"]) {
-				$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
-					? $this->config["prefix"]
+				$prefix = ($connector["prefix"] && defined($connector["prefix"] . "NAME") && constant($connector["prefix"] . "NAME")
+					? $connector["prefix"]
 					: vgCommon::getPrefix($name)
 				);
 
@@ -448,12 +483,12 @@ class statsPage
 			if(!$data)
 			{
 				$this->services[$type] = array(
-					"service" => null
-					, "connector" => $this->connectors[$type]
+					"service" 			=> $this->connectors[$type]["service"]
+					, "connector" 		=> $this->connectors[$type]
 				);
 			}
 		}
+
+
 	}
-
-
 }

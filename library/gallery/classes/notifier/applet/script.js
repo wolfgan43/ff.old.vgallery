@@ -5,6 +5,15 @@ jQuery(function() {
         , "vars" : {
             "counter" : ".noty-box .count"
         }
+        , "callback" : function(data) {
+            if(data["result"].length) {
+                jQuery(".noty-box .notification-empty").addClass("hidden");
+                jQuery("#notification-dropdown").removeClass("noty-empty");
+            } else {
+                jQuery(".noty-box .notification-empty").removeClass("hidden");
+                jQuery("#notification-dropdown").addClass("noty-empty");
+            }
+        }
     });
 
     jQuery(document).on("click", "#bell", function (e){

@@ -80,8 +80,9 @@ class Filemanager extends vgCommon
      */
     public function __construct($services = null, $path = null, $var = null)
     {
-		if($services)
-			$this->setServices($services);
+		$this->loadControllers(__DIR__);
+
+		$this->setServices($services);
 
         $this->path                                                     = $path;
         $this->var                                                      = $var;
@@ -95,9 +96,9 @@ class Filemanager extends vgCommon
     {
         $rc = true;
         if(!$path)
-            $path                                                       = $this->path;
+			$path = dirname($this->path);
 
-        if(!is_dir($path))
+		if(!is_dir($path))
             $rc                                                         = @mkdir($path, 0777, ture);
 
         return $rc;
@@ -109,7 +110,7 @@ class Filemanager extends vgCommon
      * @param null $flags
      * @return array|bool|mixed|null
      */
-    public function read($keys = null, $path = null, $flags = null)
+    public function read($path = null, $keys = null, $flags = null)
     {
         $this->clearResult();
         if($this->isError())
@@ -130,7 +131,7 @@ class Filemanager extends vgCommon
      * @param null $path
      * @return array|bool|mixed|null
      */
-    public function write($data = null, $var = null, $expires = null, $path = null)
+    public function write($data = null, $path = null, $var = null, $expires = null)
     {
         $this->clearResult();
         if($this->isError())
@@ -153,7 +154,7 @@ class Filemanager extends vgCommon
      * @param null $path
      * @return array|bool|mixed|null
      */
-    public function update($data = null, $var = null, $expires = null, $path = null)
+    public function update($data = null, $path = null, $var = null, $expires = null)
     {
         $this->clearResult();
         if($this->isError())
@@ -180,7 +181,7 @@ class Filemanager extends vgCommon
         if($this->isError())
             return $this->isError();
         else {
-            $this->action                                               = "delete";
+			$this->action                                               = "delete";
             $this->keys                                                 = $keys;
             $this->controller($path, $flags);
         }
@@ -196,10 +197,10 @@ class Filemanager extends vgCommon
      */
     public function save($buffer, $expires = null, $path = null)
     {
-        if(!$path)
-            $path                                                       = $this->path;
+		if(!$path)
+    		$path = $this->getPath();
 
-        $rc = $this->makeDir(dirname($path));
+		$rc = $this->makeDir(dirname($path));
         if ($rc)
         {
             if ($rc = @file_put_contents($path, $buffer, LOCK_EX))
@@ -211,7 +212,7 @@ class Filemanager extends vgCommon
             }
         }
 
-        return $rc;
+		return $rc;
     }
 
     /**
@@ -221,10 +222,10 @@ class Filemanager extends vgCommon
      */
     public function touch($expires, $path = null)
     {
-        if(!$path)
-            $path                                                       = $this->path;
+    	if(!$path)
+			$path = $this->getPath();
 
-        $rc                                                             = @touch($path, $expires);
+		$rc                                                             = @touch($path, $expires);
         //if (!$rc)
         //    @unlink($path);
 
@@ -237,14 +238,40 @@ class Filemanager extends vgCommon
      */
     public function isExpired($path = null)
     {
-        if(!$path)
-            $path                                                       = $this->path;
+    	if(!$path)
+			$path = $this->getPath();
 
         return (filemtime($path) >= filectime($path)
             ? false
             : true
         );
     }
+
+    public function exist($type = null) {
+		$path = $this->getPath($type);
+
+		return (is_file($path)
+			? true
+			: false
+		);
+	}
+
+	/**
+	 *
+	 */
+	public function getPath($type = null, $path = null) {
+		if(!$type) {
+			$service = reset($this->services);
+			$type = $service["default"];
+		}
+		if(!$path)
+			$path = $this->path;
+
+		if(!$path)
+			$path = $this->path;
+
+		return dirname($path) . "/" . basename($path, "." . $type) . "." . $type;
+	}
 
     /**
      * @param null $path
@@ -259,7 +286,8 @@ class Filemanager extends vgCommon
         {
             $this->isError("");
 
-            $funcController = "controller_" . $controller;
+			$funcController = "controller_" . $controller;
+
             $this->$funcController((is_array($services)
                 ? $services["service"]
                 : $services
@@ -331,7 +359,18 @@ class Filemanager extends vgCommon
     /**
      * @return array|bool|mixed|null
      */
-    private function getResult()
+	private function getResult($service = null)
+	{
+		return ($this->isError()
+			? $this->isError()
+			: ($service
+				? $this->result[$service]
+				: $this->result
+			)
+		);
+	}
+
+    /*private function getResult()
     {
         return ($this->isError()
             ? false
@@ -343,5 +382,5 @@ class Filemanager extends vgCommon
                 : null
             )
         );
-    }
+    }*/
 }

@@ -34,9 +34,6 @@ class filemanagerPhp
 
     public function __construct($filemanager, $data = null, $config = null)
     {
-        $path = $filemanager->getParam("path");
-        $filemanager->setParam("path", dirname($path) . "/" . basename($path, "." . $this::EXT) . "." . $this::EXT);
-
         $this->filemanager                                      = $filemanager;
         $this->setConfig($config);
     }
@@ -57,7 +54,7 @@ class filemanagerPhp
     public function read($keys = null, $flags = null)
     {
         $res                                                    = array();
-        $path                                                   = $this->filemanager->getParam("path");
+        $path                                                   = $this->filemanager->getPath($this::EXT);
         $var                                                    = $this->filemanager->getParam("var");
         //$keys                                                   = $this->filemanager->getParam("keys");
         if(!$flags)
@@ -67,8 +64,9 @@ class filemanagerPhp
 
         if(is_file($path)) {
             if(strpos($output, "No syntax errors") === 0) {
-                $res = include($path);
-				if(!$res) {
+                $include = include($path);
+
+                if($include === 1) {
 					if(!$var) {
 						$arrDefVars = get_defined_vars();
 						end($arrDefVars);
@@ -78,29 +76,34 @@ class filemanagerPhp
 						else
 							$this->filemanager->setParam("var", $var);
 					}
+					$return = ${$var};
+				} else {
+                	$return = $include;
+                	if($var)
+						$return = $return[$var];
+				}
 
-					if($var) {
-						if($keys)
+				if($return) {
+					if($keys)
+					{
+						if(!is_array($keys))
+							$keys = array($keys);
+
+						foreach($keys AS $key)
 						{
-							if(!is_array($keys))
-								$keys = array($keys);
+							if($flags == Filemanager::SEARCH_IN_KEY || $flags == Filemanager::SEARCH_IN_BOTH && isset($return[$key]))
+								$res[$key]                      = $return[$key];
 
-							foreach($keys AS $key)
-							{
-								if($flags == Filemanager::SEARCH_IN_KEY || $flags == Filemanager::SEARCH_IN_BOTH && isset(${$var}[$key]))
-									$res[$key]                      = ${$var}[$key];
-
-								if($flags == Filemanager::SEARCH_IN_VALUE || $flags == Filemanager::SEARCH_IN_BOTH) {
-									$arrToAdd                       = array_flip(array_keys(${$var}, $key));
-									$res                            = array_replace($res, array_intersect_key(${$var}, $arrToAdd));
-								}
+							if($flags == Filemanager::SEARCH_IN_VALUE || $flags == Filemanager::SEARCH_IN_BOTH) {
+								$arrToAdd                       = array_flip(array_keys($return, $key));
+								$res                            = array_replace($res, array_intersect_key($return, $arrToAdd));
 							}
-						} else {
-							$res                                        = ${$var};
 						}
 					} else {
-						$this->filemanager->isError("variable name needed");
+						$res                                        = $return;
 					}
+				} else {
+					$this->filemanager->isError("Return Empty");
 				}
             } else {
                 @unlink($this->filemanager->getParam("path"));
@@ -112,16 +115,17 @@ class filemanagerPhp
     }
     public function write($data, $var = null)
     {
+		$path 													= $this->filemanager->getPath($this::EXT);
         if(!$var)
             $var                                                = $this->filemanager->getParam("var");
         //$data                                                   = $this->filemanager->getParam("data");
         $expires                                                = $this->filemanager->getParam("expires");
         if($var)
-            $return = '$'. $var;
+            $return = '$'. $var . ' = ';
         else
-			$return = 'return';
+			$return = 'return ';
 
-        $this->filemanager->save("<?php\n" . ' '. $return . ' = ' . var_export($data, true) . ";", $expires);
+        return $this->filemanager->save("<?php\n" . ' '. $return . var_export($data, true) . ";", $expires, $path);
     }
 
     public function update($data, $var = null)
@@ -135,7 +139,7 @@ class filemanagerPhp
         } else
             $res                                                = $data;
 
-        $this->write($res, $var);
+        return $this->write($res, $var);
     }
 
     public function delete($keys, $flags = null)
@@ -164,6 +168,6 @@ class filemanagerPhp
             }
         }
 
-        $this->write($res);
+		return $this->write($res);
     }
 }

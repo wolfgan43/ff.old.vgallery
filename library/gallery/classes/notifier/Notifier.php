@@ -240,14 +240,63 @@ class Notifier extends vgCommon
     
     public function __construct($services = null, $params = null)
     {
-		if($services)
-			$this->setServices($services);
-
+		$this->setServices($services);
 		$this->setParams($params);
 
         $this->loadControllers(__DIR__);        
          //da aggiungere inizializzazioni classe necessarie come anagraph
     }
+
+    public static function response($is_delivered, $keys = null) {
+		if(DEBUG_PROFILING === true)
+			$start 								= Stats::stopwatch();
+
+    	$notifier = Notifier::getInstance();
+
+		if($is_delivered && is_array($keys) && count($keys)) {
+			$return = null;
+
+			$notifier->update(array(
+				"delivered" => true
+			), array(
+				"key" => $keys
+				, "delivered" => false
+			));
+		} else {
+			$globals = ffGlobals::getInstance("gallery");
+			check_function("get_user_data");
+			//todo: da implementare la classe anagraph
+			$anagraph = user2anagraph();
+
+			$limit_path[] = $globals->page["user_path"];
+			if($globals->page["user_path"] != "/")
+				$limit_path[] = "/";
+
+			$return = $notifier->read(array(
+				"uid" 				=> $anagraph["ID"]
+				, "display_in" 		=> $limit_path
+				, "!key" 			=> $keys
+			), array(
+				"title" 			=> true
+				, "message" 		=> true
+				, "cover"			=> "media.cover"
+				, "video"			=> "media.video"
+				, "class"			=> "media.class"
+				, "type"			=> true
+				, "created" 		=> true
+				, "delivered" 		=> ":toString"
+				)
+			, array(
+				 "created" 			=> "DESC"
+			));
+
+			if(DEBUG_PROFILING === true) {
+				$return["exTime"] = Stats::stopwatch($start);
+			}
+		}
+		return $return;
+	}
+
     public function read($where = null, $fields = null, $sort = null)
     {
         $this->clearResult();
