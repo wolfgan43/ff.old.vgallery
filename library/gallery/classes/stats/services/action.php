@@ -23,16 +23,16 @@
  * @link https://bitbucket.org/cmsff/vgallery
  */
 
-class statsUser
+class statsActions
 {
-	const TYPE                                              = "user";
+	const TYPE                                              = "action";
 
 	private $device                                         = null;
 	private $stats                                        	= null;
 	private $services										= array(
 																"nosql" 					=> null
 																, "sql"						=> null
-																, "fs" 						=> null
+																//, "fs" 					=> null
 															);
 	private $connectors										= array(
 																"sql"                       => array(
@@ -41,7 +41,7 @@ class statsUser
 																	, "password"   			=> null
 																	, "name"       			=> null
 																	, "prefix"				=> "TRACE_DATABASE_"
-																	, "table"               => "trace_users"
+																	, "table"               => "trace_actions"
 																	, "key"                 => "ID"
 																)
 																, "nosql"                   => array(
@@ -50,19 +50,18 @@ class statsUser
 																	, "password"    		=> null
 																	, "name"       			 => null
 																	, "prefix"				=> "TRACE_MONGO_DATABASE_"
-																	, "table"               => "cache_users"
+																	, "table"               => "cache_actions"
 																	, "key"                 => "ID"
 																	)
 																, "fs"                      => array(
-																	"service"				=> "php"
-																	, "path"                => "/cache/users"
-																	, "name"                => array("src")
-																	, "var"					=> null
+																	"path"                  => "/cache/actions"
+																	, "name"                => "title"
+																	, "var"					=> "s"
 																	)
 															);
 	private $struct											= array(
 																"id_anagraph"				=> "number"
-																, "avatar"					=> "string"
+																, "tbl"						=> "string"
 																, "name"					=> "string"
 																, "smart_url"				=> "string"
 																, "email"					=> "string"
@@ -103,30 +102,6 @@ class statsUser
 		return $res;
 	}
 
-	public function sum_vars($where = null, $rules = null) {
-		$res = array();
-		$stats = $this->get_stats($where);
-
-		if(is_array($stats["result"]) && count($stats["result"])) {
-			$users = $stats["result"];
-
-			foreach ($users AS $user) {
-				$user_vars = $user["user_vars"];
-				if (is_array($user_vars) && count($user_vars)) {
-					foreach ($user_vars AS $key => $value) {
-						foreach ($rules AS $rule) {
-							if (preg_match("/^" . str_replace(array("\*", "\?"), array("(.+)", "(.?)"), preg_quote($rule)) . "$/i", $key)) {
-								$res[$key] += $value;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return $res;
-	}
-
 	public function get_vars($where = null, $fields = null) {
 		$stats = $this->get_stats($where);
 
@@ -141,11 +116,8 @@ class statsUser
 							$res[$key][$field] = $user["user_vars"][$field];
 						}
 					}
-				} elseif (strlen($fields)) {
-					$res[$key] = (array_key_exists($fields, $user["user_vars"])
-						? $user["user_vars"][$fields]
-						: null
-					);
+				} elseif (strlen($fields) && array_key_exists($fields, $user["user_vars"])) {
+					$res[$key] = $user["user_vars"][$fields];
 				} else {
 					$res[$key] = $user["user_vars"];
 				}
@@ -329,8 +301,8 @@ class statsUser
 			if(!$data)
 			{
 				$this->services[$type] = array(
-					"service" 			=> $this->connectors[$type]["service"]
-					, "connector" 		=> $this->connectors[$type]
+					"service" => null
+				, "connector" => $this->connectors[$type]
 				);
 			}
 		}

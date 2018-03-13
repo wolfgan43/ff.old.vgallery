@@ -124,13 +124,19 @@ abstract class vgCommon
             return $this->error;
     }
 	public function setServices($services) {
-		$this->services 						= null;
-		if(is_array($services)) {
-			foreach($services AS $service => $controller) {
-				$this->addService($service, $controller);
+		if($services) {
+			$this->services 					= null;
+			if (is_array($services)) {
+				foreach ($services AS $service => $controller) {
+					$this->addService($service, $controller);
+				}
+			} elseif (strlen($services)) {
+				reset($this->controllers);
+				$controller 					= key($this->controllers);
+				$this->controllers[$controller]["default"] = $services;
+
+				$this->addService($controller, $this->controllers[$controller]);
 			}
-		} elseif(strlen($services)) {
-			$this->addService($services);
 		}
 	}
 
@@ -196,5 +202,5 @@ abstract class vgCommon
                 }
             }            
         }
-    } 
+    }
 }

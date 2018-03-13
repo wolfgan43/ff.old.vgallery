@@ -26,7 +26,6 @@
 
 class storageMongodb {
     const TYPE                                              = "nosql";
-	const PREFIX											= "MONGO_DATABASE_";
 
 	private $device                                         = null;
     private $config                                         = null;
@@ -50,8 +49,8 @@ class storageMongodb {
     }
 	public function convertFields($fields, $flag = false)
 	{
-		$res = array();
-    	$struct = $this->storage->getParam("struct");
+		$res 																		= array();
+    	$struct 																	= $this->storage->getParam("struct");
 
 		if(is_array($fields) && count($fields)) {
 			foreach ($fields AS $name => $value) {
@@ -79,7 +78,7 @@ class storageMongodb {
 				$field 																= $this->storage->normalizeField($name, $value);
 
 				if($field["res"]) {
-					$res 															= $field["res"];
+					$res 															= array_replace_recursive($res, $field["res"]);
 					continue;
 				}
 				switch($flag) {
@@ -105,10 +104,10 @@ class storageMongodb {
 						$res["where"][$field["name"]] 								= $value;
 
 						if(is_array($struct[$field["name"]])) {
-							$struct_type = "array";
+							$struct_type 											= "array";
 						} else {
-							$arrStructType = explode(":", $struct[$field["name"]], 2);
-							$struct_type = $arrStructType[0];
+							$arrStructType 											= explode(":", $struct[$field["name"]], 2);
+							$struct_type 											= $arrStructType[0];
 						}
 
 						switch ($struct_type) {
@@ -117,7 +116,7 @@ class storageMongodb {
 								//search
 								if (is_array($value) && count($value)) {
 									if(!$this->storage->isAssocArray($value)) {
-										$res["where"][$field["name"]] 						= array(
+										$res["where"][$field["name"]] 				= array(
 																						($field["not"] ? '$nin' : '$in') => $value
 																					);
 									}
@@ -127,20 +126,44 @@ class storageMongodb {
 								break;
 							case "boolean":
 								if ($field["not"] && $value !== null) {                                                //not
-									$res["where"][$field["name"]] 							= array(
+									$res["where"][$field["name"]] 					= array(
 																						'$ne' => $value
 																					);
 								}
 								break;
 							case "date":
 							case "number":
-								if ($field["not"] && $value !== null) {                                                //not
-									$res["where"][$field["name"]] 							= array(
+								if($value !== null) {
+									if ($field["op"] && $value !== null) {                                                //< > <= >=
+										$op = "";
+										switch($field["op"]) {
+											case ">":
+												$op 								= ($field["not"] ? '$lt' : '$gt');
+												break;
+											case ">=":
+												$op 								= ($field["not"] ? '$lte' : '$gte');
+												break;
+											case "<":
+												$op 								= ($field["not"] ? '$gt' : '$lt');
+												break;
+											case "<=":
+												$op 								= ($field["not"] ? '$gte' : '$lte');
+												break;
+											default:
+										}
+										if($op) {
+											$res["where"][$field["name"]] 			= array(
+												"$op" => $value
+											);
+										}
+									} elseif ($field["not"]) {                                                //not
+										$res["where"][$field["name"]] 				= array(
 																						'$ne' => $value
 																					);
+									}
 								}
 								if (is_array($value) && count($value)) {
-									$res["where"][$field["name"]] 							= array(
+									$res["where"][$field["name"]] 					= array(
 																						($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
 																							? $value
 																							: array_map('intval', $value)
@@ -151,7 +174,7 @@ class storageMongodb {
 							case "string":
 							default:
 								if (is_array($value) && count($value)) {
-									$res["where"][$field["name"]] 							= array(
+									$res["where"][$field["name"]] 					= array(
 																						($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
 																							? $value
 																							: array_map('strval', $value)
@@ -159,7 +182,7 @@ class storageMongodb {
 																					);
 								} elseif ($field["not"]) {                                                        //not
 									if($value) {
-										$res["where"][$field["name"]] 						= array(
+										$res["where"][$field["name"]] 				= array(
 																						'$ne' => $value
 																					);
 									} else {
@@ -184,6 +207,12 @@ class storageMongodb {
     {
         return $this->config;
     }
+	public function up() {
+
+	}
+	public function down() {
+
+	}
 	private function setConfig()
 	{
 		$this->config = $this->storage->getConfig($this::TYPE);
@@ -191,7 +220,7 @@ class storageMongodb {
 		{
 			$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
 				? $this->config["prefix"]
-				: $this::PREFIX
+				: vgCommon::getPrefix($this::TYPE)
 			);
 
 			if (is_file($this->storage->getAbsPathPHP("/config")))

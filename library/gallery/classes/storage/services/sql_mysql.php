@@ -24,11 +24,8 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-
-class storageMysql
-{
+class storageMysql {
     const TYPE                                              = "sql";
-    const PREFIX											= "FF_DATABASE_";
 
     private $device                                         = null;
     private $config                                         = null;
@@ -40,7 +37,7 @@ class storageMysql
         $this->setConfig();
 
         $this->device = new ffDB_Sql();
-        //$this->device->on_error = "ignore";
+        $this->device->on_error = "ignore";
 
         if ($this->device->connect($this->config["name"], $this->config["host"], $this->config["username"], $this->config["password"])) {
             $this->config["key"] = "ID";
@@ -50,10 +47,11 @@ class storageMysql
         $storage->convertData("_id", "ID");
         $storage->convertWhere("_id", "ID");
     }
+
 	public function convertFields($fields, $flag = false)
 	{
-		$res = array();
-		$struct = $this->storage->getParam("struct");
+		$res 																		= array();
+		$struct 																	= $this->storage->getParam("struct");
 		if(is_array($fields) && count($fields))
 		{
 			foreach($fields AS $name => $value)
@@ -67,8 +65,8 @@ class storageMysql
 					$value 															= true;
 				}
 				if($flag == "select" && !is_array($value)) {
-					$arrValue = explode(":", $value, 2);
-					$value = ($arrValue[0] ? $arrValue[0] : true);
+					$arrValue 														= explode(":", $value, 2);
+					$value 															= ($arrValue[0] ? $arrValue[0] : true);
 				}
 
 				if($flag == "sort") {
@@ -81,8 +79,8 @@ class storageMysql
 
 				$field 																= $this->storage->normalizeField($name, $value);
 
-				if($field["res"])
-					$result															= $field["res"];
+				//if($field["res"])
+				//	$result															= $field["res"];
 
 				switch($flag) {
 					case "select":
@@ -118,10 +116,10 @@ class storageMysql
 						}
 
 						if(is_array($struct[$field["name"]])) {
-							$struct_type = "array";
+							$struct_type 											= "array";
 						} else {
-							$arrStructType = explode(":", $struct[$field["name"]], 2);
-							$struct_type = $arrStructType[0];
+							$arrStructType 											= explode(":", $struct[$field["name"]], 2);
+							$struct_type 											= $arrStructType[0];
 						}
 
 						switch ($struct_type) {
@@ -143,7 +141,29 @@ class storageMysql
 									if(count($value))
 										$res[$name] 								= "`" . $field["name"] . "` " . ($field["not"] ? "NOT " : "") . "IN('" . implode("','", array_unique($value)) . "')";
 								} else {
-									$res[$name]     								= "`" . $field["name"] . "` " . ($field["not"] ? "<>" : "=") . " " . $this->device->toSql($value);
+									if ($field["op"]) {                                                //< > <= >=
+										$op = "";
+										switch($field["op"]) {
+											case ">":
+												$op 								= ($field["not"] ? '<' : '>');
+												break;
+											case ">=":
+												$op 								= ($field["not"] ? '<=' : '>=');
+												break;
+											case "<":
+												$op 								= ($field["not"] ? '>' : '<');
+												break;
+											case "<=":
+												$op 								= ($field["not"] ? '>=' : '<=');
+												break;
+											default:
+										}
+										if($op) {
+											$res[$name] 							= "`" . $field["name"] . "` " . $op . " " . $this->device->toSql($value);
+										}
+									} else {
+										$res[$name]     							= "`" . $field["name"] . "` " . ($field["not"] ? "<>" : "=") . " " . $this->device->toSql($value);
+									}
 								}
 						}
 						break;
@@ -184,6 +204,14 @@ class storageMysql
     {
         return $this->config;
     }
+    public function up() {
+		$struct 																	= $this->storage->getParam("struct");
+
+	}
+	public function down() {
+		$struct 																	= $this->storage->getParam("struct");
+
+	}
     private function setConfig()
     {
         $this->config = $this->storage->getConfig($this::TYPE);
@@ -191,12 +219,13 @@ class storageMysql
 		{
 			$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
 				? $this->config["prefix"]
-				: $this::PREFIX
+				: vgCommon::getPrefix($this::TYPE)
 			);
+
 			if (is_file($this->storage->getAbsPathPHP("/config")))
 			{
 				require_once($this->storage->getAbsPathPHP("/config"));
-
+				$this->config["prefix"] = $prefix;
 				$this->config["host"] = (defined($prefix . "HOST")
 					? constant($prefix . "HOST")
 					: "localhost"

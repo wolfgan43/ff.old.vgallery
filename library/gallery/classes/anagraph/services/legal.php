@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 class anagraphLegal
 {
 	const TYPE                                              = "sql";
-	const PREFIX											= "FF_DATABASE_";
 
 	private $device                                         = null;
 	private $config                                         = null;
@@ -62,43 +61,31 @@ class anagraphLegal
 	private function setConfig()
 	{
 		$this->config = $this->storage->getConfig($this::TYPE);
-		if(!$this->config["name"])
-		{
-			$prefix = ($this->config["prefix"]
+		if(!$this->config["name"]) {
+			$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
 				? $this->config["prefix"]
-				: $this::PREFIX
+				: vgCommon::getPrefix($this::TYPE)
 			);
-			if (is_file($this->storage->getAbsPathPHP("/config")))
-			{
-				require_once($this->storage->getAbsPathPHP("/config"));
 
+			if (is_file($this->stats->getAbsPathPHP("/config")))
+			{
+				require_once($this->stats->getAbsPathPHP("/config"));
+				$this->config["prefix"] = $prefix;
 				$this->config["host"] = (defined($prefix . "HOST")
 					? constant($prefix . "HOST")
-					: ($prefix != $this::PREFIX && defined($this::PREFIX . "HOST")
-						? constant($this::PREFIX . "HOST")
-						: "localhost"
-					)
+					: "localhost"
 				);
 				$this->config["name"] = (defined($prefix . "NAME")
 					? constant($prefix . "NAME")
-					: ($prefix != $this::PREFIX && defined($this::PREFIX . "NAME")
-						? constant($this::PREFIX . "NAME")
-						: ""
-					)
+					:  ""
 				);
 				$this->config["username"] = (defined($prefix . "USER")
 					? constant($prefix . "USER")
-					: ($prefix != $this::PREFIX && defined($this::PREFIX . "USER")
-						? constant($this::PREFIX . "USER")
-						: ""
-					)
+					: ""
 				);
 				$this->config["password"] = (defined($prefix . "PASSWORD")
 					? constant($prefix . "PASSWORD")
-					: ($prefix != $this::PREFIX && defined($this::PREFIX . "PASSWORD")
-						? constant($this::PREFIX . "PASSWORD")
-						: ""
-					)
+					: ""
 				);
 			}
 		}

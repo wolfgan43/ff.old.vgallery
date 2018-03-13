@@ -79,6 +79,7 @@ class Storage extends vgCommon
     private $set                     	= array();
     private $where                      = null;
 	private $sort                      	= null;
+	private $limit                     	= null;
     private $table                      = null;
     private $reader						= null;
     private $result                     = null;
@@ -88,27 +89,23 @@ class Storage extends vgCommon
 		if (self::$singleton === null)
 			self::$singleton = new Storage($services, $params);
         else {
-            if($services)
-                self::$singleton->setServices($services);
-
+			self::$singleton->setServices($services);
 			self::$singleton->setParams($params);
         }
 		return self::$singleton;
 	} 
     
     public function __construct($services = null, $params = null) {
-        if($services)
-            $this->setServices($services);
+		$this->loadControllers(__DIR__);
 
+		$this->setServices($services);
 		$this->setParams($params);
-
-        $this->loadControllers(__DIR__, $services);
     }
 
-    public function lookup($table, $where = null, $fields = null, $sort = null)
+    public function lookup($table, $where = null, $fields = null, $sort = null, $limit = null)
     {
         $res = array();
-        $this->read($where, $fields, $sort, $table);
+        $this->read($where, $fields, $sort, $limit, $table);
         if(is_array($this->result) && count($this->result))
         {
             foreach($this->result AS $service => $data)
@@ -122,7 +119,7 @@ class Storage extends vgCommon
             : $res[0];
     }
 
-    public function read($where = null, $fields = null, $sort = null, $table = null)
+    public function read($where = null, $fields = null, $sort = null, $limit = null, $table = null)
     {
 
         $this->clearResult();
@@ -132,6 +129,7 @@ class Storage extends vgCommon
             $this->action               = "read";
             $this->where                = $where;
 			$this->sort                	= $sort;
+			$this->limit                = $limit;
             $this->table                = $table;
             $this->setData($fields);
 
@@ -281,10 +279,6 @@ class Storage extends vgCommon
     }
     private function getQuery($driver)
 	{
-		if (!is_array($this->data)) {
-			$this->isError("data is emmpty");
-			return array();
-		}
 		$config                                                 = $driver->getConfig();
 
 		$query["key"] 											= $config["key"];
@@ -297,6 +291,10 @@ class Storage extends vgCommon
 			$query 												= $query + $driver->convertFields($this->data, "select");
 		}
 		if($this->action == "insert" || $this->action == "write") {
+			if (!is_array($this->data)) {
+				$this->isError("data is empty");
+				return array();
+			}
 			$query 												= $query + $driver->convertFields($this->data, "insert");
 		}
 		if($this->action == "update" || $this->action == "write") {
@@ -305,8 +303,11 @@ class Storage extends vgCommon
 		if($this->action == "read" || $this->action == "update" || $this->action == "write") {
 			$query 												= $query + $driver->convertFields($this->where, "where");
 		}
-		if($this->action == "read") {
+		if($this->action == "read" && $this->sort) {
 			$query 												= $query + $driver->convertFields($this->sort, "sort");
+		}
+		if($this->action == "read" && $this->limit) {
+			$query["limit"] 									= $this->limit;
 		}
 
 		if(!$config["name"])
@@ -380,15 +381,29 @@ class Storage extends vgCommon
 									? " ORDER BY " . $query["sort"]
 									: ""
 								);
-                        $db->query($sSQL);
-                        if($db->nextRecord())
-                        {
-                            do {
-								$this->result[$service]["keys"][] = $db->record[$query["key"]];
-                                //unset($db->record[$query["key"]]);
-								$this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
-                            } while($db->nextRecord());
-                        }
+
+                        $res = $db->query($sSQL);
+                        if(!$res) {  //todo: da ristrutturare per gli up down
+                        	switch ($db->errno) {
+								case "1146":
+									$driver->up();
+									$res = $db->query($sSQL);
+									break;
+								default:
+							}
+						}
+                        if($res) {
+							if($db->nextRecord())
+							{
+								do {
+									$this->result[$service]["keys"][] = $db->record[$query["key"]];
+									//unset($db->record[$query["key"]]);
+									$this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
+								} while($db->nextRecord());
+							}
+						} else {
+                        	$this->isError("N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+						}
                         break;
 					case "insert":
 						if($query["insert"])
@@ -518,6 +533,7 @@ class Storage extends vgCommon
                             , "from" 	=> $query["from"]
                             , "where" 	=> $query["where"]
 							, "sort" 	=> $query["sort"]
+							, "limit"	=> $query["limit"]
                         ));
 
                         if($db->nextRecord())
@@ -604,35 +620,47 @@ class Storage extends vgCommon
 
         if($service)
         {
-            $controller = "storage" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
+			$config = $this->getConfig($type);
 
-            $this->device = new Filemanager();
+			if(is_array($config["name"])) {
+				$filename = implode("/", array_intersect_key($this->where, array_flip($config["name"])));
+			} elseif($config["name"]) {
+				$filename = $this->where[$config["name"]];
+			}
+			if($filename) {
+				$file = $this->getDiskPath() . $config["path"] . $filename;
 
-            $driver                                                     = new $controller($this);
-            $db                                                         = $driver->getDevice();
-            //$config                                                     = $driver->getConfig();
+				$fs = new Filemanager($service, $file);
 
-            if($this->isError()) {
-                $this->result[$service] = $this->isError();
-            } else {
-                switch($this->action)
-                {
-                    case "read":
-                        $db->get();
-                        break;
-                    case "update":
-                        $db->set();
-                        break;
-                    case "write":
-                        $db->set();
-                        break;
-                    case "delete":
-
-                        break;
-                    default:
-                }
-            }
+				switch ($this->action) {
+					case "read":
+						$this->result[$service] = $fs->read();
+						break;
+					case "insert":
+						if($this->data) {
+							$this->result[$service] = $fs->write($this->data);
+						}
+						break;
+					case "update":
+						if($this->set) {
+							$this->result[$service] = $fs->update($this->set);
+						}
+						break;
+					case "write": ///todo: DA FINITRE
+						if($this->set && is_file($fs->exist($service))) {
+							$this->result[$service] = $fs->update($this->set);
+						} elseif($this->data) {
+							$this->result[$service] = $fs->write($this->data);
+						}
+						break;
+					case "delete":
+						if($this->where) {
+							$this->result[$service] = $fs->delete($this->where);
+						}
+						break;
+					default:
+				}
+			}
         }
 
 		return $service;
@@ -841,6 +869,24 @@ class Storage extends vgCommon
 				$name = substr($name, 1);
 				$not = true;
 			}
+			if (strpos($name, ">") == strlen($name) - 1) {
+				$name = substr($name, 0, -1);
+				$op = ">";
+			}
+			if (strpos($name, ">=") == strlen($name) - 2) {
+				$name = substr($name, 0, - 2);
+				$op = ">=";
+			}
+
+			if (strpos($name, "<") == strlen($name) - 1) {
+				$name = substr($name, 0, -1);
+				$op = "<";
+			}
+
+			if (strpos($name, "<=") == strlen($name) - 2) {
+				$name = substr($name, 0, -2);
+				$op = "<=";
+			}
 
 			/*if(!is_array($value)) {
 				$arrValue = explode(":", $value, 2);
@@ -852,7 +898,6 @@ class Storage extends vgCommon
 				$arrStructType = explode(":", $this->struct[$name], 2);
 				$struct_type = $arrStructType[0];
 			}
-
 
 			switch($struct_type) {
 				case "arrayOfNumber":																			//array
@@ -917,7 +962,7 @@ class Storage extends vgCommon
 						//skip
 					} elseif(is_bool($value)) {                                                                //boolean to number
 						$fields[$name] = (int)$value;
-					} elseif(strtotime($value)) {                                                                //date to number
+					} elseif(!is_numeric($value) && strtotime($value)) {                                     //date to number
 						$fields[$name] = strtotime($value);
 					} elseif (strpos($value, ".") !== false || strpos($value, ",") !== false) {    //double to number
 						$fields[$name] = (double)$value;
@@ -956,6 +1001,7 @@ class Storage extends vgCommon
     		"value" => $fields[$name]
 			, "name" => $name
 			, "not" => $not
+			, "op" => $op
 			, "res" => $res
 		);
 	}

@@ -33,7 +33,8 @@ class Stats extends vgCommon
     protected $struct                   = array();
     private $driver						= null;
     private $result						= null;
-	public static function getInstance($service = null)
+
+	public static function getInstance($service)
 	{
 		if (self::$singleton === null)
 			self::$singleton = new Stats($service);
@@ -43,7 +44,7 @@ class Stats extends vgCommon
 		return self::$singleton;
 	}
 
-	public static function benchmark($end = false) {
+	public static function benchmark($end = false, $isXHR = false) {
 		static $res;
 
 		if(function_exists("getrusage"))
@@ -56,9 +57,8 @@ class Stats extends vgCommon
 				$res["includes"] 		= get_included_files();
 				$res["classes"] 		= get_declared_classes();
 				$res["db"] 				= ffDB_Sql::$_objProfile;
-				if(DEBUG_LOG === true && function_exists("cache_writeLog")) {
-					Cache::log("URL: " . $_SERVER["REQUEST_URI"] . " (" . $end . ") B	enchmark: " . print_r($res, true), "benchmark");
-				}
+
+				Cache::log("URL: " . $_SERVER["REQUEST_URI"] . " (" . $end . ") B	enchmark: " . print_r($res, true), "benchmark" .  ($isXHR ? "_xhr" : ""));
 				return $res;
 			} else {
 				$res["mem"] = memory_get_usage(true);
@@ -77,7 +77,7 @@ class Stats extends vgCommon
 		return number_format($duration, 2, '.', '');
 	}
 
-	public function __construct($service = null)
+	public function __construct($service)
 	{
 		$this->service = $service;
 	}
@@ -143,6 +143,15 @@ class Stats extends vgCommon
 
 		return $this->getResult();
 	}
+
+	public function sum($where, $rules = null) {
+		$this->clearResult();
+
+		$this->result = $this->getDriver()->sum_vars($where, $rules);
+
+		return $this->getResult();
+	}
+
 	public function range($when, $fields, $where = null) {
 		$this->clearResult();
 		$range = null;
@@ -208,7 +217,8 @@ class Stats extends vgCommon
 							$res[$field] = $model;
 						}
 
-						$data = $this->like($rules, $where);
+						$data = $this->sum($where, $rules);
+						//$data = $this->like($rules, $where);
 						if (is_array($data) && count($data)) {
 							foreach ($data AS $key => $value) {
 								$arrKey = explode("-", $key);
@@ -233,22 +243,6 @@ class Stats extends vgCommon
 
 		return $this->getResult();
 	}
-	/*public function getByTime($time, $fields, $where = null) {
-		$this->clearResult();
-
-		$select = array();
-		if(is_array($fields) && count($fields)) {
-			foreach($fields AS $field) {
-				$select = $this->getFieldByRange($time, $field, $select);
-			}
-		} else {
-			$select = $this->getFieldByRange($time, $fields, $select);
-		}
-
-		$this->result = $this->getDriver()->get_vars($where, $select);
-
-		return $this->getResult();
-	}*/
 
 	public function set($set, $where = null, $old = null) {
 		$this->clearResult();
@@ -269,25 +263,7 @@ class Stats extends vgCommon
 
 		return $config;
 	}
-	/*private function getFieldByRange($time, $field, $fields = array()) {
-		$sep = substr_count($time, "-");
-		switch($sep) {
-			case "0":
-				$max = 12;
-				break;
-			case "1":
-				$max = 31;
-				break;
-			default:
-				$fields[] = $field . "-" . $time;
-		}
-		if($max) {
-			for ($i = 1; $i <= $max; $i++) {
-				$fields[] = $field . "-" . $time . "-" . str_pad($i, 2, "0", STR_PAD_LEFT);
-			}
-		}
-		return $fields;
-	}*/
+
 	private function getDriver() {
 		return $this->controller();
 	}

@@ -62,9 +62,7 @@ class Cache extends vgCommon
         if (self::$singleton === null) {
             self::$singleton                                            = new Cache($services, $save_path);
         } else {
-			if($services)
-				self::$singleton->setServices($services);
-
+			self::$singleton->setServices($services);
         }
 
         return self::$singleton;
@@ -77,8 +75,7 @@ class Cache extends vgCommon
      */
     public function __construct($services = null)
     {
-		if($services)
-			$this->setServices($services);
+		$this->setServices($services);
 
         $this->protocol                                                 = (isset($_SERVER['SERVER_PROTOCOL'])
                                                                             ? $_SERVER['SERVER_PROTOCOL']
@@ -873,7 +870,7 @@ class Cache extends vgCommon
              }*/
             //define("CACHE_PAGE_STORING_PATH", $cache_file["cache_path"] . "/" . $cache_file["filename"]);
 
-            if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
+            if(!$cache_file["is_error_document"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
                 require_once($this->getAbsPathPHP("/library/" . $this->getTheme("cms") . "/system/trace.php"));
                 system_trace("pageview");
             }
@@ -2684,7 +2681,7 @@ class Cache extends vgCommon
 				}
 				@fclose($handle);
 
-				if($set_mod)
+				if($set_mod && !$i18n_error)
 					chmod($file, 0777);
 			}
 		}
@@ -3009,10 +3006,10 @@ class Cache extends vgCommon
 
 		check_function("Filemanager");
 
-		$fs = new Filemanager("php", $errorDocumentFile);
+		$fs = new Filemanager("php", $errorDocumentFile, "p");
 		$fs->update(array(
 			$user_path . "/" . $cache_file["filename"] => $globals->user_path
-		), "p");
+		));
 	}
 
 	/**
@@ -3024,8 +3021,6 @@ class Cache extends vgCommon
 function system_write_cache_stats() {
 		$cm = cm::getInstance();
 	$globals = ffGlobals::getInstance("gallery");
-
-	check_function("Storage");
 
 	//todo: Impostazioni di base da fare come oggetto
 	$service = "server";
@@ -3289,17 +3284,17 @@ function system_write_cache_stats() {
 			)
 		);
 		$gid = ($user_permission["primary_gid_name"]
-			? $user_permission["primary_gid_name"]
-			: $user_permission["primary_gid_default_name"]
-		);
+					? $user_permission["primary_gid_name"]
+					: $user_permission["primary_gid_default_name"]
+				);
 
 
 		//$precision = 8;
 		$file_token_dir = CM_CACHE_PATH . "/token";
 
-		$token = $this->token_get_session_cookie();
+		$token = cache_token_get_session_cookie();
 		if($token) {
-			$objToken = $this->token_resolve($token, $account);
+			$objToken = cache_token_resolve($token, $account);
 			if(is_file($file_token_dir . "/" . $objToken["public"] . ".php")) {
 				require($file_token_dir . "/" . $objToken["public"] . ".php");
 				if($u["uniqid"] == $objToken["private"]) {
@@ -3312,37 +3307,37 @@ function system_write_cache_stats() {
 					unlink($file_token_dir . "/" . $objToken["public"] . ".php");
 			}
 		} else {
-			$objToken["new"] = $this->token_generate($account);
+			$objToken["new"] = cache_token_generate($account);
 		}
 
 		if(!$token_valid) {
-			//$this->token_set_session_cookie($objToken["new"]);
+			//cache_token_set_session_cookie($objToken["new"]);
 
 			//$u["logs"][$_SERVER["REMOTE_ADDR"]]++;
 			$u = array(
 				"account" => $user["username"]
-			, "uid" => $user["ID"]
-			, "group" => $gid
-			, "uniqid" => $objToken["new"]["private"]
-			, "expire" => $objToken["new"]["expire"]
-			, "renew" => true
-			, "addr" => $_SERVER["REMOTE_ADDR"]
-			, "agent" => $_SERVER["HTTP_USER_AGENT"]
+				, "uid" => $user["ID"]
+				, "group" => $gid
+				, "uniqid" => $objToken["new"]["private"]
+				, "expire" => $objToken["new"]["expire"]
+				, "renew" => true
+				, "addr" => $_SERVER["REMOTE_ADDR"]
+				, "agent" => $_SERVER["HTTP_USER_AGENT"]
 			);
 
-			$this->token_write($u, $objToken["new"]);
+			cache_token_write($u, $objToken["new"]);
 
-			/*
-					$file_token = $file_token_dir . "/" . $objToken["new"]["public"] . ".php";
-					if(!is_dir($file_token_dir))
-						@mkdir($file_token_dir, 0777, true);
+	/*
+			$file_token = $file_token_dir . "/" . $objToken["new"]["public"] . ".php";
+			if(!is_dir($file_token_dir))
+				@mkdir($file_token_dir, 0777, true);
 
-					$content = "<?php\n";
-					$content .= '$u = ' . var_export($u, true) . ";";
-					 if($handle = @fopen($file_token, 'w')) {
-						 @fwrite($handle, $content);
-						 @fclose($handle);
-					}*/
+			$content = "<?php\n";
+			$content .= '$u = ' . var_export($u, true) . ";";
+			if($handle = @fopen($file_token, 'w')) {
+				@fwrite($handle, $content);
+				@fclose($handle);
+			}*/
 		}
 	}
 

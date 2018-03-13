@@ -205,9 +205,7 @@ class Anagraph extends vgCommon
 
 	public function __construct($services = null, $params = null)
 	{
-		if($services)
-			$this->setServices($services);
-
+		$this->setServices($services);
 		$this->setParams($params);
 
 		//$this->loadControllers(__DIR__);
