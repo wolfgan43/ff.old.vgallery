@@ -124,7 +124,11 @@ class statsPage
 	public function __construct($stats)
 	{
 		$this->stats = $stats;
-		$this->setConfig();
+
+		$this->stats->setConfig($this->connectors, $this->services);
+		//$this->setConfig();
+       // print_r($this);
+       // die();
 	}
 
 	public function getDevice()
@@ -162,7 +166,7 @@ class statsPage
 				if (is_array($user_vars) && count($user_vars)) {
 					foreach ($user_vars AS $key => $value) {
 						foreach ($rules AS $rule) {
-							if (preg_match("/^" . str_replace(array("\*", "\?"), array("(.+)", "(.?)"), preg_quote($rule)) . "$/i", $key)) {
+                            if ($key == $rule || preg_match("/^" . str_replace(array("\*", "\?"), array("(.+)", "(.?)"), preg_quote($rule)) . "$/i", $key)) {
 								$res[$key] += $value;
 							}
 						}
@@ -302,7 +306,7 @@ class statsPage
 		$page["insert"] = array(
 			"url"						=> $globals->user_path
 			, "get"						=> $get
-			, "domain"					=> DOMAIN_INSET
+			, "domain"					=> vgCommon::DOMAIN
 			, "type"					=> $globals->seo["current"]
 			, "event"					=> null
 			, "title" 					=> $cm->oPage->title
@@ -392,7 +396,7 @@ class statsPage
 
 		$page["update"]["where"] = array(
 			"url" 						=> $globals->user_path
-			, "domain" 					=> DOMAIN_INSET
+			, "domain" 					=> vgCommon::DOMAIN
 			, "get" 					=> $get
 		);
 
@@ -415,10 +419,10 @@ class statsPage
 		if(is_array($params)) {
 			$where 						= $params;
 		} elseif(strlen($params)) {
-			$request				= array();
+			$request				    = array();
 			if(substr($params, 0, 1) == "/") {
 				$url["path"] 			= $params;
-				$url["host"] 			= DOMAIN_INSET;
+				$url["host"] 			= vgCommon::DOMAIN;
 			} else {
 				$url = parse_url($params);
 				if ($url["query"])
@@ -426,8 +430,8 @@ class statsPage
 			}
 			$where = array(
 				"url" 					=> $url["path"]
-			, "domain"				=> $url["host"]
-			, "get"					=> $request
+                , "domain"				=> $url["host"]
+                , "get"					=> $request
 			);
 
 		} else {
@@ -436,14 +440,14 @@ class statsPage
 
 			$where = array(
 				"url" 					=> $_SERVER["PATH_INFO"]
-			, "domain"				=> DOMAIN_INSET
-			, "get"					=> $request
+                , "domain"				=> vgCommon::DOMAIN
+                , "get"					=> $request
 			);
 		}
 
 		return $where;
 	}
-
+/*
 	private function setConfig()
 	{
 		foreach($this->connectors AS $name => $connector) {
@@ -490,5 +494,5 @@ class statsPage
 		}
 
 
-	}
+	}*/
 }

@@ -56,8 +56,7 @@ class mailerSparkpost
             if (is_file($this->mailer->getAbsPathPHP("/config")))
             {
                 require_once($this->mailer->getAbsPathPHP("/config"));
-
-				if(defined("A_FROM_EMAIL") && A_FROM_EMAIL) {
+				if(!$this->mailer->issetFrom() && defined("A_FROM_EMAIL") && A_FROM_EMAIL) {
 					$this->mailer->addAddress(array(
 						"name" 		=> A_FROM_NAME
 					, "email" 	=> A_FROM_EMAIL

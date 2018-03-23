@@ -44,31 +44,53 @@ class Stats extends vgCommon
 		return self::$singleton;
 	}
 
-	public static function benchmark($end = false, $isXHR = false) {
-		static $res;
+    public static function benchmark($end = false, $isXHR = false) {
+        static $res;
 
-		if(function_exists("getrusage"))
-		{
-			$ru = getrusage();
-			if ($end) {
-				$res["mem"] 			= number_format(memory_get_usage(true) - $res["mem"], 0, ',', '.');
-				$res["mem_peak"] 		= number_format(memory_get_peak_usage(true) - $res["mem_peak"], 0, ',', '.');
-				$res["cpu"] 			= number_format(abs(($ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec']) - $res["cpu"]), 0, ',', '.');
-				$res["includes"] 		= get_included_files();
-				$res["classes"] 		= get_declared_classes();
-				$res["db"] 				= ffDB_Sql::$_objProfile;
+        if(function_exists("getrusage"))
+        {
+            $ru = getrusage();
+            if ($end) {
+                $res["mem"] 			= number_format(memory_get_usage(true) - $res["mem"], 0, ',', '.');
+                $res["mem_peak"] 		= number_format(memory_get_peak_usage(true) - $res["mem_peak"], 0, ',', '.');
+                $res["cpu"] 			= number_format(abs(($ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec']) - $res["cpu"]), 0, ',', '.');
+                $res["includes"] 		= get_included_files();
+                $res["classes"] 		= get_declared_classes();
+                $res["db"] 				= ffDB_Sql::$_objProfile;
+                $res["exTime"] 			= microtime(true) - $res["exTime"];
 
-				Cache::log("URL: " . $_SERVER["REQUEST_URI"] . " (" . $end . ") B	enchmark: " . print_r($res, true), "benchmark" .  ($isXHR ? "_xhr" : ""));
-				return $res;
-			} else {
-				$res["mem"] = memory_get_usage(true);
-				$res["mem_peak"] = memory_get_peak_usage(true);
-				$res["cpu"] = $ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec'];
+                if (extension_loaded('xhprof') && is_dir(FF_DISK_PATH . "/xhprof_lib")) {
+                    $profiler_namespace = str_replace(".", ",", "[" . round($res["exTime"], 2) . "s] " . ($isXHR
+                            ? str_replace("/", "_", trim(parse_url($_SERVER["HTTP_REFERER"], PHP_URL_PATH), "/")) . " (" . str_replace("/", "_", trim($_SERVER["REQUEST_URI"], "/")) . ")"
+                            : str_replace("/", "_", trim($_SERVER["REQUEST_URI"], "/"))
+                        )) . " - " . $end;
 
-			}
-		}
+                    $xhprof_data = xhprof_disable();
+                    $xhprof_runs = new XHProfRuns_Default();
+                    $run_id = $xhprof_runs->save_run($xhprof_data, $profiler_namespace);
+                    $profiler_url = sprintf('https://www.paginemediche.info/xhprof_html/index.php?run=%s&source=%s', $run_id, $profiler_namespace);
 
-	}
+                    //  printf('nbsp;<a href="%s" target="_blank">Profiler output</a><br>', $profiler_url);
+                }
+
+                Cache::log("URL: " . $_SERVER["REQUEST_URI"] . " (" . $end . ") Benchmark: " . print_r($res, true) . "Profiler: " . $profiler_url, "benchmark" .  ($isXHR ? "_xhr" : ""));
+                return $res;
+            } else {
+                $res["mem"]             = memory_get_usage(true);
+                $res["mem_peak"]        = memory_get_peak_usage(true);
+                $res["cpu"]             = $ru['ru_utime.tv_usec'] + $ru['ru_stime.tv_usec'];
+                $res["exTime"] 			= microtime(true);
+
+                if (extension_loaded('xhprof') && is_dir(FF_DISK_PATH . "/xhprof_lib")) {
+                    include_once FF_DISK_PATH . '/xhprof_lib/utils/xhprof_lib.php';
+                    include_once FF_DISK_PATH . '/xhprof_lib/utils/xhprof_runs.php';
+
+                    xhprof_enable(XHPROF_FLAGS_NO_BUILTINS | XHPROF_FLAGS_CPU | XHPROF_FLAGS_MEMORY);
+                }
+            }
+        }
+
+    }
 	public static function stopwatch($start = null) {
 		if(!$start)
 			return microtime(true);

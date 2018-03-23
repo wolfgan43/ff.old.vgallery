@@ -103,7 +103,9 @@ class Jobs extends vgCommon
 	public function __construct($service)
 	{
 		$this->service = $service;
-		$this->setConfig();
+        $this->setConfig($this->connectors, $this->services);
+
+      //  $this->setConfig();
 	}
 	public static function api($url, $params = null, $session = null)
 	{
@@ -243,7 +245,8 @@ class Jobs extends vgCommon
 	}
 
 	public static function async($url, $params = array(), $server = null, $session = null) {
-		check_function("get_locale"); //todo: da togliere e metterlo in classe statica
+	   // require_once(FF_DISK_PATH . "/modules/security/common.php");
+       // require_once(FF_DISK_PATH ."/library/gallery/common/get_locale.php"); //todo: da togliere e metterlo in classe statica
 
 		if(!$server)
 			$server 							= self::getServer();
@@ -256,7 +259,10 @@ class Jobs extends vgCommon
 		$data             						= $params;
 		$data["user_permission"]    			= $session["user_permission"];
 		$data["user_path"]          			= $server["HTTP_REFERER"];
-		$data["locale"]             			= get_locale();
+		$data["locale"]             			= (function_exists("get_locale")
+                                                    ? get_locale()
+                                                    : null
+                                                );
 
 		$postdata 								= http_build_query(
 													$data
@@ -303,7 +309,43 @@ class Jobs extends vgCommon
 
 		return ($errstr ? $errstr : false);
 	}
+    public static function setScript($callback, $schedule = null, $repeat = null) {
+	    static $source              = null;
 
+	    if(!$source) {
+	        if(strpos($callback, "/job/") === 0) {
+                $source             = $callback;
+            }
+        } else {
+            $params                = (is_callable($callback)
+                                        ? call_user_func($callback)
+                                        : (is_array($callback)
+                                            ? $callback
+                                            : array()
+                                        )
+                                    );
+
+            Jobs::getInstance()->add($source, $params, $schedule, $repeat);
+
+            $source                 = null;
+        }
+    }
+    public static function runScript($callback = null) {
+	    static $return              = null;
+        static $params              = null;
+
+        if(is_callable($callback)) {
+            $return                 = call_user_func($callback, $params);
+            $params                 = null;
+        } elseif($callback) {
+            $params                 = $callback;
+        } elseif($callback === false) {
+            $res                    = $return;
+            $return                 = null;
+        }
+
+        return $res;
+    }
 	/**
 	 * @param null $source
 	 * @param null $params
@@ -322,6 +364,8 @@ class Jobs extends vgCommon
 		} elseif(strpos($source, "/srv/") === 0) {
 			$type 						= "service";
 			$source 					= ltrim($source, "/");
+        } elseif(strpos($source, "/job/") === 0) {
+            $type 						= "script";
 		} elseif(substr($source, 0, 1) === "/") {
 			$type 						= "request";
 		} elseif(strpos($source, "://") !== false) {
@@ -332,21 +376,27 @@ class Jobs extends vgCommon
 			$type 						= "func";
 		}
 
-		$created 						= time();
+        $status                         = "idle";
+        $created 						= time();
 		$delay 							= $this->delay;
 		$server 						= $this->getServer();
 
+        if($schedule && !is_numeric($schedule))
+            $schedule                   = strtotime($schedule);
+
 		if(!$schedule)
 			$schedule 					= $created + $delay;
+        elseif($schedule > time())
+            $status                     = "completed";
 
 		$insert = array(
 			"kid"						=> ceil($created * microtime())
 			, "type"					=> $type
-			, "domain"					=> DOMAIN_INSET
+			, "domain"					=> vgCommon::DOMAIN
 			, "source"					=> $source
 			, "referer"					=> $server["HTTP_REFERER"]
-			, "params"					=> $params
-			, "request"					=> $params
+			, "params"					=> ($params ? $params : array())
+			, "request"					=> ($params ? $params : array())
 			, "schedule"				=> $schedule
 			, "delay"					=> $delay
 			, "repeat"					=> ($repeat === true
@@ -364,14 +414,14 @@ class Jobs extends vgCommon
 											: array()
 										)
 
-			, "status"					=> "idle"
+			, "status"					=> $status
 			, "runned"					=> 0
 			, "logs"					=> array()
 			, "called"					=> 0
 			, "pid"						=> 0
 		);
 
-		$storage = $this->getStorage();
+		$storage                        = $this->getStorage();
 		$job = $storage->read(array(
 			"source" 					=> $insert["source"]
 			, "params"					=> $insert["params"]
@@ -390,7 +440,7 @@ class Jobs extends vgCommon
 						, "status"		=> "idle"
 					)
 					, array(
-						"kid" 		=> $job["result"][0]["kid"]
+						"kid" 		    => $job["result"][0]["kid"]
 					)
 				);
 			}
@@ -409,18 +459,19 @@ class Jobs extends vgCommon
 
 		set_time_limit(self::TIMEOUT);
 
-
 		$this->getStorage()->update(array(
 			"status"						=> "idle"
 		), array(
 			"status"						=> "completed"
 			, "schedule<="					=> time()
+            , "domain"                      => vgCommon::DOMAIN
 		));
 
 		$storage 							= $this->getStorage();
 
 		$jobs = $storage->read(array(
 			"status" 						=> "running"
+            , "domain"                      => vgCommon::DOMAIN
 		), array(
 			"kid"							=> true
 			, "pid" 						=> true
@@ -448,7 +499,8 @@ class Jobs extends vgCommon
 		$socket 							= $this::SOCKET - $running;
 		if($socket > 0) {
 			$jobs = $storage->read(array(
-				"status" 				=> "idle"
+				"status" 				    => "idle"
+                , "domain"                  => vgCommon::DOMAIN
 			), array(
 				"kid"						=> true
 				, "type" 					=> true
@@ -534,8 +586,8 @@ class Jobs extends vgCommon
 
 				//} elseif($log === false) {
 				//	$status 		= "idle";
-			} else {
-				$log["error"]				= "Response Empty";
+			} elseif($log === null) {
+			    Cache::log($job, "job_response_empty");
 			}
 
 			if($repeat && !count($request)) {
@@ -559,7 +611,8 @@ class Jobs extends vgCommon
 			}
 
 			$logs 							= $job["logs"];
-			$logs[] 						= $log;
+			if($log)
+			    $logs[] 				    = $log;
 
 			$this->getStorage()->update(array(
 				"last_update" 				=> $now
@@ -594,6 +647,18 @@ class Jobs extends vgCommon
 		return $config;
 	}
 
+	public function getScripts() {
+        $it = new FilesystemIterator($this->getDiskPath() . vgCommon::ASSETS_PATH . "/jobs");
+        foreach ($it as $fileinfo) {
+            if($fileinfo->getATime() > $fileinfo->getMTime() )
+                continue;
+
+            $filename                               = $fileinfo->getFilename();
+
+            self::setScript("/job/" . $filename);
+            require($this->getDiskPath() . vgCommon::JOBS_PATH . "/" . $filename);
+        }
+    }
 	private static function getInclude($include, $cm = null) {
 		if($cm) {
 			$cm->oPage->output_buffer = "";
@@ -670,6 +735,23 @@ class Jobs extends vgCommon
 	private function controller_request($job) {
 		return self::req($job["source"], $job["request"], "POST", null, $job["server"], $job["session"]);
 	}
+    private function controller_script($job) {
+        $return                     = null;
+	    $params                     = $job["request"];
+        $script                     = $this->getDiskPath() . vgCommon::JOBS_PATH . "/" . basename($job["source"]);
+        $output                     = exec("php -l " . addslashes($script));
+
+        if(strpos($output, "No syntax errors") === 0) {
+            Jobs::runScript($params);
+            require($script);
+            if(!$return)
+                $return = Jobs::runScript(false);
+        } else {
+            $this->isError("syntax errors into script");
+            Cache::log($output, "job_error");
+        }
+        return $return;
+    }
 	private function controller_func($job) {
 //todo: da fare la call di una funzione
 	}
@@ -686,7 +768,7 @@ class Jobs extends vgCommon
 	/**
 	 * @param null $service
 	 */
-	private function controller()
+	/*private function controller()
 	{
 		$type                                                           	= $this->service;
 
@@ -701,8 +783,8 @@ class Jobs extends vgCommon
 		}
 
 		return $this->driver[$type];
-	}
-	private function setConfig()
+	}*/
+	/*private function setConfig()
 	{
 		foreach($this->connectors AS $name => $connector) {
 			if(!$connector["name"]) {
@@ -748,7 +830,7 @@ class Jobs extends vgCommon
 		}
 
 
-	}
+	}*/
 
 	private function getResult()
 	{

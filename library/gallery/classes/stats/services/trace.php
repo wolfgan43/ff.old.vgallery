@@ -219,8 +219,8 @@ function system_trace($action, $url = null, $get = null, $visitor = null) {
 				),
 					array(
 						"url" 										=> $url
-					, "get" 									=> $get
-					, "domain" 									=> DOMAIN_INSET
+                        , "get" 									=> $get
+                        , "domain" 									=> vgCommon::DOMAIN
 					)
 				);
 

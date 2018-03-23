@@ -135,7 +135,9 @@ class storageMysql {
 							case "boolean":
 							case "date":
 							case "number":
+                            case "primary":
 							case "string":
+                            case "text":
 							default:
 								if (is_array($value)) {
 									if(count($value))

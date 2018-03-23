@@ -855,11 +855,7 @@ class Storage extends vgCommon
 
 		return $res;
 	}
-	public function isAssocArray(array $arr)
-	{
-		if (array() === $arr) return false;
-		return array_keys($arr) !== range(0, count($arr) - 1);
-	}
+
 	public function normalizeField($name, $value) {
     	static $fields = array();
 
@@ -951,7 +947,8 @@ class Storage extends vgCommon
 				case "date":																			//date
 					$fields[$name] = $value;
 					break;
-				case "number":																			//number
+                case "number":                                                                          //number
+				case "primary":
 					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to number
 						$res["update"]['$inc'][$name] = 1;
 					} elseif(strrpos($value, "--") === strlen($value) -2) {                                //-- to number
@@ -973,6 +970,7 @@ class Storage extends vgCommon
 					}
 					break;
 				case "string":																			//string
+                case "text":
 				default:
 					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to string
 						$res["update"]['$concat'][$name] = array('$' . $name, "+1");

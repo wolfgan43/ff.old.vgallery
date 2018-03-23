@@ -27,188 +27,177 @@
 
 class Anagraph extends vgCommon
 {
-    static $singleton                   = null;
+    static $singleton                                       = null;
 
-    protected $storage                 	= "mysql";
-    protected $services                 = array(
-											"anagraph" => null
-											, "access" => null
-										);
-    protected $controllers              = array(
-                                            "anagraph"                      => array(
-                                                "default"                   => false
-                                                , "services"                => false
-                                                , "storage"                 => array(
-                                                    "nosql"                 => null
-                                                    , "sql"                 => null
-                                                )
-												, "struct"					=> "anagraph"
-                                            )
-											, "access"                      => array(
-                                                "default"                   => false
-                                                , "services"                => false
-                                                , "storage"                 => array(
-                                                    "sql"                 	=> null
-                                                )
-												, "struct"					=> "access"
-                                            )
-                                        );
-    protected $controllers_rev          = array();
-    protected $struct              		= array(
-											"connectors"                    => array(
-												"sql"                       => array(
-													"prefix"				=> "ANAGRAPH_DATABASE_"
-                                                )
-                                                , "nosql"                   => array(
-													"prefix"				=> "ANAGRAPH_MONGO_DATABASE_"
-                                                )
-											)
-											, "table" => array(
-												/*
-												 * quelli che permettono l'identificazione diretta, come i dati anagrafici (ad esempio: nome e cognome), le immagini, ecc.;
-												 */
-												"identification " => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													, "table" 				=> "anagraph"
-													, "key" 				=> "ID"
-													, "rel" 				=> array(
-														"access" 			=> "uid"
-													)
-													, "crypt" => array(
-														"data" => false //metodo di criptazione applicato es: sha256
-														, "transfert" => false  //metodo di criptazione applicato es: ssl
-													)
-												)
-												, "general" => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													, "table" 				=> "anagraph_ext"
-													, "key" 				=> "ID"
-													, "rel" 				=> array(
-														"identification" 	=> "ID_anagraph"
-													)
-													, "crypt" => array(
-														"data" => false //metodo di criptazione applicato es: sha256
-														, "transfert" => false  //metodo di criptazione applicato es: ssl
-													)
-												)
+    protected $services                                     = array(
+                                                            );
+    protected $controllers                                  = array(
 
-												/*
-												 * quelli che possono rivelare l'origine razziale ed etnica, le convinzioni religiose, filosofiche o di altro genere, le opinioni politiche, l'adesione a partiti, sindacati, associazioni od organizzazioni a carattere religioso, filosofico, politico o sindacale, lo stato di salute e la vita sessuale;
-												 */
-												, "sensitivity" => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													, "table" 				=> "anagraph_ext"
-													, "key" 				=> "ID"
-													, "rel" 				=> array(
-														"identification" 	=> "ID_anagraph"
-													)
-													, "crypt" => array(
-														"data" => false //metodo di criptazione applicato es: sha256
-														, "transfert" => false  //metodo di criptazione applicato es: ssl
-													)
-												)
-												/*
-												 * quelli che possono rivelare l'esistenza di determinati provvedimenti giudiziari soggetti ad iscrizione nel casellario giudiziale (ad esempio, i provvedimenti penali di condanna definitivi, la liberazione condizionale, il divieto od obbligo di soggiorno, le misure alternative alla detenzione) o la qualità di imputato o di indagato
-												 */
-												, "legal" => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													, "table" 				=> "anagraph_ext"
-													, "key" 				=> "ID"
-													, "rel" 				=> array(
-														"identification" 	=> "ID_anagraph"
-													)
-													, "crypt" => array(
-														"data" => false //metodo di criptazione applicato es: sha256
-														, "transfert" => false  //metodo di criptazione applicato es: ssl
-													)
-												)
-												/*
-												 * i dati personali relativi alle caratteristiche genetiche ereditarie o acquisite di una persona fisica che forniscono informazioni univoche sulla fisiologia o sulla salute di detta persona fisica, e che risultano in particolare dall'analisi di un campione biologico della persona fisica in questione
-												 */
-												, "genetic" => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													, "table" 				=> "anagraph_ext"
-													, "key" 				=> "ID"
-													, "rel" 				=> array(
-														"identification" 	=> "ID_anagraph"
-													)
-													, "crypt" => array(
-														"data" => false //metodo di criptazione applicato es: sha256
-														, "transfert" => false  //metodo di criptazione applicato es: ssl
-													)
-												)
-												/*
-												 * i dati personali ottenuti da un trattamento tecnico specifico relativi alle caratteristiche fisiche, fisiologiche o comportamentali di una persona fisica che ne consentono o confermano l'identificazione univoca, quali l'immagine facciale o i dati dattiloscopic
-												 */
-												, "biometric" => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													, "table" 				=> "anagraph_ext"
-													, "key" 				=> "ID"
-													, "rel" 				=> array(
-														"identification" 	=> "ID_anagraph"
-													)
-													, "crypt" => array(
-														"data" => false //metodo di criptazione applicato es: sha256
-														, "transfert" => false  //metodo di criptazione applicato es: ssl
-													)
-												)
-												/*
-												 * : i dati personali attinenti alla salute fisica o mentale di una persona fisica, compresa la prestazione di servizi di assistenza sanitaria, che rivelano informazioni relative al suo stato di salut
-												 */
-												, "health" => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													, "table" 				=> "anagraph_ext"
-													, "key" 				=> "ID"
-													, "rel" 				=> array(
-														"identification" 	=> "ID_anagraph"
-													)
-													, "crypt" => array(
-														"data" => false //metodo di criptazione applicato es: sha256
-														, "transfert" => false  //metodo di criptazione applicato es: ssl
-													)
-												)
-												/*
-												 * i Dati per effettuare l'accesso all'interno del sistema.
-												 */
-												, "access" => array(
-													"prefix"				=> null //prefisso usato per le costanti di connessione db
-													,"table" 				=> CM_TABLE_PREFIX . "mod_security_users"
-													, "key" 				=> "ID"
-													, "crypt" 				=> array(
-														"data" 				=> false //metodo di criptazione applicato es: sha256
-														, "transfert" 		=> false  //metodo di criptazione applicato es: ssl
-													)
-												)
+    );
+	private $connectors										= array(
+																"sql"                       => array(
+																	"host"          		=> null
+																	, "username"    		=> null
+																	, "password"   			=> null
+																	, "name"       			=> null
+																	, "prefix"				=> "ANAGRAPH_DATABASE_"
+																	, "table"               => "anagraph"
+																	, "key"                 => "ID"
+																)
+																, "nosql"                   => array(
+																	"host"          		=> null
+																	, "username"    		=> null
+																	, "password"    		=> null
+																	, "name"       			=> null
+																	, "prefix"				=> "ANAGRAPH_MONGO_DATABASE_"
+																	, "table"               => "anagraph"
+																	, "key"                 => "ID"
+																	)
+																, "fs"                      => array(
+																	"service"				=> "php"
+																	, "path"                => "/cache/anagraph"
+																	, "name"                => array("name", "email", "tel")
+																	, "var"					=> null
+																	)
+															);
+	private $struct											= array(
+	                                                            "anagraph" => array(
+                                                                    "ID"                    => "primary"
+                                                                    , "ID_domain"           => "number"
+	                                                                , "ID_type"             => "number"
+                                                                    , "ID_lang"             => "number"
+                                                                    , "ID_role"             => "number"
+                                                                    , "ID_user"             => "number"
+                                                                    , "avtar"               => "string"
+                                                                    , "name"                => "string"
+                                                                    , "email"               => "string"
+                                                                    , "tel"                 => "string"
+                                                                    , "tags"                => "string"
+                                                                    , "status"              => "number"
+                                                                    , "created"             => "number"
+                                                                    , "last_update"         => "number"
+                                                                    , "parent"              => "string"
+                                                                    , "smart_url"           => "string"
+                                                                    , "referer"             => "string"
 
-											)
-										);
-    protected $struct_default                   = "access";
+                                                                )
+                                                                , "anagraph_type" => array(
+                                                                    "ID"                    => "primary"
+                                                                    , "name"                => "string"
+                                                                )
+                                                                , "anagraph_role" => array(
+                                                                    "ID"                    => "primary"
+                                                                    , "name"                => "string"
+                                                                )
+                                                                , "anagraph_categories" => array(
+                                                                    "ID"                    => "primary"
+                                                                    , "name"                  => "string"
+                                                                )
+                                                                , "anagraph_rel_categories" => array(
+                                                                    "ID_anagraph"           => "string"
+                                                                    , "ID_categories"       => "string"
+                                                                )
+                                                                , "anagraph_email" => array(
+                                                                    "ID"                    => "primary"
+                                                                    , "ID_anagraph"         => "number"
+                                                                    , "type"                => "string"
+                                                                    , "email"               => "string"
+                                                                )
+                                                                , "anagraph_tel" => array(
+                                                                    "ID"                    => "primary"
+                                                                    , "ID_anagraph"         => "number"
+                                                                    , "type"                => "string"
+                                                                    , "tel"                 => "string"
+                                                                )
+                                                                , "anagraph_social" => array(
+                                                                    "ID"                    => "primary"
+                                                                    , "ID_anagraph"         => "number"
+                                                                    , "type"                => "string"
+                                                                    , "url"                 => "string"
+                                                                    , "text"                => "text"
+                                                                )
+															);
+	private $relationship                                   = array(
+	                                                            "anagraph" => array(
+	                                                                "ID_type"               => array(
+	                                                                    "tbl"               => "anagraph_type"
+                                                                        , "key"             => "ID"
+                                                                    )
+	                                                                , "ID_domain"           => array(
+	                                                                    "tbl"               => "domains"
+                                                                        , "key"             => "ID"
+                                                                    )
+                                                                    , "ID_lang"             => array(
+                                                                        "tbl"               => "lang"
+                                                                        , "key"             => "ID"
+                                                                    )
+                                                                    , "ID_user"             => array(
+                                                                        "tbl"               => "users"
+                                                                        , "key"             => "ID"
+                                                                    )
+                                                                    , "categories"          => array(
+                                                                        "tbl"               => "anagraph_rel_categories"
+                                                                        , "key"             => "ID_anagraph"
+                                                                        , "type"            => "n/n"
+                                                                    )
+                                                                )
+                                                                , "anagraph_categories"     => array(
+                                                                    "anagraph"              => array(
+                                                                        "tbl"                   => "anagraph_rel_categories"
+                                                                        , "key"                 => "ID_category"
+                                                                        , "type"                => "n/n"
+                                                                    )
+                                                                )
+                                                            );
+    private $indexes                                        = array(
+                                                                "anagraph" => array(
+                                                                    "ID_domain"             => "hardindex"
+                                                                    , "ID_type"             => "hardindex"
+                                                                    , "ID_lang"             => "hardindex"
+                                                                    , "ID_user"             => "hardindex"
 
-    protected $query                            = "";
-    protected $users                            = null;
-    protected $groups                           = null;
-    protected $fields                           = array();
-    private $session							= null;
+                                                                )
+                                                            );
+    private $tables                                         = array(
+                                                                "anagraph"                  => array(
+                                                                    "engine"                => "InnoDB"
+                                                                    , "crypt"               => false
+                                                                    , "pairing"             => false
+                                                                    , "transfert"           => false
+                                                                    , "charset"             => "utf8"
+                                                                )
+                                                                , "anagraph_type"           => array(
+                                                                    "engine"                => "InnoDB"
+                                                                    , "crypt"               => false
+                                                                    , "pairing"             => false
+                                                                    , "transfert"           => false
+                                                                    , "charset"             => "utf8"
+                                                                )
+                                                            );
 
-	public static function getInstance($services = null, $params = null)
+
+    protected $query                                        = "";
+    protected $users                                        = null;
+    protected $groups                                       = null;
+    protected $fields                                       = array();
+    private $session							            = null;
+
+	public static function getInstance($services = null)
 	{
 		if (self::$singleton === null)
-			self::$singleton = new Notifier($services, $params);
+			self::$singleton = new Anagraph($services);
 		else {
-			if($services)
-				self::$singleton->setServices($services);
-
-			self::$singleton->setParams($params);
+            self::$singleton->setServices($services);
 		}
 		return self::$singleton;
 	}
 
-	public function __construct($services = null, $params = null)
+	public function __construct($services = null)
 	{
-		$this->setServices($services);
-		$this->setParams($params);
+        $this->loadControllers(__DIR__);
 
-		//$this->loadControllers(__DIR__);
+		$this->setServices($services);
+        $this->setConfig($this->connectors, $this->services);
 		$this->loadSession();
 		//da aggiungere inizializzazioni classe necessarie come anagraph
 	}
@@ -250,6 +239,10 @@ print_r($connectors);
 				"result" => array()
 			)
 		);
+
+		foreach($this->controllers AS $controller) {
+
+        }
 
         //$anagraph = get
 

@@ -30,6 +30,12 @@ abstract class vgCommon
     const PHP_EXT                       = "php";
     const SQL_PREFIX					= "FF_DATABASE_";
 	const NOSQL_PREFIX					= "MONGO_DATABASE_";
+	const BASE_PATH                     = "/library/gallery/classes";
+	const CONFIG_PATH                   = "/themes/site/config";
+
+	const ASSETS_PATH                   = "/themes/site";
+
+	const DOMAIN                        = DOMAIN_INSET;
 
 	protected $services 				= null;
 	protected $controllers 				= null;
@@ -58,7 +64,7 @@ abstract class vgCommon
 		if(!self::$disk_path) {
 			self::$disk_path = (defined("FF_DISK_PATH")
 				? FF_DISK_PATH
-				: str_replace("/library/gallery/classes", "", __DIR__)
+				: str_replace(self::BASE_PATH, "", __DIR__)
 			);
 		}
 		return self::$disk_path;
@@ -123,20 +129,34 @@ abstract class vgCommon
         if($this->error)
             return $this->error;
     }
+    public function isAssocArray(array $arr)
+    {
+        if (array() === $arr) return false;
+        return array_keys($arr) !== range(0, count($arr) - 1);
+    }
 	public function setServices($services) {
 		if($services) {
 			$this->services 					= null;
+			if(!is_array($services))
+                $services = array($services);
+
 			if (is_array($services)) {
-				foreach ($services AS $service => $controller) {
-					$this->addService($service, $controller);
-				}
-			} elseif (strlen($services)) {
+                if($this->isAssocArray($services)) {
+                    foreach ($services AS $service => $controller) {
+                        $this->addService($service, $controller);
+                    }
+                } else {
+                    foreach ($services AS $service) {
+                        $this->addService($service);
+                    }
+                }
+			}/* elseif (strlen($services)) {
 				reset($this->controllers);
 				$controller 					= key($this->controllers);
 				$this->controllers[$controller]["default"] = $services;
 
 				$this->addService($controller, $this->controllers[$controller]);
-			}
+			}*/
 		}
 	}
 
@@ -175,7 +195,7 @@ abstract class vgCommon
         return $this->$name;
     }
 
-    public function loadControllers($script_path) 
+    public function loadControllers($script_path)
     {
         if(is_dir($script_path . "/services"))
         {
@@ -183,6 +203,7 @@ abstract class vgCommon
             if(is_array($services) && count($services)) {
                 foreach($services AS $service) {
                     $arrService = explode("_", basename($service, "." . $this::PHP_EXT), 2);
+
                     if(isset($this->controllers[$arrService[0]]) && $this->controllers[$arrService[0]]["services"] !== false)
                     {
                         if(!is_array($this->controllers[$arrService[0]]["services"]))
@@ -201,6 +222,51 @@ abstract class vgCommon
 					}
                 }
             }            
+        }
+    }
+
+    public function setConfig(&$connectors, &$services, $ext = null)
+    {
+        require_once($this->getAbsPathPHP("/config"));
+        if ($ext && is_file($this->getAbsPathPHP(self::CONFIG_PATH . "/config." . get_called_class() . "." . $ext))) {
+            require_once($this->getAbsPathPHP(self::CONFIG_PATH . "/config." . get_called_class() . "." . $ext));
+        }
+
+        foreach($connectors AS $name => $connector) {
+            if(!$connector["name"]) {
+                $prefix = ($connector["prefix"] && defined($connector["prefix"] . "NAME") && constant($connector["prefix"] . "NAME")
+                    ? $connector["prefix"]
+                    : vgCommon::getPrefix($name)
+                );
+
+                $connectors[$name]["host"] = (defined($prefix . "HOST")
+                    ? constant($prefix . "HOST")
+                    : "localhost"
+                );
+                $connectors[$name]["name"] = (defined($prefix . "NAME")
+                    ? constant($prefix . "NAME")
+                    :  ""
+                );
+                $connectors[$name]["username"] = (defined($prefix . "USER")
+                    ? constant($prefix . "USER")
+                    : ""
+                );
+                $connectors[$name]["password"] = (defined($prefix . "PASSWORD")
+                    ? constant($prefix . "PASSWORD")
+                    : ""
+                );
+            }
+        }
+
+        foreach($services AS $type => $data)
+        {
+            if(!$data)
+            {
+                $services[$type] = array(
+                    "service" 			=> $connectors[$type]["service"]
+                    , "connector" 		=> $connectors[$type]
+                );
+            }
         }
     }
 }
