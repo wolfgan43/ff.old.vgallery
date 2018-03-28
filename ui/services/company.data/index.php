@@ -150,15 +150,15 @@
 				if(isset($actual_srv["force_tpl"]) && strlen($actual_srv["force_tpl"])) {
 					$template_res = $tpl->rpparse("main", false);
 				} else {
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["prefix"] = "VGS";
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["ID"] = "company.data";
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["title"] = "Company Data" . " [" . "VG SERVICES" . "]";
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["type"] = "VG_SERVICES";
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["location"] = $actual_srv["location"];
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["width"] = $sections[$actual_srv["location"]]["width"];
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["visible"] = NULL;
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["settings"] = "";
-			        $sections[$actual_srv["location"]]["layouts"]["VGS"]["content"] = $tpl->rpparse("main", false); 
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["prefix"] = "VGS";
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["ID"] = "company.data";
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["title"] = "Company Data" . " [" . "VG SERVICES" . "]";
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["type"] = "VG_SERVICES";
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["location"] = $actual_srv["location"];
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["width"] = $sections[$actual_srv["location"]]["width"];
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["visible"] = NULL;
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["settings"] = "";
+			        $sections[$actual_srv["location"]]["blocks"]["VGS"]["content"] = $tpl->rpparse("main", false);
 				}
 			}
 		}

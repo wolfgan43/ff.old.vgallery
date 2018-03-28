@@ -48,7 +48,7 @@ $oField->id = "module_name";
 $oField->label = ffTemplate::_get_word_by_code("modules_name");
 $oField->extended_type = "Selection";
 
-foreach(glob(FF_DISK_PATH . "/conf" . GALLERY_PATH_MODULE . "/*", GLOB_ONLYDIR) as $real_file) { 
+foreach(glob(FF_DISK_PATH . VG_ADDONS_PATH . "/*", GLOB_ONLYDIR) as $real_file) {
     if (is_dir($real_file)) {
         $oField->multi_pairs[] = array(new ffData(basename($real_file)), new ffData(ffTemplate::_get_word_by_code(basename($real_file))));
         

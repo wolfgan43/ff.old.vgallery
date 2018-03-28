@@ -77,14 +77,24 @@
 		<reverse>/admin/ds</reverse>
 		<index>999</index>
 	</rule>
+	<rule id="docs">
+		<priority>NORMAL</priority>
+		<source>/admin/docs(.*)</source>
+		<destination>
+			<url>/cm/contents/docs/$1</url>
+			<toplevel />
+		</destination>
+		<index>999</index>
+		<reverse>/docs</reverse>
+	</rule>
 	<rule>
 		<priority>BOTTOM</priority>
+        <index>100</index>
 		<source>(.*)</source>
 		<destination>
 			<url>$0</url>
 			<content_root>/contents</content_root>
 		</destination>
         <accept_path_info />
-        <process_next />
 	</rule>
 </ffxml>

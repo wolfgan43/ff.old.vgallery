@@ -43,21 +43,7 @@
 	        if($globals->user_path == "/") {
 	            if(isset($actual_srv["embed"])  && strlen($actual_srv["embed"])) {
         			$embed_content = $actual_srv["embed"];
-        			/*if(check_function("system_get_sections"))
-                    	$template = system_get_sections();
 
-                    $sections = $template["sections"];
-					foreach($template["stats]["main_section"] AS $ID_main_section) {
-					    if(is_array($sections[$ID_main_section]["layouts"]) && count($sections[$ID_main_section]["layouts"])) {
-							$primary_main_section = $ID_main_section;
-							break;
-					    }
-					}
-					foreach($sections AS $sections_key => $sections_value) {
-						if($sections_key !== $primary_main_section)
-							unset($sections[$sections_key]);
-					} */
-					
 					if(is_array($oPage->page_js) && count($oPage->page_js)) {
 						$js_preserve = array("jquery");
 						$js_purged = array();
