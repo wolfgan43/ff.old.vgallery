@@ -31,8 +31,8 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
     $theme = $cm->oPage->getTheme();
     $unic_id = $layout["prefix"] . $layout["ID"];
     $layout_settings = $layout["settings"];
-	$block = array();    
-	
+	$block = array();
+
     if(strlen($layout_settings["AREA_STATIC_PLUGIN"]))
 	    setJsRequest($layout_settings["AREA_STATIC_PLUGIN"]);
 
@@ -42,8 +42,8 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 		if(!$globals->data_storage["STATIC_PAGE_BY_DB"][$static_value])
 		{
 	        $db = ffDB_Sql::factory();
-	        if(is_array($globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"]) && count($globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"])) {
-	        	$draft_value = implode(",", $globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"]);
+	        if(is_array($globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"]["keys"]) && count($globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"]["keys"])) {
+	        	$draft_value = implode(",", array_keys($globals->tpl["blocks_by_type"]["STATIC_PAGE_BY_DB"]["keys"]));
 	        } else {
 	        	$draft_value = $static_value;
 	        }
@@ -126,8 +126,7 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
         set_cache_data("T", basename($static_value));
 		//$globals->cache["data_blocks"]["TV" . "0" . "-" . basename($static_value)] = basename($static_value);        
     } 
-    
-    
+
 	if(is_array($globals->request) && count($globals->request)) {
 	    foreach($globals->request AS $request_key => $request_value) {
 			$tpl->set_var($request_key, $_GET[$request_key]);

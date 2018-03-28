@@ -416,9 +416,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
             //if($sections_value["visible"]) {
                 if(AREA_LAYOUT_SHOW_MODIFY) {
                     if(is_array($sections_value["blocks"]) && count($sections_value["blocks"])) {
-                        //print_r($sections_value["layouts"]);
-						
-                        foreach($sections_value["blocks"] AS $layout_key => $layout_value) { 
+                        foreach($sections_value["blocks"] AS $layout_key => $layout_value) {
 							if(isset($layout_value["type_group"]) && strlen($layout_value["type_group"])) { 
 						        $tpl->set_var("dialog_pre", ffCommon_specialchars('<h1 class="admin-title ' . $layout_value["type_group"] . '">'));
 						        $tpl->set_var("dialog_post", ffCommon_specialchars('</h1>'));
