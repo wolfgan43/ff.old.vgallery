@@ -237,3 +237,49 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 		}
 	}
 }
+
+function vgAutoload()
+{
+	static $loaded = false;
+	if(!$loaded) {
+		spl_autoload_register(function ($class) {
+			switch ($class) {
+				case "Anagraph":
+				case "Cache":
+				case "Filemanager":
+				case "Mailer":
+				case "Notifier":
+				case "Stats":
+				case "Storage":
+				case "Jobs":
+					require(__CMS_DIR__ . "/library/gallery/models/" . strtolower($class) . "/" . $class . ".php");
+					break;
+				case "vgCommon":
+					require(__CMS_DIR__ . "/library/gallery/models/" . $class . ".php");
+					break;
+				case "ffDB_Sql";
+				case "ffDb_Sql";
+					require(__TOP_DIR__  . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
+					break;
+				case "ffDB_MongoDB";
+				case "ffDB_MongoDB";
+					require_once(__TOP_DIR__ . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+					break;
+				case "ffTemplate";
+					require(__TOP_DIR__  . "/ff/classes/ffTemplate.php");
+					break;
+				case "phpmailer":
+					require(__TOP_DIR__ . "/library/phpmailer/class.phpmailer.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.phpmaileroauth.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.phpmaileroauthgoogle.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.smtp.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.pop3.php");
+					require(__TOP_DIR__ . "/library/phpmailer/extras/EasyPeasyICS.php");
+					require(__TOP_DIR__ . "/library/phpmailer/extras/ntlm_sasl_client.php");
+					break;
+				default:
+			}
+		});
+		$loaded = true;
+	}
+}
