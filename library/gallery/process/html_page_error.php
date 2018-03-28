@@ -38,7 +38,7 @@ function process_html_page_error($http_response = null, $redirect = null, $error
 		: ffTemplate::_get_word_by_code("http_response_empty_title")
 	);
 	if($error) {
-		cache_writeLog((is_array($error) ? implode(", ", $error) : $error), "error_block_notfound");
+		Cache::log((is_array($error) ? implode(", ", $error) : $error), "error_block_notfound");
 	}
 	if($http_response && is_numeric($http_response)) {
 		$params["icon"] = false;
