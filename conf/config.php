@@ -34,10 +34,10 @@ if(defined("SHOWFILES_IS_RUNNING")) {
 		spl_autoload_register(function ($class) {
 			switch ($class) {
 				case "Cache":
-					require (__CMS_DIR__ . "/library/gallery/classes/" . strtolower($class) . "/" . $class . ".php");
+					require (__CMS_DIR__ . "/library/gallery/models/" . strtolower($class) . "/" . $class . ".php");
 					break;
 				case "vgCommon":
-					require(__CMS_DIR__ . "/library/gallery/classes/" . $class . ".php");
+					require(__CMS_DIR__ . "/library/gallery/models/" . $class . ".php");
 					break;
 			}
 		});
