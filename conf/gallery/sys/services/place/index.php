@@ -250,7 +250,7 @@ function vg_place_search($params, $schema_field, $field) {
     if ($actex_main_db)
         $db = mod_security_get_main_db();
     else
-        $db = ffDb_Sql::factory();    
+        $db = ffDB_Sql::factory();
 
     if($params["father"] && $params["place"] && $params["father"]["key"] != $params["place"]) {
         switch($params["father"]["key"]) {

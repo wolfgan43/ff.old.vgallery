@@ -26,7 +26,7 @@
 $key = $_REQUEST["key"];
 $show_bill_reference = $_REQUEST["reference"];
 
-$db = ffDb_Sql::factory();
+$db = ffDB_Sql::factory();
 
 $sSQL = "SELECT DISTINCT
             anagraph_fields.ID 

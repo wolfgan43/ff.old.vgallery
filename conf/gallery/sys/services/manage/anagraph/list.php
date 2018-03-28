@@ -39,8 +39,8 @@ $category = (isset($_REQUEST["cat"])
 
 $real_page = $page * $rows;
 $real_next_page = ($page + 1)  * $rows;
-            
-$db = ffDb_Sql::factory();
+
+$db = ffDB_Sql::factory();
 $db_operation = ffDB_Sql::factory();
 
 if(strlen($category)) {

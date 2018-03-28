@@ -386,7 +386,7 @@ if ($db->nextRecord())
 
 function Customize_on_do_action($component, $frmAction)
 {
-	$db = ffDb_Sql::factory();
+	$db = ffDB_Sql::factory();
 	$cm = cm::getInstance();
 
 	if(isset($_REQUEST["pos"])) {
