@@ -110,16 +110,16 @@ function system_redirect_goto_destination($arrDestination, $hostname = null, $re
         if(!$http_response_code)
             $http_response_code = 301;
 
-        if($write_cache)            
+        if($write_cache)
             system_redirect_set_destination($hostname, $request_uri, $arrDestination["dst"], $arrDestination["code"]);
 
         if(TRACE_VISITOR === true) {
             require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
-            system_trace("redirect", "routing"); 
-        }   
+            system_trace("redirect", "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $arrDestination["dst"]);
+        }
 
-        cache_send_header_content(false, false, false, false); 
-        
+        cache_send_header_content(false, false, false, false);
+
         header("Location: " . "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $arrDestination["dst"], true, $http_response_code);
         exit;
     }

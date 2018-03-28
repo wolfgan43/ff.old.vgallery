@@ -1,20 +1,20 @@
 <?php
 /**
-*   VGallery: CMS based on FormsFramework
-    Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+ *   VGallery: CMS based on FormsFramework
+Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  * @package VGallery
  * @subpackage core
@@ -47,12 +47,13 @@ function system_layer_shards($shards) {
 		check_function("system_get_sections");
 		$where = array(
 			"anagraph" 									=> array()
-			, "vgallery" 								=> array()
-			, "blocks" 									=> array(
+		, "vgallery" 								=> array()
+		, "blocks" 									=> array(
 				"key" 									=> array()
-				, "name" 								=> array()
+			, "name" 								=> array()
 			)
 		);
+
 		foreach($shards AS $type => $blocks) {
 			switch($type) {
 				case "applet":
@@ -81,14 +82,15 @@ function system_layer_shards($shards) {
 		$where["xhr"] 									= !$selective;
 
 		$template = system_get_blocks(null, $where);
-		$response = $template["buffer"]["blocks"];
+		if(is_array($template["buffer"]["blocks"]))
+			$response = $template["buffer"]["blocks"];
 
 		if(is_array($blocks_by_type) && count($blocks_by_type)) {
 			foreach($blocks_by_type AS $type => $blocks) {
 				$buffer[$type] = call_user_func_array(
 					"system_layer_shards_" . $type
 					, array(
-						$blocks
+						$blocks["blocks"]
 					)
 				);
 			}
@@ -236,11 +238,11 @@ function system_layer_shards_marker($blocks) {
 							, "vgallery"
 							, array(
 								"limit" 						=> $marker
-								, "output" 						=> "content"
-								, "vgallery_name" 				=> $vgallery_name
-								, "search" 						=> $globals->search
-								, "navigation" 					=> $globals->navigation
-								, "template_skip_hide"			=> true
+							, "output" 						=> "content"
+							, "vgallery_name" 				=> $vgallery_name
+							, "search" 						=> $globals->search
+							, "navigation" 					=> $globals->navigation
+							, "template_skip_hide"			=> true
 							)
 							, $layout
 						);
@@ -261,7 +263,7 @@ function system_layer_shards_publish($blocks) {
 
 	$layout = array(
 		"ID" => 0
-		, "prefix" => "menu"
+	, "prefix" => "menu"
 	);
 
 	return array();
@@ -274,9 +276,9 @@ function system_layer_shards_publish($blocks) {
 			, "publishing"
 			, array(
 				"publishing" 				=> $publishing
-				, "allow_insert" 			=> false
-				, "output" 					=> "content"
-				, "template_skip_hide" 		=> true
+			, "allow_insert" 			=> false
+			, "output" 					=> "content"
+			, "template_skip_hide" 		=> true
 			)
 			, $layout
 		);
