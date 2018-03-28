@@ -30,35 +30,35 @@ class Anagraph extends vgCommon
     static $singleton                                       = null;
 
     protected $services                                     = array(
+                                                                "anagraph"                  => null
                                                             );
     protected $controllers                                  = array(
-
     );
 	private $connectors										= array(
-																"sql"                       => array(
-																	"host"          		=> null
-																	, "username"    		=> null
-																	, "password"   			=> null
-																	, "name"       			=> null
-																	, "prefix"				=> "ANAGRAPH_DATABASE_"
-																	, "table"               => "anagraph"
-																	, "key"                 => "ID"
-																)
-																, "nosql"                   => array(
-																	"host"          		=> null
-																	, "username"    		=> null
-																	, "password"    		=> null
-																	, "name"       			=> null
-																	, "prefix"				=> "ANAGRAPH_MONGO_DATABASE_"
-																	, "table"               => "anagraph"
-																	, "key"                 => "ID"
-																	)
-																, "fs"                      => array(
-																	"service"				=> "php"
-																	, "path"                => "/cache/anagraph"
-																	, "name"                => array("name", "email", "tel")
-																	, "var"					=> null
-																	)
+                                                                "sql"                   => array(
+                                                                    "host"          	=> null
+                                                                    , "username"    	=> null
+                                                                    , "password"   		=> null
+                                                                    , "name"       		=> null
+                                                                    , "prefix"			=> "ANAGRAPH_DATABASE_"
+                                                                    , "table"           => "anagraph"
+                                                                    , "key"             => "ID"
+                                                                )
+                                                                , "nosql"               => array(
+                                                                    "host"          	=> null
+                                                                    , "username"    	=> null
+                                                                    , "password"    	=> null
+                                                                    , "name"       		=> null
+                                                                    , "prefix"			=> "ANAGRAPH_MONGO_DATABASE_"
+                                                                    , "table"           => "anagraph"
+                                                                    , "key"             => "ID"
+                                                                )
+                                                                , "fs"                  => array(
+                                                                    "service"			=> "php"
+                                                                    , "path"            => "/cache/anagraph"
+                                                                    , "name"            => array("name", "email", "tel")
+                                                                    , "var"				=> null
+                                                                )
 															);
 	private $struct											= array(
 	                                                            "anagraph" => array(
@@ -197,8 +197,12 @@ class Anagraph extends vgCommon
         $this->loadControllers(__DIR__);
 
 		$this->setServices($services);
+
         $this->setConfig($this->connectors, $this->services);
+
+
 		$this->loadSession();
+
 		//da aggiungere inizializzazioni classe necessarie come anagraph
 	}
 
@@ -214,24 +218,75 @@ class Anagraph extends vgCommon
 
 	}
 
+    private function getStruct($type = "anagraph")
+    {
+        return $this->struct[$type];
+    }
+    private function getStorage($service = "anagraph")
+    {
+        if($service == "anagraph" && !$this->services["anagraph"]) {
+            foreach($this->connectors AS $type => $data)
+            {
+                $this->services["anagraph"][$type] = array(
+                    "service" 			=> $this->connectors[$type]["service"]
+                    , "connector" 		=> $this->connectors[$type]
+                );
+            }
+        }
+
+
+
+        $storage = Storage::getInstance($this->services[$service], array(
+            "struct" => $this->getStruct($service)
+        ));
+
+        return $storage;
+    }
 
     public function get($where = null, $fields = null)
     {
-		$service = "server";
-		$connectors = $this->controllers[$service]["storage"];
-		foreach($connectors AS $type => $data)
-		{
-			if(!$data)
-			{
-				$connectors[$type] = array(
-					"service" => null
-				, "connector" => $this->struct["connectors"][$type]
-				);
-			}
-		}
-print_r($connectors);
+        $struct = array();
+        $storage = $this->getStorage();
+
+        if(is_array($fields) && count($fields)) {
+            foreach($fields AS $key ) {
+                $parts = explode(".", $key);
+                switch(count($parts)) {
+                    case "3":
+                        $this->services[$parts[0]] = null;
+                        /* fa cose remote per recuperare le info */
+                        $table = $parts[1];
+                        $field_index = 2;
+                        break;
+                    case "2":
+                        //$storage->setTable($parts[0]);
+                        $table = $parts[0];
+                        $field_index = 1;
+                        break;
+                    case "1":
+                        $table = "anagraph";
+                        $field_index = 0;
+                    default:
+                }
+
+                if(!$struct[$table])
+                    $struct[$table] = $this->getStruct($table);
+
+
+                if($struct[$table][$parts[$field_index]]) {
+                    $data[$table][$parts[$field_index]] = true;
+                } else {
+                    $error[$table][$parts[$field_index]] = true;
+                }
+            }
+        }
+        print_r($data);
+        print_r($error);
+
+        $res = $storage->read($where, $data["anagraph"]);
+		print_r($res);
 		die();
-		$storage = Storage::getInstance($connectors);
+
 		$this->result = $storage->read($where, $fields);
 		$res = ($this->result
 			? $this->result
@@ -240,11 +295,8 @@ print_r($connectors);
 			)
 		);
 
-		foreach($this->controllers AS $controller) {
-
-        }
-
-        //$anagraph = get
+		print_r($this->result);
+        die();
 
 
     }

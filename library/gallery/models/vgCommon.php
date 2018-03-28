@@ -30,8 +30,10 @@ abstract class vgCommon
     const PHP_EXT                       = "php";
     const SQL_PREFIX					= "FF_DATABASE_";
 	const NOSQL_PREFIX					= "MONGO_DATABASE_";
-	const BASE_PATH                     = "/library/gallery/classes";
+	const BASE_PATH                     = "/library/gallery/models";
 	const CONFIG_PATH                   = "/themes/site/config";
+    const JOBS_PATH                     = "/themes/site/jobs";
+    const CACHE_PATH                     = "/cache";
 
 	const ASSETS_PATH                   = "/themes/site";
 
@@ -60,18 +62,38 @@ abstract class vgCommon
 			default;
 		}
 	}
-	protected static function _getDiskPath() {
+	protected static function _getDiskPath($what = null) {
 		if(!self::$disk_path) {
 			self::$disk_path = (defined("FF_DISK_PATH")
 				? FF_DISK_PATH
 				: str_replace(self::BASE_PATH, "", __DIR__)
 			);
 		}
-		return self::$disk_path;
+
+		switch ($what) {
+            case "asset":
+                $path = self::ASSETS_PATH;
+                break;
+            case "cache":
+                $path = self::CACHE_PATH;
+                break;
+            case "class":
+                $path = self::BASE_PATH;
+                break;
+            case "config":
+                $path = self::CONFIG_PATH;
+                break;
+            case "job":
+                $path = self::JOBS_PATH;
+                break;
+            default:
+        }
+
+        return self::$disk_path . $path;
 	}
 
-	public function getDiskPath() {
-		return $this::_getDiskPath();
+	public function getDiskPath($path = null) {
+		return $this::_getDiskPath($path);
 	}
     public function getTheme($name)
     {
@@ -137,7 +159,8 @@ abstract class vgCommon
 	public function setServices($services) {
 		if($services) {
 			$this->services 					= null;
-			if(!is_array($services))
+
+            if(!is_array($services))
                 $services = array($services);
 
 			if (is_array($services)) {
@@ -228,8 +251,9 @@ abstract class vgCommon
     public function setConfig(&$connectors, &$services, $ext = null)
     {
         require_once($this->getAbsPathPHP("/config"));
-        if ($ext && is_file($this->getAbsPathPHP(self::CONFIG_PATH . "/config." . get_called_class() . "." . $ext))) {
-            require_once($this->getAbsPathPHP(self::CONFIG_PATH . "/config." . get_called_class() . "." . $ext));
+        $class_path = self::CONFIG_PATH . "/config." . get_called_class() . "." . $ext;
+        if ($ext && is_file($this->getAbsPathPHP($class_path))) {
+            require_once($this->getAbsPathPHP($class_path));
         }
 
         foreach($connectors AS $name => $connector) {
@@ -238,6 +262,9 @@ abstract class vgCommon
                     ? $connector["prefix"]
                     : vgCommon::getPrefix($name)
                 );
+                 /*echo $name;
+                print_r($connector);
+    echo($prefix);*/
 
                 $connectors[$name]["host"] = (defined($prefix . "HOST")
                     ? constant($prefix . "HOST")
@@ -260,7 +287,7 @@ abstract class vgCommon
 
         foreach($services AS $type => $data)
         {
-            if(!$data)
+            if(!$data && $connectors[$type])
             {
                 $services[$type] = array(
                     "service" 			=> $connectors[$type]["service"]

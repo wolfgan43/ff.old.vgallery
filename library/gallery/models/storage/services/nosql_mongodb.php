@@ -197,7 +197,26 @@ class storageMongodb {
 					default:
 				}
 			}
-		}
+
+            if(is_array($res)) {
+                switch ($flag) {
+                    case "select":
+                        $res["select"][$this->config["key"]]                        = true;
+                        break;
+                    case "insert":
+                        break;
+                    case "update":
+                        break;
+                    case "where":
+                        break;
+                    case "sort":
+                        break;
+                    default:
+                }
+            }
+        } elseif($flag == "select") {
+
+        }
 
 		return $res;
 	}

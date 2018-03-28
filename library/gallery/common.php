@@ -158,16 +158,6 @@ function check_function($name, $module = null) {
 	        } else {
 	            return false;
 	        }
-	    } elseif(ucfirst($name) == $name) {
-            if(file_exists(FF_DISK_PATH . "/library/gallery/classes/" . strtolower($name) . "/" . $name . "." . FF_PHP_EXT)) {
-				require_once(FF_DISK_PATH . "/library/gallery/classes/" . strtolower($name) . "/" . $name . "." . FF_PHP_EXT);
-            }
-            
-            if(class_exists($name)) {
-	            return true;
-	        } else {
-	            return false;
-	        }
         } else {
 			if(strlen($name) && file_exists(FF_DISK_PATH . "/library/gallery/common/" . $name . "." . FF_PHP_EXT)) {
 				require_once(FF_DISK_PATH . "/library/gallery/common/" . $name . "." . FF_PHP_EXT);

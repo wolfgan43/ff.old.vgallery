@@ -27,7 +27,7 @@
 class Cms extends vgCommon
 {
     static $singleton                   = null;
-    
+
     protected $services                 = array(
                                         );
     protected $controllers              = array(
@@ -132,13 +132,12 @@ class Cms extends vgCommon
 		static $schema = null;
 
 		if(!$schema) {
-			require(FF_DISK_PATH . "/library/gallery/settings.php");
-
-			if(is_file(FF_DISK_PATH . "/themes/site/settings.php")) {
-				require(FF_DISK_PATH . "/themes/site/settings.php");
+			require(self::_getDiskPath() . "/library/gallery/settings.php");
+			if(is_file(self::_getDiskPath() . "/themes/site/settings.php")) {
+				require(self::_getDiskPath() . "/themes/site/settings.php");
 			}
-			if(is_file(CM_CACHE_PATH . "/locale.php")) {
-				require(CM_CACHE_PATH . "/locale.php");
+			if(is_file(self::_getDiskPath("cache") . "/locale.php")) {
+				require(self::_getDiskPath("cache") . "/locale.php");
 
 				/** @var include $locale */
 				$schema["locale"] = $locale;
