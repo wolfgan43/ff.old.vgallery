@@ -46,11 +46,17 @@ function installer_fpc($url) {
 	return $res;
 }
 
+$res = array();
 if(!is_file(__DIR__ . "/conf/gallery/install/index.php")) {
 	$res = installer_fpc(MASTER ."/api/updater/install");
 	$res = json_decode($res, true);
 }
-if(!$res["error"]) {
-	require(__DIR__ . "/conf/gallery/install/index.php");
+
+if(!isset($res["error"])) {
+    if(is_file(__DIR__ . "/conf/gallery/install/index.php")) {
+        require(__DIR__ . "/conf/gallery/install/index.php");
+    } else {
+        echo "Installer Error. Try to upload file Manually";
+    }
 }
 
