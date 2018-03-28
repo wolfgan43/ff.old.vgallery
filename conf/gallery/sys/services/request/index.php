@@ -26,9 +26,9 @@
 //print_r($cm->oPage->page_js);
 //print_r($cm->oPage->page_css);
 if(is_array($cm->oPage->page_js) && count($cm->oPage->page_js))
-	cache_writeLog(print_r($cm->oPage->page_js, true), "request_error_js");
+	Cache::log(print_r($cm->oPage->page_js, true), "request_error_js");
 if(is_array($cm->oPage->page_css) && count($cm->oPage->page_css))
-	cache_writeLog(print_r($cm->oPage->page_css, true), "request_error_css");
+	Cache::log(print_r($cm->oPage->page_css, true), "request_error_css");
 
 $cm->oPage->page_js = array();
 $cm->oPage->page_css = array();
@@ -54,7 +54,7 @@ system_layer_shards_page_by_referer();
 //da gestire la priority: 2 e normal
 // da gestire i socket
 if(is_array($req) && count($req)) {
-	$stack 											= array(
+	/*$stack 											= array(
 														"top" 			=> array(
 															"func" 			=> "get_response_by_service_async"
 															, "actions" 	=> null
@@ -85,9 +85,9 @@ if(is_array($req) && count($req)) {
 															"func" 			=> ""
 															, "actions" 	=> null
 														)
-													);
+													);*/
 	$schema = cache_get_settings();
-	$schema_def = get_schema_def();
+	//$schema_def = get_schema_def();
 
 	/*$req["/api/1.0/get-tag-list"] = array();
 	$req["/srv/share/check-article-like"] = array();
@@ -118,7 +118,7 @@ if(is_array($req) && count($req)) {
 		)
 	);*/
 
-
+	$shards = null;
     foreach($req AS $service_name => $service) {
 		$arrShard 					= explode("/", ltrim($service_name, "/"), 2);
 		$service["opt"]["type"]		= $arrShard[0];
@@ -129,45 +129,57 @@ if(is_array($req) && count($req)) {
 										: $service_name
 									);
 		if($schema["page"]["/" . $service["opt"]["type"]]["group"] == "shard") {
-			$stack["shards"]["actions"][$schema["page"]["/" . $service["opt"]["type"]]["name"]][$service["opt"]["path"]] = "/" . $service["opt"]["type"];
+			$shards[$schema["page"]["/" . $service["opt"]["type"]]["name"]][$service["opt"]["path"]] = "/" . $service["opt"]["type"];
+
+			//$stack["shards"]["actions"][$schema["page"]["/" . $service["opt"]["type"]]["name"]][$service["opt"]["path"]] = "/" . $service["opt"]["type"];
 		} elseif($schema["page"]["/" . $service["opt"]["type"]]["group"] == "service") {
 			if($service["opt"]["async"]) {
-				$stack["top"]["actions"][$service_path] = array(
+				$response[$service_name] = Jobs::getInstance()->add($service_path, $service["params"]);
+				Jobs::async("/api/job");
+				/*$stack["top"]["actions"][$service_path] = array(
 					"url" => $service_path
 					, "data" => $service["params"]
-				);
+				);*/
 			} else {
 				switch($service["opt"]["type"]) {
 					case "srv":
-						$stack["services"]["actions"][$service_name] = array(
+						$response[$service_name] = Jobs::srv($service_path, $service["params"]);
+
+						/*$stack["services"]["actions"][$service_name] = array(
 							"url" => $service_path
 							, "data" => $service["params"]
-						);
+						);*/
 						break;
 					case "api":
-						$stack["api"]["actions"][$service_name] = array(
+						$response[$service_name] = Jobs::api($service_path, $service["params"]);
+
+						/*$stack["api"]["actions"][$service_name] = array(
 							"url" => $service_path
 							, "data" => $service["params"]
-						);
+						);*/
 						break;
 					default:
-						$stack["externals"]["actions"][$service_name] = array(
+						$response[$service_name] = Jobs::req($service_path, $service["params"], $service["opt"]["method"], $service["response"]);
+						/*$stack["externals"]["actions"][$service_name] = array(
 							"url" => $service_path
 							, "data" => $service["params"]
 							, "method" => $service["opt"]["method"]
 							, "response" => $service["response"]
-						);
+						);*/
 				}
 			}
 		} elseif(substr($service_path, 0, 1) === "/") {
-			$stack["shards"]["unknown"]["actions"]["/" . $service["opt"]["path"]] = "/" . $service["opt"]["type"];
+			$shards["unknown"]["/" . $service["opt"]["path"]] = "/" . $service["opt"]["type"];
+			//$stack["shards"]["unknown"]["actions"]["/" . $service["opt"]["path"]] = "/" . $service["opt"]["type"];
 		} elseif(strpos($service_path, "http") === 0) {
-			$stack["externals"]["actions"][$service_name] = array(
+			$response[$service_name] = Jobs::req($service_path, $service["params"], $service["opt"]["method"], $service["response"]);
+
+			/*$stack["externals"]["actions"][$service_name] = array(
 				"url" => $service_path
 				, "data" => $service["params"]
 				, "method" => $service["opt"]["method"]
 				, "response" => $service["response"]
-			);
+			);*/
 		} else {
 			switch ($service_path) {
 				case "admin":
@@ -180,7 +192,16 @@ if(is_array($req) && count($req)) {
 							$params = json_decode($sid["value"], true);
 
 							if(check_function("process_admin_toolbar"))
-								$stack["lazy"]["response"]["admin"]["html"] = process_admin_toolbar(
+                                $response["admin"]["html"] = process_admin_toolbar(
+                                    $params["path"]
+                                    , $params["admin"]["theme"]
+                                    , $params["admin"]["sections"]
+                                    , $params["admin"]["css"]
+                                    , $params["admin"]["js"]
+                                    , $params["admin"]["international"]
+                                    , $params["admin"]["seo"]
+                                );
+                                /*$stack["lazy"]["response"]["admin"]["html"] = process_admin_toolbar(
 									$params["path"]
 									, $params["admin"]["theme"]
 									, $params["admin"]["sections"]
@@ -188,62 +209,36 @@ if(is_array($req) && count($req)) {
 									, $params["admin"]["js"]
 									, $params["admin"]["international"]
 									, $params["admin"]["seo"]
-								);
+								);*/
 						}
 					}
 					break;
-				case "cache":
-					check_function("refresh_cache");
-					$stack["lazy"]["actions"][$service_path] = true; // da fare
+				case "cache": //todo: da verificare se serve e se e implementato bene
+					Jobs::async("/api/cache/refresh", array("url" => $_SERVER["HTTP_REFERER"]));
+					//check_function("refresh_cache");
+					//$stack["lazy"]["actions"][$service_path] = true; // da fare
 					break;
 				case "notify":
-					$notifier = Notifier::getInstance();
-
-					if($service["params"]["delivered"] && is_array($service["keys"]) && count($service["keys"])) {
-						$stack["api"]["response"]["notify"] = null;
-
-						$notifier->update(array(
-							"delivered" => true
-						), array(
-							"key" => $service["keys"]
-							, "delivered" => false
-						));
-					} else {
-						check_function("get_user_data");
-						//todo: da implementare la classe anagraph
-						$anagraph = user2anagraph();
-						$stack["api"]["response"]["notify"] = $notifier->read(array(
-							"uid" 				=> $anagraph["ID"]
-							, "display_in" 		=> array("/", $globals->page["user_path"])
-							, "!key" 			=> $service["keys"]
-						), array(
-							"title" 			=> true
-							, "message" 		=> true
-							, "cover"			=> "media.cover"
-							, "video"			=> "media.video"
-							, "class"			=> "media.class"
-							, "type"			=> true
-							, "created" 		=> true
-							, "delivered" 		=> ":toString"
-							)
-						, array(
-							"last_update" 		=> "DESC"
-							, "created" 		=> "DESC"
-						));
-					}
+					$response["notify"] = Notifier::response($service["params"]["delivered"], $service["keys"]);
 
 					//$stack["api"]["response"]["notify"]["timer"] = false;
 					//print_r($stack["api"]["response"]["notify"]);
 					//die();
 					break;
 				default:
-					$stack["services"]["actions"][$service_path] = $service["params"];
+					$response[$service_name] = Jobs::srv($service_path, $service["params"]);
+
+					//$stack["services"]["actions"][$service_path] = $service["params"];
 			}
 		}
     }
 
+    if(is_array($shards) && count($shards) && check_function("system_layer_shards")) {
+		$response = $response + system_layer_shards($shards);
+	}
 
-	if(is_array($stack) && count($stack)) {
+
+	/*if(is_array($stack) && count($stack)) {
 		foreach($stack AS $priority => $services) {
 			if(is_array($services["response"]) && count($services["response"])) {
 				$response = $response + $services["response"];
@@ -258,7 +253,7 @@ if(is_array($req) && count($req)) {
 				}
 			}
 		}
-	}
+	}*/
 }
 
 if(check_function("system_set_media")) {
@@ -275,21 +270,28 @@ if(check_function("system_set_media")) {
 		$globals->media_exception["js"] = array_fill_keys($js, true);
 
 	$media = system_set_media_cascading(true);
-
 	if($media) {
 		$response["assets"] = $media;
 	}
 }
 
+if(DEBUG_PROFILING === true)
+	Stats::benchmark("Request", true);
+
 echo ffCommon_jsonenc($response, true);
 exit;
 
 
-
-
+/*
+//non e usato
 function get_response_by_service($service, $params = null, $opt = null) {
 	if ($opt["async"]) {
-		$response = get_response_by_service_async($service, $params);
+		$url = ($params["url"]
+				? $params["url"]
+				: $service
+			);
+
+		$response = get_response_by_service_async($url, $params);
 	} else {
 		switch($opt["type"]) {
 			case "srv":
@@ -305,6 +307,7 @@ function get_response_by_service($service, $params = null, $opt = null) {
 
 	return $response;
 }
+
 function get_response_include($include, $cm = null) {
 	if($cm) {
 		$cm->oPage->output_buffer = "";
@@ -322,7 +325,7 @@ function get_response_include($include, $cm = null) {
 	return $return;
 }
 function get_response_by_service_srv($service, $params = array(), $schema_def = null) {
-	$start 									= profiling_stopwatch();
+	$start 									= Stats::stopwatch();
 
 	$cm 									= cm::getInstance();
 	$post 									= $_POST;
@@ -348,7 +351,7 @@ function get_response_by_service_srv($service, $params = array(), $schema_def = 
 	}
 
 	if(DEBUG_PROFILING === true) {
-		$return["exTime"] = profiling_stopwatch($start);
+		$return["exTime"] = Stats::stopwatch($start);
 	}
 
 	$_POST 									= $post;
@@ -357,7 +360,7 @@ function get_response_by_service_srv($service, $params = array(), $schema_def = 
 	return $return;
 }
 function get_response_by_service_api($service, $params = array(), $schema_def = null) {
-	$start 									= profiling_stopwatch();
+	$start 									= Stats::stopwatch();
 
 	//$cm 									= cm::getInstance();
 	$get 									= $_GET;
@@ -380,7 +383,7 @@ function get_response_by_service_api($service, $params = array(), $schema_def = 
 	}
 
 	if(DEBUG_PROFILING === true) {
-		$return["exTime"] = profiling_stopwatch($start);
+		$return["exTime"] = Stats::stopwatch($start);
 	}
 
 	$_GET 									= $get;
@@ -389,14 +392,14 @@ function get_response_by_service_api($service, $params = array(), $schema_def = 
 	return $return;
 }
 function get_response_by_service_http($service, $params = array()) {
-	$start = profiling_stopwatch();
+	$start = Stats::stopwatch();
 
     check_function("get_locale");
 	check_function("file_post_contents");
 
     $url 							= $params["url"];
 	$method 						= $params["method"];
-	if(strpos($url, "http") === 0) {
+	if(strpos($url, "://") !== false) {
 		$username 					= false;
 		$password 					= false;
 		if(!$method)
@@ -425,7 +428,7 @@ function get_response_by_service_http($service, $params = array()) {
 		$return = $return + $params["response"];
 	}
 	if(DEBUG_PROFILING === true) {
-		$return["exTime"] 			= profiling_stopwatch($start);
+		$return["exTime"] 			= Stats::stopwatch($start);
 		if(strpos($res["content"], "Fatal error") !== false) {
 			$return["error"] 		= strip_tags($res["content"]);
 		} elseif(!$res["content"] && $res["headers"]["response_code"] == "200")
@@ -445,12 +448,12 @@ function get_response_by_service_async($service, $params = array())
 
 	$url = "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/" . $service_path;
 
-    $data["params"]             = $params["data"];
+    $data             			= $params["data"];
     $data["user_permission"]    = get_session("user_permission");
     $data["user_path"]          = $_SERVER["HTTP_REFERER"];
     $data["locale"]             = get_locale();
     $data["ip"]                 = $_SERVER["REMOTE_ADDR"];
-    
+
     $postdata = http_build_query(
         $data
     );
@@ -464,8 +467,8 @@ function get_response_by_service_async($service, $params = array())
         case 'http':
         default:
             $scheme = '';
-            $port = 80;    
-    }	
+            $port = 80;
+    }
 	try {
 	    $fp = fsockopen($scheme . $url_info['host']
 		        , $port
@@ -487,10 +490,11 @@ function get_response_by_service_async($service, $params = array())
 
 		    fwrite($fp, $out);
 		    fclose($fp);
-		}    
+		}
  	} catch (Exception $e) {
     	$errstr = $e;
-    }
-	
+		Cache::log("URL: " . $scheme . $url_info['host'] . "  Error: " . $errstr, "request_async");
+	}
+
     return ($errstr ? $errstr : false);
-}
+}*/
