@@ -27,6 +27,8 @@ function file_post_contents($url, $data = null, $username = null, $password = nu
 		$username 				= AUTH_USERNAME;
 	if($password === null && defined("AUTH_PASSWORD"))
 		$password 				= AUTH_PASSWORD;
+	if(!$method)
+		$method = "POST";
 
 	$headers = array();
 	if($method == "POST")

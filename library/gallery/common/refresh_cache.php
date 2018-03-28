@@ -289,7 +289,7 @@ function update_cache_file($last_update, $path = null) {
     }
 
 
-    cache_writeLog($last_update . " COUNT: " . count($cache) . " FROM: " . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"] . " " . print_r($cache, true), "log_refresh" . (count($cache) > 1000 ? "_huge" : (count($cache) > 100 ? "_big" : "")));
+	Cache::log($last_update . " COUNT: " . count($cache) . " FROM: " . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"] . " " . print_r($cache, true), "log_refresh" . (count($cache) > 1000 ? "_huge" : (count($cache) > 100 ? "_big" : "")));
 
 
 }
