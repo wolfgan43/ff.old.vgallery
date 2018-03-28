@@ -72,7 +72,7 @@ function check_user_form_request($user, $old_session_id = null, $permanent_sessi
     }
     
     $uid = get_session("UserNID");
-    if($uid == $UserNID)
+    if($uid == $user["ID"])
         set_session("request_info", ($request_info == false ? false : USER_RESTRICTED_PATH . "/additionaldata"));
 
     return $request_info;

@@ -31,8 +31,6 @@ function analytics_set_event($user_path, $title, $code = null, $domain = null) {
         if(!$domain)
             $domain = DOMAIN_INSET;
 
-        require_once(VG_WEBSERVICES_PATH . $path . "/ss-ga.class." . FF_PHP_EXT);
-
         ga_send_pageview($domain, $user_path, $title, $code);
     }  
 
