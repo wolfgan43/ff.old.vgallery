@@ -143,7 +143,7 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
     elseif($res["name"])
         $res["class"]["default"] = $res["name"];
 */
-        
+        /*
     if($sections["C" . $ID_section]["layouts"][$unic_id]["fluid"] === 0
         && is_array($col)
         && (
@@ -155,7 +155,7 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
     ) {
         $col = null;
         $fluid = 1;
-    }        
+    }       */
         
     $framework_css = cm_getFrameworkCss();
     if(is_array($framework_css)) {

@@ -802,7 +802,7 @@ function get_item_data($ID_domain, $manifesto, $key = null) {
         }
     }
 
-    if(key === null) {
+    if($key === null) {
         return $manifesto_data;
     } else {
         if(array_key_exists($key, $manifesto_data))
