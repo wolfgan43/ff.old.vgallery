@@ -415,6 +415,19 @@ if($record["noentry"]) {
 	$group_field = "source";
 	$group_source = "type-extra-" . $group_field;
 	if(!$group_limit || array_search($group_field, $group_limit) !== false) {
+        $sSQL_file = "";
+
+        if(AREA_SHOW_ECOMMERCE) {
+            $sSQL_file = "
+				) UNION ( 
+					SELECT 
+						name AS nameID
+						, name AS name
+						, (SELECT vgallery_fields_data_type.ID FROM vgallery_fields_data_type WHERE vgallery_fields_data_type.name = 'ecommerce.checkout') AS type 
+					FROM ecommerce_mpay
+					WHERE ecommerce_mpay.ecommerce > 0";
+        }
+
 		$oRecord->addContent(null, true, $group_source); 
    		$oRecord->groups[$group_source] = array(
 											"title" => ffTemplate::_get_word_by_code("vgallery_field_" . $group_field)
@@ -782,13 +795,6 @@ if($record["noentry"]) {
 		                                , name AS name
 		                                , (SELECT vgallery_fields_data_type.ID FROM vgallery_fields_data_type WHERE vgallery_fields_data_type.name = 'sender') AS type 
 		                            FROM vgallery
-		                        ) UNION (
-		                            SELECT 
-		                                name AS nameID
-		                                , name AS name
-		                                , (SELECT vgallery_fields_data_type.ID FROM vgallery_fields_data_type WHERE vgallery_fields_data_type.name = 'ecommerce.checkout') AS type 
-		                            FROM ecommerce_mpay
-		                            WHERE ecommerce_mpay.ecommerce > 0
 		                        ) 
 		                        $sSQL_file
 		                ) AS macro_tbl
