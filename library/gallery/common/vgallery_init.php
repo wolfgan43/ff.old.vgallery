@@ -3639,6 +3639,7 @@ function process_vgallery_node_data($vg_father, $vg_field, &$vg, $arrData = arra
 }
 function process_query_filter_node($tbl, $params = null, $query = array()) {
     $db = ffDB_Sql::factory();
+
     if(!$params) {
         $globals = ffGlobals::getInstance("gallery");
     	foreach($globals->filter AS $filter_key => $filter_value) {
@@ -3656,6 +3657,7 @@ function process_query_filter_node($tbl, $params = null, $query = array()) {
     		}
     	}
     }
+
     //search By Tags or Filter (letter ffl)
     if (is_array($params["filter"]) && count($params["filter"])) {
         foreach ($params["filter"] AS $search_key => $search_terms) {
@@ -5855,7 +5857,10 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 		      $more_detail_check_nodes = $vg_data_value["check_nodes"][$field_key];
 		      } */
 
-		    $more_detail = $vg_data_value["data"][$field_key];
+			$more_detail = $vg_data_value["data"][$field_key];
+
+			$cm->doEvent("vg_on_vgallery_field_before_parse", array(&$more_detail, $field_value, $vg_father));
+
 		    switch ($field_value["data_type"]) {
 			case "applet":
 			    if (check_function("process_forms_framework"))
@@ -5927,24 +5932,40 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 			case "media":
 			    $rst_rel_dir = array();
 			    $real_path = stripslash($vg_data_value["parent"]) . "/" . $vg_data_value["name"] . "/" . ffCommon_url_rewrite($field_value["name"]);
-			    //da migliorare il process dei thumb eliminando le query e i permessi multipli
-			    $abs_real_path = realpath(DISK_UPDIR . $real_path);
-
-			    if (strlen($abs_real_path) && is_dir($abs_real_path))
-				$arrMedia = glob($abs_real_path . "/*");
-
-			    if (is_array($arrMedia) && count($arrMedia)) {
-					foreach ($arrMedia as $real_file) {
-					    $file = str_replace(DISK_UPDIR, "", $real_file);
-						if ((is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
-						    if (ENABLE_STD_PERMISSION && check_function("get_file_permission"))
-								$file_permission = get_file_permission($file);
-						    if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
-								$rst_rel_dir[$file]["permission"] = $file_permission;
-						    }
+				if(strpos(CM_SHOWFILES, "://") !== false) {
+					$arrMedia = explode(",", $more_detail);
+					if (is_array($arrMedia) && count($arrMedia) && check_function("get_file_permission")) {
+						foreach ($arrMedia as $file) {
+							$rst_rel_dir[$file]["permission"][LANGUAGE_INSET] = true;
 						}
 					}
-			    }
+				} else {
+					//da migliorare il process dei thumb eliminando le query e i permessi multipli
+					$abs_real_path = realpath(DISK_UPDIR . $real_path);
+
+					if (strlen($abs_real_path) && is_dir($abs_real_path))
+						$arrMedia = glob($abs_real_path . "/*");
+
+					if (is_array($arrMedia) && count($arrMedia) && check_function("get_file_permission")) {
+						foreach ($arrMedia as $real_file) {
+							$file = str_replace(DISK_UPDIR, "", $real_file);
+							if (
+								(
+									(is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH)
+									|| (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false)
+								)
+								&& strpos(basename($real_file), ".") !== 0
+							) {
+								if (ENABLE_STD_PERMISSION)
+									$file_permission = get_file_permission($file);
+								if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+									$rst_rel_dir[$file]["permission"] = $file_permission;
+								}
+							}
+						}
+					}
+				}
+
 			    $rel_layout["prefix"] = $layout["prefix"] . "RD";
 			    $rel_layout["ID"] = $layout["ID"];
 			    $rel_layout["title"] = $layout["title"] . " dir";
@@ -5967,7 +5988,7 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 				    $more_detail = '<span class="' . preg_replace('/[^a-zA-Z0-9]/', '', $field_value["type"] . $field_value["name"]) . '">' . ffTemplate::_get_word_by_code($vg_father["vgallery_name"] . "_" . $field_value["name"] . "_notfound") . '</span>';
 			    }
 
-			    /* Set Field Content */
+				    /* Set Field Content */
 			    $tmp_data_field["content"] = $more_detail;
 			    break;
 			case "static":
