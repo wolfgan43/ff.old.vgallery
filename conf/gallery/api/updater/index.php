@@ -37,9 +37,9 @@ switch($cm->real_path_info) {
 		if(strpos($user_agent, "FFCMS-") === 0 && $referer) {
 			$db = ffDB_Sql::factory();
 
-			$sSQL = "SELECT " . CM_TABLE_PREFIX . "mod_security_domains.* 
+            $sSQL = "SELECT " . CM_TABLE_PREFIX . "mod_security_domains.* 
 			FROM " . CM_TABLE_PREFIX . "mod_security_domains 
-			WHERE " . CM_TABLE_PREFIX . "mod_security_domains.nome = " . $db->toSql($referer);
+			WHERE " . CM_TABLE_PREFIX . "mod_security_domains.nome = " . $db->toSql(str_replace("www.", "", $referer));
 				$db->query($sSQL);
 				if($db->nextRecord()) {
 					$ID_domain = $db->getField("ID", "Number",true);
