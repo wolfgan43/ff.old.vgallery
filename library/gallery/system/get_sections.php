@@ -624,11 +624,11 @@ function system_get_blocks($template, $where = null) {
 			if($params["flags"]["path"]) {
 				$template["blocks"] = array_filter($template["blocks"], function(&$block) use (&$template, $arrLayoutSettings) {
 					if($template["navadmin"])
-						$template["navadmin"][$block["ID_section"]]["layouts"][$block["ID"]] 				= $block;
+						$template["navadmin"][$block["ID_section"]]["blocks"][$block["ID"]] 				= $block;
 
 					if($block["visible"]) {
 						if(!$block["ajax"]) {
-							$template["blocks_by_type"][$block["type"]]["layouts"][$block["smart_url"]] 	= $block;
+							$template["blocks_by_type"][$block["type"]]["blocks"][$block["smart_url"]] 	= $block;
 							if($block["type"] == "PUBLISHING") {
 								$arrPublishing = explode("_", $block["db"]["value"]);
 								$template["blocks_by_type"][$block["type"]]["keys"][$arrPublishing[0]][] 	= $arrPublishing[1];
@@ -642,7 +642,7 @@ function system_get_blocks($template, $where = null) {
 						if(!$template["primary_section"] && $template["sections"][$block["ID_section"]]["is_main"])
 							$template["primary_section"] 													= $block["ID_section"];
 
-						$template["sections"][$block["ID_section"]]["layouts"][$block["ID"]] 				= null;
+						$template["sections"][$block["ID_section"]]["blocks"][$block["smart_url"]] 			= $block["ID"];
 						$block["settings"] 																	= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
 																												? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
 																												: $arrLayoutSettings["data"][$block["type"] . "-0"]
@@ -652,7 +652,7 @@ function system_get_blocks($template, $where = null) {
 				});
 			} else {
 				foreach($template["blocks"] AS $ID_block => $block) {
-					$template["blocks_by_type"][$block["type"]]["layouts"][$block["smart_url"]] 			= $block;
+					$template["blocks_by_type"][$block["type"]]["blocks"][$block["smart_url"]] 			= $block;
 					if($block["type"] == "PUBLISHING") {
 						$arrPublishing = explode("_", $block["db"]["value"]);
 						$template["blocks_by_type"][$block["type"]]["keys"][$arrPublishing[0]][]			= $arrPublishing[1];
@@ -698,7 +698,7 @@ function system_get_blocks($template, $where = null) {
 			$template["buffer"]["blocks"] = $template["buffer"]["blocks"] + call_user_func_array(
 				$callback
 				, array(
-					$blocks["layouts"]
+					$blocks["blocks"]
 					, $params
 					, $blocks["keys"]
 				)
@@ -723,39 +723,39 @@ function system_block_parse($layout, $buffer, $xhr = false, $start = false, $err
 	}
 
 	if($start && DEBUG_PROFILING === true) {
-		$res["exTime"] = profiling_stopwatch($start);
+		$res["exTime"] = Stats::stopwatch($start);
 	}
 	return $res;
 }
 function system_block_STATIC_PAGE_BY_DB($layouts, $params = array(), $data_storage = null) {
-	check_function("process_static_page");
+    check_function("process_static_page");
 
-	//todo:  multi blocks by type da togliere ciclo
-	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
-		$buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
-		$res[($params["prefix"][$ID_layout]
-				? $params["prefix"][$ID_layout] . "/"
-				: ""
-			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
-	}
+    //todo:  multi blocks by type da togliere ciclo
+    foreach($layouts AS $ID_layout => $layout) {
+        $start = Stats::stopwatch();
+        $buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
+        $res[($params["prefix"][$ID_layout]
+            ? $params["prefix"][$ID_layout] . "/"
+            : ""
+        ) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+    }
 
-	return $res;
+    return $res;
 }
 function system_block_STATIC_PAGE_BY_FILE($layouts, $params = array(), $data_storage = null) {
-	check_function("process_static_page");
+    check_function("process_static_page");
 
-	//todo:  multi blocks by type da togliere ciclo
-	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
-		$buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
-		$res[($params["prefix"][$ID_layout]
-				? $params["prefix"][$ID_layout] . "/"
-				: ""
-			) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
-	}
+    //todo:  multi blocks by type da togliere ciclo
+    foreach($layouts AS $ID_layout => $layout) {
+        $start = Stats::stopwatch();
+        $buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
+        $res[($params["prefix"][$ID_layout]
+            ? $params["prefix"][$ID_layout] . "/"
+            : ""
+        ) . $ID_layout] = system_block_parse($layout, $buffer, $params["xhr"], $start);
+    }
 
-	return $res;
+    return $res;
 }
 
 function system_block_GALLERY($layouts, $params = array(), $data_storage = null) {
@@ -765,7 +765,7 @@ function system_block_GALLERY($layouts, $params = array(), $data_storage = null)
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$buffer = null;
 		$error = null;
 		if (strlen($layout["db"]["real_path"]) && $layout["db"]["real_path"] != "/") {
@@ -866,7 +866,7 @@ function system_block_MODULE($layouts, $params = array(), $data_storage = null) 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$buffer = null;
 		if (isset($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
 			if (is_array($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
@@ -965,7 +965,7 @@ function system_block_VIRTUAL_GALLERY($layouts, $params = array(), $data_storage
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach ($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$buffer = vgallery_init($params, $layout, $data_storage);
 		$res[($params["prefix"][$ID_layout]
 				? $params["prefix"][$ID_layout] . "/"
@@ -983,7 +983,7 @@ function system_block_PUBLISHING($layouts, $params = array(), $data_storage = nu
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$buffer = null;
 		$publish = explode("_", $layout["db"]["value"]);
 		if (is_array($publish) && count($publish) == 2) {
@@ -1028,7 +1028,7 @@ function system_block_VGALLERY_MENU($layouts, $params = array(), $data_storage =
 
 	// @todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$part_virtual_path = explode("/", $layout["db"]["value"]);
 		$vgallery_name = $part_virtual_path[1];
 		unset($part_virtual_path[0]);
@@ -1062,7 +1062,7 @@ function system_block_GALLERY_MENU($layouts, $params = array(), $data_storage = 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		if ($layout["settings"]["AREA_DIRECTORIES_SHOW_ONLYHOME"]) {
 			$available_path = $layout["db"]["value"];
 			$source_user_path = $layout["db"]["params"]
@@ -1122,7 +1122,7 @@ function system_block_STATIC_PAGES_MENU($layouts, $params = array(), $data_stora
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		if ($layout["db"]["value"] == "/home")
 			$layout["db"]["value"] = "/";
 
@@ -1160,7 +1160,7 @@ function system_block_VGALLERY_GROUP($layouts, $params = array(), $data_storage 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$buffer = null;
 		if($layout["db"]["real_path"] != "/") {
 			if($layout["db"]["real_path"] == $params["settings_path"]) {
@@ -1224,7 +1224,7 @@ function system_block_WIDGET($layouts, $params = array(), $data_storage = null) 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		switch ($layout["type"]) {
 			case "ECOMMERCE":
 				if (check_function("ecommerce_cart_widget"))
@@ -1267,7 +1267,7 @@ function system_block_COMMENT($layouts, $params = array(), $data_storage = null)
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$buffer = null;
 		if(AREA_COMMENT_SHOW_MODIFY) {
 			$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
@@ -1338,7 +1338,7 @@ function system_block_USER($layouts, $params = array(), $data_storage = null) {
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		$buffer = process_user_menu(null, null, AREA_SHOW_ECOMMERCE, $params["user_path"], $layout);
 		$res[($params["prefix"][$ID_layout]
 				? $params["prefix"][$ID_layout] . "/"
@@ -1355,7 +1355,7 @@ function system_block_FORMS_FRAMEWORK($layouts, $params = array(), $data_storage
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = profiling_stopwatch();
+		$start = Stats::stopwatch();
 		if (AREA_FORMS_FRAMEWORK_SHOW_MODIFY) {
 			$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
 			$admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
