@@ -42,45 +42,81 @@
 * <link href="/myid123/jsonld.js" rel="alternate" type="application/ld+json" />
 *
 */
-        if(!$globals->seo["current"] && is_array($globals->seo) && count($globals->seo)) {
-            if(isset($globals->seo["user"]))
-                $globals->seo["current"] = "user";
-            elseif(isset($globals->seo["detail"]))
-                $globals->seo["current"] = "detail";
-            elseif(isset($globals->seo["detail-anagraph"]))
-                $globals->seo["current"] = "detail-anagraph";
-            elseif(isset($globals->seo["thumb"]))
-                $globals->seo["current"] = "thumb";
-            elseif(isset($globals->seo["thumb-anagraph"]))
-                $globals->seo["current"] = "thumb-anagraph";
-            elseif(isset($globals->seo["page"]))
-                $globals->seo["current"] = "page";
-            elseif(isset($globals->seo["media"]))
-                $globals->seo["current"] = "media";
-            elseif(isset($globals->seo["tag"]))
-                $globals->seo["current"] = "tag";
-            elseif(isset($globals->seo["city"]))
-                $globals->seo["current"] = "city";
-            elseif(isset($globals->seo["province"]))
-                $globals->seo["current"] = "province";
-            elseif(isset($globals->seo["region"]))
-                $globals->seo["current"] = "region";
-            elseif(isset($globals->seo["state"]))
-                $globals->seo["current"] = "state";
-        }
+	if(is_array($globals->seo) && count($globals->seo)) {
+		if(!$globals->tags) {
+			$globals->tags = array(
+				"primary" 			=> array()
+				, "secondary" 		=> array()
+				, "rel" 			=> array()
+			);
 
-        $seo = $globals->seo[$globals->seo["current"]];
+			foreach ($globals->seo AS $seo_type => $seo_data) {
+				if ($seo_type == "current")
+					continue;
 
-        if($globals->seo["current"] == "user") {
-            if (isset($globals->seo["detail"]))
-                $seo = array_replace_recursive($globals->seo["detail"], $seo);
-            elseif (isset($globals->seo["detail-anagraph"]))
-                $seo = array_replace_recursive($globals->seo["detail-anagraph"], $seo);
+				if ($seo_data["tags"]["primary"]) {
+					if (is_array($seo_data["tags"]["primary"])) {
+						$globals->tags["primary"] = array_replace($globals->tags["primary"], $seo_data["tags"]["primary"]);
+					} else {
+						$globals->tags["primary"] = array_replace($globals->tags["primary"], explode(",", $seo_data["tags"]["primary"]));
+					}
+				}
+				if ($seo_data["tags"]["secondary"]) {
+					if (is_array($seo_data["tags"]["secondary"])) {
+						$globals->tags["secondary"] = array_replace($globals->tags["secondary"], $seo_data["tags"]["secondary"]);
+					} else {
+						$globals->tags["secondary"] = array_replace($globals->tags["secondary"], explode(",", $seo_data["tags"]["secondary"]));
+					}
+				}
+				if ($seo_data["tags"]["rel"]) {
+					if (is_array($seo_data["tags"]["rel"])) {
+						$globals->tags["rel"] = array_replace($globals->tags["rel"], $seo_data["tags"]["rel"]);
+					} else {
+						$globals->tags["rel"] = array_replace($globals->tags["rel"], explode(",", $seo_data["tags"]["rel"]));
+					}
+				}
+			}
+		}
 
-            if($seo["description"])
-                $globals->meta["description"][] = $seo["description"];
-        }
+		if (!$globals->seo["current"]) {
+			if (isset($globals->seo["user"]))
+				$globals->seo["current"] = "user";
+			elseif (isset($globals->seo["detail"]))
+				$globals->seo["current"] = "detail";
+			elseif (isset($globals->seo["detail-anagraph"]))
+				$globals->seo["current"] = "detail-anagraph";
+			elseif (isset($globals->seo["thumb"]))
+				$globals->seo["current"] = "thumb";
+			elseif (isset($globals->seo["thumb-anagraph"]))
+				$globals->seo["current"] = "thumb-anagraph";
+			elseif (isset($globals->seo["page"]))
+				$globals->seo["current"] = "page";
+			elseif (isset($globals->seo["media"]))
+				$globals->seo["current"] = "media";
+			elseif (isset($globals->seo["tag"]))
+				$globals->seo["current"] = "tag";
+			elseif (isset($globals->seo["city"]))
+				$globals->seo["current"] = "city";
+			elseif (isset($globals->seo["province"]))
+				$globals->seo["current"] = "province";
+			elseif (isset($globals->seo["region"]))
+				$globals->seo["current"] = "region";
+			elseif (isset($globals->seo["state"]))
+				$globals->seo["current"] = "state";
+		}
 
+		$seo = $globals->seo[$globals->seo["current"]];
+
+		if ($globals->seo["current"] == "user") {
+			if (isset($globals->seo["detail"]))
+				$seo = array_replace_recursive($globals->seo["detail"], $seo);
+			elseif (isset($globals->seo["detail-anagraph"]))
+				$seo = array_replace_recursive($globals->seo["detail-anagraph"], $seo);
+
+			if ($seo["description"])
+				$globals->meta["description"][] = $seo["description"];
+		}
+	}
 		if(is_array($seo["meta"]) && count($seo["meta"]))
 			if(is_array($globals->meta) && !count($globals->meta))
 				$globals->meta = array_replace($globals->meta, $seo["meta"]);
@@ -364,11 +400,11 @@
 			}
 
 			if(!isset($globals->meta["og:image"]) || !isset($globals->meta["twitter:image"])) {
-				$globals->meta["og:width"] 							= array("content" => $seo["image_thumb"]["facebook"]["width"] , "type" => "property");
-				$globals->meta["og:height"] 						= array("content" => $seo["image_thumb"]["facebook"]["height"] , "type" => "property");
+				$globals->meta["og:image:width"] 					= array("content" => $seo["image_thumb"]["facebook"]["width"] , "type" => "property");
+				$globals->meta["og:image:height"] 					= array("content" => $seo["image_thumb"]["facebook"]["height"] , "type" => "property");
 
-				$globals->meta["og:image"] 							= array("content" => str_replace(".", "-" . $seo["image_thumb"]["facebook"]["width"] . "x" . $seo["image_thumb"]["facebook"]["height"] . ".", $globals->cover["src"]), "type" => "property");
-				$globals->meta["twitter:image"] 					= array("content" => str_replace(".", "-" . $seo["image_thumb"]["twitter"]["width"] . "x" . $seo["image_thumb"]["twitter"]["height"] . ".", $globals->cover["src"]), "type" => "name");
+				$globals->meta["og:image"] 							= array("content" => str_replace(".", "-" . $seo["image_thumb"]["facebook"]["width"] . "-" . $seo["image_thumb"]["facebook"]["height"] . ".", $globals->cover["src"]), "type" => "property");
+				$globals->meta["twitter:image"] 					= array("content" => str_replace(".", "-" . $seo["image_thumb"]["twitter"]["width"] . "-" . $seo["image_thumb"]["twitter"]["height"] . ".", $globals->cover["src"]), "type" => "name");
 
 				if(strpos($globals->cover["src"], "://") === false) {
 					$globals->meta["og:image"]["content"] 			= cm_showfiles_get_abs_url($globals->meta["og:image"]["content"]);
@@ -392,7 +428,7 @@
         if(!isset($globals->meta["og:site_name"]))
             $globals->meta["og:site_name"] 							= array("content" => $site_name, "type" => "property");
         if(!isset($globals->meta["og:type"]))
-            $globals->meta["og:type"] 								= array("content" => "website", "type" => "property");
+            $globals->meta["og:type"] 								= array("content" => ($globals->seo["current"] == "detail" ? "article" : "website"), "type" => "property");
         if(!isset($globals->meta["og:url"]) && $cm->oPage->canonical)
             $globals->meta["og:url"] 								= array("content" => $cm->oPage->canonical, "type" => "property");
 
@@ -444,13 +480,18 @@
 
 			$anagraph 												= user2anagraph($seo["owner"], "anagraph");
 			$globals->author = array(
-				"id" 												=> $anagraph["ID"]
+				"id" 												=> (int) $anagraph["ID"]
 				, "avatar"											=> $anagraph["avatar"]
-				, "name" 											=> $anagraph["name"] . " " . $anagraph["surname"]
+				, "name" 											=> ($anagraph["role"] ? $anagraph["role"] . " " : "") . $anagraph["name"] . " " . $anagraph["surname"]
+				, "smart_url" 										=> ($anagraph["username_slug"] ? $anagraph["username_slug"] : ffCommon_url_rewrite($anagraph["username"]))
+				, "email"											=> $anagraph["email"]
+				, "tel"												=> $anagraph["tel"]
 				, "src" 											=> ($anagraph["visible"] ? $anagraph["permalink"] : "")
 				, "url" 											=> ($anagraph["visible"] ? $domain_path . $anagraph["permalink"] : "")
 				, "tags" 											=> explode(",", $anagraph["tags"])
-				, "uid" 											=> $anagraph["uid"]
+				, "uid" 											=> (int) $anagraph["uid"]
+				, "token"											=> $anagraph["token"]
+				, "user_vars"										=> array()
 			);
 
 			//Meta Author
