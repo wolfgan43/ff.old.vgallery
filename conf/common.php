@@ -36,7 +36,7 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
     $globals->user_path                 = null;
     $globals->request          			= null;
     $globals->user_path_params          = "";
-    $globals->user_path_shard           = "";
+    $globals->user_path_shard           = ""; //non usata realmente ffl e page in path
     //$globals->frame_path                = null;
     //$globals->error_path                = null;
     //$globals->services_path             = null;
@@ -45,6 +45,7 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
     $globals->selected_lang             = null;
     //$globals->lang_alt                  = null;
     $globals->locale                  	= null;
+    $globals->db_gallery                = null; //da togliere
     $globals->ecommerce                 = array();
     //$globals->permissions               = array();
     $globals->custom_data               = array();
@@ -73,20 +74,22 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
     $globals->media_exception           = array();
     $globals->js                        = array();
     $globals->css                       = array();
-	$globals->microdata                 = array();
-	$globals->author                 	= array();
+    $globals->microdata                 = array();
+    $globals->author                 	= null;
     $globals->meta                      = array();
     $globals->html                      = array();
     $globals->template                  = array();
     $globals->manage                    = array();
+    //$globals->MD_chk                    = array();
     $globals->page               		= null;
     $globals->page_title                = null;
-	$globals->cover               		= null;
-	$globals->http_status              	= null;
+    $globals->cover               		= null;
+    $globals->http_status              	= null;
 
-	$globals->canonical                 = null;
+    $globals->canonical                 = null;
+    $globals->tags                 		= null;
     //$globals->favicon               	= null;
-    //$globals->manifest               	= null;
+    //$globals->menifest                = null;
 
 	$globals->links						= null;
 	$globals->user						= array(
@@ -139,55 +142,29 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
 				 $globals->microdata 			= $params;
 		 }
 	};
-	$globals->setAuthor = function($name, $url = null, $avatar = null, $tags = null) {
-		 $globals = ffGlobals::getInstance("gallery");
+    $globals->setAuthor = function($id, $params = null) {
+        $globals = ffGlobals::getInstance("gallery");
 
-		 $globals->author = array(
-		 	"name" 								=> $name
-			 , "avatar" 						=> $avatar
-			 , "url" 							=> $url
-			 , "tags" 							=> $tags
-		 );
-	};
+        if(!$params) {
+            //todo: da implementare la classe anagraph
+            check_function("get_user_data");
+            $params 							= user2anagraph($id, "anagraph");
 
-   /* if(1)//todo: da togliere. tolto come esperimento
-    {
-        global $ff_global_setting;
-
-        $ff_global_setting["ffRecord"]["widget_discl_enable"] = false;
-        $ff_global_setting["ffGrid"]["widget_discl_enable"] = false;
-        $ff_global_setting["ffGrid_html"]["reset_page_on_search"] = true;
-
-
-        $ff_global_setting["ffPageNavigator"]["with_choice"] = true;
-        $ff_global_setting["ffPageNavigator"]["with_totelem"] = true;
-        $ff_global_setting["ffPageNavigator"]["PagePerFrame"] = 7;
-        $ff_global_setting["ffPageNavigator"]["nav_selector_elements_all"] = true;
-
-        $ff_global_setting["ffField"]["file_check_exist"] = true;
-        $ff_global_setting["ffField"]["placeholder"] = true;
-        $ff_global_setting["ffField"]["multi_select_one_label"] = ffTemplate::_get_word_by_code("multi_select_one_label");
-
-
-        $ff_global_setting["ffField_html"]["encode_label"] = false;
-
-        $ff_global_setting["ffGrid"]["symbol_valuta"] = "";
-        $ff_global_setting["ffGrid"]["switch_row_class"]["display"] = true;
-
-        $ff_global_setting["ffGrid"]["open_adv_search"] = "never";
-        $ff_global_setting["ffGrid"]["buttons_options"]["search"] = array(
-            "display"     => true
-        , "label"		=> false
+        }
+        $globals->author = array(
+            "id" 								=> (int) $id
+        , "avatar"							=> $params["avatar"]
+        , "name" 							=> ($params["role"] ? $params["role"] . " " : "") . $params["name"] . " " . $params["surname"]
+        , "src" 							=> ($params["visible"] ? $params["permalink"] : "")
+        , "url" 							=> ($params["visible"] ? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $params["permalink"] : "")
+        , "tags" 							=> explode(",", $params["tags"])
+        , "uid" 							=> (int) $params["uid"]
         );
-        $ff_global_setting["ffGrid"]["buttons_options"]["export"] = array(
-            "display"        => true
-        );
-        $ff_global_setting["ffGrid_dialog"]["buttons_options"]["export"] = array(
-            "display"		=> false
-        );
+    };
+    $globals->setPage = function($user_vars) {
+        $globals = ffGlobals::getInstance("gallery");
 
-
-        $ff_global_setting["ffDetails_horiz"]["switch_row_class"]["display"] = true;
-    }*/
+        $globals->user_vars = array_replace($globals->user_vars, $user_vars);
+    };
 }
 
