@@ -287,13 +287,13 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
     if(!$from["mail"] || !$from["name"])
         $strError = ffTemplate::_get_word_by_code("email_from_undefined");
 
-    require_once(FF_DISK_PATH . "/library/phpmailer/class.phpmailer." . FF_PHP_EXT);
+    /*require_once(FF_DISK_PATH . "/library/phpmailer/class.phpmailer." . FF_PHP_EXT);
     require_once(FF_DISK_PATH . "/library/phpmailer/class.phpmaileroauth." . FF_PHP_EXT);
     require_once(FF_DISK_PATH . "/library/phpmailer/class.phpmaileroauthgoogle." . FF_PHP_EXT);
     require_once(FF_DISK_PATH . "/library/phpmailer/class.smtp." . FF_PHP_EXT);
     require_once(FF_DISK_PATH . "/library/phpmailer/class.pop3." . FF_PHP_EXT);
     require_once(FF_DISK_PATH . "/library/phpmailer/extras/EasyPeasyICS." . FF_PHP_EXT);
-    require_once(FF_DISK_PATH . "/library/phpmailer/extras/ntlm_sasl_client." . FF_PHP_EXT);
+    require_once(FF_DISK_PATH . "/library/phpmailer/extras/ntlm_sasl_client." . FF_PHP_EXT);*/
 
     $mail = new phpmailer();
     $mail->SetLanguage(strtolower(substr($struct["lang"], 0, -1)), FF_DISK_PATH . "/library/phpmailer/language/");
