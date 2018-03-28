@@ -30,15 +30,15 @@
 /***
 * TODO
 * implementare le stopword
-* 
+*
 * implementare autocompilazione meta keywords (max 5)
-* 
+*
 * implementare social tag google+ e twitter
-* 
-* implementare i microdata 
-* 
+*
+* implementare i microdata
+*
 * http://code.lancepollard.com/complete-list-of-html-meta-tags/
-* 
+*
 * <link href="/myid123/jsonld.js" rel="alternate" type="application/ld+json" />
 *
 */
@@ -88,7 +88,7 @@
 				$globals->meta = $seo["meta"];
 
         $site_name = (CM_LOCAL_APP_NAME
-        				? CM_LOCAL_APP_NAME 
+        				? CM_LOCAL_APP_NAME
         				: $_SERVER["HTTP_HOST"]
         			);
 		$domain_path = "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET;
@@ -98,7 +98,7 @@
 										, "prefix" => "og: " . "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . "ogp.me/ns# fb: " . "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . "www.facebook.com/2008/fbml");
 
 		//Page Title
-		if(strlen($page_title))	{	
+		if(strlen($page_title))	{
 			$globals->page_title = preg_replace('/(\r|\n|\")/', "", $page_title) . ffTemplate::_get_word_by_code("separator_meta_title") . CM_LOCAL_APP_NAME;
 		} elseif($page_title !== false && !strlen($globals->page_title)) {
 			if($seo["title"]) {
@@ -111,7 +111,7 @@
 
 			    $globals->page_title = ucwords(implode(ffTemplate::_get_word_by_code("separator_meta_title"), $arrUser_path));
 			}
-		}  		
+		}
 
 		if($globals->http_status)
 			http_response_code($globals->http_status);
@@ -120,7 +120,7 @@
 
 		//Meta Application
         if(!$globals->meta["application-name"])
-            $globals->meta["application-name"] = $globals->page_title;		
+            $globals->meta["application-name"] = $globals->page_title;
         if(!$globals->meta["apple-mobile-web-app-title"])
         	$globals->meta["apple-mobile-web-app-title"] = $globals->page_title;
 
@@ -267,7 +267,7 @@
 		} elseif($meta_description !== false && !$globals->meta["description"]) {
 			$globals->meta["description"][] = $globals->page_title;
 		}
-		
+
 		//Meta Keywords
 		if($meta_keywords !== null) {
 			if(is_array($meta_keywords)) {
@@ -296,7 +296,7 @@
 						}
 					}
 				}
-			} 
+			}
 		}
 
 		//Cover
@@ -364,8 +364,8 @@
 			}
 
 			if(!isset($globals->meta["og:image"]) || !isset($globals->meta["twitter:image"])) {
-				$globals->meta["og:width"] 							= array("content" => $seo["image_thumb"]["facebook"]["width"] , "type" => "property");
-				$globals->meta["og:height"] 						= array("content" => $seo["image_thumb"]["facebook"]["height"] , "type" => "property");
+				$globals->meta["og:image:width"] 					= array("content" => $seo["image_thumb"]["facebook"]["width"] , "type" => "property");
+				$globals->meta["og:image:height"] 					= array("content" => $seo["image_thumb"]["facebook"]["height"] , "type" => "property");
 
 				$globals->meta["og:image"] 							= array("content" => str_replace(".", "-" . $seo["image_thumb"]["facebook"]["width"] . "x" . $seo["image_thumb"]["facebook"]["height"] . ".", $globals->cover["src"]), "type" => "property");
 				$globals->meta["twitter:image"] 					= array("content" => str_replace(".", "-" . $seo["image_thumb"]["twitter"]["width"] . "x" . $seo["image_thumb"]["twitter"]["height"] . ".", $globals->cover["src"]), "type" => "name");
@@ -379,7 +379,7 @@
 
         if(is_array($globals->meta["description"]))
 			$meta_description_processed 							= implode(", ", $globals->meta["description"]);
-		
+
 		//Facebook BASE
 	    if($globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"] && !isset($globals->meta["fb:app_id"]))
 	        $globals->meta["fb:app_id"] 							= array("content" => $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"], "type" => "property");
@@ -392,7 +392,7 @@
         if(!isset($globals->meta["og:site_name"]))
             $globals->meta["og:site_name"] 							= array("content" => $site_name, "type" => "property");
         if(!isset($globals->meta["og:type"]))
-            $globals->meta["og:type"] 								= array("content" => "website", "type" => "property");
+            $globals->meta["og:type"] 								= array("content" => ($globals->seo["current"] == "detail" ? "article" : "website"), "type" => "property");
         if(!isset($globals->meta["og:url"]) && $cm->oPage->canonical)
             $globals->meta["og:url"] 								= array("content" => $cm->oPage->canonical, "type" => "property");
 
@@ -419,21 +419,21 @@
 				else
 					$globals->meta[$override_meta_key] 							= $override_meta_value;
 			}
-		}	  
-        
-		if(!$globals->seo[$globals->seo["current"]]) 
+		}
+
+		if(!$globals->seo[$globals->seo["current"]])
 	    {
     		if(!is_bool($globals->page["seo"]) && $globals->page["user_path"] != $globals->page["seo"])
 				$title 												= substr($globals->page["user_path"], strlen($globals->page["seo"]));
 			else
     			$title 												= basename($globals->page["user_path"]);
-    		
+
     		$title 													= ucwords(str_replace(array("-", "/"), " ", trim($title, "/")));
-    		
+
     		$globals->seo["page"]["title"] 							= $globals->page_title;
     		$globals->seo["page"]["title_header"]					= ffTemplate::_get_word_by_code($title);
     		$globals->seo["page"]["meta"] 							= $globals->meta;
-    		
+
     		$globals->seo["current"] 								= "page";
 	    }
 
@@ -442,16 +442,21 @@
 			//todo: da implementare la classe anagraph
 			check_function("get_user_data");
 
-			$anagraph 												= user2anagraph($seo["owner"], "anagraph");
-			$globals->author = array(
-				"id" 												=> $anagraph["ID"]
-				, "avatar"											=> $anagraph["avatar"]
-				, "name" 											=> $anagraph["name"] . " " . $anagraph["surname"]
-				, "src" 											=> ($anagraph["visible"] ? $anagraph["permalink"] : "")
-				, "url" 											=> ($anagraph["visible"] ? $domain_path . $anagraph["permalink"] : "")
-				, "tags" 											=> explode(",", $anagraph["tags"])
-				, "uid" 											=> $anagraph["uid"]
-			);
+            $anagraph 												= user2anagraph($seo["owner"], "anagraph");
+            $globals->author = array(
+                "id" 												=> (int) $anagraph["ID"]
+                , "avatar"											=> $anagraph["avatar"]
+                , "name" 											=> ($anagraph["role"] ? $anagraph["role"] . " " : "") . $anagraph["name"] . " " . $anagraph["surname"]
+                , "smart_url" 										=> ($anagraph["username_slug"] ? $anagraph["username_slug"] : ffCommon_url_rewrite($anagraph["username"]))
+                , "email"											=> $anagraph["email"]
+                , "tel"												=> $anagraph["tel"]
+                , "src" 											=> ($anagraph["visible"] ? $anagraph["permalink"] : "")
+                , "url" 											=> ($anagraph["visible"] ? $domain_path . $anagraph["permalink"] : "")
+                , "tags" 											=> explode(",", $anagraph["tags"])
+                , "uid" 											=> (int) $anagraph["uid"]
+                , "token"											=> $anagraph["token"]
+                , "user_vars"										=> array()
+            );
 
 			//Meta Author
 			if(!$globals->meta["author"])
@@ -474,13 +479,13 @@
 					$arrReq = explode("=", $req);
 					if($page_title_params)
 						$page_title_params .= ", ";
-					else 
+					else
 						$page_title_params = " - ";
 
 					$page_title_params .= ffTemplate::_get_word_by_code($arrReq[0]) . " " . ucwords($arrReq[1]);
 				}
 			}
-			    
+
 			$cm->oPage->title 										= $globals->page_title . $page_title_params . $tmp_basic_title;
 		} elseif(!$cm->oPage->title) {
 		    $cm->oPage->title 										= CM_LOCAL_APP_NAME;
