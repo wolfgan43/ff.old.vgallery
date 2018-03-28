@@ -104,6 +104,7 @@ define("DS"                                                     , DIRECTORY_SEPA
 define("THEME_INSET"			                                , "gallery");
 //define("FRONTEND_THEME"			                            , "site");
 
+
 if(!defined("SHOWFILES_IS_RUNNING"))
 {
 	define("DOMAIN_INSET"                                       , $_SERVER["HTTP_HOST"]);
@@ -115,7 +116,7 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 
     define("OLD_VGALLERY", false);
 
-    define("VG_UI_PATH"											, "/ui");
+    //define("VG_UI_PATH"											, "/ui");
     define("VG_SYS_PATH"										, "/conf/gallery");
     define("VG_WS_ADMIN"										, "/admin");
     define("VG_WS_RESTRICTED"									, "/restricted");
@@ -137,13 +138,14 @@ if(!defined("SHOWFILES_IS_RUNNING"))
     define("VG_WEBSERVICES" 									, "/admin/services");
     define("VG_WEBSERVICES_PATH" 								, FF_DISK_PATH . VG_SYS_PATH . "/services");
     define("VG_ADDONS" 											, "/admin/addons");
-    define("VG_ADDONS_PATH" 									, VG_UI_PATH . "/addons");
+    define("VG_ADDONS_PATH" 									, "/conf/gallery/modules");
 
     define("HIDE_EXT"               							, true);
     define("GALLERY_PATH"           							, "/gallery");
     define("GALLERY_PATH_SYSTEM"    							, GALLERY_PATH . "/sys");
     define("GALLERY_PATH_ECOMMERCE" 							, GALLERY_PATH . "/ecommerce");
     define("GALLERY_PATH_MANAGE"    							, GALLERY_PATH . "/manage");
+	define("GALLERY_PATH_MODULE"    							, GALLERY_PATH . "/modules");
     define("GALLERY_PATH_JOB"    								, GALLERY_PATH . "/job");
 
     define("GALLERY_PATH_AUTH"      							, GALLERY_PATH . "/auth");
@@ -230,5 +232,52 @@ if(!defined("SHOWFILES_IS_RUNNING"))
             header("Location: " . $site_path . VG_SYS_PATH . "/install");
             exit;
         }
+	}
+}
+
+function vgAutoload()
+{
+	static $loaded = false;
+	if(!$loaded) {
+		spl_autoload_register(function ($class) {
+			switch ($class) {
+				case "Anagraph":
+				case "Cache":
+				case "Cms":
+				case "Filemanager":
+				case "Mailer":
+				case "Notifier":
+				case "Stats":
+				case "Storage":
+				case "Jobs":
+					require(__CMS_DIR__ . "/library/gallery/models/" . strtolower($class) . "/" . $class . ".php");
+					break;
+				case "vgCommon":
+					require(__CMS_DIR__ . "/library/gallery/models/" . $class . ".php");
+					break;
+				case "ffDB_Sql";
+				case "ffDb_Sql":
+					require(__TOP_DIR__  . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
+					break;
+				case "ffDB_MongoDB";
+				case "ffDb_MongoDB";
+					require_once(__TOP_DIR__ . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
+					break;
+				case "ffTemplate";
+					require(__TOP_DIR__  . "/ff/classes/ffTemplate.php");
+					break;
+				case "phpmailer":
+					require(__TOP_DIR__ . "/library/phpmailer/class.phpmailer.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.phpmaileroauth.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.phpmaileroauthgoogle.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.smtp.php");
+					require(__TOP_DIR__ . "/library/phpmailer/class.pop3.php");
+					require(__TOP_DIR__ . "/library/phpmailer/extras/EasyPeasyICS.php");
+					require(__TOP_DIR__ . "/library/phpmailer/extras/ntlm_sasl_client.php");
+					break;
+				default:
+			}
+		});
+		$loaded = true;
 	}
 }
