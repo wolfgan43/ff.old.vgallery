@@ -84,7 +84,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$globals->js                        = array();
 	$globals->css                       = array();
 	$globals->microdata                 = array();
-	$globals->author                 	= array();
+	$globals->author                 	= null;
 	$globals->meta                      = array();
 	$globals->html                      = array();
 	$globals->template                  = array();
@@ -96,6 +96,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$globals->http_status              	= null;
 
 	$globals->canonical                 = null;
+	$globals->tags                 		= null;
 	//$globals->favicon               	= null;
 	//$globals->menifest                = null;
 
@@ -121,6 +122,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$globals->services                  = null;    //facebook api mailchimp api ecc
 	$globals->tpl 						= null;
 	$globals->data_storage				= array();
+	$globals->user_vars					= array();
 
 	 //generic meta valid for all situation
 	 $globals->setMeta = function($name = "", $content = "", $type = "name") { //todo: eliminare l'intermedio e usare direttametne page_meta
@@ -151,14 +153,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				 $globals->microdata 			= $params;
 		 }
 	 };
-	 $globals->setAuthor = function($name, $src = null, $avatar = null, $tags = null) {
+	 $globals->setAuthor = function($id, $params = null) {
 		 $globals = ffGlobals::getInstance("gallery");
 
+		 if(!$params) {
+			 //todo: da implementare la classe anagraph
+			 check_function("get_user_data");
+			 $params 							= user2anagraph($id, "anagraph");
+
+		 }
 		 $globals->author = array(
-		 	"name" 								=> $name
-			 , "avatar" 						=> $avatar
-			 , "src" 							=> $src
-			 , "tags" 							=> $tags
+			 "id" 								=> (int) $id
+			 , "avatar"							=> $params["avatar"]
+			 , "name" 							=> ($params["role"] ? $params["role"] . " " : "") . $params["name"] . " " . $params["surname"]
+			 , "src" 							=> ($params["visible"] ? $params["permalink"] : "")
+			 , "url" 							=> ($params["visible"] ? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $params["permalink"] : "")
+			 , "tags" 							=> explode(",", $params["tags"])
+			 , "uid" 							=> (int) $params["uid"]
 		 );
+	 };
+	 $globals->setPage = function($user_vars) {
+		 $globals = ffGlobals::getInstance("gallery");
+
+		 $globals->user_vars = array_replace($globals->user_vars, $user_vars);
 	 };
 }
