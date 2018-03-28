@@ -170,7 +170,7 @@ function installer_check_FF_class() {
 		else
 			$arrError[] = "Missing ffData";
 	}
-	if(!class_exists("ffDb_Sql")) {
+	if(!class_exists("ffDB_Sql")) {
 		if(file_exists($path["disk_path"] . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php"))
 			require_once($path["disk_path"] . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
 		else
@@ -419,7 +419,8 @@ function installer_get_domain() {
 
 		$res["protocol"] = ($_SERVER["HTTPS"] ? "http" : "https");
 		if (substr_count($res["name"], ".") == 1
-			|| substr($res["name"], 0, strpos($res["name"], ".")) > substr($res["name"], strpos($res["name"], ".") + 1)
+			|| strpos($res["name"], "www") === 0
+//			|| substr($res["name"], 0, strpos($res["name"], ".")) > substr($res["name"], strpos($res["name"], ".") + 1)
 		) {
 			$res["sub"] = "";
 			$res["primary"] = substr($res["name"], 0, strpos($res["name"], "."));
@@ -436,8 +437,6 @@ function installer_get_domain() {
 			$res["sig"] = $res["primary"] . "." . $res["ext"];
 			$res["unique"] = $res["sub"] . "." . $res["primary"];
 		}
-
-
 	}
 	return $res;
 }
