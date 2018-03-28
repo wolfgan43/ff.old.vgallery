@@ -135,7 +135,9 @@ class storageMysql {
 							case "boolean":
 							case "date":
 							case "number":
+                            case "primary":
 							case "string":
+                            case "text":
 							default:
 								if (is_array($value)) {
 									if(count($value))
@@ -174,7 +176,7 @@ class storageMysql {
 			if(is_array($res)) {
 				switch ($flag) {
 					case "select":
-						$result["select"] 											= "`" . implode("`, `", $res) . "`";
+						$result["select"] 											= "`" . $this->config["key"] . "`, `" . implode("`, `", $res) . "`";
 						break;
 					case "insert":
 						$result["insert"]["head"] 									= "`" . implode("`, `", $res["head"]) . "`";
@@ -192,7 +194,17 @@ class storageMysql {
 					default:
 				}
 			}
-		}
+		} else {
+		    switch($flag) {
+                case "select":
+                    $result["select"] = "*";
+                    break;
+                case "where":
+                    $result["where"] = " 1 ";
+                    break;
+                default:
+            }
+        }
 
 		return $result;
 	}
@@ -250,6 +262,8 @@ class storageMysql {
 			$res = array_filter($keys, "is_numeric");
 		elseif(!is_numeric($keys))
 			$res = null;
+		else
+            $res = $keys;
 
 		return $res;
 	}

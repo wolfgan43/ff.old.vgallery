@@ -81,7 +81,9 @@ class statsUser
 	public function __construct($stats)
 	{
 		$this->stats = $stats;
-		$this->setConfig();
+
+        $this->stats->setConfig($this->connectors, $this->services);
+        //$this->setConfig();
 	}
 
 	public function getDevice()
@@ -115,7 +117,7 @@ class statsUser
 				if (is_array($user_vars) && count($user_vars)) {
 					foreach ($user_vars AS $key => $value) {
 						foreach ($rules AS $rule) {
-							if (preg_match("/^" . str_replace(array("\*", "\?"), array("(.+)", "(.?)"), preg_quote($rule)) . "$/i", $key)) {
+							if ($key == $rule || preg_match("/^" . str_replace(array("\*", "\?"), array("(.+)", "(.?)"), preg_quote($rule)) . "$/i", $key)) {
 								$res[$key] += $value;
 							}
 						}
@@ -289,7 +291,7 @@ class statsUser
 
 		return $where;
 	}
-
+/*
 	private function setConfig()
 	{
 		foreach($this->connectors AS $name => $connector) {
@@ -334,5 +336,5 @@ class statsUser
 				);
 			}
 		}
-	}
+	}*/
 }

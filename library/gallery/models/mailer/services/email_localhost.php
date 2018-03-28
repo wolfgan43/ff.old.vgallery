@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-class mailerSparkpost
+class mailerLocalhost
 {
     const TYPE                                              = "email";
 
@@ -50,27 +50,21 @@ class mailerSparkpost
     private function setConfig()
     {
         $this->config = $this->mailer->getConfig($this::TYPE);
-
-        if (!$this->config["password"])
+        if (!$this->config["username"])
         {
             if (is_file($this->mailer->getAbsPathPHP("/config")))
             {
                 require_once($this->mailer->getAbsPathPHP("/config"));
 
-				if(defined("A_FROM_EMAIL") && A_FROM_EMAIL) {
+                if(!$this->mailer->issetFrom() && defined("A_FROM_EMAIL") && A_FROM_EMAIL) {
 					$this->mailer->addAddress(array(
 						"name" 		=> A_FROM_NAME
-					, "email" 	=> A_FROM_EMAIL
+						, "email" 	=> A_FROM_EMAIL
 					), "from");
 				}
-
                 $this->config["host"] = (defined("A_SMTP_HOST")
                     ? A_SMTP_HOST
-                    : "smtp.sparkpostmail.com"
-                );
-                $this->config["name"] = (defined("FF_DATABASE_NAME")
-                    ? FF_DATABASE_NAME
-                    : "SMTP_Injection"
+                    : "localhost"
                 );
                 $this->config["username"] = (defined("A_SMTP_USER")
                     ? A_SMTP_USER
@@ -83,15 +77,15 @@ class mailerSparkpost
 
                 $this->config["auth"] = (defined("SMTP_AUTH")
                     ? SMTP_AUTH
-                    : true
+                    : false
                 );
                 $this->config["port"] = (defined("A_SMTP_PORT")
                     ? A_SMTP_PORT
-                    : "587"
+                    : "25"
                 );
                 $this->config["secure"] = (defined("A_SMTP_SECURE")
                     ? A_SMTP_SECURE
-                    : "tls"
+                    : ""
                 );
             }
         }

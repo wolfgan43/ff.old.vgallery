@@ -230,9 +230,7 @@ class Notifier extends vgCommon
 		if (self::$singleton === null)
 			self::$singleton = new Notifier($services, $params);
         else {
-			if($services)
-				self::$singleton->setServices($services);
-
+            self::$singleton->setServices($services);
 			self::$singleton->setParams($params);
 		}
 		return self::$singleton;
@@ -240,10 +238,12 @@ class Notifier extends vgCommon
     
     public function __construct($services = null, $params = null)
     {
+        $this->loadControllers(__DIR__);
+
 		$this->setServices($services);
 		$this->setParams($params);
 
-        $this->loadControllers(__DIR__);        
+
          //da aggiungere inizializzazioni classe necessarie come anagraph
     }
 

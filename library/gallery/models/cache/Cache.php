@@ -75,7 +75,9 @@ class Cache extends vgCommon
      */
     public function __construct($services = null)
     {
-		$this->setServices($services);
+        $this->loadControllers(__DIR__);
+
+        $this->setServices($services);
 
         $this->protocol                                                 = (isset($_SERVER['SERVER_PROTOCOL'])
                                                                             ? $_SERVER['SERVER_PROTOCOL']
@@ -88,7 +90,6 @@ class Cache extends vgCommon
         });
 
         $this->initRequest();
-		$this->loadControllers(__DIR__);
 	}
 
 
@@ -2661,7 +2662,7 @@ class Cache extends vgCommon
      * @param $string
      * @param string $filename
      */
-    public static function log($string, $filename = "log") //writeLog
+    public static function log($data, $filename = "log") //writeLog
     {
 		if(DEBUG_LOG === true) {
 			$log_path = self::_getDiskPath() . self::BASE_PATH . "/logs";
@@ -2675,6 +2676,12 @@ class Cache extends vgCommon
 
 			if($handle = @fopen($file, 'a'))
 			{
+			    if(is_array($data)) {
+			        $string = print_r($data, true);
+                } else {
+			        $string = $data;
+                }
+
 				if(@fwrite($handle, date("Y-m-d H:i:s", time()) . " " . $string . "\n") === FALSE)
 				{
 					$i18n_error = true;
@@ -3162,7 +3169,7 @@ function system_write_cache_stats() {
 										? $globals->request
 										: array()
 									) da approfondire*/
-		, "domain"					=> DOMAIN_INSET
+		, "domain"					=> vgCommon::DOMAIN
 		, "action"					=> array(
 			"name"					=> $globals->seo["current"]
 			, "value"				=> null
@@ -3253,7 +3260,7 @@ function system_write_cache_stats() {
 			)
 			, "where" => array(
 				"url" 					=> $globals->cache["user_path"]
-				, "domain" 				=> DOMAIN_INSET
+				, "domain" 				=> vgCommon::DOMAIN
 				, "get" 				=> $get
 			)
 		)

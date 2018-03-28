@@ -239,6 +239,9 @@ class Storage extends vgCommon
         }        
         $this->$param = $data;
     }
+    public function setTable($table) {
+        $this->table = $table;
+    }
     public function convertData($source, $dest)
     {
         $this->convertParam($source, $dest, "data");
@@ -366,14 +369,6 @@ class Storage extends vgCommon
                 {
                     case "read":
 						$this->result[$service] = array();
-                        if($query["select"])
-							$query["select"] .= ", `" . $query["key"] . "`";
-						else
-                            $query["select"] = "*";
-
-                        if(!$query["where"])
-                            $query["where"] = " 1 ";
-
                         $sSQL = "SELECT " . $query["select"] . " 
                                 FROM " .  $query["from"] . "
                                 WHERE " . $query["where"]
@@ -398,7 +393,7 @@ class Storage extends vgCommon
 								do {
 									$this->result[$service]["keys"][] = $db->record[$query["key"]];
 									//unset($db->record[$query["key"]]);
-									$this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
+                                    $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
 								} while($db->nextRecord());
 							}
 						} else {
@@ -526,7 +521,7 @@ class Storage extends vgCommon
                 {
                     case "read":
                     	$select = $query["select"];
-						$select[$query["key"]] = true;
+						//$select[$query["key"]] = true;
 
                         $db->query(array(
                             "select" 	=> $select
@@ -693,6 +688,7 @@ class Storage extends vgCommon
 
     	if($prototype) {
 			$res = array_fill_keys(array_keys(array_filter($prototype)), "");
+
     		if(is_array($prototype)) {
     			foreach ($prototype AS $name => $value) {
 					$arrValue = null;
@@ -712,7 +708,6 @@ class Storage extends vgCommon
 					} else {
 						$res[$name] = $record[$name];
 					}
-
 					if(!$toField) {
 						$struct = ($arrValue && is_array($this->struct[$arrValue[0]])
 							? ($this->struct[$arrValue[0]][$arrValue[1]]
@@ -855,11 +850,7 @@ class Storage extends vgCommon
 
 		return $res;
 	}
-	public function isAssocArray(array $arr)
-	{
-		if (array() === $arr) return false;
-		return array_keys($arr) !== range(0, count($arr) - 1);
-	}
+
 	public function normalizeField($name, $value) {
     	static $fields = array();
 
@@ -869,21 +860,21 @@ class Storage extends vgCommon
 				$name = substr($name, 1);
 				$not = true;
 			}
-			if (strpos($name, ">") == strlen($name) - 1) {
+			if (strpos($name, ">") === strlen($name) - 1) {
 				$name = substr($name, 0, -1);
 				$op = ">";
 			}
-			if (strpos($name, ">=") == strlen($name) - 2) {
+			if (strpos($name, ">=") === strlen($name) - 2) {
 				$name = substr($name, 0, - 2);
 				$op = ">=";
 			}
 
-			if (strpos($name, "<") == strlen($name) - 1) {
+			if (strpos($name, "<") === strlen($name) - 1) {
 				$name = substr($name, 0, -1);
 				$op = "<";
 			}
 
-			if (strpos($name, "<=") == strlen($name) - 2) {
+			if (strpos($name, "<=") === strlen($name) - 2) {
 				$name = substr($name, 0, -2);
 				$op = "<=";
 			}
@@ -951,7 +942,8 @@ class Storage extends vgCommon
 				case "date":																			//date
 					$fields[$name] = $value;
 					break;
-				case "number":																			//number
+                case "number":                                                                          //number
+				case "primary":
 					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to number
 						$res["update"]['$inc'][$name] = 1;
 					} elseif(strrpos($value, "--") === strlen($value) -2) {                                //-- to number
@@ -973,6 +965,7 @@ class Storage extends vgCommon
 					}
 					break;
 				case "string":																			//string
+                case "text":
 				default:
 					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to string
 						$res["update"]['$concat'][$name] = array('$' . $name, "+1");

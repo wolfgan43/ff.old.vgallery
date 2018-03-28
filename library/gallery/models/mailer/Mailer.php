@@ -178,11 +178,12 @@ class Mailer extends vgCommon
 
     public function __construct($params = null)
     {
+        $this->loadControllers(__DIR__);
+
         if($params && !is_array($params))
             $params = array("name" => $params);
 
         $this->setParams($params);
-        $this->loadControllers(__DIR__);
     }
     
     public function renderPreview($message = null, $subject = null) {
@@ -451,28 +452,26 @@ class Mailer extends vgCommon
 
         $this->clearResult($from);
 //todo: $notify da fare e $send_copy e $actions e $users e $groups e $referer
-		$this->setMessage($message, $subject, $actions, $attach, $referer);
+        $this->addAddress($from             , "from");
+        $this->addAddress($to               , "to");
+        $this->addAddress($cc               , "cc");
+        $this->addAddress($bcc              , "bcc");
+
+        $this->setMessage($message, $subject, $actions, $attach, $referer);
 
 		$this->loadConfig();
 		$this->loadTemplate();
 
         if(!$this->isError())
         {
-            $this->addAddress($from             , "from");
-            $this->addAddress($to               , "to");
-            $this->addAddress($cc               , "cc");
-            $this->addAddress($bcc              , "bcc");
-
-            if(!$this->isError()) {
-                foreach ($this->services AS $controller => $services) {
-                    $funcController = "controller_" . $controller;
-                    if (is_array($services) && count($services)) {
-                        foreach (array_filter($services) AS $service) {
-                            $this->$funcController($service);
-                        }
-                    } else {
-                        $this->$funcController($services);
+            foreach ($this->services AS $controller => $services) {
+                $funcController = "controller_" . $controller;
+                if (is_array($services) && count($services)) {
+                    foreach (array_filter($services) AS $service) {
+                        $this->$funcController($service);
                     }
+                } else {
+                    $this->$funcController($services);
                 }
             }
         }
@@ -489,6 +488,7 @@ class Mailer extends vgCommon
 			. " cc: " . print_r($this->cc, true)
 			. " bcc: " . print_r($this->bcc, true)
 			. " Result: " . print_r($this->getResult(), true)
+            . " exTime: " . $this->exTime
 		, "email" . ($this->isError() ? "_error" : ""));
 
         return $this->getResult();
@@ -831,6 +831,12 @@ class Mailer extends vgCommon
             $preview_header_tag = $tpl_header->rpparse("main", false);
         }*/
     }
+    public function issetFrom() {
+        return ($this->from
+            ? true
+            : false
+        );
+    }
     private function setAddress($addr, $type)
     {
         if($addr) {
@@ -905,7 +911,7 @@ class Mailer extends vgCommon
 			if(!$this->notify)
 				$this->notify               = $struct[$this->struct["storage"]["struct"]["fields"]["notify"]];
 
-			if(!$this->from)
+			if(!$this->issetFrom())
 				$this->from[$struct[$this->struct["storage"]["struct"]["fields"]["from_email"]]] = array(
                 "name" => $struct[$this->struct["storage"]["struct"]["fields"]["from_name"]]
 				, "email" => $struct[$this->struct["storage"]["struct"]["fields"]["from_email"]]
@@ -1231,7 +1237,6 @@ class Mailer extends vgCommon
                     }
                 }
             }
-
 
             $rc = $mail->Send();
             if (!$rc)

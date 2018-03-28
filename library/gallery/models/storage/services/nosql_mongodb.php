@@ -133,6 +133,7 @@ class storageMongodb {
 								break;
 							case "date":
 							case "number":
+                            case "primary":
 								if($value !== null) {
 									if ($field["op"] && $value !== null) {                                                //< > <= >=
 										$op = "";
@@ -172,6 +173,7 @@ class storageMongodb {
 								}
 								break;
 							case "string":
+                            case "text":
 							default:
 								if (is_array($value) && count($value)) {
 									$res["where"][$field["name"]] 					= array(
@@ -195,7 +197,26 @@ class storageMongodb {
 					default:
 				}
 			}
-		}
+
+            if(is_array($res)) {
+                switch ($flag) {
+                    case "select":
+                        $res["select"][$this->config["key"]]                        = true;
+                        break;
+                    case "insert":
+                        break;
+                    case "update":
+                        break;
+                    case "where":
+                        break;
+                    case "sort":
+                        break;
+                    default:
+                }
+            }
+        } elseif($flag == "select") {
+
+        }
 
 		return $res;
 	}
