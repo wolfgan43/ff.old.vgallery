@@ -633,18 +633,19 @@
 		return $res;
 	}
 
-    
-    function user2anagraph($user_key = null, $type = "user") {
-        $db = ffDB_Sql::factory();
 
+	function user2anagraph($user_key = null, $type = "user") {
 		if(!$user_key)
 			$user = get_session("user_permission");
 
-        if(!$user["anagraph"])
-        {
-            $user["anagraph"] = array();
+		if(!$user["anagraph"])
+		{
+			$db = ffDB_Sql::factory();
+			$user["anagraph"] = array();
 
-			if (is_numeric($user_key) && $user_key > 0) {
+			if(!$user_key && $user["ID"]) {
+				$sWhere = "anagraph.uid = " . $db->toSql($user["ID"], "Number");
+			} elseif (is_numeric($user_key) && $user_key > 0) {
 				$sWhere = "anagraph." . ($type == "user" ? "uid" : "ID") . " = " . $db->toSql($user_key, "Number");
 			} elseif (strpos($user_key, "@") !== false) {
 				$sWhere = "anagraph.email = " . $db->toSql($user_key);
@@ -652,66 +653,77 @@
 				$sWhere = "anagraph.smart_url = " . $db->toSql($user_key);
 			}
 
-            $sSQL = "SELECT anagraph.*
-                    FROM anagraph
-                    WHERE " . $sWhere;
-            $db->query($sSQL);
-            if($db->nextRecord()) {
-                $user["anagraph"] = $db->record;
-                $options = mod_security_get_settings("/");
+			$sSQL = "SELECT anagraph.*
+						FROM anagraph
+						WHERE " . $sWhere;
+			$db->query($sSQL);
+			if($db->nextRecord()) {
+				$user["anagraph"] = $db->record;
 
-                $sSQL = "SELECT " . $options["table_groups_name"] . ".gid AS rel_gid
-                                , " . $options["table_groups_name"] . ".name AS gid_name
-                         FROM " . $options["table_groups_rel_user"] . "
-                            INNER JOIN " . $options["table_groups_name"] . " ON " . $options["table_groups_name"] . ".gid = " . $options["table_groups_rel_user"] . ".gid
-                                OR " . $options["table_groups_name"] . ".gid = " . $db->toSql($user["anagraph"]["primary_gid"], "Number") . "
-                         WHERE " . $options["table_groups_rel_user"] . ".uid = " . $db->toSql($user["anagraph"]["uid"], "Number") . " 
-                         ORDER BY " . $options["table_groups_name"] . ".level DESC";
-                $db->query($sSQL);
-                if ($db->nextRecord())
-                {
-                    $user["anagraph"]["groups"] = array();
+				if($user["anagraph"]["degree"]) {
+					$sSQL = "SELECT anagraph_role.*
+								FROM anagraph_role
+								WHERE anagraph_role.ID = " . $db->toSql($user["anagraph"]["degree"], "Number");
+					$db->query($sSQL);
+					if($db->nextRecord()) {
+						$user["anagraph"]["role"] = $db->getField("name", "Text", true);
+					}
+				}
 
-                    $user["anagraph"]["primary_gid_default"] = $db->getField("rel_gid", "Number", true);
-                    $user["anagraph"]["primary_gid_default_name"] = $db->getField("gid_name", "Text", true);
-                    do
-                    {
-                        $ID_group = $db->getField("rel_gid", "Number", true);
-                        $group_name = $db->getField("gid_name", "Text", true);
-                        if($ID_group > 0)
-                            $user["anagraph"]["groups"][$group_name] = $ID_group;
+				$options = mod_security_get_settings("/");
 
-                        if($user["anagraph"]["primary_gid"] == $ID_group) {					    
-                            $user["anagraph"]["primary_gid_name"] = $group_name;
+				$sSQL = "SELECT " . $options["table_groups_name"] . ".gid AS rel_gid
+									, " . $options["table_groups_name"] . ".name AS gid_name
+							 FROM " . $options["table_groups_rel_user"] . "
+								INNER JOIN " . $options["table_groups_name"] . " ON " . $options["table_groups_name"] . ".gid = " . $options["table_groups_rel_user"] . ".gid
+									OR " . $options["table_groups_name"] . ".gid = " . $db->toSql($user["anagraph"]["primary_gid"], "Number") . "
+							 WHERE " . $options["table_groups_rel_user"] . ".uid = " . $db->toSql($user["anagraph"]["uid"], "Number") . " 
+							 ORDER BY " . $options["table_groups_name"] . ".level DESC";
+				$db->query($sSQL);
+				if ($db->nextRecord())
+				{
+					$user["anagraph"]["groups"] = array();
 
-                            $user["primary_gid_default"] = $user["anagraph"]["primary_gid"];
-                            $user["primary_gid_default_name"] = $user["anagraph"]["primary_gid_name"];
-                        }
-                    } while($db->nextRecord());
+					$user["anagraph"]["primary_gid_default"] = $db->getField("rel_gid", "Number", true);
+					$user["anagraph"]["primary_gid_default_name"] = $db->getField("gid_name", "Text", true);
+					do
+					{
+						$ID_group = $db->getField("rel_gid", "Number", true);
+						$group_name = $db->getField("gid_name", "Text", true);
+						if($ID_group > 0)
+							$user["anagraph"]["groups"][$group_name] = $ID_group;
 
-                    if(!count($user["anagraph"]["groups"]))
-                    {
-                        $user["anagraph"]["groups"][MOD_SEC_GUEST_USER_NAME] = MOD_SEC_GUEST_USER_ID;
-                        $user["anagraph"]["primary_gid_name"] = MOD_SEC_GUEST_USER_NAME;
-                    } 
+						if($user["anagraph"]["primary_gid"] == $ID_group) {
+							$user["anagraph"]["primary_gid_name"] = $group_name;
 
-                    $sSQL = "SELECT " . $options["table_groups_dett_name"] . ".*
-                            FROM " . $options["table_groups_dett_name"] . "
-                            WHERE " . $options["table_groups_dett_name"] . ".ID_groups = " . $db->toSql($user["primary_gid"], "Number") . "
-                            ORDER BY " . $options["table_groups_dett_name"] . ".`order`, " . $options["table_groups_dett_name"] . ".field";
-                    $db->query($sSQL);
-                    if($db->nextRecord())
-                    {
-                        do {
-                            $user["permissions_custom"][$db->getField("field", "Text", true)] = $db->getField("value", "Text", true);
-                        } while($db->nextRecord());
-                    }
-                } 
-                
-                if(!$user_key)
-                	set_session("user_permission", $user);
-            }
-        }
-        
-        return $user["anagraph"];
-    }
+							$user["primary_gid_default"] = $user["anagraph"]["primary_gid"];
+							$user["primary_gid_default_name"] = $user["anagraph"]["primary_gid_name"];
+						}
+					} while($db->nextRecord());
+
+					if(!count($user["anagraph"]["groups"]))
+					{
+						$user["anagraph"]["groups"][MOD_SEC_GUEST_USER_NAME] = MOD_SEC_GUEST_USER_ID;
+						$user["anagraph"]["primary_gid_name"] = MOD_SEC_GUEST_USER_NAME;
+					}
+
+					$sSQL = "SELECT " . $options["table_groups_dett_name"] . ".*
+								FROM " . $options["table_groups_dett_name"] . "
+								WHERE " . $options["table_groups_dett_name"] . ".ID_groups = " . $db->toSql($user["primary_gid"], "Number") . "
+								ORDER BY " . $options["table_groups_dett_name"] . ".`order`, " . $options["table_groups_dett_name"] . ".field";
+					$db->query($sSQL);
+					if($db->nextRecord())
+					{
+						do {
+							$user["permissions_custom"][$db->getField("field", "Text", true)] = $db->getField("value", "Text", true);
+						} while($db->nextRecord());
+					}
+				}
+
+				if(!$user_key)
+					set_session("user_permission", $user);
+			}
+		}
+
+		return $user["anagraph"];
+	}

@@ -5905,8 +5905,12 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 		      $more_detail_check_nodes = $vg_data_value["check_nodes"][$field_key];
 		      } */
 
-		    $more_detail = $vg_data_value["data"][$field_key];
-		    switch ($field_value["data_type"]) {
+
+			$more_detail = $vg_data_value["data"][$field_key];
+
+			$cm->doEvent("vg_on_vgallery_field_before_parse", array(&$more_detail, $field_value, $vg_father));
+
+			switch ($field_value["data_type"]) {
 			case "applet":
 			    if (check_function("process_forms_framework"))
 				$more_detail = process_forms_framework($field_value["data_source"], $field_value["data_limit"], stripslash($vg_data_value["parent"]) . "/" . $vg_data_value["name"]);
@@ -5975,50 +5979,66 @@ function process_vgallery_tpl_fields(&$tpl, &$vg_father, $vg_fields, $vg_data_va
 			    $tmp_data_field["content"] = $more_detail_content;
 			    break;
 			case "media":
-			    $rst_rel_dir = array();
-			    $real_path = stripslash($vg_data_value["parent"]) . "/" . $vg_data_value["name"] . "/" . ffCommon_url_rewrite($field_value["name"]);
-			    //da migliorare il process dei thumb eliminando le query e i permessi multipli
-			    $abs_real_path = realpath(DISK_UPDIR . $real_path);
+                $rst_rel_dir = array();
+                $real_path = stripslash($vg_data_value["parent"]) . "/" . $vg_data_value["name"] . "/" . ffCommon_url_rewrite($field_value["name"]);
+                if(strpos(CM_SHOWFILES, "://") !== false) {
+                    $arrMedia = explode(",", $more_detail);
+                    if (is_array($arrMedia) && count($arrMedia) && check_function("get_file_permission")) {
+                        foreach ($arrMedia as $file) {
+                            $rst_rel_dir[$file]["permission"][LANGUAGE_INSET] = true;
+                        }
+                    }
+                } else {
+                    //da migliorare il process dei thumb eliminando le query e i permessi multipli
+                    $abs_real_path = realpath(DISK_UPDIR . $real_path);
 
-			    if (strlen($abs_real_path) && is_dir($abs_real_path))
-				$arrMedia = glob($abs_real_path . "/*");
+                    if (strlen($abs_real_path) && is_dir($abs_real_path))
+                        $arrMedia = glob($abs_real_path . "/*");
 
-			    if (is_array($arrMedia) && count($arrMedia)) {
-					foreach ($arrMedia as $real_file) {
-					    $file = str_replace(DISK_UPDIR, "", $real_file);
-						if ((is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
-						    if (ENABLE_STD_PERMISSION && check_function("get_file_permission"))
-								$file_permission = get_file_permission($file);
-						    if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
-								$rst_rel_dir[$file]["permission"] = $file_permission;
-						    }
-						}
-					}
-			    }
-			    $rel_layout["prefix"] = $layout["prefix"] . "RD";
-			    $rel_layout["ID"] = $layout["ID"];
-			    $rel_layout["title"] = $layout["title"] . " dir";
-			    $rel_layout["type"] = "GALLERY";
-			    $rel_layout["location"] = $layout["location"];
-			    $rel_layout["visible"] = $layout["visible"];
-			    $rel_layout["is_rel"] = true;
-			    $rel_layout["settings"] = $layout["settings"];
+                    if (is_array($arrMedia) && count($arrMedia) && check_function("get_file_permission")) {
+                        foreach ($arrMedia as $real_file) {
+                            $file = str_replace(DISK_UPDIR, "", $real_file);
+                            if (
+                                (
+                                    (is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH)
+                                    || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false)
+                                )
+                                && strpos(basename($real_file), ".") !== 0
+                            ) {
+                                if (ENABLE_STD_PERMISSION)
+                                    $file_permission = get_file_permission($file);
+                                if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+                                    $rst_rel_dir[$file]["permission"] = $file_permission;
+                                }
+                            }
+                        }
+                    }
+                }
 
-			    if (check_function("process_gallery_thumb")) {
-				//da fre debug nn esce la galleria
-				$tmp_buffer = process_gallery_thumb($rst_rel_dir, $real_path, NULL, NULL, NULL, $rel_layout, null, ($vg_father["permission"]["owner"] > 0 ? ($vg_father["permission"]["owner"] == $user["ID"] ? true : false) : null));
-				if (strlen($tmp_buffer["content"])) {
-				    //$more_detail = '<div class="block gal">' . $tmp_buffer["content"] . '</div>';
-				    $more_detail = $tmp_buffer["content"];
-				}
-			    }
+                $rel_layout["prefix"] = $layout["prefix"] . "RD";
+                $rel_layout["ID"] = $layout["ID"];
+                $rel_layout["title"] = $layout["title"] . " dir";
+                $rel_layout["type"] = "GALLERY";
+                $rel_layout["location"] = $layout["location"];
+                $rel_layout["visible"] = $layout["visible"];
+                $rel_layout["is_rel"] = true;
+                $rel_layout["settings"] = $layout["settings"];
 
-			    if (!$more_detail && $params["enable_error"]) {
-				$more_detail = '<span class="' . preg_replace('/[^a-zA-Z0-9]/', '', $field_value["type"] . $field_value["name"]) . '">' . ffTemplate::_get_word_by_code($vg_father["vgallery_name"] . "_" . $field_value["name"] . "_notfound") . '</span>';
-			    }
+                if (check_function("process_gallery_thumb")) {
+                    //da fre debug nn esce la galleria
+                    $tmp_buffer = process_gallery_thumb($rst_rel_dir, $real_path, NULL, NULL, NULL, $rel_layout, null, ($vg_father["permission"]["owner"] > 0 ? ($vg_father["permission"]["owner"] == $user["ID"] ? true : false) : null));
+                    if (strlen($tmp_buffer["content"])) {
+                        //$more_detail = '<div class="block gal">' . $tmp_buffer["content"] . '</div>';
+                        $more_detail = $tmp_buffer["content"];
+                    }
+                }
 
-			    /* Set Field Content */
-			    $tmp_data_field["content"] = $more_detail;
+                if (!$more_detail && $params["enable_error"]) {
+                    $more_detail = '<span class="' . preg_replace('/[^a-zA-Z0-9]/', '', $field_value["type"] . $field_value["name"]) . '">' . ffTemplate::_get_word_by_code($vg_father["vgallery_name"] . "_" . $field_value["name"] . "_notfound") . '</span>';
+                }
+
+                /* Set Field Content */
+                $tmp_data_field["content"] = $more_detail;
 			    break;
 			case "static":
 			    if (check_function("process_addon_static"))
@@ -7426,10 +7446,6 @@ function process_vgallery_data_by_type(&$vg_father, $data, $field_params, $vg_pa
 				}
 			}
 
-			//if(!(substr($data, 0, 1) == "/" || substr($data, 0, 2) == "//" || substr($data, 0, 5) == "http")) {
-			//	$data = "";
-			//}
-			
 			//print_r($vg_father["properties"]["image"]["src"]);
 			//print_r($img_static);
 			//da sostituire con questo   ---^:
