@@ -221,8 +221,19 @@ $oRecord->addContent($oField);
 $oField = ffField::factory($cm->oPage);
 $oField->id = "rule_meta_description";
 $oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_rule_meta_description");
-$oRecord->addContent($oField);	
+$oRecord->addContent($oField);
 
+$sSQL_file = "";
+if(AREA_SHOW_ECOMMERCE) {
+	$sSQL_file = "
+				) UNION ( 
+					SELECT 
+						name AS nameID
+						, name AS name
+						, (SELECT vgallery_fields_data_type.ID FROM vgallery_fields_data_type WHERE vgallery_fields_data_type.name = 'ecommerce.checkout') AS type 
+					FROM ecommerce_mpay
+					WHERE ecommerce_mpay.ecommerce > 0";
+}
 
 $sSQL = "SELECT vgallery_fields_data_type.ID 
 		FROM vgallery_fields_data_type 
@@ -309,13 +320,6 @@ $oField->source_SQL = "
                                 , name AS name
                                 , (SELECT vgallery_fields_data_type.ID FROM vgallery_fields_data_type WHERE vgallery_fields_data_type.name = 'sender') AS type 
                             FROM vgallery
-                        ) UNION (
-                            SELECT 
-                                name AS nameID
-                                , name AS name
-                                , (SELECT vgallery_fields_data_type.ID FROM vgallery_fields_data_type WHERE vgallery_fields_data_type.name = 'checkout') AS type 
-                            FROM ecommerce_mpay
-                            WHERE ecommerce_mpay.ecommerce > 0
                         ) UNION (
 	                        SELECT 
 	                        	" . $db_gallery->toSql($src_type == "vgallery" ? "vgallery_nodes" : $src_type) . " AS nameID

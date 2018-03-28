@@ -924,7 +924,7 @@ function cm_getLayoutDepsByPath($layout_path)
 	$db->query($sSQL);
 	if ($db->nextRecord())
 	{
-		$db2 = ffDb_Sql::factory();
+		$db2 = ffDB_Sql::factory();
 		do
 		{
 			$ID = $db->getField("ID")->getValue();
