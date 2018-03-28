@@ -23,7 +23,7 @@ if (!$cm->isXHR()/* && strpos(strtolower($_SERVER["HTTP_USER_AGENT"]), "googlebo
 }
 
 $php_array = array();
-$db = ffDb_Sql::factory();
+$db = ffDB_Sql::factory();
 
 $search_value = $_REQUEST["term"];
 $search_value = str_replace("%", "\%", $search_value);

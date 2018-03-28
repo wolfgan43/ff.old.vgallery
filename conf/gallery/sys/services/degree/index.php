@@ -61,7 +61,7 @@ $actex_main_db = false;
 if ($actex_main_db)
     $db = mod_security_get_main_db();
 else
-    $db = ffDb_Sql::factory();
+    $db = ffDB_Sql::factory();
 
 
 
