@@ -35,12 +35,12 @@ if($cm->oPage->isXHR() && $cm->oPage->getXHRComponent()) {
 	$cm->oPage->process();
 	exit;
 }
-
+/*
 if(is_array($globals->params) && count($globals->params)) {
     foreach($globals->params AS $params_key => $params_value) {
         ${$params_key} = $params_value;
     }
-}
+}*/
 
 $old_request_uri = $_SERVER["REQUEST_URI"];
 
@@ -58,6 +58,17 @@ $is_framework = false;
 
 //$new_request_uri = str_replace("sid=" . $_REQUEST["sid"] . "&", "", $new_request_uri);
 //$new_request_uri = str_replace("?sid=" . $_REQUEST["sid"], "", $new_request_uri);
+
+if(array_key_exists("sid", $_REQUEST) && strlen($_REQUEST["sid"])) {
+	$source_sid = str_replace("\\\"", "\"", $_REQUEST["sid"]);
+	$sid = get_sid($source_sid, null, true);
+	if(array_key_exists("value", $sid)) {
+		$params = json_decode($sid["value"], true);
+
+		$sys = $params["sys"];
+		$admin = $params["admin"];
+	}
+}
 
 $_SERVER["REQUEST_URI"] = $new_request_uri;
 
