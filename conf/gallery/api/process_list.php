@@ -145,7 +145,7 @@ if(!$disable_service_process) {
         $arrInternalService = explode(",", $service_ext);
     }
 
-    $db = ffDb_Sql::factory();
+    $db = ffDB_Sql::factory();
 
     $exclude_field = array();
     $custom_template = false;

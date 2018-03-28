@@ -668,7 +668,11 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 				else 
 					$str_query_string = "?out=" . $return_params;
 
-				$prototype["url"] = $_SERVER["PATH_INFO"] . $str_query_string;
+				$path_info = $_SERVER["PATH_INFO"];
+				if($path_info == "/index")
+					$path_info = "/";
+
+				$prototype["url"] = $path_info . $str_query_string;
 		    }
 		    if($prototype["html"] === null) { //icon ico-' . $prototype["class"]
 			    $prototype["html"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . $return_params . '\', \'' . $prototype["source_action"] . '\');"></a>';

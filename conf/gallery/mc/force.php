@@ -577,7 +577,7 @@ function get_item_data($ID_domain, $manifesto, $key = null) {
         }
 
         if(!file_exists(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/manifesto.xml")) {
-            $sSQL = "SELECT " . CM_TABLE_PREFIX . "layout.*
+           /* $sSQL = "SELECT " . CM_TABLE_PREFIX . "layout.*
                     FROM " . CM_TABLE_PREFIX . "layout";
             $db->query($sSQL);
             if($db->nextRecord()) {
@@ -586,7 +586,7 @@ function get_item_data($ID_domain, $manifesto, $key = null) {
                         $manifesto_data["ff_theme/" . $db->getField("theme", "Text", true)] = "1";
                     }
                 } while($db->nextRecord());
-            }
+            }*/
             
             $restricted_settings = mod_restricted_get_all_setting();
             $manifesto_data["jqueryui_theme/" . "base"] = "1";
@@ -611,7 +611,7 @@ function get_item_data($ID_domain, $manifesto, $key = null) {
         }
     }
 
-    if(key === null) {
+    if($key === null) {
         return $manifesto_data;
     } else {
         if(array_key_exists($key, $manifesto_data))
