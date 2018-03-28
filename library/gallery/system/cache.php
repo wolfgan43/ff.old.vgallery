@@ -150,39 +150,34 @@
             $lang                                               = $arrLocale["rev"]["lang"][$arrSettings_path[0]];
         }
 
-        if(isset($schema["page"][$settings_user_path])) {
-            $res                                                = $schema["page"][$settings_user_path];
-            $page_key                                           = $settings_user_path;
-        } elseif(isset($schema["page"]["/" . $arrSettings_path[0]] )) {
-            $res                                                = $schema["page"]["/" . $arrSettings_path[0]];
-            $page_key                                           = "/" . $arrSettings_path[0];
-        } elseif(isset($schema["page"][$arrSettings_path[count($arrSettings_path) - 1]])) {
-            $res                                                = $schema["page"][$arrSettings_path[count($arrSettings_path) - 1]];
-        } else { //todo: da testare
-			$arrPageMatch = array_filter($schema["page"], function($page) use ($settings_user_path) {
-				return ($page["router"]
-					? preg_match("#" . preg_quote($page["router"]["source"], "#") . "#i", $settings_user_path)
-					: false
-				);
-			});
-
-			if(is_array($arrPageMatch) && count($arrPageMatch)) {
-				ksort($arrPageMatch);
-
-				$res = reset($arrPageMatch);
-				$page_key = key($arrPageMatch);
-			} else {
-				//$tmp_user_path = $user_path;
-				do {
-
-					if (isset($schema["page"][$settings_user_path])) {
-						$res = $schema["page"][$settings_user_path];
-						$page_key = $settings_user_path;
-						break;
-					}
-				} while ($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path))); //todo: DS check
+		if(isset($schema["page"][$settings_user_path])) {
+			$res                                                = $schema["page"][$settings_user_path];
+			$page_key                                           = $settings_user_path;
+		} else {
+			foreach($schema["page"] AS $key => $page) {
+				if($page["router"] && preg_match("#" . $page["router"]["source"] . "#i", $settings_user_path)) {
+					$res = $page;
+					$page_key = $key;
+					break;
+				}
 			}
-        }
+			if(!$res) {
+				if(isset($schema["page"]["/" . $arrSettings_path[0]] )) {
+					$res                                                = $schema["page"]["/" . $arrSettings_path[0]];
+					$page_key                                           = "/" . $arrSettings_path[0];
+				} elseif(isset($schema["page"][$arrSettings_path[count($arrSettings_path) - 1]])) {
+					$res                                                = $schema["page"][$arrSettings_path[count($arrSettings_path) - 1]];
+				} else {
+					do {
+						if (isset($schema["page"][$settings_user_path])) {
+							$res = $schema["page"][$settings_user_path];
+							$page_key = $settings_user_path;
+							break;
+						}
+					} while ($settings_user_path != DIRECTORY_SEPARATOR && ($settings_user_path = dirname($settings_user_path))); //todo: DS check
+				}
+			}
+		}
 
         if(strpos($user_path, $res["strip_path"]) === 0) {
             $user_path                                          = substr($user_path, strlen($res["strip_path"]));
@@ -423,7 +418,7 @@
 
 		setcookie($name,  $objToken["token"],  $objToken["expire"], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure'], true);	
 
-		//cache_writeLog("SET COOKIE: " . $_COOKIE["_ut"]  . " = " . $objToken["token"] . " exp: " . $objToken["expire"], "mio");		
+		//Cache::log("SET COOKIE: " . $_COOKIE["_ut"]  . " = " . $objToken["token"] . " exp: " . $objToken["expire"], "mio");
     }
 
     function cache_token_get_session_cookie($name = "_ut") {
@@ -456,7 +451,19 @@
 			, "dir" => $dir_token 
 		);
 	}
-	
+	function cache_get_token_file($token) {
+		$u = array();
+
+		if($token) {
+			$file = FF_DISK_PATH . "/cache/token/" . substr($token, 0, 3) . "/" . substr($token, 0, 11) . ".php";
+			if (is_file($file))
+				require $file;
+
+			if($u["expire"] < time())
+				Cache::log("Token: " . $token . " File: " . $file . " Expired: " . $u["expire"] . " (" . ($u["expire"] - time()) . "s)", "token_expired");
+		}
+		return $u;
+	}
 	function cache_check_session_by_token($token = null) {
 		static $user = null;
 		//$dir_token = CM_CACHE_PATH . "/token";
@@ -468,7 +475,7 @@
 			if($token === null)
 				$token = cache_token_get_session_cookie();
 
-//			cache_writeLog("entro: " . $cc . "  " . $token . print_r($_SERVER, true) , "mio");
+//			Cache::log("entro: " . $cc . "  " . $token . print_r($_SERVER, true) , "mio");
 
 			if($token) {
 				if(strpos($token, $token_user . "-") === 0) {
@@ -488,10 +495,10 @@
 				$fsToken = cache_token_get_file_token($objToken["public"], $type_token);
 
 				//$file_token = $dir_token . "/" . $prefix_token . $objToken["public"] . ".php";
-//	cache_writeLog("COOKIE: " . $cc . "  " . $_COOKIE["_ut"]  . " = " . $token, "mio");		
+//	Cache::log("COOKIE: " . $cc . "  " . $_COOKIE["_ut"]  . " = " . $token, "mio");
 				if(is_file($fsToken["file"])) {
 					require($fsToken["file"]);
-//	cache_writeLog("FOUND: " . $cc . "  " . $file_token . " = " . $token, "mio");
+//	Cache::log("FOUND: " . $cc . "  " . $file_token . " = " . $token, "mio");
 
                     /** @var include $u */
                     if($u["uniqid"] == $objToken["private"]) {
@@ -537,14 +544,16 @@
 
 								@unlink($fsToken["file"]);
 								
-//cache_writeLog("REGEN: " . $cc . "  " . $objToken["new"]["token"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
+//Cache::log("REGEN: " . $cc . "  " . $objToken["new"]["token"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
 							} else {
 								cache_token_write($u, $objToken["public"]);
 							}
 						} else {
-						//	@unlink($fsToken["file"]); //todo:da creare procedura per rigenerare i token per mailchimp
+							Cache::log("Token: " . $token . " File: " . $fsToken["file"] . " Expired: " . $u["expire"] . " (" . ($u["expire"] - time()) . "s)", "token_expired");
+
+							//	@unlink($fsToken["file"]); //todo:da creare procedura per rigenerare i token per mailchimp
 							cache_token_destroy_session_cookie();
-//cache_writeLog("Destroy: " .  $cc . "  " .  $_COOKIE["_ut"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
+//Cache::log("Destroy: " .  $cc . "  " .  $_COOKIE["_ut"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
 						}
 					}
 				} else {
@@ -667,6 +676,8 @@
 					$_SESSION[APPID . "UserEmail"] 			= $user_permission["email"];
 
 					$_SESSION[APPID . "user_permission"] 	= $user_permission;
+
+					define("MOD_SECURITY_SESSION_STARTED"	, true);
 				}
 			}
 		}
@@ -679,56 +690,59 @@
         if($user_permission === null) {
             $user_permission = array();
 
-			//require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
-            if($_REQUEST[SESSION_NAME])
-                $sessid = $_REQUEST[SESSION_NAME];
-            if(!$sessid)
-            	$sessid = $_COOKIE[SESSION_NAME];
-            	
-			if($sessid)
-			{
-                $tmp_path = SESSION_SAVE_PATH;
-                    if (substr($tmp_path, -1) !== "/")
-                            $tmp_path .= "/";
+			if(is_array($_SESSION[APPID . "user_permission"]) && count($_SESSION[APPID . "user_permission"])) {
+				$user_permission = $_SESSION[APPID . "user_permission"];
+			} else {
+				//require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
+				if($_REQUEST[SESSION_NAME])
+					$sessid = $_REQUEST[SESSION_NAME];
+				if(!$sessid)
+					$sessid = $_COOKIE[SESSION_NAME];
 
-                if(file_exists($tmp_path . "sess_" . $sessid))
-                {
-                    @session_unset();
-                    @session_destroy();
+				if($sessid)
+				{
+					$tmp_path = SESSION_SAVE_PATH;
+						if (substr($tmp_path, -1) !== "/")
+								$tmp_path .= "/";
 
-                    session_save_path(SESSION_SAVE_PATH);
-                    session_name(SESSION_NAME);
+					if(file_exists($tmp_path . "sess_" . $sessid))
+					{
+						@session_unset();
+						@session_destroy();
 
-                    @session_start();
+						session_save_path(SESSION_SAVE_PATH);
+						session_name(SESSION_NAME);
+
+						@session_start();
 
 
-                    $user_permission = $_SESSION[APPID . "user_permission"];
-                    
-                } else {
-                	cache_token_destroy_session_cookie(SESSION_NAME);
-                }
-            }
-
-            if(!count($user_permission)) {
-	            $user_permission = cache_create_session_by_token();
-            }
-							
-			if(count($user_permission)) {
-				if($_SESSION[APPID . "UserNID"] != 2)
-					define("IS_LOGGED", $_SESSION[APPID . "UserNID"]);
-
-				if($superadmin_user === null) {
-					//require_once(FF_DISK_PATH . "/conf/gallery/config/admin.php");
-
-					$superadmin_user = SUPERADMIN_USERNAME;
+						$user_permission = $_SESSION[APPID . "user_permission"];
+					} else {
+						cache_token_destroy_session_cookie(SESSION_NAME);
+					}
 				}
 
-				if($_SESSION[APPID . "UserID"] == $superadmin_user
-					|| $user_permission["primary_gid_name"] == "data entry" //TODO: da togliere quando i sid non esisteranno piu
-				) {
-					define("DISABLE_CACHE", true);
-				}				
-				
+				if(!count($user_permission)) {
+					$user_permission = cache_create_session_by_token();
+				}
+
+				if(count($user_permission)) {
+					if(!defined("IS_LOGGED") && $_SESSION[APPID . "UserNID"] != 2)
+						define("IS_LOGGED", $_SESSION[APPID . "UserNID"]);
+
+					if($superadmin_user === null) {
+						//require_once(FF_DISK_PATH . "/conf/gallery/config/admin.php");
+
+						$superadmin_user = SUPERADMIN_USERNAME;
+					}
+
+					if($_SESSION[APPID . "UserID"] == $superadmin_user
+						|| $user_permission["primary_gid_name"] == "data entry" //TODO: da togliere quando i sid non esisteranno piu
+					) {
+						define("DISABLE_CACHE", true);
+					}
+
+				}
 			}
         }
 
@@ -878,11 +892,11 @@
             } elseif(FF_LOCALE == LANGUAGE_DEFAULT) {
                 if(isset($_COOKIE["lang"])) {
                     unset($_COOKIE['lang']);
-                    setcookie('lang', null, -1, '', $_SERVER["HTTP_HOST"], $_SERVER["HTTPS"], true);
+                    setcookie('lang', null, -1, '', $_SERVER["HTTP_HOST"], $_SERVER["HTTPS"]);
                 }
             } elseif($_COOKIE["lang"] != FF_LOCALE) {
                 $_COOKIE['lang'] = FF_LOCALE;
-                setcookie("lang", FF_LOCALE, 0, '', $_SERVER["HTTP_HOST"], $_SERVER["HTTPS"], true);
+                setcookie("lang", FF_LOCALE, 0, '', $_SERVER["HTTP_HOST"], $_SERVER["HTTPS"]);
             }  
         }    
     
@@ -929,7 +943,7 @@
             , "pps" => true
             , "pss" => true
         );
-        
+		$res["request"] = $get;
 
         /**
          * COOKIE
@@ -941,6 +955,7 @@
                     $get[$cookie_key] = $cookie_value;
             }
         }
+
         /**
         * GET
         */  
@@ -969,8 +984,13 @@
                     if(!$arrRuleGet && is_numeric($req_key) && !$req_value)
                         continue;
 */
+
                     switch($req_key) {
                     	case "_ffq_":
+						case "__nocache__":
+						case "__debug__":
+						case "__query__":
+							unset($res["request"][$req_key]);
                     		break;
                         case "gclid": //params di google adwords e adsense
                         case "utm_source":
@@ -979,6 +999,7 @@
                         case "utm_term": 
                         case "utm_content": 
                             $res["get"]["gparams"][$req_key] = $req_value;
+							unset($res["request"][$req_key]);
                             break;
                         case "q": 
                             $res["get"]["search"]["term"] = $req_value;
@@ -1059,10 +1080,12 @@
                         case "lang":
                             break;
                         default:
-			                if(isset($arrRuleGet[$req_key])) {
+							if(isset($arrRuleGet[$req_key])) {
 								$res["get"]["search"]["available_terms"][$req_key] = $req_value;
 			                    $res["get"]["query"][$req_key] = $req_key . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key]);
 							} elseif($arrRuleGet[$req_key] === false) {
+								$res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($req_value);
+							} elseif(is_numeric($req_key) && !$req_value) {
 								$res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($req_value);
 							} elseif(!preg_match('/[^a-z\-0-9_\+]/i', $req_key)) {
 	                            $res["get"]["search"]["available_terms"][$req_key] = $req_value;
@@ -1102,13 +1125,12 @@
                     }
                 }
             }
-            
-            
+
             if($rule["log"]) {
-                if(is_array($res["get"]["invalid"])) 
-                    cache_writeLog("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["get"]["query"]) ? " GET: " . implode("&", $res["get"]["query"]) : "") . " GET INVALID: " . implode("&", $res["get"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
-                elseif($rule["get"] === false) 
-                    cache_writeLog("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($get) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+                if(is_array($res["get"]["invalid"]))
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["get"]["query"]) ? " GET: " . implode("&", $res["get"]["query"]) : "") . " GET INVALID: " . implode("&", $res["get"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+                elseif($rule["get"] === false)
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($get) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
             }            
         }
 
@@ -1174,13 +1196,13 @@
                 $res["nocache"] = true;
                         
             if($rule["log"]) {
-                if(is_array($res["post"]["invalid"])) 
-                    cache_writeLog("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["post"]["query"]) ? " POST: " . implode("&", $res["post"]["query"]) : "") . " POST INVALID: " . implode("&", $res["post"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
-                elseif($rule["post"] === false) 
-                    cache_writeLog("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($post) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+                if(is_array($res["post"]["invalid"]))
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . (is_array($res["post"]["query"]) ? " POST: " . implode("&", $res["post"]["query"]) : "") . " POST INVALID: " . implode("&", $res["post"]["invalid"]) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
+                elseif($rule["post"] === false)
+					Cache::log("URL: " . $_SERVER["PATH_INFO"] . " GET: " . http_build_query($post) . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_request");
             }            
         }
-        
+
         return $res;
     }
     function cache_nomalize_request($request, $sep = ",") {
@@ -1473,7 +1495,7 @@
         $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1]; // . ".php";
         $key = str_replace("/cache", "", $params["path"]) . "/" . $cache_filename;
 
-        require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
+        //require_once (FF_DISK_PATH . "/library/gallery/models/filemanager/Filemanager.php");
         $fs = new Filemanager("php");
 
         $page = $fs->read($key, $errorDocumentFile);
@@ -1487,148 +1509,13 @@
         $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1]; // . ".php";
         $key = $params["user_path"];
 
-        require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
+        //require_once (FF_DISK_PATH . "/library/gallery/models/filemanager/Filemanager.php");
         $fs = new Filemanager("php");
 
         return $fs->delete($key, $errorDocumentFile, Filemanager::SEARCH_IN_VALUE);
     }
 
-	function cache_get_page_stats($user_path, $request)
-	{
-		//todo: Impostazioni di base da fare come oggetto
-		require_once (FF_DISK_PATH . "/library/gallery/classes/storage/Storage.php");
 
-		$service = "server";
-		$this_controllers = array(
-			"server" => array(
-				"default" 				=> false
-			, "services" 				=> null
-			, "storage" 				=> array(
-					"nosql" 			=> null
-					//, "fs" => null
-				)
-			)
-		);
-		$this_struct = array(
-			"connectors" => array(
-				"sql"                   => array(
-					"prefix"			=> "CACHE_DATABASE_"
-				, "table"               => "cache_pages"
-				, "key"                 => "ID"
-				)
-			, "nosql"                   => array(
-					"prefix"				=> "CACHE_MONGO_DATABASE_"
-				, "table"               => "cache_pages"
-				, "key"                 => "ID"
-				)
-			, "fs"                      => array(
-					"path"                  => "/cache/notify"
-				, "name"                => "title"
-				, "var"					=> "s"
-				)
-			)
-		, "table" => array(
-				"db" => array(
-					"title" 			=> "title"
-				)
-			)
-		, "type" => array(
-				"url"					=> "string"
-			, "get"						=> "array"
-			, "domain"					=> "string"
-			, "type"					=> "string"
-
-			, "title" 					=> "string"
-			, "description" 			=> "string"
-			, "cover"					=> array(
-					"url" 					=> "string:toImage"
-					, "width" 				=> "number"
-					, "height" 				=> "number"
-				)
-			, "author" 					=> array(
-					"id" 					=> "number"
-					, "avatar" 				=> "string:toImage"
-					, "name" 				=> "string"
-					, "url" 				=> "string"
-					, "tags"				=> array(
-						"primary" 			=> "arrayOfNumber"
-						, "secondary" 		=> "arrayOfNumber"
-					)
-				, "uid"					=> "number"
-				)
-			, "tags"					=> array(
-					"primary" 				=> "arrayOfNumber"
-				, "secondary" 			=> "arrayOfNumber"
-				, "rel" 				=> "arrayOfNumber"
-				)
-			, "meta"					=> "array"
-			, "links"					=> "array"
-			, "microdata"				=> "array"
-			, "js"						=> array(
-					"url" 					=> "string"
-				, "keys" 				=> "array"
-				)
-			, "css"						=> array(
-					"url" 					=> "string"
-				, "keys" 				=> "array"
-				)
-			, "international"			=> "array"
-			, "settings"				=> "array" 	//$globals->page
-			, "template_layers"			=> "array"	//$globals->cache["layer_blocks"]
-			, "template_sections"		=> "array"	//$globals->cache["section_blocks"]
-			, "template_blocks"			=> "array"	//$globals->cache["layout_blocks"]
-			, "template_ff"				=> "array"
-			, "keys_D"					=> "arrayOfNumber"
-			, "keys_G"					=> "array"
-			, "keys_M"					=> "array"
-			, "keys_S"					=> "array"
-			, "keys_T"					=> "array"
-			, "keys_V"					=> "arrayOfNumber"
-			, "http_status"				=> "number"
-			, "created"					=> "number"
-			, "last_update"				=> "number"
-			, "cache_last_update"		=> "number"
-			, "cache"					=> "array"
-			)
-		);
-		$struct = $this_controllers[$service]["struct"];
-
-		$connectors = $this_controllers[$service]["storage"];
-		foreach($connectors AS $type => $data)
-		{
-			if(!$data)
-			{
-				$connectors[$type] = array(
-					"service" 			=> null
-					, "connector" 		=> $this_struct["connectors"][$type]
-				);
-			}
-		}
-		$storage = Storage::getInstance($connectors, array(
-			"struct" 					=> $this_struct["type"]
-		));
-
-		$res = $storage->read(array(
-			"url" 						=> $user_path
-			, "domain" 					=> DOMAIN_INSET
-			, "get" 					=> $request
-		), array(
-			"title"						=> true
-			, "description"				=> true
-			, "tags"					=> true
-			, "author"					=> true
-			//, "author_tags"				=> "author.tags"
-		));
-
-		return $res["result"];
-	}
-    function cache_get_page_stats_old($page_cache_path)
-    {
-        require_once (FF_DISK_PATH . "/library/gallery/classes/filemanager/Filemanager.php");
-        $fs = new Filemanager("php", $page_cache_path . "/stats");
-
-        return $fs->read();
-    }
 
     function cache_get_filename($params, $request = array()) {
         //require_once(FF_DISK_PATH . "/conf/gallery/config/path.php");
@@ -1641,14 +1528,15 @@
         if($random)
             $cache_filename .= rand(1, $random);
 
-        $cache_file_type = $params["type"];
-        if($cache_file_type == "mixed")
-        {
-            if ($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest")
-                $cache_file_type = "json";
-            else
-                $cache_file_type = "html";
-        }
+		$cache_file_type = $params["type"];
+		if($cache_file_type == "mixed")
+		{
+			if ($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest")
+				$cache_file_type = "json";
+			else
+				$cache_file_type = "html";
+		} elseif(!$cache_file_type)
+			$cache_file_type = "html";
 
         $accept_compress = (isset($_SERVER["HTTP_ACCEPT_ENCODING"]) && strpos($_SERVER["HTTP_ACCEPT_ENCODING"], "gzip") === false
             ? false
@@ -1855,8 +1743,7 @@
                      return false;
              }*/
             //define("CACHE_PAGE_STORING_PATH", $cache_file["cache_path"] . "/" . $cache_file["filename"]);
-
-            if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
+            if(!$cache_file["is_error_document"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
                 require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
                 system_trace("pageview");
             }
@@ -1910,7 +1797,7 @@
             readfile($target_file);
 
 			if(DEBUG_PROFILING === true)
-                profiling_stats("Cache lvl 1 (in cache) ");
+				Stats::benchmark("Cache lvl 1 (in cache)");
 
             exit;
         }
@@ -1924,26 +1811,29 @@
             if($user_permission === null && $page["session"] !== false)
                 $user_permission = cache_get_session();
 
-            if($page["cache"] === "guest") {
-				$gid = ($user_permission["primary_gid_name"]
-                            ? $user_permission["primary_gid_name"]
-                            : $user_permission["primary_gid_default_name"]
-                        );
-				if(!$gid)
-					$gid = "guests";
+			$gid = ($user_permission["primary_gid_name"]
+				? $user_permission["primary_gid_name"]
+				: $user_permission["primary_gid_default_name"]
+			);
+			if(!$gid)
+				$gid = "guests";
 
-				if($_COOKIE["group"] != $gid) {
-                    cache_session_share_for_subdomains();
-                    
-					$sessionCookie = session_get_cookie_params();
-					setcookie("group", $gid, $sessionCookie['lifetime'], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure']);
-				}
-                
+			if($_COOKIE["group"] != $gid) {
+				cache_session_share_for_subdomains();
+
+				$sessionCookie = session_get_cookie_params();
+				setcookie("group", $gid, $sessionCookie['lifetime'], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure']);
+			}
+
+            if($page["cache"] === "guest") {
                 $cache_path = "/global";
 			} else {
                 if(defined("IS_LOGGED") && is_array($user_permission) && count($user_permission)) {
                     if($page["cache"] === "user") {
-                        $auth_path = ($user_permission["username_slug"] ? $user_permission["username_slug"] : preg_replace("/[^a-z\-0-9]/i", "", $user_permission["username"]));
+                        $auth_path = ($user_permission["username_slug"]
+							? $user_permission["username_slug"]
+							: preg_replace("/[^a-z\-0-9]/i", "", $user_permission["username"])
+						);
                         $cache_path = "/private";
                     } else {
                         $auth_path = ($user_permission["primary_gid_name"]
@@ -2069,8 +1959,8 @@
 						$acquired = @sem_acquire($sem);
 					else
 						$acquired = @sem_acquire($sem, $nowait);
-					
-					cache_writeLog("GET:" . print_r(array(
+
+					Cache::log("GET:" . print_r(array(
 						"res" => $sem
 						, "acquired" => $acquired
 						, "namespace" => $namespace
@@ -2080,7 +1970,7 @@
 					), true), "log_sem");						
 				} else {
 					cache_sem_remove($namespace);
-					cache_writeLog($namespace . " ERROR: " . print_r(error_get_last(), true), "log_error_sem");
+					Cache::log($namespace . " ERROR: " . print_r(error_get_last(), true), "log_error_sem");
 				}
 			}
 		}
@@ -2100,9 +1990,9 @@
     				if($sem["res"] && $sem["acquired"]) {
 					    $released = @sem_release($sem["res"]);
     					if($sem["remove"] && $released !== false) 
-					    	$removed = @sem_remove($sem["res"]);    				
-						
-					    cache_writeLog("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "log_sem");
+					    	$removed = @sem_remove($sem["res"]);
+
+						Cache::log("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "log_sem");
 
 					    unset($arrSem[$key]);
 					}
@@ -2117,14 +2007,14 @@
 			$sem = @sem_get($params["key"]);
 			if($sem) {
 				$is_removed = @sem_remove($sem);
-				cache_writeLog("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+				Cache::log("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
 			}
 			if($namespace != "create") {
 				$params = cache_sem_get_params("create");
 				$sem = @sem_get($params["key"]);	
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					cache_writeLog("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
 				}
 			}
 			if($namespace != "update") {
@@ -2132,7 +2022,7 @@
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					cache_writeLog("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
 				}
 			}
 			if($namespace) {
@@ -2140,14 +2030,14 @@
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					cache_writeLog("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
 				}
 
 				$params = cache_sem_get_params(null, true);	
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					cache_writeLog("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
 				}
 			}
 		}
@@ -2179,7 +2069,7 @@
                     if(is_numeric($action)) {
                         cache_http_response_code($action);
 
-                        cache_writeLog(" RULE: " . $rule . " ACTION: " . $action . " URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_badpath");
+						Cache::log(" RULE: " . $rule . " ACTION: " . $action . " URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_badpath");
                         exit;
                     } elseif($do_redirect && $action) {
                         $redirect = $action;
@@ -2210,7 +2100,7 @@ function cache_do_redirect($destination, $http_response_code = null, $request_ur
 		$request_uri = $_SERVER["REQUEST_URI"];
 
 	//system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
-	cache_writeLog(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
+	Cache::log(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
 
 	cache_send_header_content(false, false, false, false);
 
@@ -2395,9 +2285,9 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
                 cache_http_response_code(404);
 			}
 
-            cache_writeLog(" URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_apache");
+			Cache::log(" URL: " . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_error_apache");
 	        exit;
-		}  
+		}
 
 		if(!$cache_params) {
             if($cache_params === false && !$save_path) {
@@ -2433,15 +2323,15 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
             } elseif(!defined("DISABLE_CACHE")) {
                 if(is_array($schema["priority"]) && array_search($path_info, $schema["priority"]) !== false) {
                     @touch($cache_file["cache_path"] . "/" . $cache_file["primary"], time() + 10); //evita il multi loading di pagine in cache
-                    cache_writeLog($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_primary");
+					Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_primary");
                 } else {
                     $sem = cache_sem("update", true);
                     if($sem["acquired"]) {
                         @touch($cache_file["cache_path"] . "/" . $cache_file["primary"], time() + 10); //evita il multi loading di pagine in cache
-                        cache_writeLog($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update");
+						Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update");
                     } else {
                         $cache_file["invalid"] = false;
-                        cache_writeLog($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_queue");
+						Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_queue");
                     }
                     $arrSem[] = $sem;
                 }
@@ -2519,7 +2409,6 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
                     define("FF_DISK_PATH", FF_DISK_PATH);
 
                 //require_once(FF_DISK_PATH . "/conf/gallery/config/db.php");
-                require_once(FF_DISK_PATH . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
                 require_once(FF_DISK_PATH . "/library/gallery/system/gallery_redirect.php");
 
                 system_gallery_redirect($path_info, $request["valid"]);
@@ -2535,7 +2424,7 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
             cache_parse($cache_file, $cache_params["lang"], $cache_params["auth"], $request["get"]);
         }
     }
-
+/*
 function cache_writeLog($string, $filename = "log") {
 	//require_once(__DIR__ . "/conf/gallery/config/other.php");
 
@@ -2561,4 +2450,4 @@ function cache_writeLog($string, $filename = "log") {
 				chmod($file, 0777);
 		}
 	}
-}
+}*/
