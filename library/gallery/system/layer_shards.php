@@ -81,7 +81,8 @@ function system_layer_shards($shards) {
 		$where["xhr"] 									= !$selective;
 
 		$template = system_get_blocks(null, $where);
-		$response = $template["buffer"]["blocks"];
+		if(is_array($template["buffer"]["blocks"]))
+			$response = $template["buffer"]["blocks"];
 
 		if(is_array($blocks_by_type) && count($blocks_by_type)) {
 			foreach($blocks_by_type AS $type => $blocks) {

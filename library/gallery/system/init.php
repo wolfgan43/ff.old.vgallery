@@ -117,13 +117,26 @@ function system_init($cm) {
     	, "compact_css"					=> 2
 	);
 
-	define("FF_THEME_FRAMEWORK_CSS", 	($globals->page["framework_css"] && !$globals->page["restricted"]
-		? $globals->page["framework_css"]
-		: "bootstrap-fluid"
+	define("FF_THEME_FRAMEWORK_CSS", ($globals->page["restricted"] && defined("FRAMEWORK_CSS_RESTRICTED")
+		? FRAMEWORK_CSS_RESTRICTED
+		: ($globals->page["framework_css"]
+			? $globals->page["framework_css"]
+			: (defined("FRAMEWORK_CSS")
+				? FRAMEWORK_CSS
+				: "bootstrap-fluid"
+			)
+		)
 	));
-	define("FF_THEME_FONT_ICON",  		($globals->page["font_icon"]
-		? $globals->page["font_icon"]
-		: "fontawesome"
+
+	define("FF_THEME_FONT_ICON", ($globals->page["restricted"] && defined("FONT_ICON_RESTRICTED")
+		? FONT_ICON_RESTRICTED
+		: ($globals->page["font_icon"]
+			? $globals->page["font_icon"]
+			: (defined("FONT_ICON")
+				? FONT_ICON
+				: "fontawesome"
+			)
+		)
 	));
 
 	$globals->page["framework_css"] 	= FF_THEME_FRAMEWORK_CSS;
@@ -455,7 +468,7 @@ function vg_get_settings($res = null, $DomainID = null, $db = null)
 	if($res === null)
 		$res = vg_get_settings_default();
     if ($db === null)
-        $db = ffDb_Sql::factory();
+        $db = ffDB_Sql::factory();
 
     if (!is_object($db))
         ffErrorHandler::raise("invalid db object", E_USER_ERROR, null, get_defined_vars());
@@ -1177,7 +1190,7 @@ function system_cache_on_tpl_parse($oPage, $tpl)
 						: false
 				);
 
-    if(!$skip_cache && $globals->page["primary"] && !$globals->page["restricted"]) {
+    if(!$skip_cache && $globals->page["cache"] && !$globals->page["restricted"]) {
 		$oPage->minify = "minify";
     } else {
         $oPage->compact_css = false;
@@ -1277,6 +1290,7 @@ function system_init_on_before_routing($cm)
             }
             
             $cm->oPage->addEvent("on_tpl_parse", "system_cache_on_tpl_parse", ffEvent::PRIORITY_DEFAULT);
+			$cm->oPage->addEvent("on_tpl_parsed", "system_set_cache_page" , ffEvent::PRIORITY_FINAL);
 			break;
     	case "login":
     		if($globals->settings_path == "/login" && MOD_SEC_LOGIN_FORCE_LAYER == "empty")
@@ -1298,6 +1312,7 @@ function system_init_on_before_routing($cm)
                 && strpos(basename($globals->settings_path), "feed") === false
                 && strpos(basename($globals->settings_path), "manifest.") === false
                 && check_function("system_layer_gallery")
+				&& check_function("system_set_cache_page")
             ) {
                 //$globals->settings_path = $settings_path;
 	        //if(check_function("system_layer_gallery")) {
@@ -1322,8 +1337,7 @@ function system_init_on_before_routing($cm)
 	                        $strBuffer = preg_replace("/\n\s*/", "\n", $buffer) . $arrJs["data"];
 	                    }
 
-				        if(check_function("system_set_cache_page"))
-				            system_set_cache_page($strBuffer);
+						system_set_cache_page($strBuffer);
 
 	                    //cache_send_header_content(false, false, false, false, strlen($strBuffer), false);
 
@@ -1331,11 +1345,13 @@ function system_init_on_before_routing($cm)
 	                    exit;
 	                }
 	            } else {
+					//Cache::log(print_r($_SERVER, true) . "  " . print_r($_REQUEST, true), "test");
 	                $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_gallery" , ffEvent::PRIORITY_HIGH);
 	            }
 	        //}
 				$cm->oPage->addEvent("on_tpl_parse", "system_cache_on_tpl_parse", ffEvent::PRIORITY_DEFAULT);
-				
+				$cm->oPage->addEvent("on_tpl_parsed", "system_set_cache_page" , ffEvent::PRIORITY_FINAL);
+
                 ffGrid::addEvent ("on_factory_done", "ffGrid_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
                 ffRecord::addEvent ("on_factory_done", "ffRecord_gallery_on_factory_done" , ffEvent::PRIORITY_HIGH);
 
@@ -1393,60 +1409,6 @@ function rewrite_request($strip_path = null) {
 			
      	$arrEncodedParams = $request["get"]["query"];
      }
-	/**
-	* Global Params for Search and Navigation
-	*/  
-	 /* 
-	if(is_array($_GET) && count($_GET)) {
-		foreach($_GET AS $req_key => $req_value) {
-			if(is_array($_GET[$req_key]))
-				continue;
-
-		    if(!is_array($req_value) && !strlen($req_value)) 
-				continue;
-
-			if(is_numeric($req_key) && !$req_value)
-				continue;
-
-	        switch($req_key) {
-	            case "q": 
-	                $globals->search["term"] = $req_value;
-	                $globals->search["params"]["q"] = "q=" . urlencode($req_value);
-	                
-	                $arrEncodedParams["q"] = $globals->search["params"]["q"];
-	                break;
-	            case "page":
-	            	if(is_numeric($req_value) && $req_value > 0) {
-		                $globals->navigation["page"] = $req_value;  
-		                if($req_value > 1)
-		                    $arrEncodedParams["page"] = "page=" . urlencode($globals->navigation["page"]);
-					}
-	                break;
-	            case "count":
-	            	if(is_numeric($req_value) && $req_value > 0) {
-		                $globals->navigation["rec_per_page"] = $req_value;
-		                
-		                $arrEncodedParams["count"] = "count=" . urlencode($globals->navigation["rec_per_page"]);
-					}
-	                break;
-	            case "sort":
-	                $globals->sort["name"] = $req_value;
-	                
-	                $arrEncodedParams["sort"] = "sort=" . urlencode($globals->sort["name"]);
-	                break;
-	            case "dir":
-	                $globals->sort["dir"] = $req_value;
-	                
-	                $arrEncodedParams["dir"] = "dir=" . urlencode($globals->sort["dir"]);
-	                break;
-	            default:
-	            if(!preg_match('/[^a-z\-0-9]/i', $req_key)) {
-	                $globals->search["available_terms"][$req_key] = $req_value;
-	                $arrEncodedParams[$req_key] = $req_key . "=" . urlencode($globals->search["available_terms"][$req_key]);
-				}
-	        }
-		}
-	}*/
 
 	/**
 	*  Pagination By url
@@ -1511,7 +1473,7 @@ function ffTemplate_applets_on_loaded_file($tpl)
 }
 function cms_on_before_include_applet($cm, $name, $params, $id) {
 	$globals = ffGlobals::getInstance("gallery");
-	$globals->applets["notifier"] = FF_DISK_PATH . "/library/gallery/classes/notifier/applet/index.php";
+	$globals->applets["notifier"] = FF_DISK_PATH . "/library/gallery/models/notifier/applet/index.php";
 
 	return $globals->applets[$name];
 }

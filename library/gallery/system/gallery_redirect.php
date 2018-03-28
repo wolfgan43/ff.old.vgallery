@@ -115,7 +115,7 @@ function system_redirect_goto_destination($arrDestination, $hostname = null, $re
 
         if(TRACE_VISITOR === true) {
             require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
-            system_trace("redirect", "routing"); 
+            system_trace("redirect", "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $arrDestination["dst"]);
         }   
 
         cache_send_header_content(false, false, false, false); 
