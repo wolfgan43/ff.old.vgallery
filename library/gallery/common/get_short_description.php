@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function get_short_description($description, $limit_char = 160, $type = null, $link = false) 
+function get_short_description($description, $limit_char = 320, $type = null, $link = false)
 {
 	$page_break = array();
 	$page_break["TextBB"]['<!-- pagebreak -->'] = "";
