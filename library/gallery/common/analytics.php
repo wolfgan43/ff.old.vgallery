@@ -20,14 +20,14 @@ function analytics_set_event($user_path, $title, $code = null, $domain = null) {
 		$service = get_webservices();
 		if($service["analytics.google"]["enable"] && $service["analytics.google"]["code"]) {
             $code = $service["analytics.google"]["code"];
-            $path = "/analytics.google";
 		} elseif($service["analytics.google.universal"]["enable"] && $service["analytics.google.universal"]["code"]) {
             $code = $service["analytics.google.universal"]["code"];
-            $path = "/analytics.google.universal";            
+        } elseif($service["google.tagmanager"]["enable"] && $service["google.tagmanager"]["analytics.code"]) {
+            $code = $service["google.tagmanager"]["analytics.code"];
         }
 	}
 
-    if($code && $path) {
+    if($code) {
         if(!$domain)
             $domain = DOMAIN_INSET;
 
