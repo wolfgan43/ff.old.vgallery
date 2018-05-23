@@ -62,7 +62,7 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
         $tpl->set_var("ret_url", urlencode($ret_url));
 
         $class_name = "admin-link";
-
+        $class_primary = "";
         if($template_name == "popup") {
             $icon_size = null;
             $allow_delete = true;
@@ -92,6 +92,7 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 
 		if(isset($admin_menu["title"]) && strlen($admin_menu["title"])) {
         	$tpl->set_var("item_name", $admin_menu["title"]);
+        	$tpl->parse("SezMenuAdminTitle", false);
 		}
 
         if(file_exists(FF_DISK_PATH . $cm->oPage->getThemePath(false) . "/images/icons/sep." . THEME_ICO_EXTENSION)) {

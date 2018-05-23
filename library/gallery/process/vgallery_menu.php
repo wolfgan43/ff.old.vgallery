@@ -444,12 +444,12 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                 $popup["sys"]["type"] = "admin_popup";
 
 				if(check_function("set_template_var"))
-					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
+					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $source_user_path) . '"';
                 
 //	            $serial_popup = json_encode($popup);
 //	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
 
-	            $item_class["admin"] = "admin-bar";
+	            //$item_class["admin"] = "admin-bar";
             }
 
             $tpl->set_var("home", ffCommon_specialchars("home"));
@@ -739,12 +739,12 @@ function process_vgallery_menu($user_path, $vgallery_name, $source_user_path = N
                 $popup["sys"]["type"] = "admin_popup";
 
 				if(check_function("set_template_var"))
-					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
+					$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $source_user_path) . '"';
 					                
 //	            $serial_popup = json_encode($popup);
 //	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
 
-	            $item_class["admin"] = "admin-bar";
+	            //$item_class["admin"] = "admin-bar";
             } 
 
             if(1 || $enable_link) {

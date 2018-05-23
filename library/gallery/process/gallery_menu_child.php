@@ -339,12 +339,12 @@ function process_gallery_menu_child($user_path, $source_user_path, $real_user_pa
                     $popup["sys"]["is_absolute"] = $is_absolute;
 
 					if(check_function("set_template_var"))
-						$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $vg_father["source_user_path"]) . '"';
+						$item_properties["admin"] = 'data-admin="' . get_admin_bar($popup, VG_SITE_FRAME . $source_user_path) . '"';
 
 		            //$serial_popup = json_encode($popup);
 		            //$item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
 
-		            $item_class["admin"] = "admin-bar";
+		            //$item_class["admin"] = "admin-bar";
                 }
 
                 if(!$layout_settings["AREA_DIRECTORIES_SHOW_ONLYHOME"] && !$layout_settings["AREA_DIRECTORIES_SHOW_AJAX"]) {
