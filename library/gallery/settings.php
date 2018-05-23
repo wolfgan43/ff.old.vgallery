@@ -336,7 +336,7 @@
   	, "cache_path" => null			
   	, "primary" => false
   	, "restricted" => false 			
-  	, "api" => false
+  	, "api" => true //disabilita la sessione in virtu di una autenticazione token stile oauth
   	, "type" => "json"
   );  
   $schema["page"]["/cm/showfiles.php"] = array(
