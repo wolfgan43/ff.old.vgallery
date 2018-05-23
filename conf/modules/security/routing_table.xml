@@ -10,16 +10,16 @@
         <process_next />
         <accept_path_info />
     </rule>
-	<rule id="mod_sec_login">
+    <rule id="mod_sec_login">
         <priority>NORMAL</priority>
-        <source>^/login(.*)|^/.*/login(.*)</source>
+        <source>^/login(.*)|^/admin/login(.*)|^/restricted/login(.*)|^/builder/login(.*)|^/ecommerce/login(.*)</source>
         <destination>
             <module>security</module>
             <url>/login$1</url>
         </destination>
         <reverse>/login</reverse>
-        <index>10</index>  
-	</rule>
+        <index>10</index>
+    </rule>
     <rule id="mod_sec_activation_it">
         <priority>NORMAL</priority>
         <source>^/login/attivazione(.*)</source>
