@@ -232,7 +232,7 @@ switch($frmAction) {
 
                             if(check_function("process_mail")) {
                                 //$rc_from_activation = process_mail(email_system("account activation"), $to_active, NULL, NULL, $fields_activation, null, null, null, false, null, true);
-                        	    $rc_activation = process_mail($ID_email_activation, $to_active, NULL, NULL, $fields_activation);
+                        	    $rc_activation = process_mail($ID_email_activation, $to_active, NULL, NULL, $fields_activation, null, null, null, false, null, true);
                             }
                             
                             if(!$rc_activation) {
@@ -292,8 +292,8 @@ switch($frmAction) {
                         $ID_email = $struct_email["ID"];
 					}                
                 
-                    $rc_from_account = process_mail($ID_email, $to, NULL, NULL, $fields, null, null, null, false, null, true);
-                    $rc_account = process_mail($ID_email, $to, NULL, NULL, $fields);
+                    //$rc_from_account = process_mail($ID_email, $to, NULL, NULL, $fields, null, null, null, false, null, true);
+                    $rc_account = process_mail($ID_email, $to, NULL, NULL, $fields, null, null, null, false, null, true);
                 }
                 $sSQL = "UPDATE " . $options["table_name"] . " SET
                                 status = 1 
