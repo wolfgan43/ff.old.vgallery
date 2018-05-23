@@ -116,6 +116,8 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 
     define("OLD_VGALLERY", false);
 
+	define("VG_SEO_DESCRIPTION_LIMIT"                           , 320);
+
     //define("VG_UI_PATH"											, "/ui");
     define("VG_SYS_PATH"										, "/conf/gallery");
     define("VG_WS_ADMIN"										, "/admin");
@@ -241,7 +243,8 @@ function vgAutoload()
 	if(!$loaded) {
 		spl_autoload_register(function ($class) {
 			switch ($class) {
-				case "Anagraph":
+                case "Auth":
+			    case "Anagraph":
 				case "Cache":
 				case "Cms":
 				case "Filemanager":

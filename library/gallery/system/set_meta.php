@@ -57,8 +57,8 @@ function system_set_meta($oPage)
 
 
     $standard_meta["description"] = (is_array($globals->meta["description"]) ? implode(", ", $globals->meta["description"]) : "");
-    if(strlen($standard_meta["description"]) > 160) {
-        $standard_meta["description"] = substr($standard_meta["description"], 0, 160);
+    if(strlen($standard_meta["description"]) > VG_SEO_DESCRIPTION_LIMIT) {
+        $standard_meta["description"] = substr($standard_meta["description"], 0, VG_SEO_DESCRIPTION_LIMIT);
         $standard_meta["description"] = substr($standard_meta["description"], 0, strrpos($standard_meta["description"], " "));
     }
      
