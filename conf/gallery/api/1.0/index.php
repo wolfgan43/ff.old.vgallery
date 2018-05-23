@@ -157,7 +157,7 @@ if($service_api["oAuth"])
 			{	
 				foreach($server["scopes"]["available"] AS $scope) 
 				{
-					$server["oAuth2"]->verifyResourceRequest($server["request"], $server["response"], $scope);
+					//$server["oAuth2"]->verifyResourceRequest($server["request"], $server["response"], $scope);
 					if($server["oAuth2"]->verifyResourceRequest($server["request"], $server["response"], $scope))
 						$server["scopes"]["valid"][] = $scope;
 				}
