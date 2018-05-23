@@ -7,7 +7,8 @@
 
     $type_field = array();
     $type_field["enable"] = "Boolean";
-    $type_field["code"] = "String";   	
+    $type_field["code"] = "String";
+    $type_field["analytics.code"] = "String";
     $type_field["datalyer"] = "Text";   	
 
 	if(check_function("system_services_modify"))
