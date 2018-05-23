@@ -114,21 +114,27 @@ ff.cms.block = (function () {
                 }
             });
 
-            jQuery(".admin-bar", $target).hover(function() {
+            jQuery('[data-admin!=""]', $target).hover(function() {
                 var $item = jQuery(this);
                 var link = $item.data("admin");
-                if(cache[blockID + link] !== undefined) {
-                    $item.prepend('<div class="vg-toolbar">' + cache[blockID + link] + '</div>');
-                } else {
-                    jQuery.get(jQuery(this).data("admin"), function(item) {
-                        cache[blockID + link] = item;
-                        $item.prepend('<div class="vg-toolbar">' + cache[blockID + link] + '</div>');
-                    });
+                if($item && link) {
+                    if (!$item.css("position") || $item.css("position") == "static")
+                        $item.addClass(".vg-popup-visible");
+
+                    if (cache[blockID + link] !== undefined) {
+                        $item.prepend(cache[blockID + link]);
+                    } else {
+                        jQuery.get(jQuery(this).data("admin"), function (item) {
+                            cache[blockID + link] = item;
+                            $item.prepend(cache[blockID + link]);
+                        });
+                    }
                 }
             }, function() {
                 var $item = jQuery(this);
 
-                jQuery(".vg-toolbar", $item).remove();
+                $item.removeClass(".vg-popup-visible");
+                jQuery(".vg-popup", $item).remove();
             });
         });
     }
