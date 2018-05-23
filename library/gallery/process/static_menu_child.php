@@ -289,7 +289,7 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 	            $serial_popup = json_encode($popup);
 	            
 	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-	            $item_class["admin"] = "admin-bar";
+	            //$item_class["admin"] = "admin-bar";
             }
 
 			if(/*!$layout_settings["AREA_STATIC_SHOW_ONLYHOME"] &&*/ array_key_exists($full_path, $menu_item))

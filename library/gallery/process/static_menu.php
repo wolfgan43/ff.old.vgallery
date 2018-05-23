@@ -911,7 +911,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	                $serial_popup = json_encode($popup);
 	                
 	                $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME  . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-	                $item_class["admin"] = "admin-bar";
+	                //$item_class["admin"] = "admin-bar";
 				}                
             }
 			

@@ -270,7 +270,7 @@ function process_gallery_menu($user_path, $source_user_path = NULL, &$layout, $a
 	            $serial_popup = json_encode($popup);
 	            
 	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $source_user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-	            $item_class["admin"] = "admin-bar";
+	            //$item_class["admin"] = "admin-bar";
 			}          
         }
         
@@ -569,8 +569,8 @@ function process_gallery_menu($user_path, $source_user_path = NULL, &$layout, $a
 				if(strlen($block["admin"]["popup"])) {
 	                $serial_popup = json_encode($popup);
 	                
-	                $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-	                $item_class["admin"] = "admin-bar";
+	                $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $source_user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+	                //$item_class["admin"] = "admin-bar";
 				}  
             }
 

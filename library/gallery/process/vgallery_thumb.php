@@ -501,7 +501,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                        $serial_popup = json_encode($popup);
 	                        
 	                        $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-                    		$item_class["admin"] = "admin-bar";
+                    		//$item_class["admin"] = "admin-bar";
                     		
 	                    //} elseif(check_function("process_admin_menu")) {
 	                    //    $tpl_data["obj"]->set_var("admin", process_admin_menu($popup["admin"], "popup"));

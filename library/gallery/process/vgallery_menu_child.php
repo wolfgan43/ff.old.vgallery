@@ -553,7 +553,7 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
                 }
             }
 
-            if(check_mod($file_permission, 2) && (AREA_VGALLERY_DIR_SHOW_ADDNEW || AREA_VGALLERY_DIR_SHOW_MODIFY || AREA_VGALLERY_DIR_SHOW_DELETE || AREA_PROPERTIES_SHOW_MODIFY || AREA_ECOMMERCE_SHOW_MODIFY || AREA_SETTINGS_SHOW_MODIFY)) {
+            if(AREA_VGALLERY_DIR_SHOW_ADDNEW || AREA_VGALLERY_DIR_SHOW_MODIFY || AREA_VGALLERY_DIR_SHOW_DELETE || AREA_PROPERTIES_SHOW_MODIFY || AREA_ECOMMERCE_SHOW_MODIFY || AREA_SETTINGS_SHOW_MODIFY) {
                 $popup["admin"]["unic_name"] = $unic_id . stripslash($item["parent"]) . "/" . $item["name"];
                 $popup["admin"]["title"] = $layout["title"] . ": " . stripslash($item["parent"]) . "/" . $item["name"];
                 $popup["admin"]["class"] = $layout["type_class"];
@@ -598,8 +598,8 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
 
 	            $serial_popup = json_encode($popup);
 	            
-	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $vg_father["source_user_path"] . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
-	            $item_class["admin"] = "admin-bar";
+	            $item_properties["admin"] = 'data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $source_user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"';
+	            //$item_class["admin"] = "admin-bar";
             }
 			
 			//in teoria nn si chiama mai questo punto 
