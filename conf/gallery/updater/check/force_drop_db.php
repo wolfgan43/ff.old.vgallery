@@ -58,15 +58,17 @@
     if(is_array($manifesto) && count($manifesto)) {
         foreach($manifesto AS $manifesto_key => $manifesto_value) {
             $skip_force_drop = false;
-            if(is_array($manifesto_value["path"])  && count($manifesto_value["path"])) {
-                foreach($manifesto_value["path"] AS $path_value) {
-                    if(array_key_exists($path_value, $fs_exclude)) {
+            if($manifesto_value["enable"]) {
+                if (is_array($manifesto_value["path"]) && count($manifesto_value["path"])) {
+                    foreach ($manifesto_value["path"] AS $path_value) {
+                        if (array_key_exists($path_value, $fs_exclude)) {
+                            $skip_force_drop = true;
+                        }
+                    }
+                } elseif (strlen($manifesto_value["path"])) {
+                    if (array_key_exists($manifesto_value["path"], $fs_exclude)) {
                         $skip_force_drop = true;
                     }
-                }
-            } elseif(strlen($manifesto_value["path"])) {
-                if(array_key_exists($manifesto_value["path"], $fs_exclude)) {
-                    $skip_force_drop = true;
                 }
             }
             if(!$skip_force_drop) {

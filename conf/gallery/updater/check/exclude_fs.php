@@ -74,8 +74,8 @@
     $fs_exclude["/conf/gallery/updater/check/file.php"] = true;
   //  $fs_exclude["/themes/admin/images/logo_admin.jpg"] = true;
   //  $fs_exclude["/themes/admin/images/logo_login.jpg"] = true;
-    
-    
+
+    $fs_exclude["/api"] = true;
 	$fs_exclude["/cache"] = true;
 	$fs_exclude["/themes/responsive/css/scss"] = true;
 	$fs_exclude["/themes/site/.htaccess"] = true;

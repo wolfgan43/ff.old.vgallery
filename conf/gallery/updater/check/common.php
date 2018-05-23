@@ -522,6 +522,7 @@ function updater_check_permission($sync, $user_path = false) {
 
 				$res = updater_check_domain_client();
 			} else {
+			    define("REAL_REMOTE_HOST", DOMAIN_NAME);
 				if (DOMAIN_NAME == REMOTE_HOST /*&& $_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]*/) {
 					$res = false;
 				} elseif ($sync) {

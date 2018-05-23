@@ -67,7 +67,7 @@
 
                         if(!$skip_table && is_array($db_exclude_prefix) && count($db_exclude_prefix)) {
                             foreach($db_exclude_prefix AS $exclue_prefix_value) {
-                                if(strlen($exclue_prefix_value) 
+                                if(strlen($exclue_prefix_value)
                                     && strpos($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), $exclue_prefix_value) === 0
                                 ) {
                                     $skip_table = true;
@@ -75,14 +75,22 @@
                                 }
                             }
                         }
-                        
+
                         if(!$skip_table && REAL_REMOTE_HOST == REMOTE_HOST && strpos($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), "cm_mod_") === 0) {
                         	$arrTableModule = explode("_", substr($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), strlen("cm_mod_")));
+
+                        	//print_r($arrTableModule);
                         	if(!is_dir(FF_DISK_PATH . "/modules/" . $arrTableModule[0])) {
-								$skip_table = true;
-                        	}
+								//$skip_table = true;
+                            } elseif(is_file(FF_DISK_PATH . "/modules/" . $arrTableModule[0] . "/conf/schema.php")) {
+                        	    $schema = array();
+                                require(FF_DISK_PATH . "/modules/" . $arrTableModule[0] . "/conf/schema.php");
+                                if(strpos($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), $schema["db"]["table_prefix"]) === 0) {
+                                    $skip_table = true;
+                                }
+                            }
                         }
-                        
+
                         if(!$skip_table) {
                             $db_res[$db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true)] = array();
                             
@@ -126,7 +134,13 @@
                         	$arrTableModule = explode("_", substr($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), strlen("cm_mod_")));
                         	if(!is_dir(FF_DISK_PATH . "/modules/" . $arrTableModule[0])) {
 								$skip_table = true;
-                        	}
+                            } elseif(is_file(FF_DISK_PATH . "/modules/" . $arrTableModule[0] . "/conf/schema.php")) {
+                                $schema = array();
+                                require(FF_DISK_PATH . "/modules/" . $arrTableModule[0] . "/conf/schema.php");
+                                if(strpos($db_updater->getField("Tables_in_" . FF_DATABASE_NAME, "Text", true), $schema["db"]["table_prefix"]) === 0) {
+                                    $skip_table = true;
+                                }
+                            }
                         }
                         
                         if(!$skip_table) {
