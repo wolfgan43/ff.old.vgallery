@@ -224,6 +224,15 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
                                     }
                                 }
                             }
+                            if(!$force_drop) {
+                                if(strpos($table_key, "cm_mod_") === 0) {
+                                    $arrTableModule = explode("_", substr($table_key, strlen("cm_mod_")));
+
+                                    if(!is_dir(FF_DISK_PATH . "/modules/" . $arrTableModule[0])) {
+                                        $force_drop = true;
+                                    }
+                                }
+                            }
                             if($force_drop) {   
 	                            $sSQL = "DROP TABLE `" . $table_key . "`";
 	                            $operation[] = array("data" => $drop_table_label . " " . $table_key, "value" => $sSQL);

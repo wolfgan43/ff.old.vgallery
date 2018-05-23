@@ -224,7 +224,8 @@
                 }
             }
         }
-    }     
+    }
+
     //VGALLERY CORE
     if(is_dir(FF_DISK_PATH . "/conf/gallery") && is_dir(FF_DISK_PATH . "/library/gallery")) { 
         $manifesto["vgallery_cms"]["enable"] = true;
@@ -273,7 +274,7 @@
         $manifesto["vgallery_master_control"]["db"] = array();
     }
     //VGALLERY PLUGINS
-    $module_file = glob(FF_DISK_PATH . "/themes/gallery/javascript/plugin/*");
+    /*$module_file = glob(FF_DISK_PATH . "/themes/gallery/javascript/plugin/*");
     if(is_array($module_file) && count($module_file)) {
         foreach($module_file AS $real_file) {
             if(is_dir($real_file)) {
@@ -292,7 +293,7 @@
                 }
             }
         }
-    }   
+    }*/
 
     
     //VGALLERY MODULE
