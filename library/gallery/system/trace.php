@@ -156,7 +156,7 @@ function system_trace($action, $url = null, $get = null, $visitor = null) {
 						, "avatar" 									=> $user_permission["avatar"]
                         , "email" 									=> $user_permission["email"]
                     )
-                    , "created" => time()
+                    , "created"                                     => time()
                 );
 
                 if(is_file(TRACE_DISK_PATH . "/conf/gallery/config/trace.php")) {
