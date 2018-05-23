@@ -51,32 +51,48 @@ $stat = $stats->range("2018-03", "hits", array("owner" => 205096));
 print_r($stat);
 die();*/
 
-$ciao = Cms::getUrl("/asd/asd");
 
+
+//$user_vars = Stats::getInstance("user")->get(array("follow", "follow-user-" . get_session("UserNID")), array("id_anagraph" => 54149));
+
+//$ciao = Cms::getUrl("/asd/asd");
+$res = Auth::check("15611e20e192216d8f34990e8a75968962e0b2b4");
+print_r($res);
+$anagraph = Anagraph::getInstance();
+
+
+$lists = $anagraph->read(
+    array(
+        "ID" => array("9", "8", "50019")
+    )
+    , array(
+        "access.users.username"
+        , "access.users.password" => "pippo"
+        , "name" => "ciao"
+        , "ID_domains"
+        , "ID_type" => "ID_type"
+        , "uid"
+        , "anagraph.email" => "mia mail"
+        , "anagraph_type.name" => "mio tipo"
+        , "anagraph.avatar" => "avatar:toImage"
+        , "anagraph_type.email"
+    )
+);
+print_r($lists );
+die();
 
 $anagraph = Anagraph::getInstance("access");
-$lists = $anagraph->get(array("ID" => "9"), array("access.users.username", "name", "anagraph.email", "anagraph_type.name", "anagraph_type.email"));
+$anagraph->read(array(
+    "username" => "testusername"
+    , "password" => "testpassword"
+));
 
+/*
+$anagraph->insert(array(
+    "username" => "testusername"
+    , "password" => "testpassword"
+));*/
 
-
-$lists->getAccess("username");
-
-
-$lists = array(
-    "9" => array(
-        "name" => "asD"
-        //[...]
-        , "access" => array(
-            "username" => "ASD"
-            //[...]
-        )
-        , "doctor_info" => array(
-        )
-        , "doctor_studi" => array(
-        )
-    )
-
-);
 die();
 
 //Cache::log("ciao", "ww");
