@@ -2665,6 +2665,7 @@ class Cache extends vgCommon
     public static function log($data, $filename = "log") //writeLog
     {
 		if(DEBUG_LOG === true) {
+            $set_mod = false;
 			$log_path = self::_getDiskPath() . self::BASE_PATH . "/logs";
 			if(!is_dir($log_path))
 				mkdir($log_path, 0777, true);

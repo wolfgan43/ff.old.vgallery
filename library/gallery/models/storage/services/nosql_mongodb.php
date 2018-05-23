@@ -31,6 +31,10 @@ class storageMongodb {
     private $config                                         = null;
     private $storage                                        = null;
 
+    /**
+     * storageMongodb constructor.
+     * @param $storage
+     */
     public function __construct($storage)
     {
         $this->storage = $storage;
@@ -38,7 +42,6 @@ class storageMongodb {
 
         $this->device = new ffDB_MongoDB();
         $this->device->on_error = "ignore";
-
         if ($this->device->connect($this->config["name"], $this->config["host"], $this->config["username"], $this->config["password"])) {
             $this->config["key"] = "_id";
         } else {
@@ -47,7 +50,13 @@ class storageMongodb {
         $storage->convertData("ID", "_id");
         $storage->convertWhere("ID", "_id");
     }
-	public function convertFields($fields, $flag = false)
+
+    /**
+     * @param $fields
+     * @param bool $flag
+     * @return array
+     */
+    public function convertFields($fields, $flag = false)
 	{
 		$res 																		= array();
     	$struct 																	= $this->storage->getParam("struct");
@@ -56,7 +65,7 @@ class storageMongodb {
 			foreach ($fields AS $name => $value) {
 				if ($name == "key") {
 					$name 															= $this->config["key"];
-				} elseif(strpos($name, "key") === 1) {
+				} elseif(0 && strpos($name, "key") === 1) {
 					$name 															= substr($name, 0,1) . $this->config["key"];
 				} elseif ($flag == "select" && strpos($value, ".") > 0) {
 					$name 															= substr($value, 0, strpos($value, "."));
@@ -120,6 +129,8 @@ class storageMongodb {
 																						($field["not"] ? '$nin' : '$in') => $value
 																					);
 									}
+                                } elseif(is_array($value) && !count($value)) {
+                                    $res["where"][$field["name"]]                   = array();
 								} else {
 									unset($res["where"][$field["name"]]);
 								}
@@ -173,6 +184,7 @@ class storageMongodb {
 								}
 								break;
 							case "string":
+                            case "char":
                             case "text":
 							default:
 								if (is_array($value) && count($value)) {
@@ -220,21 +232,37 @@ class storageMongodb {
 
 		return $res;
 	}
+
+    /**
+     * @return bool|null
+     */
     public function getDevice()
     {
         return $this->device;
     }
+
+    /**
+     * @return null
+     */
     public function getConfig()
     {
         return $this->config;
     }
-	public function up() {
+
+
+    public function up() {
 
 	}
-	public function down() {
+
+
+    public function down() {
 
 	}
-	private function setConfig()
+
+    /**
+     * @todo: da togliere
+     */
+    private function setConfig()
 	{
 		$this->config = $this->storage->getConfig($this::TYPE);
 		if(!$this->config["name"])
@@ -268,7 +296,12 @@ class storageMongodb {
 		}
 
 	}
-	private function getObjectID($value)
+
+    /**
+     * @param $value
+     * @return bool|\MongoDB\BSON\ObjectID
+     */
+    private function getObjectID($value)
 	{
 		if ($value instanceof \MongoDB\BSON\ObjectID) {
 			$res = $value;
@@ -281,7 +314,12 @@ class storageMongodb {
 		}
 		return $res;
 	}
-	private function convertID($keys) {
+
+    /**
+     * @param $keys
+     * @return array|bool|\MongoDB\BSON\ObjectID
+     */
+    private function convertID($keys) {
 		if(is_array($keys)) {
 			foreach($keys AS $subkey => $subvalue) {
 				if(is_array($subvalue)) {

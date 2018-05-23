@@ -26,7 +26,7 @@
 
 class Jobs extends vgCommon
 {
-	const SOCKET											= 10;	//Number soket
+	const SOCKET											= 100;	//Number soket
 	const TIMEOUT											= 60; //Timeout Script (second)
 	const ANTIFLOOD											= 4; //Block execution jobs Run (second)
 	const REPEAT											= "1week";
@@ -91,7 +91,11 @@ class Jobs extends vgCommon
     private	$delay											= 10; //second
 	private	$max_delay										= 3600;//3600; //second (1 hour)
 
-	public static function getInstance($service)
+    /**
+     * @param $service
+     * @return Jobs|null
+     */
+    public static function getInstance($service)
 	{
 		if (self::$singleton === null)
 			self::$singleton = new Jobs($service);
@@ -100,17 +104,28 @@ class Jobs extends vgCommon
 		}
 		return self::$singleton;
 	}
-	public function __construct($service)
+
+    /**
+     * Jobs constructor.
+     * @param $service
+     */
+    public function __construct($service)
 	{
 		$this->service = $service;
         $this->setConfig($this->connectors, $this->services);
 
       //  $this->setConfig();
 	}
-	public static function api($url, $params = null, $session = null)
+
+    /**
+     * @param $url
+     * @param null $params
+     * @param null $session
+     * @return mixed
+     */
+    public static function api($url, $params = null, $session = null)
 	{
-		if(DEBUG_PROFILING === true)
-			$start 								= Stats::stopwatch();
+		if(DEBUG_PROFILING === true)                        $start = Stats::stopwatch();
 
 		check_function("get_schema_def");
 
@@ -122,37 +137,41 @@ class Jobs extends vgCommon
 			self::setSession($session);
 		}
 		//set session session_start
-		//$cm 									= cm::getInstance();
-		$get 									= $_GET;
-		$request 								= $_REQUEST;
+		//$cm 									            = cm::getInstance();
+		$get 									            = $_GET;
+		$request 								            = $_REQUEST;
 
-		$_GET 									= $params;
-		$_REQUEST 								= $_GET;
+		$_GET 									            = $params;
+		$_REQUEST 								            = $_GET;
 		//parse_str($params						, $_GET);
 
-		$schema_def 							= get_schema_def();
+		$schema_def 							            = get_schema_def();
 
 		$arrPath = explode("/", ltrim($url, "/api/"), 2);
-		$include 								= resolve_include_api("/" . $arrPath[1], "/api/" . $arrPath[0], $schema_def, "include");
+		$include 								            = resolve_include_api("/" . $arrPath[1], "/api/" . $arrPath[0], $schema_def, "include");
 		if($include) {
-			$return["result"] 					= self::getInclude($include);
+			$return["result"] 					            = self::getInclude($include);
 		} else {
-			$return["error"] 					= "missing include path: ". "/" . $arrPath[1];
+			$return["error"] 					            = "missing include path: ". "/" . $arrPath[1];
 		}
 
-		$_GET 									= $get;
-		$_REQUEST 								= $request;
+		$_GET 									            = $get;
+		$_REQUEST 								            = $request;
 
-		if(DEBUG_PROFILING === true) {
-			$return["exTime"] = Stats::stopwatch($start);
-		}
+		if(DEBUG_PROFILING === true && is_array($return))   $return["exTime"] = Stats::stopwatch($start);
 
 		return $return;
 	}
-	public static function srv($url, $params = null, $session = null)
+
+    /**
+     * @param $url
+     * @param null $params
+     * @param null $session
+     * @return mixed
+     */
+    public static function srv($url, $params = null, $session = null)
 	{
-		if(DEBUG_PROFILING === true)
-			$start 								= Stats::stopwatch();
+		if(DEBUG_PROFILING === true)                        $start = Stats::stopwatch();
 
 		check_function("get_schema_def");
 
@@ -164,273 +183,298 @@ class Jobs extends vgCommon
 			self::setSession($session);
 		}
 
-		$cm 									= cm::getInstance();
-		$post 									= $_POST;
-		$request 								= $_REQUEST;
+		$cm 									            = cm::getInstance();
+		$post 									            = $_POST;
+		$request 								            = $_REQUEST;
 
-		$_POST 									= $params;
-		$_REQUEST 								= $_POST;
+		$_POST 									            = $params;
+		$_REQUEST 								            = $_POST;
 		//parse_str($params						, $_GET);
 
-		$schema_def 							= get_schema_def();
+		$schema_def 							            = get_schema_def();
 
 		if(strpos(ltrim($url, "/"), "srv/") === 0)
-			$url 								= substr($url, 4);
+			$url 								            = substr($url, 4);
 
-		$include 								= resolve_include_service("/" . $url, $schema_def);
+		$include 								            = resolve_include_service("/" . $url, $schema_def);
 		if($include) {
-			$return 							= self::getInclude($include, $cm);
+			$return 							            = self::getInclude($include, $cm);
 		} else {
-			$return["error"] 					= "missing include path: " . "/" . $url;
+			$return["error"] 					            = "missing include path: " . "/" . $url;
 		}
 
-		$_POST 									= $post;
-		$_REQUEST 								= $request;
+		$_POST 									            = $post;
+		$_REQUEST 								            = $request;
 
-		if(DEBUG_PROFILING === true) {
-			$return["exTime"] = Stats::stopwatch($start);
-		}
+		if(DEBUG_PROFILING === true && is_array($return))   $return["exTime"] = Stats::stopwatch($start);
 
 		return $return;
 	}
 
-	public static function req($url, $params = null, $method = "POST", $response = null, $server = null, $session = null) {
-		if(DEBUG_PROFILING === true)
-			$start 								= Stats::stopwatch();
+    /**
+     * @param $url
+     * @param null $params
+     * @param string $method
+     * @param null $response
+     * @param null $server
+     * @param null $session
+     * @return array|mixed|null|object
+     */
+    public static function req($url, $params = null, $method = "POST", $response = null, $server = null, $session = null) {
+		if(DEBUG_PROFILING === true)                        $start = Stats::stopwatch();
 
 		check_function("get_locale");
 		check_function("file_post_contents");
 
 		if(!$server)
-			$server 							= self::getServer();
+			$server 							            = self::getServer();
 		if(!$session)
-			$session 							= self::getSession();
+			$session 							            = self::getSession();
 
 		if(strpos($url, "://") !== false) {
-			$username 							= false;
-			$password 							= false;
+			$username 							            = false;
+			$password 							            = false;
 			if(!$method)
-				$method 						= "GET";
-			$data 								= $params;
+				$method 						            = "GET";
+			$data 								            = $params;
 		} else {
-			$url 								= "http" . ($server["HTTPS"] ? "s" : "") . "://" . $server["HTTP_HOST"] . $url;
-			$data["params"]             		= $params;
-			$data["user_permission"]    		= $session["user_permission"];
-			$data["user_path"]         			= $server["HTTP_REFERER"];
-			$data["locale"]             		= get_locale();
+			$url 								            = "http" . ($server["HTTPS"] ? "s" : "") . "://" . $server["HTTP_HOST"] . $url;
+			$data["params"]             		            = $params;
+			$data["user_permission"]    		            = $session["user_permission"];
+			$data["user_path"]         			            = $server["HTTP_REFERER"];
+			$data["locale"]             		            = get_locale();
 		}
 
 
-		$res = file_post_contents_with_headers($url, $data, $username, $password, $method);
+		$res                                                = file_post_contents_with_headers($url, $data, $username, $password, $method);
 		if($res["headers"]["response_code"] == "200") {
-			$return 							= json_decode($res["content"], true);
+			$return 							            = json_decode($res["content"], true);
 			if(json_last_error()) {
-				$return["html"] 				= $res["content"];
+				$return["html"] 				            = $res["content"];
 			}
 		} else {
-			$return["responseCode"] 			= $res["headers"]["response_code"];
+			$return["responseCode"] 			            = $res["headers"]["response_code"];
 		}
 		if(is_array($response)) {
-			$return = $return + $response;
+			$return                                         = $return + $response;
 		}
-		if(DEBUG_PROFILING === true) {
-			$return["exTime"] 					= Stats::stopwatch($start);
+		if(DEBUG_PROFILING === true && is_array($return)) {
+			$return["exTime"] 					            = Stats::stopwatch($start);
 			if(strpos($res["content"], "Fatal error") !== false) {
-				$return["error"] 				= strip_tags($res["content"]);
+				$return["error"] 				            = strip_tags($res["content"]);
 			} elseif(!$res["content"] && $res["headers"]["response_code"] == "200")
-				$return["error"] 				= "Possible Max Execution Time";
+				$return["error"] 				            = "Possible Max Execution Time";
 		}
 
 		return $return;
 	}
 
-	public static function async($url, $params = array(), $server = null, $session = null) {
+    /**
+     * @param $url
+     * @param array $params
+     * @param null $server
+     * @param null $session
+     * @return bool|Exception
+     */
+    public static function async($url, $params = array(), $server = null, $session = null) {
 	   // require_once(FF_DISK_PATH . "/modules/security/common.php");
        // require_once(FF_DISK_PATH ."/library/gallery/common/get_locale.php"); //todo: da togliere e metterlo in classe statica
 
 		if(!$server)
-			$server 							= self::getServer();
+			$server 							            = self::getServer();
 		if(!$session)
-			$session 							= self::getSession();
+			$session 							            = self::getSession();
 
 		if(strpos($url, "://") === false)
-			$url 								= "http" . ($server["HTTPS"] ? "s" : "") . "://" . $server["HTTP_HOST"] . $url;
+			$url 								            = "http" . ($server["HTTPS"] ? "s" : "") . "://" . $server["HTTP_HOST"] . $url;
 
-		$data             						= $params;
-		$data["user_permission"]    			= $session["user_permission"];
-		$data["user_path"]          			= $server["HTTP_REFERER"];
-		$data["locale"]             			= (function_exists("get_locale")
-                                                    ? get_locale()
-                                                    : null
-                                                );
+		$data             						            = $params;
+		$data["user_permission"]    			            = $session["user_permission"];
+		$data["user_path"]          			            = $server["HTTP_REFERER"];
+		$data["locale"]             			            = (function_exists("get_locale")
+                                                                ? get_locale()
+                                                                : null
+                                                            );
 
-		$postdata 								= http_build_query(
-													$data
-												);
+		$postdata 								            = http_build_query(
+                                                                $data
+                                                            );
 
-		$url_info 								= parse_url($url);
+		$url_info 								            = parse_url($url);
 		switch ($url_info['scheme']) {
 			case 'https':
-				$scheme 						= 'ssl://';
-				$port 							= 443;
+				$scheme 						            = 'ssl://';
+				$port 							            = 443;
 				break;
 			case 'http':
 			default:
-				$scheme 						= '';
-				$port 							= 80;
+				$scheme 						            = '';
+				$port 							            = 80;
 		}
 
 		try {
-			$fp 								= fsockopen($scheme . $url_info['host']
-													, $port
-													, $errno
-													, $errstr
-													, 30
-												);
+			$fp 								            = fsockopen($scheme . $url_info['host']
+                                                                , $port
+                                                                , $errno
+                                                                , $errstr
+                                                                , 30
+                                                            );
 
 			if($fp) {
-				$out = "POST ".$url_info['path']." HTTP/1.1\r\n";
-				$out.= "Host: ".$url_info['host']."\r\n";
-				$out.= "Content-Type: application/x-www-form-urlencoded\r\n";
+				$out                                        = "POST ".$url_info['path']." HTTP/1.1\r\n";
+				$out                                        .= "Host: ".$url_info['host']."\r\n";
+				$out                                        .= "Content-Type: application/x-www-form-urlencoded\r\n";
 				if(defined("AUTH_USERNAME") && AUTH_USERNAME)
-					$out.= "Authorization: Basic " . base64_encode(AUTH_USERNAME . ":" . AUTH_PASSWORD) . "\r\n";
+					$out                                    .= "Authorization: Basic " . base64_encode(AUTH_USERNAME . ":" . AUTH_PASSWORD) . "\r\n";
 
-				$out.= "Content-Length: ".strlen($postdata)."\r\n";
-				$out.= "Connection: Close\r\n\r\n";
-				if (isset($postdata)) $out.= $postdata;
+				$out                                        .= "Content-Length: ".strlen($postdata)."\r\n";
+				$out                                        .= "Connection: Close\r\n\r\n";
+				if (isset($postdata))
+				    $out                                    .= $postdata;
 
 				fwrite($fp, $out);
 				fclose($fp);
 			}
 		} catch (Exception $e) {
-			$errstr = $e;
+			$errstr                                         = $e;
 			Cache::log("URL: " . $scheme . $url_info['host'] . "  Error: " . $errstr, "request_async");
 		}
 
 		return ($errstr ? $errstr : false);
 	}
+
+    /**
+     * @param $callback
+     * @param null $schedule
+     * @param null $repeat
+     */
     public static function setScript($callback, $schedule = null, $repeat = null) {
-	    static $source              = null;
+	    static $source                                      = null;
 
 	    if(!$source) {
 	        if(strpos($callback, "/job/") === 0) {
-                $source             = $callback;
+                $source                                     = $callback;
             }
         } else {
-            $params                = (is_callable($callback)
-                                        ? call_user_func($callback)
-                                        : (is_array($callback)
-                                            ? $callback
-                                            : array()
-                                        )
-                                    );
+            $params                                         = (is_callable($callback)
+                                                                ? call_user_func($callback)
+                                                                : (is_array($callback)
+                                                                    ? $callback
+                                                                    : array()
+                                                                )
+                                                            );
 
             Jobs::getInstance()->add($source, $params, $schedule, $repeat);
 
-            $source                 = null;
+            $source                                         = null;
         }
     }
+
+    /**
+     * @param null $callback
+     * @return null
+     */
     public static function runScript($callback = null) {
-	    static $return              = null;
-        static $params              = null;
+	    static $return                                      = null;
+        static $params                                      = null;
 
         if(is_callable($callback)) {
-            $return                 = call_user_func($callback, $params);
-            $params                 = null;
+            $return                                         = call_user_func($callback, $params);
+            $params                                         = null;
         } elseif($callback) {
-            $params                 = $callback;
+            $params                                         = $callback;
         } elseif($callback === false) {
-            $res                    = $return;
-            $return                 = null;
+            $res                                            = $return;
+            $return                                         = null;
         }
 
         return $res;
     }
-	/**
-	 * @param null $source
-	 * @param null $params
-	 * @param null $delay
-	 * @param null $repeat
-	 * @param null $schedule
-	 * @param bool $session
-	 * @param null $priority
-	 * @return null
-	 */
-	public function add($source = null, $params = null, $schedule = null, $repeat = null, $session = false, $priority = null) {
+
+    /**
+     * @param null $source
+     * @param null $params
+     * @param null $schedule
+     * @param null $repeat
+     * @param bool $session
+     * @param null $priority
+     * @return bool|null
+     */
+    public function add($source = null, $params = null, $schedule = null, $repeat = null, $session = false, $priority = null) {
 		if(strpos($source, "/api") === 0) {
-			$type 						= "api";
+			$type 						                    = "api";
 		} elseif(strpos($source, "srv/") === 0) {
-			$type 						= "service";
+			$type 						                    = "service";
 		} elseif(strpos($source, "/srv/") === 0) {
-			$type 						= "service";
-			$source 					= ltrim($source, "/");
+			$type 						                    = "service";
+			$source 					                    = ltrim($source, "/");
         } elseif(strpos($source, "/job/") === 0) {
-            $type 						= "script";
+            $type 						                    = "script";
 		} elseif(substr($source, 0, 1) === "/") {
-			$type 						= "request";
+			$type 						                    = "request";
 		} elseif(strpos($source, "://") !== false) {
-			$type 						= "request";
+			$type 						                    = "request";
 		} elseif(strpos($source, "::") !== false) {
-			$type 						= "obj";
+			$type 						                    = "obj";
 		} else {
-			$type 						= "func";
+			$type 						                    = "func";
 		}
 
-        $status                         = "idle";
-        $created 						= time();
-		$delay 							= $this->delay;
-		$server 						= $this->getServer();
+        $status                                             = "idle";
+        $created 						                    = time();
+		$delay 							                    = $this->delay;
+		$server 						                    = $this->getServer();
 
         if($schedule && !is_numeric($schedule))
-            $schedule                   = strtotime($schedule);
+            $schedule                                       = strtotime($schedule);
 
 		if(!$schedule)
-			$schedule 					= $created + $delay;
+			$schedule 					                    = $created + $delay;
         elseif($schedule > time())
-            $status                     = "completed";
+            $status                                         = "completed";
 
 		$insert = array(
-			"kid"						=> ceil($created * microtime())
-			, "type"					=> $type
-			, "domain"					=> vgCommon::DOMAIN
-			, "source"					=> $source
-			, "referer"					=> $server["HTTP_REFERER"]
-			, "params"					=> ($params ? $params : array())
-			, "request"					=> ($params ? $params : array())
-			, "schedule"				=> $schedule
-			, "delay"					=> $delay
-			, "repeat"					=> ($repeat === true
-											? self::REPEAT
-											: $repeat
-										)
-			, "priority"				=> $priority
+			"kid"						                    => ceil($created * microtime())
+			, "type"					                    => $type
+			, "domain"					                    => vgCommon::DOMAIN
+			, "source"					                    => $source
+			, "referer"					                    => $server["HTTP_REFERER"]
+			, "params"					                    => ($params ? $params : array())
+			, "request"					                    => ($params ? $params : array())
+			, "schedule"				                    => $schedule
+			, "delay"					                    => $delay
+			, "repeat"					                    => ($repeat === true
+                                                                ? self::REPEAT
+                                                                : $repeat
+                                                            )
+			, "priority"				                    => $priority
 
-			, "created"					=> $created
-			, "last_update"				=> $created
+			, "created"					                    => $created
+			, "last_update"				                    => $created
 
-			, "server"					=> $server
-			, "session"					=> ($session
-											? $this->getSession()
-											: array()
-										)
+			, "server"					                    => $server
+			, "session"					                    => ($session
+                                                                ? $this->getSession()
+                                                                : array()
+                                                            )
 
-			, "status"					=> $status
-			, "runned"					=> 0
-			, "logs"					=> array()
-			, "called"					=> 0
-			, "pid"						=> 0
+			, "status"					                    => $status
+			, "runned"					                    => 0
+			, "logs"					                    => array()
+			, "called"					                    => 0
+			, "pid"						                    => 0
 		);
 
-		$storage                        = $this->getStorage();
-		$job = $storage->read(array(
-			"source" 					=> $insert["source"]
-			, "params"					=> $insert["params"]
-			, "session"					=> $insert["session"]
-		), array(
-			"kid"						=> true
-			, "status"					=> true
-			, "repeat"					=> true
-		));
+		$storage                                            = $this->getStorage();
+		$job                                                = $storage->read(array(
+                                                                "source" 		    => $insert["source"]
+                                                                , "params"			=> $insert["params"]
+                                                                , "session"			=> $insert["session"]
+                                                            ), array(
+                                                                "kid"				=> true
+                                                                , "status"			=> true
+                                                                , "repeat"			=> true
+                                                            ));
 
 		if(is_array($job["result"]) && count($job["result"])) {
 			if(!$job["result"][0]["repeat"] && $job["result"][0]["status"] != "running") {
@@ -451,7 +495,11 @@ class Jobs extends vgCommon
 		return $this->getResult();
 	}
 
-	public function run($exec = false) {
+    /**
+     * @param bool $exec
+     * @return bool|null
+     */
+    public function run($exec = false) {
 		if((filemtime(__FILE__) + $this::ANTIFLOOD) >= time()) {
 			return false;
 		}
@@ -461,7 +509,8 @@ class Jobs extends vgCommon
 
 		$this->getStorage()->update(array(
 			"status"						=> "idle"
-		), array(
+            , "logs"                        => array()
+        ), array(
 			"status"						=> "completed"
 			, "schedule<="					=> time()
             , "domain"                      => vgCommon::DOMAIN
@@ -507,13 +556,15 @@ class Jobs extends vgCommon
 				, "source" 					=> true
 				, "params" 					=> true
 				, "request" 				=> true
+                , "schedule"                => true
 				, "session" 				=> true
 				, "repeat"					=> true
 				, "delay"					=> true
 				, "logs"					=> true
 				, "last_update"				=> true
 			), array(
-				"schedule"					=> "1"
+			    "priority"                  => "-1"
+				, "schedule"				=> "1"
 				, "called"					=> "-1"
 			), $socket);
 
@@ -528,29 +579,61 @@ class Jobs extends vgCommon
 		return $this->getResult();
 	}
 
-	public function exec($job) {
-		$storage = $this->getStorage();
+    /**
+     * @param $where
+     * @return mixed
+     */
+    private function getJob($where) {
+        $storage                            = $this->getStorage();
+        $jobs = $storage->read($where, array(
+            "kid"						    => true
+            , "type" 					    => true
+            , "source" 					    => true
+            , "params" 					    => true
+            , "request" 				    => true
+            , "schedule"                    => true
+            , "session" 				    => true
+            , "repeat"					    => true
+            , "delay"					    => true
+            , "logs"					    => true
+            , "last_update"				    => true
+        ), null, 1);
+        if(is_array($jobs["result"]) && count($jobs["result"])) {
+            $job                            = array_shift($jobs["result"]);
+        }
 
-		if($job && !is_array($job)) {
-			$jobs = $storage->read(array(
-				"kid" 						=> $job
-			), array(
-				"kid"						=> true
-				, "type" 					=> true
-				, "source" 					=> true
-				, "params" 					=> true
-				, "request" 				=> true
-				, "session" 				=> true
-				, "repeat"					=> true
-				, "delay"					=> true
-				, "logs"					=> true
-				, "last_update"				=> true
-			), null, 1);
+        return $job;
+    }
 
-			if(is_array($jobs["result"]) && count($jobs["result"])) {
-				$job 						= array_shift($jobs["result"]);
-			}
-		}
+    /**
+     * @param $kid
+     * @param bool $debug
+     * @return null
+     */
+    public function forceRun($kid, $debug = false) {
+
+        $job = $this->getJob(is_array($kid)
+            ? $kid
+            : array("kid" => $kid)
+        );
+
+        if(is_array($job)) {
+            $funcController 	            = "controller_" . $job["type"];
+            $log 					        = $this->$funcController($job, $debug);
+        }
+
+        return $this->isError();
+    }
+
+    /**
+     * @param $job
+     */
+    public function exec($job) {
+        $storage = $this->getStorage();
+
+        if($job && !is_array($job)) {
+            $job                            = $this->getJob(array("kid" => $job));
+        }
 
 		if(is_array($job)) {
 			$this->getStorage()->update(array(
@@ -597,7 +680,10 @@ class Jobs extends vgCommon
 				if(is_numeric($repeat)) {
 					$schedule 				= $now + $repeat;
 				} else {
-					$date 					= DateTime::createFromFormat('U', $now);
+					$date 					= DateTime::createFromFormat('U', ($job["type"] == "script"
+                                                ? $job["schedule"]
+                                                : $now
+                                            ));
 					$date->modify("+" . $repeat);
 
 					$schedule 				= $date->getTimestamp();
@@ -631,43 +717,62 @@ class Jobs extends vgCommon
 			$this->isError("Invalid Job");
 		}
 	}
-	public function dump($schedule) {
+
+    /**
+     * @param $schedule
+     * @return bool|null
+     */
+    public function dump($schedule) {
 		return $this->getResult();
 	}
 
-	public function getConfig($type, $config = null) {
+    /**
+     * @param $type
+     * @param null $config
+     * @return array|mixed|null
+     */
+    public function getConfig($type, $config = null) {
 		if(!$config)
-			$config = $this->services[$type]["connector"];
+			$config                         = $this->services[$type]["connector"];
 
 		if(is_array($config))
-			$config = array_replace($this->connectors[$type], array_filter($config));
+			$config                         = array_replace($this->connectors[$type], array_filter($config));
 		else
-			$config = $this->connectors[$type];
+			$config                         = $this->connectors[$type];
 
 		return $config;
 	}
 
-	public function getScripts() {
-        $it = new FilesystemIterator($this->getDiskPath() . vgCommon::ASSETS_PATH . "/jobs");
+    /**
+     *
+     */
+    public function getScripts() {
+        $it                                 = new FilesystemIterator($this->getDiskPath() . vgCommon::ASSETS_PATH . "/jobs");
         foreach ($it as $fileinfo) {
             if($fileinfo->getATime() > $fileinfo->getMTime() )
                 continue;
 
-            $filename                               = $fileinfo->getFilename();
+            $filename                       = $fileinfo->getFilename();
 
             self::setScript("/job/" . $filename);
             require($this->getDiskPath() . vgCommon::JOBS_PATH . "/" . $filename);
         }
     }
-	private static function getInclude($include, $cm = null) {
+
+    /**
+     * @param $include
+     * @param null $cm
+     * @return mixed
+     */
+    private static function getInclude($include, $cm = null) {
 		if($cm) {
-			$cm->oPage->output_buffer = "";
+			$cm->oPage->output_buffer       = "";
 			require($include);
 
 			if (is_array($cm->oPage->output_buffer))
-				$return = $cm->oPage->output_buffer;
+				$return                     = $cm->oPage->output_buffer;
 			elseif (strlen($cm->oPage->output_buffer)) {
-				$return["html"] = $cm->oPage->output_buffer;
+				$return["html"]             = $cm->oPage->output_buffer;
 			}
 		} else {
 			require($include);
@@ -676,7 +781,10 @@ class Jobs extends vgCommon
 		return $return;
 	}
 
-	private static function getServer() {
+    /**
+     * @return array
+     */
+    private static function getServer() {
 		$server = array();
 
 		if(is_array($_SERVER) && count($_SERVER)) {
@@ -690,7 +798,7 @@ class Jobs extends vgCommon
 
 					break;
 					default:
-						$server[$key] = $value;
+						$server[$key]       = $value;
 				}
 			}
 		}
@@ -698,18 +806,22 @@ class Jobs extends vgCommon
 		return $server;
 	}
 
-	private static function getSession($appid = APPID) {
-		$session = array();
+    /**
+     * @param string $appid
+     * @return array
+     */
+    private static function getSession($appid = APPID) {
+		$session                            = array();
 
 		if(is_array($_SESSION) && count($_SESSION)) {
 			foreach($_SESSION AS $key => $value) {
-				$name = str_replace($appid, "", $key);
+				$name                       = str_replace($appid, "", $key);
 				switch($name) {
 					case "__FF_SESSION__":
 					case "cache":
 						break;
 					default:
-						$session[$name] = $value;
+						$session[$name]     = $value;
 				}
 
 			}
@@ -717,49 +829,87 @@ class Jobs extends vgCommon
 		return $session;
 	}
 
-	private function setSession($session, $appid = APPID) {
-		$_SESSION = array();
+    /**
+     * @param $session
+     * @param string $appid
+     */
+    private function setSession($session, $appid = APPID) {
+		$_SESSION                           = array();
 		if(is_array($session) && count($session)) {
 			foreach($session AS $key => $value) {
-				$_SESSION[$appid . $key] = $value;
+				$_SESSION[$appid . $key]    = $value;
 			}
 		}
 	}
 
-	private function controller_api($job) {
+    /**
+     * @param $job
+     * @return mixed
+     */
+    private function controller_api($job) {
 		return self::api($job["source"], $job["request"], $job["session"]);
 	}
-	private function controller_service($job) {
+
+    /**
+     * @param $job
+     * @return mixed
+     */
+    private function controller_service($job) {
 		return self::srv($job["source"], $job["request"], $job["session"]);
 	}
-	private function controller_request($job) {
+
+    /**
+     * @param $job
+     * @return array|mixed|null|object
+     */
+    private function controller_request($job) {
 		return self::req($job["source"], $job["request"], "POST", null, $job["server"], $job["session"]);
 	}
-    private function controller_script($job) {
-        $return                     = null;
-	    $params                     = $job["request"];
-        $script                     = $this->getDiskPath() . vgCommon::JOBS_PATH . "/" . basename($job["source"]);
-        $output                     = exec("php -l " . addslashes($script));
+
+    /**
+     * @param $job
+     * @param bool $debug
+     * @return null
+     */
+    private function controller_script($job, $debug = false) {
+        $return                             = null;
+	    $params                             = ($debug //da aggiungee i parametri di ingresso
+                                                ? $debug
+                                                : $job["request"]
+                                            );
+        $script                             = $this->getDiskPath() . vgCommon::JOBS_PATH . "/" . basename($job["source"]);
+        $output                             = exec("php -l " . addslashes($script));
 
         if(strpos($output, "No syntax errors") === 0) {
             Jobs::runScript($params);
             require($script);
             if(!$return)
-                $return = Jobs::runScript(false);
+                $return                     = Jobs::runScript(false);
         } else {
             $this->isError("syntax errors into script");
             Cache::log($output, "job_error");
         }
         return $return;
     }
-	private function controller_func($job) {
+
+    /**
+     * @param $job
+     */
+    private function controller_func($job) {
 //todo: da fare la call di una funzione
 	}
-	private function controller_obj($job) {
+
+    /**
+     * @param $job
+     */
+    private function controller_obj($job) {
 //todo: da fare la call di un oggetto
 	}
 
-	private function getStorage()
+    /**
+     * @return null|Storage
+     */
+    private function getStorage()
 	{
 		return Storage::getInstance($this->services, array(
 			"struct" => $this->struct
@@ -832,7 +982,10 @@ class Jobs extends vgCommon
 
 	}*/
 
-	private function getResult()
+    /**
+     * @return bool|null
+     */
+    private function getResult()
 	{
 		return ($this->isError()
 			? $this->isError()

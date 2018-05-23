@@ -79,8 +79,9 @@ class statsActions
 
 	public function __construct($stats)
 	{
-		$this->stats = $stats;
-		$this->setConfig();
+        $this->stats = $stats;
+
+        $this->stats->setConfig($this->connectors, $this->services);
 	}
 
 	public function getDevice()
@@ -262,49 +263,4 @@ class statsActions
 		return $where;
 	}
 
-	private function setConfig()
-	{
-		foreach($this->connectors AS $name => $connector) {
-			if(!$connector["name"]) {
-				$prefix = ($connector["prefix"] && defined($connector["prefix"] . "NAME") && constant($connector["prefix"] . "NAME")
-					? $connector["prefix"]
-					: vgCommon::getPrefix($name)
-				);
-
-				if (is_file($this->stats->getAbsPathPHP("/config")))
-				{
-					require_once($this->stats->getAbsPathPHP("/config"));
-
-					$this->connectors[$name]["host"] = (defined($prefix . "HOST")
-						? constant($prefix . "HOST")
-						: "localhost"
-					);
-					$this->connectors[$name]["name"] = (defined($prefix . "NAME")
-						? constant($prefix . "NAME")
-						:  ""
-					);
-					$this->connectors[$name]["username"] = (defined($prefix . "USER")
-						? constant($prefix . "USER")
-						: ""
-					);
-					$this->connectors[$name]["password"] = (defined($prefix . "PASSWORD")
-						? constant($prefix . "PASSWORD")
-						: ""
-					);
-
-				}
-			}
-		}
-
-		foreach($this->services AS $type => $data)
-		{
-			if(!$data)
-			{
-				$this->services[$type] = array(
-					"service" => null
-				, "connector" => $this->connectors[$type]
-				);
-			}
-		}
-	}
 }

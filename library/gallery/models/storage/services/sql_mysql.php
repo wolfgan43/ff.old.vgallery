@@ -31,6 +31,10 @@ class storageMysql {
     private $config                                         = null;
     private $storage                                        = null;
 
+    /**
+     * storageMysql constructor.
+     * @param $storage
+     */
     public function __construct($storage)
     {
         $this->storage = $storage;
@@ -48,7 +52,12 @@ class storageMysql {
         $storage->convertWhere("_id", "ID");
     }
 
-	public function convertFields($fields, $flag = false)
+    /**
+     * @param $fields
+     * @param bool $flag
+     * @return mixed
+     */
+    public function convertFields($fields, $flag = false)
 	{
 		$res 																		= array();
 		$struct 																	= $this->storage->getParam("struct");
@@ -58,9 +67,9 @@ class storageMysql {
 			{
 				if ($name == "key") {
 					$name 															= $this->config["key"];
-				} elseif(strpos($name, "key") === 1) {
+				} elseif(0 && strpos($name, "key") === 1) { //todo: esplode se hai un campo tipo pkey chediventa pID. da verificare perche esiste questa condizione
 					$name 															= substr($name, 0,1) . $this->config["key"];
-				} elseif ($flag == "select" && strpos($value, ".") > 0) {
+				} elseif ($flag == "select" && strpos($value, ".") > 0) { //todo: da valutare con il ritorno degl array che nn funziona es: read("campo_pippo => ciao.te = ["ciao"]["te"])
 					$name 															= substr($value, 0, strpos($value, "."));
 					$value 															= true;
 				}
@@ -137,11 +146,12 @@ class storageMysql {
 							case "number":
                             case "primary":
 							case "string":
+                            case "char":
                             case "text":
 							default:
 								if (is_array($value)) {
 									if(count($value))
-										$res[$name] 								= "`" . $field["name"] . "` " . ($field["not"] ? "NOT " : "") . "IN('" . implode("','", array_unique($value)) . "')";
+										$res[$name] 								= "`" . $field["name"] . "` " . ($field["not"] ? "NOT " : "") . "IN(" . $this->valueToFunc($value, $struct_type) . ")";
 								} else {
 									if ($field["op"]) {                                                //< > <= >=
 										$op = "";
@@ -161,10 +171,10 @@ class storageMysql {
 											default:
 										}
 										if($op) {
-											$res[$name] 							= "`" . $field["name"] . "` " . $op . " " . $this->device->toSql($value);
+											$res[$name] 							= "`" . $field["name"] . "` " . $op . " " . $this->valueToFunc($value, $struct_type);
 										}
 									} else {
-										$res[$name]     							= "`" . $field["name"] . "` " . ($field["not"] ? "<>" : "=") . " " . $this->device->toSql($value);
+										$res[$name]     							= "`" . $field["name"] . "` " . ($field["not"] ? "<>" : "=") . " " . $this->valueToFunc($value, $struct_type);
 									}
 								}
 						}
@@ -176,7 +186,9 @@ class storageMysql {
 			if(is_array($res)) {
 				switch ($flag) {
 					case "select":
-						$result["select"] 											= "`" . $this->config["key"] . "`, `" . implode("`, `", $res) . "`";
+					    $key_name                                                   = $this->storage->getFieldAlias($this->config["key"]);
+
+						$result["select"]  											= (!$res[$key_name] ? "`" . $key_name . "`, " : "") . "`" . implode("`, `", $res) . "`";
 						break;
 					case "insert":
 						$result["insert"]["head"] 									= "`" . implode("`, `", $res["head"]) . "`";
@@ -208,10 +220,18 @@ class storageMysql {
 
 		return $result;
 	}
+
+    /**
+     * @return bool|null
+     */
     public function getDevice()
     {
         return $this->device;
     }
+
+    /**
+     * @return null
+     */
     public function getConfig()
     {
         return $this->config;
@@ -224,6 +244,10 @@ class storageMysql {
 		$struct 																	= $this->storage->getParam("struct");
 
 	}
+
+    /**
+     * @todo: da togliere
+     */
     private function setConfig()
     {
         $this->config = $this->storage->getConfig($this::TYPE);
@@ -257,7 +281,12 @@ class storageMysql {
 			}
 		}
     }
-	private function convertID($keys) {
+
+    /**
+     * @param $keys
+     * @return array|int|null|string
+     */
+    private function convertID($keys) {
 		if(is_array($keys))
 			$res = array_filter($keys, "is_numeric");
 		elseif(!is_numeric($keys))
@@ -267,4 +296,58 @@ class storageMysql {
 
 		return $res;
 	}
+
+    /**
+     * @param $value
+     * @param $func
+     * @param array $opt
+     * @return string
+     */
+    private function valueToFunc($value, $func, $opt = array()) {
+        $res                                                                        = "";
+        $uFunc                                                                      = strtoupper($func);
+        switch ($uFunc) {
+            case "ASCII":
+            case "CHAR_LENGTH":
+            case "CHARACTER_LENGTH":
+            case "LCASE":
+            case "LENGTH":
+            case "LOWER":
+            case "LTRIM":
+            case "REVERSE":
+            case "RTRIM":
+            case "TRIM":
+            case "UCASE":
+            case "UPPER":
+            case "ENCRYPT":
+            case "MD5":
+            case "OLD_PASSWORD":
+            case "PASSWORD":
+                if(is_array($value)) {
+                    foreach($value AS $i => $v) {
+                        $res[$i]                                                    = $uFunc . "(" . $this->device->toSql($value) . ")";
+                    }
+                    $res                                                            = implode(",", $res);
+                } else {
+                    $res                                                            = $uFunc . "(" . $this->device->toSql($value) . ")";
+                }
+
+                break;
+            case "REPLACE";
+            case "CONCAT";
+            //todo: da fare altri metodi se servono
+                break;
+            case "AES256":
+                $res = openssl_encrypt ($value, "AES-256-CBC", time()/*$this->getCertificate()*/);
+                break;
+            default:
+                if(is_array($value)) {
+                    $res                                                            = "'" . implode("','", array_unique($value)) . "'";
+                } else {
+                    $res                                                            = $this->device->toSql($value);
+                }
+        }
+
+        return $res;
+    }
 }

@@ -33,20 +33,35 @@ class notifierTwilio
     private $config                                         = null;
     private $notifier                                       = null;
 
+    /**
+     * notifierTwilio constructor.
+     * @param $notifier
+     */
     public function __construct($notifier)
     {
         $this->notifier = $notifier;
         $this->setConfig();
     }
 
+    /**
+     * @return null
+     */
     public function getDevice()
     {
         return $this->device;
     }
+
+    /**
+     * @return null
+     */
     public function getConfig()
     {
         return $this->config;
     }
+
+    /**
+     * @todo: da togliere
+     */
     private function setConfig()
     {
         $this->config = $this->notifier->getConfig($this::TYPE);

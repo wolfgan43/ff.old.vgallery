@@ -33,20 +33,35 @@ class mailerSparkpost
     private $config                                         = null;
     private $mailer                                         = null;
 
+    /**
+     * mailerSparkpost constructor.
+     * @param $mailer
+     */
     public function __construct($mailer)
     {
         $this->mailer = $mailer;
         $this->setConfig();
     }
 
+    /**
+     * @return null
+     */
     public function getDevice()
     {
         return $this->device;
     }
+
+    /**
+     * @return null
+     */
     public function getConfig()
     {
         return $this->config;
     }
+
+    /**
+     * @todo: da togliere
+     */
     private function setConfig()
     {
         $this->config = $this->mailer->getConfig($this::TYPE);

@@ -79,10 +79,10 @@ class Mailer extends vgCommon
     protected $owner                    = null;
 
     protected $services                 = array(                //servizi per la scrittura o lettura della notifica
-        "phpmailer"                         => null
+        "phpmailer"                     => null
     );
     protected $controllers              = array(
-        "email"                     => array(
+        "email"                         => array(
             "default"                   => "localhost"
 			, "services"                => null
 			, "storage"                 => array(
@@ -90,9 +90,9 @@ class Mailer extends vgCommon
 			)
         )
     );
-    protected $controllers_rev          = array();
+    protected $controllers_rev          = null;
     protected $struct                   = array(
-        "connectors"                    => array(
+        "connectors"                => array(
             "email"                     => array(
                 "host"                  => null
 				, "username"            => null
@@ -102,7 +102,7 @@ class Mailer extends vgCommon
 				, "secure"              => null
 
             )
-        , "sql"                       => array(
+        , "sql"                     => array(
                 "host"                  => null
 				, "name"                => null
 				, "username"            => null
@@ -159,6 +159,11 @@ class Mailer extends vgCommon
     private $result                     = array();
     private $exTime						= 0;
 
+    /**
+     * @param $params
+     * @param null $controller
+     * @return Mailer|null
+     */
     public static function getInstance($params, $controller = null)
     {
         if (self::$singleton === null) {
@@ -176,6 +181,10 @@ class Mailer extends vgCommon
     }
 
 
+    /**
+     * Mailer constructor.
+     * @param null $params
+     */
     public function __construct($params = null)
     {
         $this->loadControllers(__DIR__);
@@ -209,7 +218,7 @@ class Mailer extends vgCommon
                     require_once($this->getAbsPathPHP("/library/phpmailer/extras/ntlm_sasl_client"));
                     
                     $controller                                                 = "mailer" . ucfirst($service);
-                    require_once($this->getAbsPathPHP("/mailer/services/" . $type . "_" . $service, true));
+                    //require_once($this->getAbsPathPHP("/mailer/services/" . $type . "_" . $service, true));
                     
                     $driver                                                     = new $controller($this);
                     
@@ -494,10 +503,21 @@ class Mailer extends vgCommon
         return $this->getResult();
     }
 
+    /**
+     * @param $title
+     */
     public function setTitle($title)
     {
         $this->title                            = $title;
     }
+
+    /**
+     * @param $message
+     * @param $subject
+     * @param null $actions
+     * @param null $attach
+     * @param null $referer
+     */
     public function setMessage($message, $subject, $actions = null, $attach = null, $referer = null)
     {
         if(is_array($message))
@@ -539,6 +559,9 @@ class Mailer extends vgCommon
 		);
     }
 
+    /**
+     * @param $referer
+     */
     public function setReferer($referer)
     {
     	if($referer) {
@@ -550,7 +573,12 @@ class Mailer extends vgCommon
 			$this->referer 						= str_replace($this->getDiskPath(), "", $firstFrame['file']);
 		}
     }
-	public function setAttach($attach, $reset = true)
+
+    /**
+     * @param $attach
+     * @param bool $reset
+     */
+    public function setAttach($attach, $reset = true)
 	{
 		if($reset)
 			$this->attach = array();
@@ -563,14 +591,24 @@ class Mailer extends vgCommon
 			$this->addAttach($attach);
 		}
 	}
-	public function addAttach($attach, $name = null)
+
+    /**
+     * @param $attach
+     * @param null $name
+     */
+    public function addAttach($attach, $name = null)
 	{
 		if(!$name)
 			$name 								= $attach;
 
 		$this->attach[$name]                    = $attach;
 	}
-	public function setActions($actions, $reset = true)
+
+    /**
+     * @param $actions
+     * @param bool $reset
+     */
+    public function setActions($actions, $reset = true)
 	{//todo: da fare con le calltoactions
 		if($reset)
 			$this->actions = array();
@@ -583,11 +621,21 @@ class Mailer extends vgCommon
 			$this->debug("action missing data:" . $actions);
 		}
 	}
-	public function addAction($action)
+
+    /**
+     * @param $action
+     */
+    public function addAction($action)
 	{//todo: da fare con le calltoactions
 		$this->actions[] = $action;
 	}
-	public function addAddress($address, $type = "to", $name = null)
+
+    /**
+     * @param $address
+     * @param string $type
+     * @param null $name
+     */
+    public function addAddress($address, $type = "to", $name = null)
     { //da fare con oggetto
         if(is_array($address))
         {
@@ -625,11 +673,21 @@ class Mailer extends vgCommon
 			$this->debug("email_address_empty");
 		}
     }
+
+    /**
+     * @param $fields
+     * @param string $type
+     */
     public function setFields($fields, $type = "struct")
     {
         $this->struct["storage"][$type]["fields"] = array_replace($this->struct["storage"][$type]["fields"], $fields);
     }
 
+    /**
+     * @param $type
+     * @param null $config
+     * @return array|null
+     */
     public function getConfig($type, $config = null)
     {
         if(!$config)
@@ -643,6 +701,11 @@ class Mailer extends vgCommon
         return $config;
     }
 
+    /**
+     * @param $type
+     * @param null $prop
+     * @return mixed
+     */
     public function getService($type, $prop = null)
     {
         return ($prop
@@ -651,6 +714,9 @@ class Mailer extends vgCommon
         );
     }
 
+    /**
+     *
+     */
     public function getHeaders()
     { //TODO: da sistemare tutto
 
@@ -831,12 +897,21 @@ class Mailer extends vgCommon
             $preview_header_tag = $tpl_header->rpparse("main", false);
         }*/
     }
+
+    /**
+     * @return bool
+     */
     public function issetFrom() {
         return ($this->from
             ? true
             : false
         );
     }
+
+    /**
+     * @param $addr
+     * @param $type
+     */
     private function setAddress($addr, $type)
     {
         if($addr) {
@@ -859,10 +934,20 @@ class Mailer extends vgCommon
             }
         }
     }
+
+    /**
+     * @param $name
+     * @param string $type
+     * @return mixed
+     */
     private function getField($name, $type = "struct")
     {
         return $this->struct["storage"][$type]["fields"][$name];
     }
+
+    /**
+     * @return array
+     */
     private function getResult()
     {
         return ($this->isError()
@@ -876,6 +961,10 @@ class Mailer extends vgCommon
 			)
         );
     }
+
+    /**
+     * @param string $service
+     */
     private function loadConfig($service = "email")
     {
         if($this->name) {
@@ -945,6 +1034,9 @@ class Mailer extends vgCommon
 
     }
 
+    /**
+     *
+     */
     private function loadTemplate()
     {
         /*
@@ -1015,6 +1107,8 @@ class Mailer extends vgCommon
 
     /**
      * @param null $service
+     *
+     * @todo: da mettere nel services
      */
     private function controller_phpmailer($service = null)
     {
@@ -1025,7 +1119,7 @@ class Mailer extends vgCommon
         if($service)
         {
             $controller                                                 = "mailer" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/mailer/services/" . $type . "_" . $service, true));
+            //require_once($this->getAbsPathPHP("/mailer/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
 
@@ -1246,6 +1340,9 @@ class Mailer extends vgCommon
         $this->result = $rc;
     }
 
+    /**
+     * @param null $from
+     */
     private function clearResult($from = null)
     {
         if($from)
@@ -1259,6 +1356,9 @@ class Mailer extends vgCommon
         $this->isError("");
     }
 
+    /**
+     * @todo: da sistemare tutto
+     */
     private function makeAccount()
     {
     	return;
@@ -1419,6 +1519,14 @@ class Mailer extends vgCommon
 			}
 		}
     }
+
+    /**
+     * @param $value
+     * @param null $prefix
+     * @param null $type
+     * @param null $language
+     * @return mixed|null|string|string[]
+     */
     function process_mail_field($value, $prefix = null, $type = null, $language = null)
     {
         if($prefix)
@@ -1455,6 +1563,9 @@ class Mailer extends vgCommon
         return $res;
     }
 
+    /**
+     * @return mixed|null|string|string[]
+     */
     private function process_mail_subject()
     {
         return $this->process_mail_field(
@@ -1466,6 +1577,11 @@ class Mailer extends vgCommon
         );
     }
 
+    /**
+     * @param $value
+     * @param $groups
+     * @param null $type
+     */
     private function parse_mail_group($value, $groups, $type = null)
     {
         /*
@@ -1525,6 +1641,12 @@ class Mailer extends vgCommon
         }
     }
 
+    /**
+     * @param $value
+     * @param $name
+     * @param null $type
+     * @param bool $skip_label
+     */
     private function parse_mail_field($value, $name, $type = null, $skip_label = false)
     {
         /*
@@ -1566,6 +1688,10 @@ class Mailer extends vgCommon
         }
     }
 
+    /**
+     * @param null $type
+     * @param bool $reset_field
+     */
     private function parse_mail_row($type = null, $reset_field = false)
     {
         $this->tpl_html->parse("Sez" . $type . "Row", false);
