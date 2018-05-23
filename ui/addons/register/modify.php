@@ -270,10 +270,10 @@ $oField->label = ffTemplate::_get_word_by_code("register_config_activation");
 $oField->base_type = "Number";
 $oField->extended_type = "Selection";
 $oField->multi_pairs = array(
-    array(new ffData(0, "Number"), new ffData(ffTemplate::_get_word_by_code("activation_no"))),
-    array(new ffData(1, "Number"), new ffData(ffTemplate::_get_word_by_code("activation_by_user"))),
-    array(new ffData(2, "Number"), new ffData(ffTemplate::_get_word_by_code("activation_by_admin"))),
-    array(new ffData(4, "Number"), new ffData(ffTemplate::_get_word_by_code("activation_by_user_admin")))
+    array(new ffData("0", "Number"), new ffData(ffTemplate::_get_word_by_code("activation_no"))),
+    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("activation_by_user"))),
+    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("activation_by_admin"))),
+    array(new ffData("4", "Number"), new ffData(ffTemplate::_get_word_by_code("activation_by_user_admin")))
 );
 $oField->required = true;
 $oRecord->addContent($oField, "Account");
