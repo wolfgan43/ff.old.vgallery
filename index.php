@@ -41,6 +41,9 @@ if(DEBUG_PROFILING === true) {
 	define("FF_DB_MYSQLI_PROFILE", true);
 	Stats::benchmark();
 }
+if(DEBUG_MODE === true) {
+    Stats::registerErrors();
+}
 
 /**
  * Cache System
@@ -63,7 +66,7 @@ if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest")
 /**
  * Log File Without Cache
  */
-Cache::log($path_info);
+Cache::log($path_info, "access");
 
 /**
  * Run page Without Cache
