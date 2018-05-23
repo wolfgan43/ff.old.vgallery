@@ -26,51 +26,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 class anagraphAccess
 {
 	const TYPE                                              = "access";
+	const MAIN_TABLE                                        = "users";
 
 	private $device                                         = null;
 	private $anagraph                                       = null;
-	private $services										= array(
-																"nosql" 					=> null
-																, "sql"						=> null
-																, "fs" 						=> null
+    private static $services								= array(
+																"sql" 					        => null
+																, "nosql"						=> null
+																, "fs" 						    => null
 															);
-	private $connectors										= array(
-																"sql"                       => array(
-																	"host"          		=> null
-																	, "username"    		=> null
-																	, "password"   			=> null
-																	, "name"       			=> null
-																	, "prefix"				=> "ANAGRAPH_ACCESS_DATABASE_"
-																	, "table"               => "cm_mod_security_users"
-																	, "key"                 => "ID"
+    private static $connectors								= array(
+																"sql"                           => array(
+																	"host"          		    => null
+																	, "username"    		    => null
+																	, "password"   			    => null
+																	, "name"       			    => null
+																	, "prefix"				    => "ANAGRAPH_ACCESS_DATABASE_"
+																	, "table"                   => null
+																	, "key"                     => "ID"
 																)
-																, "nosql"                   => array(
-																	"host"          		=> null
-																	, "username"    		=> null
-																	, "password"    		=> null
-																	, "name"       			 => null
-																	, "prefix"				=> "ANAGRAPH_ACCESS_MONGO_DATABASE_"
-																	, "table"               => "cm_mod_security_users"
-																	, "key"                 => "ID"
+																, "nosql"                       => array(
+																	"host"          		    => null
+																	, "username"    		    => null
+																	, "password"    		    => null
+																	, "name"       			    => null
+																	, "prefix"				    => "ANAGRAPH_ACCESS_MONGO_DATABASE_"
+																	, "table"                   => null
+																	, "key"                     => "ID"
 																	)
-																, "fs"                      => array(
-																	"service"				=> "php"
-																	, "path"                  => "/cache/anagraph/access"
-																	, "name"                => array("url")
-																	, "var"					=> null
+																, "fs"                          => array(
+																	"service"				    => "php"
+																	, "path"                    => "/cache/anagraph/access"
+																	, "name"                    => array("url")
+																	, "var"					    => null
 																	)
 															);
-	private $struct											= array(
+    private static $struct								    = array(
 	                                                            "users" => array(
-                                                                    "acl"                       => "number"
-                                                                    , "expiration"              => "number"
+	                                                                "ID"                        => "primary"
+                                                                    , "acl"                     => "number"
+                                                                    , "expire"                  => "number"
                                                                     , "status"                  => "number"
                                                                     , "username"                => "string"
                                                                     , "username_slug"           => "string"
                                                                     , "email"                   => "string"
                                                                     , "tel"                     => "string"
-                                                                    , "password"                => "password"
-                                                                    , "password_old"            => "password"
+                                                                    , "password"                => "string:inPassword"
+                                                                    , "password_old"            => "string:inPassword"
                                                                     , "password_last_update"    => "number"
                                                                     , "avatar"                  => "string"
                                                                     , "created"                 => "number"
@@ -78,26 +80,162 @@ class anagraphAccess
                                                                     , "last_login"              => "number"
                                                                     , "ID_lang"                 => "number"
                                                                     , "SID"                     => "string"
-                                                                    , "SID_expiration"          => "number"
+                                                                    , "SID_expire"              => "number"
                                                                 )
                                                                 , "groups" => array(
-                                                                    "name"                      => "string"
+                                                                    "ID"                        => "primary"
+                                                                    , "name"                    => "string"
                                                                     , "level"                   => "number"
                                                                 )
-                                                                , "device" => array(
+                                                                , "devices" => array(
                                                                     "client_id"                 => "string"
                                                                     , "name"                    => "string"
                                                                     , "type"                    => "string"
                                                                     , "ID_user"                 => "number"
                                                                 )
-															);
-    private $relationship									= array();
-    private $indexes                                        = array();
-    private $tables                                         = array();
+                                                                , "tokens" => array(
+                                                                    "ID"                        => "primary"
+                                                                    , "ID_user"                 => "number"
+                                                                    , "type"                    => "string"
+                                                                    , "token"                   => "string"
+                                                                    , "expire"                  => "number"
+                                                                    , "refresh_token"           => "number"
+                                                                    , "ID_remote"               => "number"
 
-	public function __construct($anagraph)
+                                                                )
+															);
+    private static $relationship							= array(
+                                                                "users"                         => array(
+                                                                    "acl"                       => array(
+                                                                        "tbl"                       => "groups"
+                                                                        , "key"                     => "ID"
+                                                                    )
+                                                                    , Anagraph::TYPE              => array(
+                                                                        "external"                  => "ID_user"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                    , "tokens"                  => array(
+                                                                        "external"                  => "ID_user"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                )
+                                                                , "devices"                     => array(
+                                                                    "users"                     => array(
+                                                                        "external"                  => "ID_user"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                )
+                                                                , "tokens"                      => array(
+                                                                    "users"                     => array(
+                                                                        "external"                  => "ID_user"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                )
+                                                                , "groups"                      => array(
+                                                                    anagraphAccess::MAIN_TABLE  => array(
+                                                                        "external"                  => "acl"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                )
+                                                            );
+    private static $indexes                                 = array(
+                                                                "users"                         => array(
+                                                                    "ID_domain"                 => "hardindex"
+                                                                )
+                                                                , "devices"                     => array(
+                                                                    "ID_user"                   => "hardindex"
+                                                                )
+                                                                , "tokens"                      => array(
+                                                                    "ID_user"                   => "hardindex"
+                                                                )
+                                                            );
+    private static $tables                                  = array(
+                                                                "users"                         => array(
+                                                                    "name"                      => "cm_mod_security_users"
+                                                                    , "alias"                   => "user"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
+                                                                , "groups"                      => array(
+                                                                    "name"                      => "cm_mod_security_groups"
+                                                                    , "alias"                   => "group"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
+                                                                , "devices"                     => array(
+                                                                    "name"                      => "devices"
+                                                                    , "alias"                   => "device"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
+                                                                , "tokens"                      => array(
+                                                                    "name"                      => "cm_mod_security_token"
+                                                                    , "alias"                   => "token"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
+                                                            );
+    private static $alias                                   = array(
+                                                                "users"                         => array(
+                                                                    "ID_languages"              => "ID_lang"
+                                                                    , "ID_domains"              => "ID_domain"
+                                                                    , "ID_primary_gid"          => "acl"
+                                                                    , "expiration"              => "expire"
+                                                                )
+                                                                , "groups"                      => array(
+                                                                    "gid"                       => "ID"
+                                                                )
+                                                            );
+
+    /**
+     * anagraphAccess constructor.
+     * @param $anagraph
+     */
+    public function __construct($anagraph)
 	{
-		$this->anagraph = $anagraph;
-        $this->anagraph->setConfig($this->connectors, $this->services, $this::TYPE);
+		//$this->anagraph                                     = $anagraph;
+        $anagraph->setConfig($this->connectors, $this->services, $this::TYPE);
 	}
+
+    /**
+     * @param $type
+     * @return array
+     */
+    public static function getStruct($type) {
+        return array(
+            "struct"                                        => self::$struct[$type]
+            , "indexes"                                     => self::$indexes[$type]
+            , "relationship"                                => self::$relationship[$type]
+            , "table"                                       => self::$tables[$type]
+            , "alias"                                       => self::$alias[$type]
+            , "connectors"                                  => false
+            , "mainTable"                                   => self::MAIN_TABLE
+        );
+    }
+
+    /**
+     * @param $anagraph
+     * @return array
+     */
+    public static function getConfig($anagraph) {
+        $connectors                                         = self::$connectors;
+        $services                                           = self::$services;
+
+        $anagraph->setConfig($connectors, $services, self::TYPE);
+
+        return $services;
+    }
 }
+

@@ -43,7 +43,7 @@ class Filemanager extends vgCommon
             , "services"                                                => null
         )
     );
-    protected $controllers_rev                                          = array();
+    protected $controllers_rev                                          = null;
     protected $path                                                     = null;
     protected $var                                                      = null;
     protected $keys                                                     = null;
@@ -69,6 +69,7 @@ class Filemanager extends vgCommon
             self::$singleton->path                                      = $path;
             self::$singleton->var                                       = $var;
         }
+
         return self::$singleton;
     }
 
@@ -247,6 +248,10 @@ class Filemanager extends vgCommon
         );
     }
 
+    /**
+     * @param null $type
+     * @return bool
+     */
     public function exist($type = null) {
 		$path = $this->getPath($type);
 
@@ -256,10 +261,13 @@ class Filemanager extends vgCommon
 		);
 	}
 
-	/**
-	 *
-	 */
-	public function getPath($type = null, $path = null) {
+
+    /**
+     * @param null $type
+     * @param null $path
+     * @return string
+     */
+    public function getPath($type = null, $path = null) {
 		if(!$type) {
 			$service = reset($this->services);
 			$type = $service["default"];
@@ -311,7 +319,7 @@ class Filemanager extends vgCommon
         {
             $type                                                       = "fs";
             $controller                                                 = "filemanager" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/filemanager/services/" . $type . "_" . $service, true));
+            //require_once($this->getAbsPathPHP("/filemanager/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             //$db                                                         = $driver->getDevice();

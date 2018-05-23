@@ -32,25 +32,47 @@ class filemanagerPhp
     private $config                                             = null;
     private $filemanager                                        = null;
 
+    /**
+     * filemanagerPhp constructor.
+     * @param $filemanager
+     * @param null $data
+     * @param null $config
+     */
     public function __construct($filemanager, $data = null, $config = null)
     {
         $this->filemanager                                      = $filemanager;
         $this->setConfig($config);
     }
 
+    /**
+     * @return null
+     */
     public function getDevice()
     {
         return $this->device;
     }
+
+    /**
+     * @return null
+     */
     public function getConfig()
     {
         return $this->config;
     }
+
+    /**
+     * @param null $config
+     */
     private function setConfig($config = null)
     {
         $this->config                                           = $config;
     }
 
+    /**
+     * @param null $keys
+     * @param null $flags
+     * @return array|mixed
+     */
     public function read($keys = null, $flags = null)
     {
         $res                                                    = array();
@@ -113,6 +135,12 @@ class filemanagerPhp
 
         return $res;
     }
+
+    /**
+     * @param $data
+     * @param null $var
+     * @return mixed
+     */
     public function write($data, $var = null)
     {
 		$path 													= $this->filemanager->getPath($this::EXT);
@@ -128,6 +156,11 @@ class filemanagerPhp
         return $this->filemanager->save("<?php\n" . ' '. $return . var_export($data, true) . ";", $expires, $path);
     }
 
+    /**
+     * @param $data
+     * @param null $var
+     * @return mixed
+     */
     public function update($data, $var = null)
     {
         //$data                                                   = $this->filemanager->getParam("data");
@@ -142,6 +175,11 @@ class filemanagerPhp
         return $this->write($res, $var);
     }
 
+    /**
+     * @param $keys
+     * @param null $flags
+     * @return mixed
+     */
     public function delete($keys, $flags = null)
     {
         if(!$flags)

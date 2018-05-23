@@ -34,6 +34,12 @@ class notifierOnesignal
     private $data                                           = null;
     private $notifier                                       = null;
 
+    /**
+     * notifierOnesignal constructor.
+     * @param $notifier
+     * @param null $data
+     * @param null $config
+     */
     public function __construct($notifier, $data = null, $config = null)
     {
         $this->notifier = $notifier;
@@ -77,18 +83,33 @@ class notifierOnesignal
         curl_close($ch);
     }
 
+    /**
+     * @return null
+     */
     public function getDevice()
     {
         return $this->device;
     }
+
+    /**
+     * @return null
+     */
     public function getConfig()
     {
         return $this->config;
     }
+
+    /**
+     * @return null
+     */
     public function getData()
     {
         return $this->data;
     }
+
+    /**
+     * @todo: da togliere
+     */
     private function setConfig()
     {
         $this->config = $this->notifier->getConfig($this::TYPE);
@@ -110,6 +131,10 @@ class notifierOnesignal
             }
         }
     }
+
+    /**
+     * @param null $data
+     */
     private function setData($data = null)
     {
         $this->data = $this->notifier->getData($this::TYPE, $data);

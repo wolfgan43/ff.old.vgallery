@@ -121,22 +121,33 @@ class statsPage
 																, "user_vars"				=> "array"
 															);
 
-	public function __construct($stats)
+    /**
+     * statsPage constructor.
+     * @param $stats
+     */
+    public function __construct($stats)
 	{
 		$this->stats = $stats;
 
 		$this->stats->setConfig($this->connectors, $this->services);
 		//$this->setConfig();
-       // print_r($this);
-       // die();
 	}
 
-	public function getDevice()
+    /**
+     * @return null
+     */
+    public function getDevice()
 	{
 		return $this->device;
 	}
 
-	public function get_stats($where = null, $set = null, $fields = null)
+    /**
+     * @param null $where
+     * @param null $set
+     * @param null $fields
+     * @return null
+     */
+    public function get_stats($where = null, $set = null, $fields = null)
 	{
 		$arrWhere = $this->normalize_params($where);
 		$arrFields = $this->getPageFields($fields);
@@ -151,17 +162,19 @@ class statsPage
 		return $res;
 	}
 
-	public function sum_vars($where = null, $rules = null) {
+    /**
+     * @param null $where
+     * @param null $rules
+     * @return array
+     */
+    public function sum_vars($where = null, $rules = null) {
 		$res = array();
 		$stats = $this->get_stats($where);
 
 		if(is_array($stats["result"]) && count($stats["result"])) {
 			$pages = $stats["result"];
 
-
 			foreach ($pages AS $page) {
-				$match = array();
-				$fields = array();
 				$user_vars = $page["user_vars"];
 				if (is_array($user_vars) && count($user_vars)) {
 					foreach ($user_vars AS $key => $value) {
@@ -178,7 +191,12 @@ class statsPage
 		return $res;
 	}
 
-	public function get_vars($where = null, $fields = null) {
+    /**
+     * @param null $where
+     * @param null $fields
+     * @return null
+     */
+    public function get_vars($where = null, $fields = null) {
 		$res = null;
 		$stats = $this->get_stats($where);
 
@@ -200,7 +218,8 @@ class statsPage
 					$res[$key] = $page["user_vars"];
 				}
 
-				$key++;
+                if($res[$key])
+				    $key++;
 			}
 		}
 
@@ -210,7 +229,13 @@ class statsPage
 		);
 	}
 
-	public function set_vars($set, $where = null, $old = null) {
+    /**
+     * @param $set
+     * @param null $where
+     * @param null $old
+     * @return null
+     */
+    public function set_vars($set, $where = null, $old = null) {
 		$arrWhere 							= $this->normalize_params($where);
 		if(is_array($set) && count($set)) {
 			$storage 						= $this->getStorage();
@@ -219,7 +244,6 @@ class statsPage
 				$res = $storage->read($arrWhere
 					, array(
 						"user_vars"			=> true
-						//, "author"			=> true
 					));
 
 				$old 						= $res["result"][0]["user_vars"];
@@ -239,7 +263,11 @@ class statsPage
 		return $res;
 	}
 
-	public function write_stats($insert = null, $update = null) {
+    /**
+     * @param null $insert
+     * @param null $update
+     */
+    public function write_stats($insert = null, $update = null) {
 		Stats::getInstance("user")->write($insert["author"]);
 
 		$page = $this->getPageStats();
@@ -256,7 +284,11 @@ class statsPage
 		);
 	}
 
-	private function getPageFields($fields = null) {
+    /**
+     * @param null $fields
+     * @return array|null
+     */
+    private function getPageFields($fields = null) {
 		if(!is_array($fields)) {
 			$fields = array(
 				"title"						=> true
@@ -271,7 +303,10 @@ class statsPage
 		return $fields;
 	}
 
-	private function getPageStats()
+    /**
+     * @return mixed
+     */
+    private function getPageStats()
 	{
 		$cm = cm::getInstance();
 		$globals = ffGlobals::getInstance("gallery");
@@ -319,60 +354,60 @@ class statsPage
 			, "links"					=> $globals->links
 			, "microdata"				=> $globals->microdata
 			, "js"						=> array(
-					"url" 					=> (is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"])
-						? $cm->oPage->page_defer["js"][0]
-						: ""
-					)
-				, "keys" 				=> $page_js
-				)
+					                        "url" => (is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"])
+                                                ? $cm->oPage->page_defer["js"][0]
+                                                : ""
+                                            )
+				                            , "keys" => $page_js
+				                        )
 			, "css"						=> array(
-					"url" 					=> (is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"])
-						? $cm->oPage->page_defer["css"][0]
-						: ""
-					)
-				, "keys" 				=> $page_css
-				)
+                                            "url" => (is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"])
+                                                ? $cm->oPage->page_defer["css"][0]
+                                                : ""
+                                            )
+                                            , "keys" => $page_css
+                                        )
 			, "international"			=> ffTemplate::_get_word_by_code("", null, null, true)
 			, "settings"				=> $globals->page
 			, "template_layers"			=> $globals->cache["layer_blocks"]
 			, "template_sections"		=> $globals->cache["section_blocks"]
 			, "template_blocks"			=> (is_array($globals->cache["layout_blocks"]) && count($globals->cache["layout_blocks"])
-					? array_keys($globals->cache["layout_blocks"])
-					: array()
-				)
+                                            ? array_keys($globals->cache["layout_blocks"])
+                                            : array()
+                                        )
 			, "template_ff"				=> $globals->cache["ff_blocks"]
 			, "keys_D"					=> (is_array($globals->cache["data_blocks"]["D"]) && count($globals->cache["data_blocks"]["D"])
-					? array_keys($globals->cache["data_blocks"]["D"])
-					: array()
-				)
+                                            ? array_keys($globals->cache["data_blocks"]["D"])
+                                            : array()
+                                        )
 			, "keys_G"					=> (is_array($globals->cache["data_blocks"]["G"]) && count($globals->cache["data_blocks"]["G"])
-					? array_keys($globals->cache["data_blocks"]["G"])
-					: array()
-				)
+                                            ? array_keys($globals->cache["data_blocks"]["G"])
+                                            : array()
+                                        )
 			, "keys_M"					=> (is_array($globals->cache["data_blocks"]["M"]) && count($globals->cache["data_blocks"]["M"])
-					? array_keys($globals->cache["data_blocks"]["M"])
-					: array()
-				)
+                                            ? array_keys($globals->cache["data_blocks"]["M"])
+                                            : array()
+                                        )
 			, "keys_S"					=> (is_array($globals->cache["data_blocks"]["S"]) && count($globals->cache["data_blocks"]["S"])
-					? array_keys($globals->cache["data_blocks"]["S"])
-					: array()
-				)
+                                            ? array_keys($globals->cache["data_blocks"]["S"])
+                                            : array()
+                                        )
 			, "keys_T"					=> (is_array($globals->cache["data_blocks"]["T"]) && count($globals->cache["data_blocks"]["T"])
-					? array_keys($globals->cache["data_blocks"]["T"])
-					: array()
-				)
+                                            ? array_keys($globals->cache["data_blocks"]["T"])
+                                            : array()
+                                        )
 			, "keys_V"					=> (is_array($globals->cache["data_blocks"]["V"]) && count($globals->cache["data_blocks"]["V"])
-					? array_keys($globals->cache["data_blocks"]["V"])
-					: array()
-				)
+                                            ? array_keys($globals->cache["data_blocks"]["V"])
+                                            : array()
+                                        )
 			, "http_status"				=> $globals->http_status
 			, "created"					=> $created
 			, "last_update"				=> $created
 			, "cache_last_update"		=> $created
 			, "cache"					=> ($globals->cache["user_path"]
-					? str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
-					: array()
-				)
+                                            ? str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
+                                            : array()
+                                        )
 			, "user_vars"				=> $globals->user_vars
 		);
 
@@ -389,9 +424,9 @@ class statsPage
 			, "http_status"				=> $page["insert"]["http_status"]
 			, "last_update"	        	=> $created
 			, "cache"					=> ($globals->cache["user_path"]
-					? "+" . str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
-					: array()
-				)
+                                            ? "+" . str_replace(CM_CACHE_PATH, "", $globals->cache["file"]["cache_path"]) . "/" . $globals->cache["file"]["primary"]
+                                            : array()
+                                        )
 		);
 
 		$page["update"]["where"] = array(
@@ -415,7 +450,11 @@ class statsPage
 		return $storage;
 	}
 
-	private function normalize_params($params = null) {
+    /**
+     * @param null $params
+     * @return array|null
+     */
+    private function normalize_params($params = null) {
 		if(is_array($params)) {
 			$where 						= $params;
 		} elseif(strlen($params)) {

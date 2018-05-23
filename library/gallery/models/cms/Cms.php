@@ -32,7 +32,7 @@ class Cms extends vgCommon
                                         );
     protected $controllers              = array(
                                         );
-    protected $controllers_rev          = array();
+    protected $controllers_rev          = null;
     protected $connectors               = array(
                                         );
     protected $struct					= array();
@@ -46,10 +46,15 @@ class Cms extends vgCommon
     private $reader						= null;
     private $result                     = null;
 
+    /**
+     * @param null $services
+     * @param null $params
+     * @return Cms|null
+     */
     public static function getInstance($services = null, $params = null)
 	{
 		if (self::$singleton === null)
-			self::$singleton = new Storage($services, $params);
+			self::$singleton = new Cms($services, $params);
         else {
             if($services)
                 self::$singleton->setServices($services);
@@ -57,8 +62,13 @@ class Cms extends vgCommon
 			self::$singleton->setParams($params);
         }
 		return self::$singleton;
-	} 
-    
+	}
+
+    /**
+     * Cms constructor.
+     * @param null $services
+     * @param null $params
+     */
     public function __construct($services = null, $params = null) {
 		$this->loadControllers(__DIR__);
 
@@ -66,7 +76,12 @@ class Cms extends vgCommon
 		$this->setParams($params);
     }
 
-	public static function getUrl($path, $abs = true)
+    /**
+     * @param $path
+     * @param bool $abs
+     * @return string
+     */
+    public static function getUrl($path, $abs = true)
 	{
 		$http 										= "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://";
 		$host 										= $_SERVER["HTTP_HOST"];
@@ -128,7 +143,13 @@ class Cms extends vgCommon
 			) . $path . $query;
 	}
 
-	private static function schema($type = null, $name = null, $default = null) {
+    /**
+     * @param null $type
+     * @param null $name
+     * @param null $default
+     * @return array|null
+     */
+    private static function schema($type = null, $name = null, $default = null) {
 		static $schema = null;
 
 		if(!$schema) {

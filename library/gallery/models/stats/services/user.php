@@ -78,7 +78,11 @@ class statsUser
 																, "user_vars"				=> "array"
 															);
 
-	public function __construct($stats)
+    /**
+     * statsUser constructor.
+     * @param $stats
+     */
+    public function __construct($stats)
 	{
 		$this->stats = $stats;
 
@@ -86,12 +90,21 @@ class statsUser
         //$this->setConfig();
 	}
 
-	public function getDevice()
+    /**
+     * @return null
+     */
+    public function getDevice()
 	{
 		return $this->device;
 	}
 
-	public function get_stats($where = null, $set = null, $fields = null)
+    /**
+     * @param null $where
+     * @param null $set
+     * @param null $fields
+     * @return null
+     */
+    public function get_stats($where = null, $set = null, $fields = null)
 	{
 		$arrWhere = $this->normalize_params($where);
 		$arrFields = $this->getUserFields($fields);
@@ -105,7 +118,12 @@ class statsUser
 		return $res;
 	}
 
-	public function sum_vars($where = null, $rules = null) {
+    /**
+     * @param null $where
+     * @param null $rules
+     * @return array
+     */
+    public function sum_vars($where = null, $rules = null) {
 		$res = array();
 		$stats = $this->get_stats($where);
 
@@ -129,7 +147,44 @@ class statsUser
 		return $res;
 	}
 
-	public function get_vars($where = null, $fields = null) {
+    /**
+     * @param null $where
+     * @param null $fields
+     * @return null
+     */
+    public function get_vars($where = null, $fields = null) {
+        $res = null;
+        $stats = $this->get_stats($where);
+
+        if(is_array($stats["result"]) && count($stats["result"])) {
+            $pages = $stats["result"];
+            $key = 0;
+//todo: da creare gli aggregati
+            if(!is_array($fields) && strlen($fields))
+                $fields = array($fields);
+
+            foreach($pages AS $page) {
+                if (is_array($fields) && count($fields)) {
+                    foreach ($fields AS $field) {
+                        if (array_key_exists($field, $page["user_vars"])) {
+                            $res[$key][$field] = $page["user_vars"][$field];
+                        }
+                    }
+                } else {
+                    $res[$key] = $page["user_vars"];
+                }
+
+                if($res[$key])
+                    $key++;
+            }
+        }
+
+        return (count($res) > 1
+            ? $res
+            : $res[0]
+        );
+    }
+	/*public function get_vars($where = null, $fields = null) {
 		$stats = $this->get_stats($where);
 
 		if(is_array($stats["result"]) && count($stats["result"])) {
@@ -158,9 +213,15 @@ class statsUser
 			? $res
 			: $res[$key]
 		);
-	}
+	}*/
 
-	public function set_vars($set, $where = null, $old = null) {
+    /**
+     * @param $set
+     * @param null $where
+     * @param null $old
+     * @return null
+     */
+    public function set_vars($set, $where = null, $old = null) {
 		$arrWhere 							= $this->normalize_params($where);
 		if(is_array($set) && count($set)) {
 			$storage 						= $this->getStorage();
@@ -188,7 +249,11 @@ class statsUser
 		return $res;
 	}
 
-	public function write_stats($insert = null, $update = null) {
+    /**
+     * @param null $insert
+     * @param null $update
+     */
+    public function write_stats($insert = null, $update = null) {
 		$user = $this->getUserStats();
 
 		$this->getStorage()->write(
@@ -203,7 +268,11 @@ class statsUser
 		);
 	}
 
-	private function getUserFields($fields = null) {
+    /**
+     * @param null $fields
+     * @return array|null
+     */
+    private function getUserFields($fields = null) {
 		if(!is_array($fields)) {
 			$fields = array(
 				"id_anagraph"				=> true
@@ -225,7 +294,10 @@ class statsUser
 		return $fields;
 	}
 
-	private function getUserStats()
+    /**
+     * @return mixed
+     */
+    private function getUserStats()
 	{
 		$globals = ffGlobals::getInstance("gallery");
 
@@ -250,7 +322,6 @@ class statsUser
 			, "user_vars"					=> $globals->author["user_vars"]
 
 		);
-
 		$user["update"]["set"] = array(
 			"tags" 							=> $globals->author["tags"]
 			, "token"						=> $globals->author["token"]
@@ -263,10 +334,12 @@ class statsUser
 
 		return $user;
 	}
-	/**
-	 * User Stats
-	 */
-	private function getStorage()
+
+
+    /**
+     * @return null|Storage
+     */
+    private function getStorage()
 	{
 		$storage = Storage::getInstance($this->services, array(
 			"struct" => $this->struct
@@ -275,7 +348,11 @@ class statsUser
 		return $storage;
 	}
 
-	private function normalize_params($params = null) {
+    /**
+     * @param null $params
+     * @return array|null
+     */
+    private function normalize_params($params = null) {
 		if(is_array($params)) {
 			$where 							= $params;
 		} elseif(strlen($params)) {

@@ -78,7 +78,7 @@ class Notifier extends vgCommon
 												, "struct"					=> "push"
                                             )
                                         );
-    protected $controllers_rev          = array();
+    protected $controllers_rev          = null;
     protected $struct                   = array(
                                             "connectors"                    => array(
                                                 "sql"                       => array(
@@ -138,31 +138,31 @@ class Notifier extends vgCommon
 												)
 											)
 											, "type" => array(
-												"visitor"				=> "string"
-												, "url"                 => "string"
-												, "get"                 => "string"
-												, "domain"              => "string"
-												, "users"               => "arrayOfNumber"
-												, "groups"              => "arrayOfNumber"
-												, "type"                => "string" //tipologia esempio pool, alert, ecc
-												, "title"               => "string"
-												, "message"             => "string"
-												, "media"               => array(
-													"default"			=> "string"
-													, "cover"			=> "string:toImage"
-													, "video"			=> "string:toEembed"
+												"visitor"				    => "string"
+												, "url"                     => "string"
+												, "get"                     => "string"
+												, "domain"                  => "string"
+												, "users"                   => "arrayOfNumber"
+												, "groups"                  => "arrayOfNumber"
+												, "type"                    => "string" //tipologia esempio pool, alert, ecc
+												, "title"                   => "string"
+												, "message"                 => "string"
+												, "media"                   => array(
+													"default"			    => "string"
+													, "cover"			    => "string:toImage"
+													, "video"			    => "string:toEembed"
 												) //contiene cover, embed o altro come fields custom
-												, "reader"              => "string" //mail, server
-												, "actions"             => "array"
-												, "referer"             => "string" //chi ha triggerato la notifica, api, url, nome custom
-												, "expire"              => "number"
-												, "schedule"            => "number" //time_from
-												, "hit"                 => "number"
+												, "reader"                  => "string" //mail, server
+												, "actions"                 => "array"
+												, "referer"                 => "string" //chi ha triggerato la notifica, api, url, nome custom
+												, "expire"                  => "number"
+												, "schedule"                => "number" //time_from
+												, "hit"                     => "number"
 
-												, "created"				=> "number:toTimeElapsed"
-												, "last_update"			=> "number:toDateTime"
-												, "delivered"			=> "boolean"
-												, "display_in"			=> "string"
+												, "created"				    => "number:toTimeElapsed"
+												, "last_update"			    => "number:toDateTime"
+												, "delivered"			    => "boolean"
+												, "display_in"			    => "string"
 											)
                                             , "email"                       => array(
                                                 "struct"                    => array(
@@ -221,10 +221,13 @@ class Notifier extends vgCommon
     private $page						= null;
     private $notify                     = array();
     private $result                     = array();
-    
-    
 
 
+    /**
+     * @param null $services
+     * @param null $params
+     * @return Notifier|null
+     */
     public static function getInstance($services = null, $params = null)
 	{
 		if (self::$singleton === null)
@@ -234,8 +237,13 @@ class Notifier extends vgCommon
 			self::$singleton->setParams($params);
 		}
 		return self::$singleton;
-	}    
-    
+	}
+
+    /**
+     * Notifier constructor.
+     * @param null $services
+     * @param null $params
+     */
     public function __construct($services = null, $params = null)
     {
         $this->loadControllers(__DIR__);
@@ -247,56 +255,63 @@ class Notifier extends vgCommon
          //da aggiungere inizializzazioni classe necessarie come anagraph
     }
 
+    /**
+     * @param $is_delivered
+     * @param null $keys
+     * @return array|null
+     */
     public static function response($is_delivered, $keys = null) {
-		if(DEBUG_PROFILING === true)
-			$start 								= Stats::stopwatch();
+		if(DEBUG_PROFILING === true)                                $start = Stats::stopwatch();
 
-    	$notifier = Notifier::getInstance();
-
+    	$notifier                                                   = Notifier::getInstance();
 		if($is_delivered && is_array($keys) && count($keys)) {
 			$return = null;
 
 			$notifier->update(array(
-				"delivered" => true
+				"delivered"         => true
 			), array(
-				"key" => $keys
-				, "delivered" => false
+				"key"               => $keys
+				, "delivered"       => false
 			));
 		} else {
-			$globals = ffGlobals::getInstance("gallery");
-			check_function("get_user_data");
-			//todo: da implementare la classe anagraph
-			$anagraph = user2anagraph();
+			$globals                                                = ffGlobals::getInstance("gallery");
+			check_function("get_user_data");    //todo: da implementare la classe anagraph
+			$anagraph                                               = user2anagraph();
 
-			$limit_path[] = $globals->page["user_path"];
+			$limit_path[]                                           = $globals->page["user_path"];
 			if($globals->page["user_path"] != "/")
-				$limit_path[] = "/";
+				$limit_path[]                                       = "/";
 
-			$return = $notifier->read(array(
-				"uid" 				=> $anagraph["ID"]
-				, "display_in" 		=> $limit_path
-				, "!key" 			=> $keys
-			), array(
-				"title" 			=> true
-				, "message" 		=> true
-				, "cover"			=> "media.cover"
-				, "video"			=> "media.video"
-				, "class"			=> "media.class"
-				, "type"			=> true
-				, "created" 		=> true
-				, "delivered" 		=> ":toString"
-				)
-			, array(
-				 "created" 			=> "DESC"
-			));
-
-			if(DEBUG_PROFILING === true) {
-				$return["exTime"] = Stats::stopwatch($start);
-			}
+			$return                                                 = $notifier->read(array(
+                                                                        "uid" 				=> $anagraph["ID"]
+                                                                        , "display_in" 		=> $limit_path
+                                                                        , "!key" 			=> $keys
+                                                                    ), array(
+                                                                        "title" 			=> true
+                                                                        , "message" 		=> true
+                                                                        , "cover"			=> "media.cover"
+                                                                        , "video"			=> "media.video"
+                                                                        , "class"			=> "media.class"
+                                                                        , "type"			=> true
+                                                                        , "created" 		=> true
+                                                                        , "delivered" 		=> ":toString"
+                                                                        )
+                                                                    , array(
+                                                                         "created" 			=> "DESC"
+                                                                    ));
 		}
+
+        if(DEBUG_PROFILING === true && is_array($return))           $return["exTime"] = Stats::stopwatch($start);
+
 		return $return;
 	}
 
+    /**
+     * @param null $where
+     * @param null $fields
+     * @param null $sort
+     * @return array|null
+     */
     public function read($where = null, $fields = null, $sort = null)
     {
         $this->clearResult();
@@ -331,7 +346,13 @@ class Notifier extends vgCommon
             return $res;
         }
     }
-	public function update($set, $where)
+
+    /**
+     * @param $set
+     * @param $where
+     * @return array|null
+     */
+    public function update($set, $where)
 	{
 		$this->clearResult();
 
@@ -372,9 +393,23 @@ class Notifier extends vgCommon
 
 		return $this->getResult();
 	}
+
+    /**
+     * @param null $message
+     * @param null $users
+     * @param null $groups
+     * @param null $title
+     * @param null $type
+     * @param null $media
+     * @param null $actions
+     * @param null $schedule
+     * @param null $expire
+     * @param null $referer
+     * @return array|null
+     */
     public function send($message = null, $users = null, $groups = null, $title = null, $type = null, $media = null, $actions = null, $schedule = null, $expire = null, $referer = null)
     {
-        $this->clearResult();
+        $this->clearResult($users || $groups);
 
         $this->traceByVisitor();
 		$this->setMessage($message, $title, $type, $schedule, $expire, $media, $actions, $referer);
@@ -409,6 +444,11 @@ class Notifier extends vgCommon
 
         return $this->getResult();
     }
+
+    /**
+     * @param $params
+     * @return array|null
+     */
     public function sendMail($params)
     {
         if(!isset($this->services["email"]))
@@ -421,14 +461,22 @@ class Notifier extends vgCommon
         return $this->getResult();
     }
 
-	public function getPage()
+    /**
+     * @return null
+     */
+    public function getPage()
 	{
 		if(!$this->page)
 			$this->setPage();
 
 		return $this->page;
 	}
-	public function setPage($url = null)
+
+    /**
+     * @param null $url
+     * @return null
+     */
+    public function setPage($url = null)
 	{
 		if($url)
 			$this->page = $url;
@@ -439,12 +487,17 @@ class Notifier extends vgCommon
 
 		return $this->page;
 	}
-	public function setVisitor($visitor = null)
+
+    /**
+     * @param null $visitor
+     * @return null
+     */
+    public function setVisitor($visitor = null)
 	{
 		if($visitor) {
 			$this->visitor 						= $visitor;
 		} else {
-			//todo: da recuperare con la classe trace
+			//todo: da recuperare con la classe stats
 			require_once($this->getAbsPathPHP("/library/gallery/system/trace"));
 			$visitor 							= system_trace_get_visitor();
 			$this->visitor 						= $visitor["unique"];
@@ -452,7 +505,12 @@ class Notifier extends vgCommon
 
 		return $this->visitor;
 	}
-	public function setUrl($url = null)
+
+    /**
+     * @param null $url
+     * @return mixed|null
+     */
+    public function setUrl($url = null)
 	{
 		if($url) {
 			$this->url 							= $url;
@@ -462,7 +520,12 @@ class Notifier extends vgCommon
 
 		return $this->url;
 	}
-	public function setGet($get = null)
+
+    /**
+     * @param null $get
+     * @return mixed|null
+     */
+    public function setGet($get = null)
 	{
 		if($get) {
 			$this->get 							= $get;
@@ -472,7 +535,12 @@ class Notifier extends vgCommon
 
 		return $this->get;
 	}
-	public function setDomain($domain = null)
+
+    /**
+     * @param null $domain
+     * @return mixed|null
+     */
+    public function setDomain($domain = null)
 	{
 		if($domain) {
 			$this->domain 						= $domain;
@@ -485,7 +553,13 @@ class Notifier extends vgCommon
 
 		return $this->domain;
 	}
-	public function setUsers($users, $reset = true)
+
+    /**
+     * @param $users
+     * @param bool $reset
+     * @return array
+     */
+    public function setUsers($users, $reset = true)
 	{
 		if($reset)
 			$this->users = array();
@@ -494,7 +568,13 @@ class Notifier extends vgCommon
 
 		return $this->users;
 	}
-	public function setGroups($groups, $reset = true)
+
+    /**
+     * @param $groups
+     * @param bool $reset
+     * @return array
+     */
+    public function setGroups($groups, $reset = true)
 	{
 		if($reset)
 			$this->groups = array();
@@ -503,19 +583,41 @@ class Notifier extends vgCommon
 
 		return $this->groups;
 	}
-	public function setType($type)
+
+    /**
+     * @param $type
+     * @return null
+     */
+    public function setType($type)
 	{
 		$this->type = $type;
 
 		return $this->type;
 	}
-	public function setTitle($title)
+
+    /**
+     * @param $title
+     * @return null
+     */
+    public function setTitle($title)
 	{
 		$this->title = $title;
 
 		return $this->title;
 	}
-	public function setMessage($message, $title, $type = null, $schedule = null, $expire = null, $media = null, $actions = null, $referer = null)
+
+    /**
+     * @param $message
+     * @param $title
+     * @param null $type
+     * @param null $schedule
+     * @param null $expire
+     * @param null $media
+     * @param null $actions
+     * @param null $referer
+     * @return mixed|null
+     */
+    public function setMessage($message, $title, $type = null, $schedule = null, $expire = null, $media = null, $actions = null, $referer = null)
 	{
 		if(is_array($message))
 		{
@@ -557,7 +659,13 @@ class Notifier extends vgCommon
 
 		return $this->message;
 	}
-	public function setMedia($media, $reset = true)
+
+    /**
+     * @param $media
+     * @param bool $reset
+     * @return array|null
+     */
+    public function setMedia($media, $reset = true)
 	{
 		if($reset)
 			$this->media = array();
@@ -566,11 +674,21 @@ class Notifier extends vgCommon
 
 		return $this->media;
 	}
-	public function setReader($reader)
+
+    /**
+     * @param $reader
+     */
+    public function setReader($reader)
 	{
 		$this->reader = $reader;
 	}
-	public function setActions($actions, $reset = true)
+
+    /**
+     * @param $actions
+     * @param bool $reset
+     * @return array|null
+     */
+    public function setActions($actions, $reset = true)
 	{//todo: da fare con le calltoactions
 		if($reset)
 			$this->actions = array();
@@ -579,7 +697,12 @@ class Notifier extends vgCommon
 
 		return $this->actions;
 	}
-	public function setReferer($referer)
+
+    /**
+     * @param $referer
+     * @return mixed|null
+     */
+    public function setReferer($referer)
 	{
 		if($referer) {
 			$this->referer                   	= $referer;
@@ -589,37 +712,66 @@ class Notifier extends vgCommon
 
 		return $this->referer;
 	}
-	public function setExpire($expire)
+
+    /**
+     * @param $expire
+     * @return int
+     */
+    public function setExpire($expire)
 	{
 		$this->expire = $expire;
 
 		return $this->expire;
 	}
-	public function setSchedule($schedule)
+
+    /**
+     * @param $schedule
+     * @return string
+     */
+    public function setSchedule($schedule)
 	{
 		$this->schedule = $schedule;
 
 		return $this->schedule;
 	}
-	public function setTimer($timer)
+
+    /**
+     * @param $timer
+     * @return int
+     */
+    public function setTimer($timer)
 	{
 		$this->timer = $timer;
 
 		return $this->timer;
 	}
-	public function setDelivered($delivered)
+
+    /**
+     * @param $delivered
+     * @return bool
+     */
+    public function setDelivered($delivered)
 	{
 		$this->delivered = $delivered;
 
 		return $this->delivered;
 	}
-	public function setDisplayIn($path)
+
+    /**
+     * @param $path
+     * @return string
+     */
+    public function setDisplayIn($path)
 	{
 		$this->display_in = $path;
 
 		return $this->display_in;
 	}
-	public function addMedia($media)
+
+    /**
+     * @param $media
+     */
+    public function addMedia($media)
 	{
 		if(is_array($media)) {
 			foreach($media AS $name => $value) {
@@ -629,6 +781,10 @@ class Notifier extends vgCommon
 			$this->debug("media missing data:" . $media);
 		}
 	}
+
+    /**
+     * @param $actions
+     */
     public function addActions($actions)
     {//todo: da fare con le calltoactions
 		if(is_array($actions)) {
@@ -639,6 +795,10 @@ class Notifier extends vgCommon
 			$this->debug("action missing data:" . $actions);
 		}
     }
+
+    /**
+     * @param $users
+     */
     public function addUsers($users)
     { //todo: da fare con oggetto anagraph
 		if($users) {
@@ -661,7 +821,11 @@ class Notifier extends vgCommon
 			$this->debug("users_empty");
 		}
     }
-	public function addGroups($groups)
+
+    /**
+     * @param $groups
+     */
+    public function addGroups($groups)
 	{ //todo: da fare con oggetto anagraph
 		if($groups) {
 			if(!is_array($groups))
@@ -681,10 +845,20 @@ class Notifier extends vgCommon
 		}
 	}
 
+    /**
+     * @param $fields
+     * @param string $type
+     */
     public function setFields($fields, $type = "fields")
     {
         $this->struct[$type] = array_replace($this->struct[$type], $fields);
     }
+
+    /**
+     * @param $type
+     * @param null $config
+     * @return array|null
+     */
     public function getConfig($type, $config = null)
     {
         if(!$config)
@@ -697,6 +871,12 @@ class Notifier extends vgCommon
 
         return $config;
     }
+
+    /**
+     * @param $type
+     * @param null $data
+     * @return array|mixed|null
+     */
     public function getData($type, $data = null)
     {
         if(is_array($data))
@@ -706,6 +886,12 @@ class Notifier extends vgCommon
 
         return $data;
     }
+
+    /**
+     * @param $type
+     * @param null $prop
+     * @return mixed
+     */
     public function getService($type, $prop = null)
     {
         return ($prop
@@ -713,13 +899,24 @@ class Notifier extends vgCommon
             : $this->services[$type]
         );
     }
-	private function traceByVisitor($visitor = null, $url = null) {
+
+    /**
+     * @param null $visitor
+     * @param null $url
+     */
+    private function traceByVisitor($visitor = null, $url = null) {
 		$this->setVisitor($visitor);
 		$this->setUrl($url);
 		$this->setGet($url);
 		$this->setDomain($url);
 	}
-	private function getFields($fields, $type = "db")
+
+    /**
+     * @param $fields
+     * @param string $type
+     * @return mixed
+     */
+    private function getFields($fields, $type = "db")
 	{
 		if(is_array($fields) && count($fields)) {
 			foreach($fields AS $name => $value) {
@@ -728,6 +925,12 @@ class Notifier extends vgCommon
 		}
 		return $res;
 	}
+
+    /**
+     * @param $name
+     * @param string $type
+     * @return string
+     */
     private function getField($name, $type = "db")
     {
         return ($name == "key"
@@ -735,7 +938,12 @@ class Notifier extends vgCommon
 			: $this->struct["table"][$type][$name]
 		);
     }
-	private function getTypeOf($type) {
+
+    /**
+     * @param $type
+     * @return mixed
+     */
+    private function getTypeOf($type) {
 		foreach($this->struct["table"][$type] AS $name => $field) {
 			$res[$field] = ($this->struct["type"][$name]
 				? $this->struct["type"][$name]
@@ -745,6 +953,12 @@ class Notifier extends vgCommon
 
 		return $res;
 	}
+
+    /**
+     * @param string $fields
+     * @param array $data
+     * @return mixed
+     */
     private function getNotify($fields = "db", $data = array())
     {
         if(!$this->notify[$fields])
@@ -752,6 +966,12 @@ class Notifier extends vgCommon
 
         return $this->notify[$fields];
     }
+
+    /**
+     * @param array $data
+     * @param string $fields
+     * @return mixed
+     */
     private function setNotify($data = array(), $fields = "db")
     {
 		foreach($this->struct["table"][$fields] AS $param => $field)
@@ -766,6 +986,12 @@ class Notifier extends vgCommon
 
         return $notify;
     }
+
+    /**
+     * @param $slice
+     * @param string $type
+     * @return array
+     */
     private function sliceNotify($slice, $type = "db")
     {
 		$notify = $this->notify[$type];
@@ -777,7 +1003,12 @@ class Notifier extends vgCommon
 
         return array_intersect_key($notify, $fields);
     }
-    private function storage($service) 
+
+    /**
+     * @param $service
+     * @return mixed
+     */
+    private function storage($service)
     {
     	$created = time();
         $struct = $this->controllers[$service]["struct"];
@@ -884,7 +1115,7 @@ class Notifier extends vgCommon
 			$this->setReader($service);
 
             $controller                                                 = "notifier" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/notifier/services/" . $type . "_" . $service, true));
+            //require_once($this->getAbsPathPHP("/notifier/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
@@ -906,28 +1137,44 @@ class Notifier extends vgCommon
 			$this->setReader($service);
 
             $controller                                                 = "notifier" . ucfirst($service);
-            require_once($this->getAbsPathPHP("/notifier/services/" . $type . "_" . $service, true));
+            //require_once($this->getAbsPathPHP("/notifier/services/" . $type . "_" . $service, true));
 
             $driver                                                     = new $controller($this);
             $db                                                         = $driver->getDevice();
             $config                                                     = $driver->getConfig();
         }
     }
-    
-    private function addTo($IDs, $type = "users") 
+
+    /**
+     * @param $IDs
+     * @param string $type
+     */
+    private function addTo($IDs, $type = "users")
     {
         if(is_array($IDs))
             $this->$type = array_merge($this->$type, $IDs);
         elseif($IDs)
             array_push($this->$type, $IDs);        
     }
-    private function clearResult() 
+
+    /**
+     *
+     */
+    private function clearResult($reset_recipients = false)
     {
         $this->notify = array();
         $this->result = array();
+        if($reset_recipients) {
+            $this->users = array();
+            $this->grops = array();
+        }
         $this->isError("");
     }
-	private function getResultKeys() {
+
+    /**
+     * @return array
+     */
+    private function getResultKeys() {
 		$keys = array();
 		if(is_array($this->result) && count($this->result)) {
 			foreach ($this->result AS $service => $storage) {
@@ -941,6 +1188,11 @@ class Notifier extends vgCommon
 		}
 		return $keys;
 	}
+
+    /**
+     * @param bool $onlyKey
+     * @return array|null
+     */
     private function getResult($onlyKey = false)
     {
         return ($this->isError()
@@ -952,8 +1204,5 @@ class Notifier extends vgCommon
         );
     }
 
-    private function get_users($users = null, $groups = null)
-    {
 
-    }
 }
