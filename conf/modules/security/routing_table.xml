@@ -18,7 +18,7 @@
             <url>/login$1</url>
         </destination>
         <reverse>/login</reverse>
-        <index>10</index>  
+        <index>10</index>
 	</rule>
     <rule id="mod_sec_activation_it">
         <priority>NORMAL</priority>

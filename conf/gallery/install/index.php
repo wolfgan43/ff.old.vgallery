@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	$domain = installer_get_domain();
 	$path = installer_get_path();
+    $master_token = time();
 
 	/*
 	 * CHECK INTEGRITY
@@ -284,7 +285,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	 *  Define OTHER Vars
 	 */
 
-	$st_appid 					= (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : time()) . "-" ;
+	$st_appid 					= (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : $master_token) . "-" ;
 	$st_session_name 			= str_replace(array("a", "e", "i", "o", "u", "-"), "", strtolower($domain["primary"]));
 	//$st_session_name 			= "PHPSESS_" . substr($st_appid, 1, 8);
 	$st_memory_limit 			= "96M";
@@ -325,7 +326,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	 *  INSTALLATION: INSTALL (config, .htaccess, other)
 	 */
 	$frmAction = $_REQUEST["frmAction"];
-    if($frmAction == "install") 
+    if($frmAction == "install")
     {
         $disk_path              = $_REQUEST["FF_DISK_PATH"];
         $site_path              = $_REQUEST["FF_SITE_PATH"];
@@ -440,7 +441,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         $smtp_conf_password     = $_REQUEST["A_SMTP_CONF_PASSWORD"];
 		$smtp_port              = $_REQUEST["A_SMTP_PORT"];
 		$smtp_secure            = $_REQUEST["A_SMTP_SECURE"];
-        
+
         $email_address          = $_REQUEST["A_FROM_EMAIL"];
         $email_name             = $_REQUEST["A_FROM_NAME"];
         $cc_address             = $_REQUEST["CC_FROM_EMAIL"];
@@ -543,7 +544,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             $database_password = "";
             $database_conf_password = "";
             $strError .= "Database password no match<br />";
-        }    
+        }
 
         //mongo
 		if($mongo_database_password != $mongo_database_conf_password) {
@@ -625,7 +626,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         if(!strlen($email_address))
             $strError .= "Site Email-address empty <br />";
-        
+
         if(!strlen($email_name))
             $strError .= "Site Email-name empty <br />";
 
@@ -647,7 +648,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         if(!$db_res)
             $strError .= "Connection failed to database " . $database_name . "<br />";
-        
+
         if(!is_readable($disk_path . "/conf/gallery/install/structure.sql") || filesize($disk_path . "/conf/gallery/install/structure.sql") <= 0)
             $strError .= "Unable read file: " . $disk_path . "/conf/gallery/install/structure.sql" . "<br />";
 
@@ -772,7 +773,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				, "[SUPERADMIN_PASSWORD]"					=> $password
 
 				, "[MASTER_SITE]"							=> $master_site
-				, "[MASTER_TOKEN]"							=> (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : time())
+				, "[MASTER_TOKEN]"							=> (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : $master_token)
 				, "[PRODUCTION_SITE]"						=> $production_site
 				, "[DEVELOPMENT_SITE]"						=> $development_site
 
