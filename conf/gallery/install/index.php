@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	$domain = installer_get_domain();
 	$path = installer_get_path();
+    $master_token = time();
 
 	/*
 	 * CHECK INTEGRITY
@@ -284,7 +285,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	 *  Define OTHER Vars
 	 */
 
-	$st_appid 					= (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : time()) . "-" ;
+	$st_appid 					= (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : $master_token) . "-" ;
 	$st_session_name 			= str_replace(array("a", "e", "i", "o", "u", "-"), "", strtolower($domain["primary"]));
 	//$st_session_name 			= "PHPSESS_" . substr($st_appid, 1, 8);
 	$st_memory_limit 			= "96M";
@@ -772,7 +773,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				, "[SUPERADMIN_PASSWORD]"					=> $password
 
 				, "[MASTER_SITE]"							=> $master_site
-				, "[MASTER_TOKEN]"							=> (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : time())
+				, "[MASTER_TOKEN]"							=> (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : $master_token)
 				, "[PRODUCTION_SITE]"						=> $production_site
 				, "[DEVELOPMENT_SITE]"						=> $development_site
 
