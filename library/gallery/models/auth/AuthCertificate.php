@@ -191,7 +191,7 @@ class AuthCertificate {
                 default:
             }
         } else {
-            $res                                            = $protocol . "://" . $this->domain["security"][$type . "_url"] . "/" . $name . ".pem";
+            $res                                            = $protocol . "://" . $this->domain["security"]["csr_url"] . "/" . $name . ".pem";
         }
         return $res;
     }
@@ -311,6 +311,8 @@ class AuthCertificate {
                                                                         "indexes"                   => $extraattribs
                                                                     );
                     }
+                    $res["status"]                                  = "0";
+                    $res["error"]                                   = "";
                 } else {
                     $res["status"]                                  = "410";
                     $res["error"]                                   = "Certificate Broken";

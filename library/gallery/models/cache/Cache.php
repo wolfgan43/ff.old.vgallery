@@ -2666,7 +2666,7 @@ class Cache extends vgCommon
     {
 		if(DEBUG_LOG === true) {
             $set_mod = false;
-			$log_path = self::_getDiskPath() . self::BASE_PATH . "/logs";
+			$log_path = self::_getDiskPath("cache") . "/logs";
 			if(!is_dir($log_path))
 				mkdir($log_path, 0777, true);
 
@@ -3056,8 +3056,7 @@ function system_write_cache_stats() {
 			)
 			, "fs"                      => array(
 				"path"                  => "/cache/notify"
-				, "name"                => "title"
-				, "var"					=> "s"
+				, "name"                => array("title")
 			)
 		)
 		, "table" => array(

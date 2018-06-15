@@ -418,6 +418,9 @@ class Mailer extends vgCommon
                                  */
                                 if (is_array($this->attach) && count($this->attach)) {
                                     foreach ($this->attach AS $attach_key => $attach_value) {
+                                        if(strpos(""))
+                                            $mail->addStringAttachment("", "", "", "");
+
                                         if (is_file(DISK_UPDIR . $attach_value))
                                             $mail->AddAttachment(DISK_UPDIR . $attach_value, $attach_key);
                                     }
@@ -578,7 +581,7 @@ class Mailer extends vgCommon
      * @param $attach
      * @param bool $reset
      */
-    public function setAttach($attach, $reset = true)
+    public function setAttach($attach, $reset = false)
 	{
 		if($reset)
 			$this->attach = array();
@@ -596,12 +599,26 @@ class Mailer extends vgCommon
      * @param $attach
      * @param null $name
      */
-    public function addAttach($attach, $name = null)
+    public function addAttach($attach, $name = null, $mime = "application/octet-stream", $encoded = "base64")
 	{
-		if(!$name)
-			$name 								= $attach;
+	    if(strpos($attach, "/") === 0) {
+            if(!is_file(DISK_UPDIR . $attach))              return false;
 
-		$this->attach[$name]                    = $attach;
+            if(!$name)                          $name = $attach;
+
+            $this->attach[$name]["path"]        = $attach;
+        } else {
+            if(!$attach)                                            return false;
+
+            if(!$name)                          $name = time();
+
+            $this->attach[$name]["content"]     = $attach;
+        }
+
+        $this->attach[$name]["mime"]            = $mime;
+        $this->attach[$name]["encoded"]         = $encoded;
+
+        return true;
 	}
 
     /**
@@ -1318,8 +1335,11 @@ class Mailer extends vgCommon
              */
             if (is_array($this->attach) && count($this->attach)) {
                 foreach ($this->attach AS $attach_key => $attach_value) {
-                    if (is_file(DISK_UPDIR . $attach_value))
-                        $mail->AddAttachment(DISK_UPDIR . $attach_value, $attach_key);
+                    if($attach_value["path"]) {
+                        $mail->addAttachment($attach_value["path"], $attach_key, $attach_value["encoded"], $attach_value["mime"]);
+                    } elseif($attach_value["content"]) {
+                        $mail->addStringAttachment($attach_value["content"], $attach_key, $attach_value["encoded"], $attach_value["mime"]);
+                    }
                 }
             }
 

@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 class authToken
 {
     const EXPIRE                                                = "31536000"; //1year
+    const TYPE                                                  = "live";
 
     private $auth                                               = null;
 
@@ -48,88 +49,66 @@ class authToken
     public function check($token, $opt = null) {
         $type                                                   = ($opt["token"] && $opt["token"] !== true
                                                                     ? $opt["token"]
-                                                                    : Auth::TOKEN_TYPE
+                                                                    : $this::TYPE
                                                                 );
-        $select                                                 = ($opt["fields"]
+       /*$select                                                 = ($opt["fields"]
                                                                     ? $opt["fields"]
                                                                     : array()
+                                                                );*/
+
+        $select                                                 = array(
+                                                                    "tokens.token"                  => "name"
+                                                                    , "tokens.expire"
                                                                 );
-        $select[]                                               = "tokens.expire";
+        if($opt["fields"])                                      $select = $select + $opt["fields"];
+        if($opt["user"])                                        $select[] = "users.*";
+        $return                                                 = Anagraph::getInstance("access")->read($select
+                                                                    , array(
+                                                                        "tokens.token"              => $token
+                                                                        , "tokens.type"             => $type
+                                                                    ), null, 1
+                                                                );
 
-        $user                                                   = Anagraph::getInstance("access");
-        $res                                                    = $user->read($select
-                                                                , array(
-                                                                    "tokens.token"                  => $token
-                                                                    , "tokens.type"                 => $type
-                                                                )
-                                                                , null, 1);
-        if($res) {
-            if(is_array($res)) {
-                if (!$res["token"]["expire"] || $res["token"]["expire"] >= time()) {
-                    if($res["token"]["expire"] < 0) {
-                        $setToken                                   = array(
-                                                                        "tokens.token"              => $this->auth->createHash()
-                                                                        , "tokens.expire"           => "-1"
-                                                                    );
-                    }
-                    if($opt["refresh"]) {
-                        if($opt["refresh"] === true) {
-                            //todo: da fare procedura rigenerazione token
-                            $setToken                               = array(
-                                                                        "tokens.token"              => $this->auth->createHash()
-                                                                        , "tokens.expire"           => authToken::EXPIRE
-                                                                    );
-                        } elseif(is_numeric($opt["refresh"])) {
-                            $setToken                               = array(
-                                                                        "tokens.expire"             => $opt["refresh"]
-                                                                    );
-                        } else {
-                            $date 					                = DateTime::createFromFormat('U', ($res["token"]["expire"]
-                                                                        ? $res["token"]["expire"]
-                                                                        : time()
-                                                                    ));
-                            $date->modify("+" . ltrim($opt["refresh"], "+"));
-                            $setToken                               = array(
-                                                                        "tokens.expire"             => $date->getTimestamp()
-                                                                    );
-                        }
-                    }
+        if(is_array($return)) {
+            $t                                                  = ($return["token"]
+                                                                    ? $return["token"]
+                                                                    : $return
+                                                                );
+            if($t["expire"] <= 0  || $t["expire"] >= time()) {
+                //$res                                        = array_intersect_key($return, array_fill_keys($opt["fields"], true));
 
-                    $return                                         = array_intersect_key($res, array_fill_keys($opt["fields"], true));
+                if($t["expire"] < 0 && $opt["refresh"] === null)
+                    $opt["refresh"]                             = "-1";
 
-                    if($setToken) {
-                        $user->update(
-                            $setToken
-                        , array(
-                           "tokens.token"                           => $token
-                            , "tokens.type"                         => $type
-                        ));
-
-                       if($setToken["tokens.token"]) {
-                           $return["token"]                         = array(
-                                                                       "name" => $setToken["tokens.token"]
-                                                                       , "expire" => $setToken["tokens.expire"]
-                                                                   );
-                       }
-                    }
-
-
-                    $return["status"]                               = "0";
-                    $return["error"]                                = "";
+                if($opt["refresh"] !== null) {
+                    $res                                        = $this->refresh($token, $opt["refresh"], $type);
                 } else {
-                    $return["status"]                               = "401";
-                    $return["error"]                                = "Wrong Fields";
+                    $res                                        = array("token" => $t);
+                    $res["status"]                              = "0";
+                    $res["error"]                               = "";
+                }
+
+                if($opt["user"])                                $res["user"] = $return["user"];
+
+                if($opt["fields"] && is_array($res) && $res["status"] === "0") {
+                    foreach ($opt["fields"] AS $name => $asName) {
+                        if($return[$asName])
+                            $res[$asName] = $return[$asName];
+                    }
                 }
             } else {
-                $return["status"]                                   = "400";
-                $return["error"]                                    = "Wrong Fields";
+                $res["status"]                                  = "401";
+                $res["error"]                                   = "Token Expired";
             }
+        } elseif(!$return) {
+            $res["status"]                                      = "404";
+            $res["error"]                                       = "Token Not Found";
         } else {
-            $return["status"]                                       = "404";
-            $return["error"]                                        = "Token Not Found";
+            $res["status"]                                      = "500";
+            $res["error"]                                       = $return;
         }
 
-        return $return;
+        return $res;
     }
 
 
@@ -149,9 +128,11 @@ class authToken
      * @param $user
      * @param string $type
      */
-    public function create($user, $type = "live")
+    public function create($key = null, $app_id = Auth::APPID)
     {
+        if(!$key)                                               $key = time();
 
+        return sha1($app_id . $key);
     }
 
     /**
@@ -168,34 +149,136 @@ class authToken
      * @return array
      */
     public function get($ID_user, $opt = null) {
-        $token                                                  = null;
-        $user                                                   = Anagraph::getInstance("access");
-
-        $select                                                 = ($opt["fields"]
+        $type                                                   = ($opt["token"] && $opt["token"] !== true
+                                                                    ? $opt["token"]
+                                                                    : $this::TYPE
+                                                                );
+       /* $select                                                 = ($opt["fields"]
                                                                     ? $opt["fields"]
                                                                     : array()
-                                                                );
-        $select["tokens.token"]                                 = "name";
-        $select[]                                               = "tokens.expire";
-        $auth                                                   = $user->read($select
-                                                                    , array(
-                                                                        "tokens.ID_user"        => $ID_user
-                                                                        , "tokens.type"         => $opt["type"]
-                                                                    )
-                                                                    , $opt["sort"]
-                                                                    , $opt["limit"]
+                                                                );*/
+        $select                                                 = array(
+                                                                    "tokens.token"              => "name"
+                                                                    , "tokens.expire"
                                                                 );
 
-        if($auth) {
-            if (!$auth["expire"] || $auth["expire"] >= time()) {
-                $res                                            = $auth;
+        $token                                                  = Anagraph::getInstance("access")->read($select
+                                                                    , array(
+                                                                        "tokens.ID_user"        => $ID_user
+                                                                        , "tokens.type"         => $type
+                                                                    )
+
+                                                                );
+
+        if(is_array($token)) {
+            if ($token["expire"] <= 0 || $token["expire"] >= time()) {
+                if($token["expire"] < 0 && !$opt["refresh"])
+                    $opt["refresh"]                             = "-1";
+
+                $res["status"]                                  = "0";
+                $res["error"]                                   = "";
+
+                $res                                            = $res + ($opt["refresh"] !== null
+                                                                    ? $this->refresh($token["name"], $opt["refresh"], $type)
+                                                                    : array("token" => $token)
+                                                                );
+            } else {
+                $res                                            = array("token" => $token);
+                $res["status"]                                  = "401";
+                $res["error"]                                   = "Token Expired";
+            }
+        } elseif(!$token) {
+            if($opt["token"]) {
+                $insert                                         = array(
+                                                                    "tokens.ID_user"    => $ID_user
+                                                                    , "tokens.type"     => $type
+                                                                    , "tokens.token"    => $this->create(Auth::APPID . "-" . $ID_user . "-" . $type)
+                                                                    , "tokens.expire"   => $this::EXPIRE
+                                                                );
+                $result                                         = Anagraph::getInstance("access")->insert($insert);
+                if(is_array($result)) {
+                    $res["token"]                               = array(
+                                                                    "name"              => $insert["tokens.token"]
+                                                                    , "expire"          => $insert["tokens.expire"]
+                                                                );
+                    $res["status"]                              = "0";
+                    $res["error"]                               = "";
+                } else {
+                    $res["status"]                              = "500";
+                    $res["error"]                               = $result;
+                }
+            } else {
+                $res["status"]                                  = "403";
+                $res["error"]                                   = "Token not Found. Unable to Create.";
             }
         } else {
-            $res                                                = $this->create(array(
-                                                                        "ID"                    => $ID_user
+            $res["status"]                                      = "500";
+            $res["error"]                                       = $token;
+        }
+
+        /*if($opt["fields"] && $ID_user && is_array($res) && $res["status"] === "0") {
+            $user                                               = Anagraph::getInstance()->read(
+                                                                    $opt["fields"]
+                                                                    , array(
+                                                                        "ID_user"        => $ID_user
                                                                     )
-                                                                    , $opt["type"]
+
                                                                 );
+            if(is_array($user))                                 $res = array_replace($user, $res);
+        }*/
+
+        return $res;
+    }
+
+    public function refresh($token, $expire = authToken::EXPIRE, $type = AuthToken::TYPE) {
+        $where                                                  = array(
+                                                                    "tokens.token"                  => $token
+                                                                    , "tokens.type"                 => $type
+                                                                );
+
+        if($expire < 0) {
+            $set                                                = array(
+                                                                    "tokens.token"              => $this->create()
+                                                                    , "tokens.expire"           => "-1"
+                                                                );
+        } elseif($expire === true) {
+            $set                                                = array(
+                                                                    "tokens.token"              => $this->create()
+                                                                    , "tokens.expire"           => time() + authToken::EXPIRE
+                                                                );
+        } elseif(is_numeric($expire)) {
+            $set                                                = array(
+                                                                    "tokens.expire"             => $expire
+                                                                );
+        } elseif($expire && is_string($expire)) {
+            $date 					                            = DateTime::createFromFormat('U', $expire);
+            $date->modify("+" . ltrim($expire, "+"));
+            $set                                                = array(
+                                                                    "tokens.expire"             => $date->getTimestamp()
+                                                                );
+        }
+
+        $result                                                 = Anagraph::getInstance("access")->update(
+                                                                    $set
+                                                                    , $where
+                                                                );
+
+        if(!$result) {
+            $res["token"]                                       = array(
+                                                                    "name" => ($set["tokens.token"]
+                                                                        ? $set["tokens.token"]
+                                                                        : $token
+                                                                    )
+                                                                    , "expire" => ($set["tokens.expire"]
+                                                                        ? $set["tokens.expire"]
+                                                                        : $expire
+                                                                    )
+                                                                );
+            $res["status"]                                      = "0";
+            $res["error"]                                       = "";
+        } else {
+            $res["status"]                                      = "500";
+            $res["error"]                                       = $result;
         }
 
         return $res;

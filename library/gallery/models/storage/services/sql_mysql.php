@@ -25,11 +25,13 @@
  */
 
 class storageMysql {
-    const TYPE                                              = "sql";
+    const TYPE                                                                      = "sql";
+    const KEY                                                                       = "ID";
 
-    private $device                                         = null;
-    private $config                                         = null;
-    private $storage                                        = null;
+
+    private $device                                                                 = null;
+    private $config                                                                 = null;
+    private $storage                                                                = null;
 
     /**
      * storageMysql constructor.
@@ -37,19 +39,27 @@ class storageMysql {
      */
     public function __construct($storage)
     {
-        $this->storage = $storage;
-        $this->setConfig();
+        $this->storage                                                              = $storage;
+       // $this->setConfig();
 
-        $this->device = new ffDB_Sql();
-        $this->device->on_error = "ignore";
+        $this->config                                                               = $this->storage->getConfig($this::TYPE);
 
-        if ($this->device->connect($this->config["name"], $this->config["host"], $this->config["username"], $this->config["password"])) {
-            $this->config["key"] = "ID";
+        $this->device                                                               = new ffDB_Sql();
+        $this->device->on_error                                                     = "ignore";
+
+        if ($this->device->connect(
+            $this->config["name"]
+            , $this->config["host"]
+            , $this->config["username"]
+            , $this->config["password"]
+        )) {
+            $this->config["key"]                                                    = $this::KEY;
         } else {
-            $this->device = false;
+            $this->device                                                           = false;
         }
-        $storage->convertData("_id", "ID");
-        $storage->convertWhere("_id", "ID");
+
+        $storage->convertData("_id", $this::KEY);
+        $storage->convertWhere("_id", $this::KEY);
     }
 
     /**
@@ -65,6 +75,19 @@ class storageMysql {
 		{
 			foreach($fields AS $name => $value)
 			{
+			    if($name == "*") {
+			        if($flag == "select") {
+			            $res = null;
+                        $result["select"] = "*";
+			            break;
+                    } else {
+			            continue;
+                    }
+                }
+
+			    $name                                                               = str_replace("`", "", $name);
+                $value                                                              = str_replace("`", "", $value);
+
 				if ($name == "key") {
 					$name 															= $this->config["key"];
 				} elseif(0 && strpos($name, "key") === 1) { //todo: esplode se hai un campo tipo pkey chediventa pID. da verificare perche esiste questa condizione
@@ -79,7 +102,7 @@ class storageMysql {
 				}
 
 				if($flag == "sort") {
-					$res[$name] 													= "`" . $name ."` " . ($value == "DESC"
+					$res[$name] 													= "`" . str_replace(".", "`.`", $name) ."` " . ($value === "-1" || $value === "DESC"
 																						? "DESC"
 																						: "ASC"
 																					);
@@ -132,7 +155,8 @@ class storageMysql {
 						}
 
 						switch ($struct_type) {
-							case "arrayOfNumber":                                                                         //array
+                            case "arrayIncremental":                                                                     //array
+						    case "arrayOfNumber":                                                                        //array
 							case "array":                                                                                //array
 								if (is_array($value) && count($value)) {
 									foreach($value AS $i => $item) {
@@ -248,7 +272,7 @@ class storageMysql {
     /**
      * @todo: da togliere
      */
-    private function setConfig()
+    /*private function setConfig()
     {
         $this->config = $this->storage->getConfig($this::TYPE);
 		if(!$this->config["name"])
@@ -280,7 +304,7 @@ class storageMysql {
 				);
 			}
 		}
-    }
+    }*/
 
     /**
      * @param $keys

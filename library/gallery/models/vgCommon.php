@@ -28,12 +28,15 @@
 abstract class vgCommon 
 {
     const PHP_EXT                       = "php";
+    const MAIN_MODEL                    = "cms";
+
     const SQL_PREFIX					= "FF_DATABASE_";
 	const NOSQL_PREFIX					= "MONGO_DATABASE_";
-	const BASE_PATH                     = "/library/gallery/models";
-	const CONFIG_PATH                   = "/themes/site/config";
+	const LIBS_MODELS_PATH              = "/library/gallery/models";
+	const LIBS_CMS_PATH                 = "/library/gallery";
+	const CONFIG_PATH                   = "/themes/site/conf";
     const JOBS_PATH                     = "/themes/site/jobs";
-    const CACHE_PATH                     = "/cache";
+    const CACHE_PATH                    = "/cache";
 
 	const ASSETS_PATH                   = "/themes/site";
 
@@ -44,6 +47,9 @@ abstract class vgCommon
 
     private $error                      = null;
     private $debug                      = array();
+
+    static $settings                    = array();
+    static $request                     = null;
     static $disk_path                   = null;
     private $theme                      = array(
                                             "cms"           => "gallery"
@@ -76,7 +82,7 @@ abstract class vgCommon
 		if(!self::$disk_path) {
 			self::$disk_path            = (defined("FF_DISK_PATH")
                                             ? FF_DISK_PATH
-                                            : str_replace(self::BASE_PATH, "", __DIR__)
+                                            : str_replace(self::LIBS_MODELS_PATH, "", __DIR__)
                                         );
 		}
 
@@ -87,8 +93,11 @@ abstract class vgCommon
             case "cache":
                 $path                   = self::CACHE_PATH;
                 break;
-            case "class":
-                $path                   = self::BASE_PATH;
+            case "model":
+                $path                   = self::LIBS_MODELS_PATH;
+                break;
+            case "cms":
+                $path                   = self::LIBS_CMS_PATH;
                 break;
             case "config":
                 $path                   = self::CONFIG_PATH;
@@ -96,11 +105,307 @@ abstract class vgCommon
             case "job":
                 $path                   = self::JOBS_PATH;
                 break;
+            case "":
+            case null:
+                break;
             default:
+                $path                   = $what;
+
+                $path_parts             = pathinfo($what);
+                if(!$path_parts['extension']) {
+                    $path               .= "/index." . self::PHP_EXT;
+                }
         }
 
         return self::$disk_path . $path;
 	}
+
+	protected static function schema($arrSettings = null, $key = null) {
+        $class_name                                             = strtolower(get_called_class());
+        if(!self::$settings[$class_name]) {
+            self::$settings[$class_name]                        = array();
+
+            if($class_name == self::MAIN_MODEL) {
+                $params                                         = array(
+                                                                    "default_path"  => self::MAIN_MODEL
+                                                                    , "ext_path"    => "asset"
+                                                                    , "ext_name"    => "settings" . "." . self::PHP_EXT
+                                                                );
+            } else {
+                $params                                         = array(
+                                                                    "default_path"  => "model"
+                                                                    , "ext_path"    => "config"
+                                                                    , "ext_name"    => "settings" . "." . $class_name . "." . self::PHP_EXT
+                                                                );
+
+            }
+
+            $settings_path                                      = self::_getDiskPath($params["default_path"])
+                                                                    . "/settings" . "." . self::PHP_EXT;
+            if (is_file($settings_path)) {
+                $schema                                         = array();
+                require($settings_path);
+
+                self::$settings[$class_name]                    = $schema;
+            }
+
+            $settings_path                                      = self::_getDiskPath($params["ext_path"])
+                                                                    . "/" . $params["ext_name"] ;
+
+            if (is_file($settings_path)) {
+                $schema                                         = array();
+                require($settings_path);
+
+                self::$settings[$class_name]                    = array_replace_recursive(self::$settings[$class_name], $schema);
+            }
+
+            if(is_array($arrSettings) && count($arrSettings)) {
+                foreach($arrSettings AS $key => $path) {
+                    if(is_file($path)) {
+                        ${$key}                                 = array();
+                        require($path);
+                        self::$settings[$class_name][$key]      = ${$key};
+                    }
+                }
+            }
+        }
+
+        return ($key
+            ? self::$settings[$class_name][$key]
+            : self::$settings[$class_name]
+        );
+    }
+    protected static function getPathInfo($user_path = null) {
+        $path_info = $_SERVER["PATH_INFO"];
+
+        return ($user_path
+            ? (strpos($path_info, $user_path) === 0
+                ? substr($path_info, strlen($user_path))
+                : false
+            )
+            : $path_info
+        );
+    }
+
+    protected static function getReq($method = null) {
+        switch(strtolower($method)) {
+            case "post":
+            case "patch":
+            case "delete":
+                $req                                                                    = $_POST;
+                break;
+            case "get":
+                $req                                                                    = $_GET;
+                break;
+            case "cookie":
+                $req                                                                    = $_COOKIE;
+                break;
+            case "session":
+                $req                                                                    = $_SESSION;
+                break;
+            default:
+                $req                                                                    = $_REQUEST;
+
+        }
+
+        return $req;
+    }
+
+    protected static function getRequest($rules = null, $key = null) {
+        $count_max                                                                      = 1000;
+        $count_default                                                                  = 200;
+
+        if(!self::$request) {
+            self::$request                                                              = array(
+                                                                                            "rawdata" => array()
+                                                                                            , "unknown" => array()
+                                                                                        );
+            $request                                                                    = self::getReq($rules["request_method"]);
+
+            if(is_array($request) && count($request)) {
+                self::$request["rawdata"]                                               = $request;
+
+                foreach($request AS $req_key => $req_value) {
+                    //if(is_array($request[$req_key]))                                    continue;
+                    //if(is_array($req_value))                                            continue;
+
+                    $rkf                                                                = str_replace("?", "", $req_key);
+                    switch($rkf) {
+                        case "_ffq_":
+                        case "__nocache__":
+                        case "__debug__":
+                        case "__query__":
+                            unset(self::$request["rawdata"][$req_key]);
+                            break;
+                        case "gclid": //params di google adwords e adsense
+                        case "utm_source":
+                        case "utm_medium":
+                        case "utm_campaign":
+                        case "utm_term":
+                        case "utm_content":
+                            self::$request["gparams"][$rkf]                             = $req_value;
+                            unset(self::$request["rawdata"][$req_key]);
+                            break;
+                        case "q":
+                            self::$request["search"]                                    = $req_value;
+                            break;
+                        case "page":
+                            if(is_numeric($req_value) && $req_value > 0) {
+                                self::$request["navigation"]["page"]                    = $req_value;
+                                //if($req_value > 1)
+                                //    self::$request["query"]["page"]                     = "page=" . urlencode(self::$request["navigation"]["page"]);
+                            }
+                            break;
+                        case "count":
+                            if(is_numeric($req_value) && $req_value > 0) {
+                                self::$request["navigation"]["count"]                   = $req_value;
+
+                                //self::$request["query"]["count"]                        = "count=" . urlencode(self::$request["navigation"]["rec_per_page"]);
+                            }
+                            break;
+                        case "sort":
+                            self::$request["sort"]                                      = $req_value;
+
+                            //self::$request["query"]["sort"]                             = "sort=" . urlencode(self::$request["sort"]["name"]);
+                            break;
+                        case "dir":
+                            self::$request["dir"]                                       = $req_value;
+
+                            //self::$request["query"]["dir"]                              = "dir=" . urlencode(self::$request["sort"]["dir"]);
+                            break;
+                        case "ret_url":
+                        case "lang":
+                            break;
+                        default:
+                            if($req_key != $rkf) {
+                                self::$request["invalid"][$req_key]                     = $req_key . "=" . urlencode($req_value);
+                                unset(self::$request["rawdata"][$req_key]);
+                            } elseif(is_numeric($rkf) && !$req_value) {
+                                self::$request["invalid"][$rkf]                         = $rkf . "=" . urlencode($req_value);
+                                unset(self::$request["rawdata"][$req_key]);
+                            } elseif(!preg_match('/[^a-z\-0-9_\+]/i', $rkf)) {
+                                if(is_array($req_value)) {
+                                    self::$request["unknown"]                               = array_replace((array) self::$request["unknown"], $req_value);
+                                }   else {
+                                    self::$request["unknown"][$rkf]                         = $req_value;
+                                }
+                                /*if(is_array($req_value)) {
+                                    self::$request["search"]["terms"]                   = array_replace((array) self::$request["search"]["terms"], $req_value);
+                                } else {
+                                    self::$request["search"]["terms"][$rkf]             = $req_value;
+                                }*/
+                               // self::$request["invalid"][$rkf]                         = $rkf . "=" . urlencode($req_value);
+                            } else {
+                                self::$request["invalid"][$rkf]                         = $rkf . "=" . urlencode($req_value);
+                            }
+                    }
+                }
+            }
+
+            if (self::$request["navigation"]
+                && self::$request["navigation"]["count"] > $count_max)                  self::$request["navigation"]["count"] = $count_max;
+
+            self::$request["dir"]                                                       = (self::$request["dir"] === "-1" || self::$request["dir"] === "DESC"
+                                                                                            ? "-1"
+                                                                                            : "1"
+                                                                                        );
+        }
+
+        $res                                                                            = self::$request;
+
+        if(!$res["navigation"]["count"]) {
+            $res["navigation"]["count"]                                                 = ($rules["navigation"]["count"]
+                                                                                            ? $rules["navigation"]["count"]
+                                                                                            : $count_default
+                                                                                        );
+        }
+        if(!$res["navigation"]["page"]) {
+            $res["navigation"]["page"]                                                 = ($rules["navigation"]["page"]
+                                                                                            ? $rules["navigation"]["page"]
+                                                                                            : "1"
+                                                                                        );
+        }
+
+        //Mapping Request by Rules
+        if(is_array($rules["mapping"]) && count($rules["mapping"])) {
+            foreach($rules["mapping"] AS $rule_key => $rule_value) {
+                if(!is_array($rule_value))                                              $rule_value = array($rule_value);
+
+                foreach($rule_value AS $rule_type) {
+                    $rKey                                                               = (is_numeric($rule_key)
+                        ? $rule_type
+                        : $rule_key
+                    );
+
+                    if($res["unknown"][$rKey]) {
+                        $res[$rule_type][$rKey]                                         = $res["unknown"][$rKey];
+                        unset( $res["unknown"][$rKey]);
+                    }
+                }
+            }
+        }
+
+        if($key == "query") {
+            //Creation query
+            $res["query"]["select"]                                                     = (array)$rules["select"];
+
+            if(!count($res["unknown"]))                                                 $res["unknown"] = array_combine((array) $rules["default"], (array) $rules["default"]);
+            foreach($res["unknown"] AS $unknown_key => $unknown_value) {
+                if($rules["fields"][$unknown_key])                                      $res["query"]["select"][$rules["fields"][$unknown_key]] = $unknown_value;
+            }
+
+            //da togliere reqallowed
+
+
+            //where calc
+            $res["query"]["where"]                                                      = (array)$rules["where"];
+            if (is_array($res["search"])) {
+                foreach ($res["search"] AS $search_key => $search_value) {
+                    if ($rules["fields"][$search_key] && !$res["query"]["where"][$rules["fields"][$search_key]])
+                        $res["query"]["where"][$rules["fields"][$search_key]]           = $search_value;
+                }
+            } elseif ($res["search"]) {
+                foreach ($rules["fields"] AS $field_key => $field_value) {
+                    $res["query"]["where"]['$or'][$field_value]                         = $res["search"];
+                    //$res["query"]["where"]['$or'][] = array($field_key => $res["search"]);
+                }
+            }
+            if(!count($res["query"]["where"]))                                          $res["query"]["where"] = true;
+
+            //order calc
+            if (is_array($res["sort"])) {
+                foreach ($res["sort"] AS $sort_key => $sort_value) {
+                    if ($rules["fields"][$sort_key] && !$res["query"]["order"][$rules["fields"][$sort_key]])
+                        $res["query"]["order"][$rules["fields"][$sort_key]]             = ($sort_value === "-1" || $sort_value === "DESC"
+                                                                                            ? "-1"
+                                                                                            : ($sort_value === "1" || $sort_value === "ASC"
+                                                                                                ? "1"
+                                                                                                : $res["dir"]
+                                                                                            )
+                                                                                        );
+                }
+            }
+            $res["query"]["order"]                                                      = array_replace((array)$rules["order"], (array)$res["query"]["order"]);
+            if(!count( $res["query"]["order"]))                                         $res["query"]["order"] = null;
+
+            //limit calc
+            if ($res["navigation"]["page"] > 1 && $res["navigation"]["count"]) {
+                $res["query"]["limit"]["skip"]                                          = ($res["navigation"]["page"] - 1) * $res["navigation"]["count"];
+                $res["query"]["limit"]["limit"]                                         = $res["navigation"]["count"];
+            } elseif($res["navigation"]["count"]) {
+                $res["query"]["limit"]                                                  = $res["navigation"]["count"];
+            } else {
+                $res["query"]["limit"]                                                  = null;
+            }
+        }
+
+        return ($key
+            ? $res[$key]
+            : $res
+        );
+    }
+
+
 
     /**
      * @param null $path
@@ -150,7 +455,13 @@ abstract class vgCommon
     {
         if($this->controllers[$controller])
         {
-            $this->services[$controller] = $service;
+            $this->services[$controller] = (is_array($service)
+                ? $service
+                : ($service
+                    ? array_replace($this->controllers[$controller], array("default" => $service))
+                    : $service
+                )
+            );
         }
     }
 
@@ -162,7 +473,7 @@ abstract class vgCommon
     public function debug($note = null, $params = null)
     {
         if($note !== null)
-            $this->debug[$note] = $params;
+            $this->debug[get_called_class()][$note . "-" . time()] = $params;
 
         if($this->debug)
             return $this->debug;
@@ -194,10 +505,12 @@ abstract class vgCommon
      */
     public function isError($error = null)
     {
-        if($error !== null)
+        if ($error === "") {
+            $this->error = null;
+        } elseif($error !== null)
         {
             $this->error = $error;
-            $this->debug["error"][] 			= $error;
+            $this->debug($error);
         }
         if($this->error)
             return $this->error;
@@ -267,6 +580,10 @@ abstract class vgCommon
 		);
 	}
 
+	public function getConfig($name) {
+        return $this->services[$name]["connector"];
+    }
+
     /**
      * @param $connector
      */
@@ -309,51 +626,96 @@ abstract class vgCommon
     /**
      * @param $script_path
      */
-    public function loadControllers($script_path)
+    public function loadControllers($script_path, $controllers = null)
     {
-        static $spl_loaded = null;
+        static $spl_loaded                                                                  = null;
 
         if(!$this->controllers_rev && is_dir($script_path . "/services"))
         {
-            $services = glob($script_path . "/services/*");
+            $services                                                                       = glob($script_path . "/services/*");
             if(is_array($services) && count($services)) {
-                $class = strtolower(get_called_class());
+                $class                                                                      = strtolower(get_called_class());
                 foreach($services AS $service) {
-                    $arrService = explode("_", basename($service, "." . $this::PHP_EXT), 2);
-
+                    $arrService                                                             = explode("_", basename($service, "." . $this::PHP_EXT), 2);
+                    $controller_default                                                     = ($controllers[$arrService[0]]["controller"]
+                                                                                                ? $controllers[$arrService[0]]["controller"]
+                                                                                                : $arrService[1]
+                                                                                            );
                     if( $this->controllers[$arrService[0]]["services"] !== false)
                     {
-                        if(!is_array($this->controllers[$arrService[0]]["services"]))
-                            $this->controllers[$arrService[0]]["default"] = $arrService[1];
+                        $this->controllers[$arrService[0]] = array();
 
-                        $this->controllers[$arrService[0]]["services"][] = $arrService[1];
+                        if(!is_array($this->controllers[$arrService[0]]["services"]) && $controller_default)
+                            $this->controllers[$arrService[0]]["default"]                   = $controller_default;
+                        if($arrService[1])
+                            $this->controllers[$arrService[0]]["services"][]                = $arrService[1];
 
-                        $this->controllers_rev[$class . ucfirst(($arrService[1] ? $arrService[1] : $arrService[0]))] = array(
-                                                                                                                        "type"      => $arrService[0]
-                                                                                                                        , "path"    => $service
-                                                                                                                    );
+                        $this->controllers_rev[$class
+                                                . ucfirst($arrService[1]
+                                                    ? $arrService[1]
+                                                    : $arrService[0]
+                                                )]                                          = array(
+                                                                                                "type"          => $arrService[0]
+                                                                                                , "path"        => $service
+                                                                                            );
                     } else {
-						$this->controllers[$arrService[0]] = array(
-																"default"                   => $arrService[1]
-																, "services"                => null
-																, "storage"                 => null
-																, "struct"					=> null
-															);
+						$this->controllers[$arrService[0]]                                  = array(
+                                                                                                "default"       => $controller_default
+                                                                                                , "services"    => null
+                                                                                                , "storage"     => null
+                                                                                                , "struct"		=> null
+                                                                                            );
 					}
                 }
 
                 if(!$spl_loaded[$script_path]) {
-                    $controllers_rev = $this->controllers_rev;
+                    $controllers_rev                                                        = $this->controllers_rev;
                     spl_autoload_register(function ($name) use ($controllers_rev) {
                         if ($controllers_rev[$name])
                             require_once($controllers_rev[$name]["path"]);
                     });
-                    $spl_loaded[$script_path] = true;
+                    $spl_loaded[$script_path]                                               = true;
                 }
             }
         }
     }
+    public function setConnector($name, $service = null)
+    {
+        $prefix                                                                             = ($service["prefix"] && defined($service["prefix"] . "NAME") && constant($service["prefix"] . "NAME")
+                                                                                                ? $service["prefix"]
+                                                                                                : vgCommon::getPrefix($name)
+                                                                                            );
 
+        $connector["host"]                                                                  = (defined($prefix . "HOST")
+                                                                                                ? constant($prefix . "HOST")
+                                                                                                : "localhost"
+                                                                                            );
+        $connector["username"]                                                              = (defined($prefix . "USER")
+                                                                                                ? constant($prefix . "USER")
+                                                                                                : ""
+                                                                                            );
+        $connector["password"]                                                               = (defined($prefix . "PASSWORD")
+                                                                                                ? constant($prefix . "PASSWORD")
+                                                                                                : ""
+                                                                                            );
+        $connector["name"]                                                                  = ($service["database"]
+                                                                                                ? $service["database"]
+                                                                                                : (defined($prefix . "NAME")
+                                                                                                    ? constant($prefix . "NAME")
+                                                                                                    :  ""
+                                                                                                )
+                                                                                            );
+        $connector["table"]                                                                 = ($service["table"]
+                                                                                                ? $service["table"]
+                                                                                                : ""
+                                                                                            );
+        $connector["key"]                                                                   = ($service["key"]
+                                                                                                ? $service["key"]
+                                                                                                : ""
+                                                                                            );
+
+        return $connector;
+    }
     /**
      * @param $connectors
      * @param $services
@@ -362,41 +724,32 @@ abstract class vgCommon
     public function setConfig(&$connectors, &$services, $ext = null)
     {
         require_once($this->getAbsPathPHP("/config"));
-        $class_path = self::CONFIG_PATH . "/config." . get_called_class() . "." . $ext;
-        if ($ext && is_file($this->getAbsPathPHP($class_path))) {
+        $class_path                                                                         = self::CONFIG_PATH . "/config." . strtolower(get_called_class() . ($ext ? "." . $ext : ""));
+        if (is_file($this->getAbsPathPHP($class_path))) {
             require_once($this->getAbsPathPHP($class_path));
         }
 
         if(is_array($connectors) && count($connectors)) {
             foreach($connectors AS $name => $connector) {
-                if(!$connector["name"]) {
-                    $prefix = ($connector["prefix"] && defined($connector["prefix"] . "NAME") && constant($connector["prefix"] . "NAME")
-                        ? $connector["prefix"]
-                        : vgCommon::getPrefix($name)
-                    );
-                     /*echo $name;
-                    print_r($connector);
-        echo($prefix);*/
-
-                    $connectors[$name]["host"] = (defined($prefix . "HOST")
-                        ? constant($prefix . "HOST")
-                        : "localhost"
-                    );
-                    $connectors[$name]["name"] = (defined($prefix . "NAME")
-                        ? constant($prefix . "NAME")
-                        :  ""
-                    );
-                    $connectors[$name]["username"] = (defined($prefix . "USER")
-                        ? constant($prefix . "USER")
-                        : ""
-                    );
-                    $connectors[$name]["password"] = (defined($prefix . "PASSWORD")
-                        ? constant($prefix . "PASSWORD")
-                        : ""
-                    );
+                if(!$connector["name"]) { //todo: da verificare se serve
+                    $connectors[$name]                                                      = $this->setConnector($name, array(
+                                                                                                "prefix"            => $connector["prefix"]
+                                                                                                , "database"        => ($services[$name]["database"]
+                                                                                                                        ? $services[$name]["database"]
+                                                                                                                        : $connector["name"]
+                                                                                                                    )
+                                                                                                , "table"           => ($services[$name]["table"]
+                                                                                                                        ? $services[$name]["table"]
+                                                                                                                        : $connector["table"]
+                                                                                                                    )
+                                                                                                , "key"           => ($services[$name]["key"]
+                                                                                                                        ? $services[$name]["key"]
+                                                                                                                        : $connector["key"]
+                                                                                                                    )
+                                                                                                ));
                 }
 
-                if(!$connectors[$name]["name"])
+                if(!$connectors[$name]["name"]) //todo: da verificare se serve
                     unset($connectors[$name]);
             }
         }

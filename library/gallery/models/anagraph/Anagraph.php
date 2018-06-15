@@ -28,9 +28,11 @@
 class Anagraph extends vgCommon
 {
     static $singleton                                       = null;
-
+    const DEBUG                                             = DEBUG_MODE;
     const TYPE                                              = "anagraph";
     const MAIN_TABLE                                        = "anagraph";
+
+    public $strict                                          = false;
 
     protected $service                                      = null;
     protected $controllers                                  = array(
@@ -59,7 +61,7 @@ class Anagraph extends vgCommon
                                                                     "service"			=> "php"
                                                                     , "path"            => "/cache/anagraph"
                                                                     , "name"            => array("name", "email", "tel")
-                                                                    , "var"				=> null
+                                                                    , "key"				=> null
                                                                 )
 															);
 	private $struct											= array(
@@ -81,7 +83,15 @@ class Anagraph extends vgCommon
                                                                     , "parent"              => "string"
                                                                     , "smart_url"           => "string"
                                                                     , "referer"             => "string"
-
+                                                                    , "custom1"             => "string"
+                                                                    , "custom2"             => "string"
+                                                                    , "custom3"             => "string"
+                                                                    , "custom4"             => "string"
+                                                                    , "custom5"             => "string"
+                                                                    , "custom6"             => "string"
+                                                                    , "custom7"             => "string"
+                                                                    , "custom8"             => "string"
+                                                                    , "custom9"             => "string"
                                                                 )
                                                                 , "anagraph_type" => array(
                                                                     "ID"                    => "primary"
@@ -125,7 +135,7 @@ class Anagraph extends vgCommon
                                                                     , "surname"             => "string"
                                                                     , "cell"                => "string"
                                                                     , "gender"              => "char"
-                                                                    , "birthdat"            => "date"
+                                                                    , "birthday"            => "date"
                                                                     , "cv"                  => "text"
                                                                     , "abstract"            => "text"
                                                                     , "biography"           => "text"
@@ -260,6 +270,8 @@ class Anagraph extends vgCommon
     protected $fields                                       = array();
 
     private $data                                           = null;
+
+    private $debug                                          = array();
     private $result                                         = array();
 
     /**
@@ -299,19 +311,22 @@ class Anagraph extends vgCommon
      * @return array
      */
     public function read($fields = null, $where = null, $sort = null, $limit = null) {
-        if(DEBUG_PROFILING === true)
-            $start = Stats::stopwatch();
+        if(self::DEBUG)                                                                     $start = Stats::stopwatch();
 
         if(!$where && !$sort && !$limit) {
             $where                                                                          = $fields;
             $fields                                                                         = null;
         }
 
-        $res = $this->get($where, $fields, $sort, $limit);
+        $res                                                                                = $this->get($where, $fields, $sort, $limit);
 
-        if(DEBUG_PROFILING === true && is_array($res))                                      $res["exTime"] = Stats::stopwatch($start);
+        if(self::DEBUG)                                                                     $this->debug("read", array(
+                                                                                                "data" => $this->data
+                                                                                                , "exTime" => Stats::stopwatch($start)
+                                                                                            ));
 
-	    return $res;
+        //print_r($this->data);
+        return $res;
     }
 
     /**
@@ -319,12 +334,14 @@ class Anagraph extends vgCommon
      * @return array|mixed|null
      */
     public function insert($data) {
-	    if(DEBUG_PROFILING === true)
-            $start = Stats::stopwatch();
+	    if(self::DEBUG)                                                                     $start = Stats::stopwatch();
 
         $res                                                                                = $this->set($data);
 
-        if(DEBUG_PROFILING === true && is_array($res))                                      $res["exTime"] = Stats::stopwatch($start);
+        if(self::DEBUG)                                                                     $this->debug("insert", array(
+                                                                                                "data" => $this->data
+                                                                                                , "exTime" => Stats::stopwatch($start)
+                                                                                            ));
 
 	    return $res;
     }
@@ -335,12 +352,14 @@ class Anagraph extends vgCommon
      * @return array|mixed|null
      */
     public function update($set, $where) {
-        if(DEBUG_PROFILING === true)
-            $start = Stats::stopwatch();
+        if(self::DEBUG)                                                                     $start = Stats::stopwatch();
 
         $res                                                                                = $this->set($where, $set);
 
-        if(DEBUG_PROFILING === true && is_array($res))                                      $res["exTime"] = Stats::stopwatch($start);
+        if(self::DEBUG)                                                                     $this->debug("update", array(
+                                                                                                "data" => $this->data
+                                                                                                , "exTime" => Stats::stopwatch($start)
+                                                                                            ));
 
         return $res;
     }
@@ -352,12 +371,14 @@ class Anagraph extends vgCommon
      * @return array|mixed|null
      */
     public function write($where, $set = null, $insert = null) {
-        if(DEBUG_PROFILING === true)
-            $start = Stats::stopwatch();
+        if(self::DEBUG)                                                                     $start = Stats::stopwatch();
 
         $res                                                                                = $this->set($where, $set, $insert);
 
-        if(DEBUG_PROFILING === true && is_array($res))                                      $res["exTime"] = Stats::stopwatch($start);
+        if(self::DEBUG)                                                                     $this->debug("write", array(
+                                                                                                "data" => $this->data
+                                                                                                , "exTime" => Stats::stopwatch($start)
+                                                                                            ));
 
         return $res;
     }
@@ -460,6 +481,8 @@ class Anagraph extends vgCommon
             , "where"                                                                       => $where
         ));
 
+        if($where === true)                                                                 $this->data["main"]["where"] = true;
+
         $this->getData(null, null, $opt);       //try main table
 
         if(is_array($this->data["sub"]) && count($this->data["sub"])) {
@@ -470,7 +493,6 @@ class Anagraph extends vgCommon
             }
         }
 
-
         return $this->getResult();
     }
 
@@ -480,7 +502,7 @@ class Anagraph extends vgCommon
      * @param null $opt
      */
     private function getData($controller = null, $table = null, $opt = null) {
-        $result                                                                             = array();
+        $table_rel                                                                          = false;
         $data                                                                               = (!$controller && !$table
                                                                                                 ? $this->data["main"]
                                                                                                 : $this->data["sub"][$controller][($table
@@ -488,30 +510,51 @@ class Anagraph extends vgCommon
                                                                                                     : $this->getMainTable($controller)
                                                                                                 )]
                                                                                             );
-        $where                                                                              = $this->getFields($data["where"], $data["def"]["alias"]);
+        $where                                                                              = ($data["where"] === true
+                                                                                                ? true
+                                                                                                : $this->getFields($data["where"], $data["def"]["alias"])
+                                                                                            );
+        $table_main                                                                         = ($data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]
+                                                                                                ? $this->data["main"]["def"]["mainTable"]
+                                                                                                : $data["def"]["mainTable"]
+                                                                                            );
 
-        if($data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]] && $this->data["exts"]) {
-            $field_ext                                                                      = $data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]["external"];
-            $field_key                                                                      = $data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]["primary"];
+        if($data["def"]["relationship"][$table_main] && $this->data["exts"]) {
+            $field_ext                                                                      = $data["def"]["relationship"][$table_main]["external"];
+            $field_key                                                                      = $data["def"]["relationship"][$table_main]["primary"];
 
 
-            if($data["def"]["struct"][$field_ext]) {
-                $field_ext                                                                  = $data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]["primary"];
-                $field_key                                                                  = $data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]["external"];
+            if($data["def"]["struct"][$field_ext]) { //imposta la tabella di relazione se la chiave è esterna es:   mol.studi.def.struct.ID_anagraph o doctors.def.struct.ID_anagraph
+//echo "tbl: " . $table . "\n";
+//echo "tbl main: " . $table_main . "\n";
+//echo "pre External: " . $field_ext . "\n";
+//echo "post External: " . $field_key . "\n";
+                //if(!$data["def"]["relationship"][$field_ext]) {
+                $field_ext                                                                  = $data["def"]["relationship"][$table_main]["primary"];
+                $field_key                                                                  = $data["def"]["relationship"][$table_main]["external"];
+                //}
+                $table_rel                                                                  = ($this->data["exts"][$table][$field_ext]
+                                                                                                ? $table
+                                                                                                : $table_main
+                                                                                            );
 
-                $rel_rev                                                                    = true;
+
+//echo "tbl rel: " . $table_rel . "." . $field_ext . "\n";
+//echo "--------------------------\n";
             }
 
-            $ids                                                                            = array_keys($this->data["exts"][$this->data["main"]["def"]["mainTable"]][$field_ext]);
+            $ids                                                                            = (is_array($this->data["exts"][$table_main][$field_ext])
+                                                                                                ? array_keys($this->data["exts"][$table_main][$field_ext])
+                                                                                                : null
+                                                                                            );
             if($ids) {
-                $where[$field_key]                                                          = (count($ids) == 1
+                $where[$this->getFieldAlias($field_key, $data["def"]["alias"])]             = (count($ids) == 1
                                                                                                 ? $ids[0]
                                                                                                 : $ids
                                                                                             );
 
                 $this->data["sub"][$controller][$table]["where"]                            = $where; //for debug
             }
-
 
         }
 
@@ -525,14 +568,22 @@ class Anagraph extends vgCommon
                                                                                                 , array_search("primary", $data["def"]["struct"])
                                                                                             );
 
-            $regs                                                                           = $this->getStorage($data["service"], $data["def"])->read($where, $select, $opt["sort"], $opt["limit"]);
+            $regs                                                                           = $this->getStorage($data["service"], $data["def"])->read(
+                                                                                                ($where === true
+                                                                                                    ? null
+                                                                                                    : $where
+                                                                                                )
+                                                                                                , $select
+                                                                                                , $opt["sort"]
+                                                                                                , $opt["limit"]
+                                                                                            );
             if(is_array($regs)) {
                 if($regs["exts"]) {
                     $this->data["exts"][$data["def"]["mainTable"]]                          = (array) $this->data["exts"][$data["def"]["mainTable"]] + $regs["exts"];
 
                     if($this->data["main"]["select"] && !$this->data["main"]["where"]) {
-                        $field_ext                                                          = $data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]["external"];
-                        $field_key                                                          = $data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]["primary"];
+                        $field_ext                                                          = $data["def"]["relationship"][$table_main]["external"];
+                        $field_key                                                          = $data["def"]["relationship"][$table_main]["primary"];
 
                         $ids                                                                = array_keys($regs["exts"][$field_ext]);
                         if($ids) {
@@ -547,31 +598,40 @@ class Anagraph extends vgCommon
                         }
                     }
                 }
-//print_r($this->data);
+
 
                 if(is_array($regs["keys"]) && count($regs["keys"])) {
                     $table_name                                                             = $data["def"]["table"]["alias"];
-                    $field_ext                                                              = $data["def"]["relationship"][$this->data["main"]["def"]["mainTable"]]["external"];
+
+                    if(!$table_rel)         //se è una maintable ma non anagraph reimposta l'external base es: doctors -> anagraph -> external
+                        $field_ext                                                              = $data["def"]["relationship"][$table_main]["external"];
 
                     foreach($regs["keys"] AS $i => $id) {
                             $result                                                         = ($indexes
                                                                                                 ? array_diff_key($regs["result"][$i], $indexes)
                                                                                                 : $regs["result"][$i]
                                                                                             );
-                            $keys                                                           = ($rel_rev
-                                                                                                ? array_keys($this->data["exts"][$this->data["main"]["def"]["mainTable"]][$field_ext])
-                                                                                                : $this->data["exts"][$this->data["main"]["def"]["mainTable"]][$field_ext][$id]
+
+                            $keys                                                           = ($table_rel
+                                                                                                ? array_keys($this->data["exts"][$table_rel][$field_ext])
+                                                                                                : $this->data["exts"][$table_main][$field_ext][$id]
                                                                                             );
+
                             $ids                                                            = ($sub_ids
                                                                                                 ? $sub_ids
                                                                                                 : $keys
                                                                                             );
-
                         if(is_array($ids) && count($ids)) {
                             foreach($ids AS $id) {
                                 /*if(0 && $opt["limit"] == 1)
                                     $this->setResult($this->result[$id], $result);
                                 else*/
+                                if($table_rel) { //discende fino ad anagraph per fondere i risultati annidati esempio anagraph -> users -> tokens
+                                    $root_ids = $this->data["exts"][anagraph::MAIN_TABLE][$field_key][$id];
+                                    if(is_array($root_ids) && count($root_ids) == 1) {
+                                        $id = $root_ids[0];
+                                    }
+                                }
                                     $this->setResult($this->result[$id][$table_name], $result);
 
                                 /*if($this->result[$id][$table_name]) {
@@ -603,6 +663,8 @@ class Anagraph extends vgCommon
      */
     private function set($where, $set = null, $data = null)
     {
+        $this->clearResult();
+
         if(!$set && !$data) {
             $data                                                                           = $where;
             $where                                                                          = null;
@@ -717,7 +779,7 @@ class Anagraph extends vgCommon
                     $field_ext                                                              = $rel["primary"];
                     $field_key                                                              = $rel["external"];
 
-                    $rel_rev                                                                = true;
+                    //$rel_rev                                                                = true;
                 }
                 if($field_ext && $field_ext != $key_name) {
                     if ($tbl != $this->data["main"]["def"]["mainTable"]) {
@@ -776,7 +838,7 @@ class Anagraph extends vgCommon
             $this->resolveFields($fields, $scope);
         }
 
-        if(!($this->data["main"]["where"] || $this->data["main"]["insert"]) && count($this->services) == 1) {
+        if(!($this->data["main"]["where"] || $this->data["main"]["select"] || $this->data["main"]["insert"]) && count($this->services) == 1) {
             $subService                                                                     = key($this->services);
             $subTable                                                                       = $this->getMainTable($subService);
             $this->data["main"]                                                             = $this->data["sub"][$subService][$subTable];
@@ -854,12 +916,14 @@ class Anagraph extends vgCommon
                     continue;
 
                 if($scope == "insert") {
-                    $this->data["sub"][$service][$table]["insert"][$parts[$fIndex]]          = $alias;
-                    $this->data["sub"][$service][$table]["where"][$parts[$fIndex]]           = $alias;
+                    $this->data["sub"][$service][$table]["insert"][$parts[$fIndex]]         = $alias;
+                    $this->data["sub"][$service][$table]["where"][$parts[$fIndex]]          = $alias;
                 } else {
                     $this->data["sub"][$service][$table][$scope][$parts[$fIndex]]           = $alias;
                 }
             }
+        } elseif($fields === true) {
+            $this->data["main"][$scope] = $fields;
         }
 
         return $this->data;
@@ -873,32 +937,32 @@ class Anagraph extends vgCommon
      */
     private function getFields($fields = array(), $alias = null, &$indexes = null) {
 	    if(is_array($fields) && count($fields)) {
-            $res                                                            = $fields;
+            $res                                                                            = $fields;
 
             if(is_array($indexes) && count($indexes)) {
-                $res                                                        = $res + array_fill_keys(array_keys($indexes), true);
+                $res                                                                        = $res + array_fill_keys(array_keys($indexes), true);
 
                 if (is_array($alias) && count($alias))
-                    $indexes                                                = array_diff_key($indexes, $alias);
+                    $indexes                                                                = array_diff_key($indexes, $alias);
 
                 foreach ($fields AS $field_key => $field_ext) {
-                    if ($indexes[$field_key])                               unset($indexes[$field_key]);
-                    if ($indexes[$field_ext])                               unset($indexes[$field_ext]);
+                    if ($indexes[$field_key])                                               unset($indexes[$field_key]);
+                    if ($indexes[$field_ext])                                               unset($indexes[$field_ext]);
                 }
             }
 
             if (is_array($alias) && count($alias)) {
                 foreach ($alias AS $old => $new) {
                     if ($res[$new]) {
-                        $res[$old]                                          = $res[$new];
-                                                                            unset($res[$new]);
+                        $res[$old]                                                          = $res[$new];
+                                                                                            unset($res[$new]);
                     }
 
-                    if($fields[$old] && $indexes[$new])                     unset($indexes[$new]);
+                    if($fields[$old] && $indexes[$new])                                     unset($indexes[$new]);
                 }
             }
 
-            $indexes["primary_key"]                                         = true;
+            $indexes["primary_key"]                                                         = true;
         }
 
         return $res;
@@ -951,7 +1015,6 @@ class Anagraph extends vgCommon
         }
     }
 
-
     /**
      * @param $name
      * @param null $type
@@ -967,10 +1030,29 @@ class Anagraph extends vgCommon
     private function clearResult()
     {
         $this->data                                                         = array();
+        $this->debug                                                        = array();
         $this->result                                                       = array();
         $this->isError("");
     }
 
+    private function resolveResult() {
+        if($this->strict) {
+            $res                                                            = $this->result;
+        } elseif(is_array($this->result)) {
+            if(count($this->result) > 1) {
+                $res                                                        = array_values($this->result);
+            } else {
+                $res                                                        = current($this->result);
+                if (count($this->data["sub"][$this->data["main"]["service"]]) == 1 && count($res) == 1) {
+                    $res                                                    = current($res);
+                }
+            }
+        } else {
+            $res                                                            = $this->result; // non deve mai entrare qui
+        }
+
+        return $res;
+    }
     /**
      * @return array|mixed|null
      */
@@ -978,13 +1060,7 @@ class Anagraph extends vgCommon
     {
         return ($this->isError()
             ? $this->isError()
-            : (is_array($this->result)
-                ? (count($this->result) > 1
-                    ? array_values($this->result)
-                    : current($this->result)
-                )
-                : $this->result //non deve mai entrare qui
-            )
+            : $this->resolveResult()
         );
     }
 }

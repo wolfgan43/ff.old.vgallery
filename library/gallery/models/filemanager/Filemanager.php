@@ -63,9 +63,6 @@ class Filemanager extends vgCommon
         if (self::$singleton === null) {
             self::$singleton                                            = new Filemanager($services, $path, $var);
         } else {
-			if($services)
-				self::$singleton->setServices($services);
-
             self::$singleton->path                                      = $path;
             self::$singleton->var                                       = $var;
         }
@@ -83,7 +80,10 @@ class Filemanager extends vgCommon
     {
 		$this->loadControllers(__DIR__);
 
-		$this->setServices($services);
+    	$this->setServices(is_array($services)
+            ? $services
+            : array("fs" => $services)
+        );
 
         $this->path                                                     = $path;
         $this->var                                                      = $var;
@@ -313,7 +313,7 @@ class Filemanager extends vgCommon
     private function controller_fs($service = null, $flags = null)
     {
         if(!$service)
-            $service                                                    = $this->controllers["fs"]["default"];
+            $service                                                    = $this->services["fs"]["default"];
 
         if($service)
         {

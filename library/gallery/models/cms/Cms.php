@@ -51,17 +51,12 @@ class Cms extends vgCommon
      * @param null $params
      * @return Cms|null
      */
-    public static function getInstance($services = null, $params = null)
+    public static function getInstance($service, $params = null)
 	{
 		if (self::$singleton === null)
-			self::$singleton = new Cms($services, $params);
-        else {
-            if($services)
-                self::$singleton->setServices($services);
+			self::$singleton = new Cms();
 
-			self::$singleton->setParams($params);
-        }
-		return self::$singleton;
+		return self::$singleton->getService($service, $params);
 	}
 
     /**
@@ -69,13 +64,19 @@ class Cms extends vgCommon
      * @param null $services
      * @param null $params
      */
-    public function __construct($services = null, $params = null) {
+    public function __construct() {
 		$this->loadControllers(__DIR__);
-
-		$this->setServices($services);
-		$this->setParams($params);
     }
+    private function getService($service, $params = null) {
+        $controller                     = "cms" . ucfirst($service);
 
+        $this->controllers[$service]    = ($this->controllers_rev[$controller]
+                                            ? new $controller($this, $params)
+                                            : false
+                                        );
+
+        return $this->controllers[$service];
+    }
     /**
      * @param $path
      * @param bool $abs
@@ -143,27 +144,34 @@ class Cms extends vgCommon
 			) . $path . $query;
 	}
 
+    public static function redirect($destination, $http_response_code = null, $request_uri = null)
+    {
+        if($http_response_code === null)
+            $http_response_code = 301;
+        if($request_uri === null)
+            $request_uri = $_SERVER["REQUEST_URI"];
+
+        //system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
+        Cache::log(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
+
+        cache_send_header_content(false, false, false, false);
+
+        if(strpos($destination, "/") !== 0)
+            $destination = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $destination;
+
+        header("Location: " . $destination, true, $http_response_code);
+        exit;
+    }
     /**
      * @param null $type
      * @param null $name
      * @param null $default
      * @return array|null
      */
-    private static function schema($type = null, $name = null, $default = null) {
-		static $schema = null;
-
-		if(!$schema) {
-			require(self::_getDiskPath() . "/library/gallery/settings.php");
-			if(is_file(self::_getDiskPath() . "/themes/site/settings.php")) {
-				require(self::_getDiskPath() . "/themes/site/settings.php");
-			}
-			if(is_file(self::_getDiskPath("cache") . "/locale.php")) {
-				require(self::_getDiskPath("cache") . "/locale.php");
-
-				/** @var include $locale */
-				$schema["locale"] = $locale;
-			}
-		}
+    protected static function schema($type = null, $name = null, $default = null) {
+        $schema = parent::schema(array(
+            "locale" => self::_getDiskPath("cache") . "/locale." . self::PHP_EXT
+        ));
 
 		if(is_array($default) && count($default)) {
 			if($type && $name && is_array($schema[$type][$name]) && count($schema[$type][$name]) && is_array($default)) {
@@ -180,4 +188,6 @@ class Cms extends vgCommon
 		else
 			return $schema;
 	}
+
+
 }

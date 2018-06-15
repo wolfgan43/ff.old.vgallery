@@ -56,8 +56,7 @@ class statsActions
 																, "fs"                      => array(
 																	"path"                  => "/cache/actions"
 																	, "name"                => "title"
-																	, "var"					=> "s"
-																	)
+                                                                )
 															);
 	private $struct											= array(
 																"id_anagraph"				=> "number"
@@ -76,6 +75,10 @@ class statsActions
 																, "last_login"				=> "number"
 																, "user_vars"				=> "array"
 															);
+    private $relationship									= array();
+    private $indexes										= array();
+    private $tables											= array();
+    private $alias											= array();
 
 	public function __construct($stats)
 	{
@@ -103,24 +106,24 @@ class statsActions
 		return $res;
 	}
 
-	public function get_vars($where = null, $fields = null) {
+	public function get_vars($where = null, $fields = null, $table = "user_vars") {
 		$stats = $this->get_stats($where);
 
 		if(is_array($stats["result"]) && count($stats["result"])) {
-			$users = $stats["result"];
-			foreach($users AS $user) {
-				$key = implode("|", array_intersect_key($user, $where));
+			$results = $stats["result"];
+			foreach($results AS $result) {
+				$key = implode("|", array_intersect_key($result, $where));
 
 				if (is_array($fields) && count($fields)) {
 					foreach ($fields AS $field) {
-						if (array_key_exists($field, $user["user_vars"])) {
-							$res[$key][$field] = $user["user_vars"][$field];
+						if (array_key_exists($field, $result[$table])) {
+							$res[$key][$field] = $result[$table][$field];
 						}
 					}
-				} elseif (strlen($fields) && array_key_exists($fields, $user["user_vars"])) {
-					$res[$key] = $user["user_vars"][$fields];
+				} elseif (strlen($fields) && array_key_exists($fields, $result[$table])) {
+					$res[$key] = $result[$table][$fields];
 				} else {
-					$res[$key] = $user["user_vars"];
+					$res[$key] = $result[$table];
 				}
 			}
 		}
@@ -131,33 +134,33 @@ class statsActions
 		);
 	}
 
-	public function set_vars($set, $where = null, $old = null) {
-		$arrWhere 							= $this->normalize_params($where);
-		if(is_array($set) && count($set)) {
-			$storage 						= $this->getStorage();
+    /**
+     * @param $set
+     * @param null $where
+     * @param string $table
+     * @return null
+     */
+    public function set_vars($set, $where = null, $table = "user_vars") {
+        $arrWhere 							= $this->normalize_params($where);
+        if(is_array($set) && count($set)) {
+            $storage 						= $this->getStorage();
 
-			if(!$old) {
-				$res = $storage->read($arrWhere
-					, array(
-						"user_vars"			=> true
-					));
+            $res                            = $storage->read($arrWhere);
+            $old 						    = $res["result"][0];
 
-				$old 						= $res["result"][0]["user_vars"];
-			}
+            if(is_array($old)) {
+                $set                        = array($table => $set);
+                $user_vars                  = $this->stats->normalize_fields($set, array_intersect_key($old, $set));
+            }
+        }
 
-			if(is_array($old))
-				$user_vars 					= $this->stats->normalize_fields($set, $old);
-		}
+        if($user_vars && $where) {
+            $user_vars["last_update"]       = time();
+            $update                         = $storage->update($user_vars, $arrWhere);
+        }
 
-		if($user_vars && $where) {
-			$res = $storage->update(array(
-				"user_vars" 				=> $user_vars
-				, "last_update"				=> time()
-			), $arrWhere);
-		}
-
-		return $res;
-	}
+        return $res;
+    }
 
 	public function write_stats($insert = null, $update = null) {
 		$user = $this->getUserStats();
@@ -173,6 +176,21 @@ class statsActions
 			)
 		);
 	}
+
+    /**
+     * @param $type
+     * @return array
+     */
+    public function getStruct() {
+        return array(
+            "struct"                                        => $this->struct
+            , "indexes"                                     => $this->indexes
+            , "relationship"                                => $this->relationship
+            , "table"                                       => $this->tables
+            , "alias"                                       => $this->alias
+            , "connectors"                                  => false
+        );
+    }
 
 	private function getUserFields($fields = null) {
 		if(!is_array($fields)) {
@@ -239,9 +257,7 @@ class statsActions
 	 */
 	private function getStorage()
 	{
-		$storage = Storage::getInstance($this->services, array(
-			"struct" => $this->struct
-		));
+		$storage = Storage::getInstance($this->services, $this->getStruct());
 
 		return $storage;
 	}

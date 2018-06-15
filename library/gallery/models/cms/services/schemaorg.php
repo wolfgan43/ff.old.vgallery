@@ -59,7 +59,6 @@ class cmsSchemaorg
                                                                     "service"			=> "php"
                                                                     , "path"            => "/cache/schemaorg"
                                                                     , "name"            => array("name")
-                                                                    , "var"				=> null
                                                                 )
 															);
 	private $struct											= array(

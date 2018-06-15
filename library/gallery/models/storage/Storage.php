@@ -91,6 +91,41 @@ class Storage extends vgCommon
     private $result                     = null;
 
     /**
+     * I services sono le tipologie di database che si vogliono utilizzare simultaneamente.
+     * Le tipologie di database implementate sono:
+     * nosql (mongoDB)
+     * sql (MySql)
+     * fs (storing su filesytem tramite file: php sotto forma di array, xml, json, csv, log)
+     *
+     * @example Storage::getInstance("nosql");
+     *
+     * @example Storage::getInstance(array("nosql" => "myController(mongodb, cassandra, ecc)"));
+     *
+     * @example Storage::getInstance(array(
+     *                                  "nosql" => "myTable"
+     *                                  , "sql" => array(
+     *                                      "host"          => "myDB Host"
+     *                                      , "username"    => "myDB User"
+     *                                      , "password"    => "myDB Password"
+     *                                      , "database"    => "myDB Name"
+     *                                      , "table"       => "myDB Table"
+     *                                      , "key"         => "myDB Key"
+     *                                      , "controller"  => "mongodb"
+     *                                  )
+     *                              ));
+     *
+     * @example Storage::getInstance(array(
+     *                                  "nosql" => "myTable"
+     *                                  , "sql" => array(
+     *                                      "prefix"		=> "myDB Prefix"
+     *                                      , "table"       => "myDB Table"
+     *                                      , "key"         => "myDB Key"
+     *                                      , "controller"  => "mysql"
+     *                                  )
+     *                              ));
+     *
+     *
+     *
      * @param null $services
      * @param null $params
      * @return null|Storage
@@ -113,7 +148,7 @@ class Storage extends vgCommon
      * @param null $params
      */
     public function __construct($services = null, $params = null) {
-		$this->loadControllers(__DIR__);
+		$this->loadControllers(__DIR__, $services);
 
 		$this->setServices($services);
 		$this->setParams($params);
@@ -143,7 +178,15 @@ class Storage extends vgCommon
             ? $res
             : $res[0];
     }
+    public function find($fields = null, $where = null, $sort = null, $limit = null, $table = null)
+    {
+        if(!$where && !$sort && !$limit) {
+            $where                                                                          = $fields;
+            $fields                                                                         = null;
+        }
 
+        return $this->read($where, $fields, $sort, $limit, $table);
+    }
     /**
      * @param null $where
      * @param null $fields
@@ -154,7 +197,6 @@ class Storage extends vgCommon
      */
     public function read($where = null, $fields = null, $sort = null, $limit = null, $table = null)
     {
-
         $this->clearResult();
         if($this->isError()) 
             return $this->isError();
@@ -279,12 +321,20 @@ class Storage extends vgCommon
                 unset($config["service"]);
             }
         }
-        if(is_array($config))
-            $config = array_replace($this->connectors[$type], array_filter($config));
-        else
-            $config = $this->connectors[$type];
 
+        if($this->connectors[$type]) {
+            if (is_array($config))
+                $config = array_replace($this->connectors[$type], array_filter($config));
+            else
+                $config = $this->connectors[$type];
+        }
         return $config;
+    }
+    public function setConnector($name, $service = null)
+    {
+        if(!$service)                  $service = $this->services[$name];
+
+        return parent::setConnector($name, $service);
     }
 
     /**
@@ -418,46 +468,49 @@ class Storage extends vgCommon
      */
     private function getQuery($driver)
 	{
-		$config                                                 = $driver->getConfig();
+		$config                                                         = $driver->getConfig();
 
-		$query["key"] 											= $config["key"];
-		$query["from"]                                          = $this->getTable($config["table"]);
+		$query["key"] 											        = $config["key"];
+		$query["from"]                                                  = $this->getTable($config["table"]);
+        if($query["from"]) {
+            if($this->action == "read") {
+                $query 												    = $query + $driver->convertFields($this->data, "select");
+            }
+            if($this->action == "insert" || $this->action == "write") {
+                if (!is_array($this->data)) {
+                    $this->isError("data is empty");
+                    return array();
+                }
+                $query 												    = $query + $driver->convertFields($this->data, "insert");
+            }
+            if($this->action == "update" || $this->action == "write") {
+                $query 												    = $query + $driver->convertFields($this->set, "update");
+            }
+            if($this->action == "read" || $this->action == "update" || $this->action == "write") {
+                $query 												    = $query + $driver->convertFields($this->where, "where");
+            }
+            if($this->action == "read" && $this->sort) {
+                $query 												    = $query + $driver->convertFields($this->sort, "sort");
+            }
+            if($this->action == "read" && $this->limit) {
+                $query["limit"] 									    = $this->limit;
+            }
 
+            if(!$config["name"]) {
+                $this->isError($driver::TYPE . "_database_connection_failed");
+            }
+            if(!$query["key"])
+                $this->isError($driver::TYPE . "_key_missing");
 
-		if($this->action == "read") {
-			$query 												= $query + $driver->convertFields($this->data, "select");
-		}
-		if($this->action == "insert" || $this->action == "write") {
-			if (!is_array($this->data)) {
-				$this->isError("data is empty");
-				return array();
-			}
-			$query 												= $query + $driver->convertFields($this->data, "insert");
-		}
-		if($this->action == "update" || $this->action == "write") {
-			$query 												= $query + $driver->convertFields($this->set, "update");
-		}
-		if($this->action == "read" || $this->action == "update" || $this->action == "write") {
-			$query 												= $query + $driver->convertFields($this->where, "where");
-		}
-		if($this->action == "read" && $this->sort) {
-			$query 												= $query + $driver->convertFields($this->sort, "sort");
-		}
-		if($this->action == "read" && $this->limit) {
-			$query["limit"] 									= $this->limit;
-		}
+            if(!$query["from"])
+                $this->isError($driver::TYPE . "_table_missing");
 
-		if(!$config["name"])
-			$this->isError($driver::TYPE . "_database_connection_failed");
+        } else {
+            $query = "Table not Set";
+        }
 
-		if(!$query["key"])
-			$this->isError($driver::TYPE . "_key_missing");
-
-		if(!$query["from"])
-			$this->isError($driver::TYPE . "_table_missing");
-
-		return $query;
-	}
+        return $query;
+    }
 
     /**
      *
@@ -470,14 +523,14 @@ class Storage extends vgCommon
 
             $funcController = "controller_" . $controller;
             $service = $this->$funcController(is_array($services)
-				? $services["service"]
-				: $services
-			);
+                ? $services["service"]
+                : $services
+            );
 
             if($this->action == "read" && is_array($this->result[$service])) {
-            	$this->reader = $service;
-				break;
-			}
+                $this->reader = $service;
+                break;
+            }
         }
     }
 
@@ -496,208 +549,218 @@ class Storage extends vgCommon
         if($service)
         {
             $controller                                                 = "storage" . ucfirst($service);
-           // require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
+            if($this->controllers_rev[$controller]) {
+                // require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
 
-            $driver                                                     = new $controller($this);
-            $db                                                         = $driver->getDevice();
-            //$config                                                     = $driver->getConfig();
+                $driver                                                     = new $controller($this);
+                $db                                                         = $driver->getDevice();
+                //$config                                                     = $driver->getConfig();
 
-            if(!$db)
-                $this->isError($type. "_no_DB");
+                if($db) {
+                    $query = $this->getQuery($driver);
 
-            if($this->isError()) {
-                $this->result[$service] = $this->isError();
-            } else {
-            	$query = $this->getQuery($driver);
-
-                switch($this->action)
-                {
-                    case "read":
-                        $exts = array();
-                        $this->result[$service] = array();
-                        $sSQL = "SELECT " . $query["select"] . "  
-                                FROM " .  $query["from"] . "
-                                WHERE " . $query["where"]
-								. ($query["sort"]
-									? " ORDER BY " . $query["sort"]
-									: ""
-								)
-                                . ($query["limit"]
-                                    ? " LIMIT " . $query["limit"]
-                                    : ""
-                                );
-                        $res = $db->query($sSQL);
-                        if(!$res) {  //todo: da ristrutturare per gli up down
-                        	switch ($db->errno) {
-								case "1146":
-									$driver->up();
-									$res = $db->query($sSQL);
-									break;
-								default:
-							}
-						}
-                        if($res) {
-                            if($this->exts /*&& $query["select"] != "*"*/) {
-                                if (is_array($db->fields_names) && count($db->fields_names)) {
-                                    foreach ($db->fields_names AS $name) {
-                                        if($name == $query["key"])
-                                            $exts[$name] = null;
-                                        elseif (strpos($name, "ID_") === 0)
-                                            $exts[$name] = null;
-                                        elseif ($this->relationship[$name]) {
-                                            $exts[$name] = null;
-                                        } elseif ($this->relationship[$this->alias[$name]]) {
-                                            $exts[$name] = $this->alias[$name];
-                                        }
+                    if(is_array($query)) {
+                        switch($this->action)
+                        {
+                            case "read":
+                                $exts = array();
+                                $this->result[$service] = array();
+                                $sSQL = "SELECT " . $query["select"] . "  
+                                        FROM " .  $query["from"] . "
+                                        WHERE " . $query["where"]
+                                        . ($query["sort"]
+                                            ? " ORDER BY " . $query["sort"]
+                                            : ""
+                                        )
+                                        . ($query["limit"]
+                                            ? " LIMIT " . (is_array($query["limit"])
+                                                ? $query["limit"]["skip"] . ", " . $query["limit"]["limit"]
+                                                : $query["limit"]
+                                            )
+                                            : ""
+                                        );
+                                $res = $db->query($sSQL);
+                                if(!$res) {  //todo: da ristrutturare per gli up down
+                                    switch ($db->errno) {
+                                        case "1146":
+                                            $driver->up();
+                                            $res = $db->query($sSQL);
+                                            break;
+                                        default:
                                     }
                                 }
-                                //if($exts)
-                                    //$this->result[$service]["exts"] = array();
-                            }
-
-							if($db->nextRecord())
-							{
-                                $key = $this->getFieldAlias($query["key"]);
-								do {
-									$this->result[$service]["keys"][] = $db->record[$key];
-                                    if($exts) {
-                                        foreach($exts AS $field_name => $field_alias) {
-                                            if($db->record[$field_name]) {
-                                                /*if(strpos(",") === false) {
-                                                    $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$db->record[$field_name]] = $db->record[$field_name];
-                                                } else {*/
-                                                    $ids = explode(",", $db->record[$field_name]);
-                                                    foreach ($ids AS $id) {
-                                                        $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$id][] = $db->record[$key];
-                                                    }
-                                                    //print_r($ids);
-                                                    //$this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] = (array) $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] + array_fill_keys($ids, $db->record[$query["key"]]);
-                                                //}
+                                if($res) {
+                                    if($this->exts /*&& $query["select"] != "*"*/) {
+                                        if (is_array($db->fields_names) && count($db->fields_names)) {
+                                            foreach ($db->fields_names AS $name) {
+                                                if($name == $query["key"])
+                                                    $exts[$name] = null;
+                                                elseif (strpos($name, "ID_") === 0)
+                                                    $exts[$name] = null;
+                                                elseif ($this->relationship[$name]) {
+                                                    $exts[$name] = null;
+                                                } elseif ($this->relationship[$this->alias[$name]]) {
+                                                    $exts[$name] = $this->alias[$name];
+                                                }
                                             }
                                         }
+                                        //if($exts)
+                                            //$this->result[$service]["exts"] = array();
                                     }
 
-                                    $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
-								} while($db->nextRecord());
-							}
+                                    if($db->nextRecord())
+                                    {
+                                        $key = $this->getFieldAlias($query["key"]);
+                                        do {
+                                            $this->result[$service]["keys"][] = $db->record[$key];
+                                            if($exts) {
+                                                foreach($exts AS $field_name => $field_alias) {
+                                                    if($db->record[$field_name]) {
+                                                        /*if(strpos(",") === false) {
+                                                            $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$db->record[$field_name]] = $db->record[$field_name];
+                                                        } else {*/
+                                                            $ids = explode(",", $db->record[$field_name]);
+                                                            foreach ($ids AS $id) {
+                                                                $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$id][] = $db->record[$key];
+                                                            }
+                                                            //print_r($ids);
+                                                            //$this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] = (array) $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] + array_fill_keys($ids, $db->record[$query["key"]]);
+                                                        //}
+                                                    }
+                                                }
+                                            }
 
-						} else {
-                        	$this->isError("Read - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
-						}
-                        break;
-					case "insert":
-						if($query["insert"])
-						{
-							$sSQL = "INSERT INTO " .  $query["from"] . "
-                                (
-                                    " . $query["insert"]["head"] . "
-                                ) VALUES (
-                                    " . $query["insert"]["body"] . "
-                                )";
-                            $res = $db->execute($sSQL);
-                            if($res) {
-                                $this->result[$service] = array(
-                                    "keys" => $db->getInsertID(true)
-                                );
-                            } else {
-                                $this->isError("Insert - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
-                            }
-						}
-						break;
-                    case "update":
-						if($query["update"] && $query["where"])
-						{
-							$sSQL = "SELECT " . $query["key"] . " 
-									FROM " .  $query["from"] . "
-									WHERE " . $query["where"];
-							$res = $db->query($sSQL);
-							if($res) {
-                                $res = $this->extractKeys($db->getRecordset(), $query["key"]);
+                                            $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
+                                        } while($db->nextRecord());
+                                    }
 
-                                if (is_array($res)) {
-                                    $sSQL = "UPDATE " . $query["from"] . " SET 
-                                                " . $query["update"] . "
-                                            WHERE " . $query["key"] . " IN(" . $db->toSql(implode(",", $res), "Text", false) . ")";
-                                    $db->execute($sSQL);
-
-                                    $this->result[$service] = array(
-                                        "keys" => $res
-                                    );
                                 } else {
-                                    $this->result[$service] = false;
+                                    $this->isError("Read - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
                                 }
-                            } else {
-                                $this->isError("Update - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
-                            }
-						}
-                        break;
-                    case "write":
-                        $keys                                       = null;
-						if($query["update"] && $query["where"])
-						{
-							$sSQL = "SELECT " . $query["key"] . " 
-									FROM " .  $query["from"] . "
-									WHERE " . $query["where"];
-							$res = $db->query($sSQL);
-							if($res) {
-                                $keys                               = $this->extractKeys($db->getRecordset(), $query["key"]);
-                            } else {
-                                $this->isError("Read - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
-                            }
-						}
+                                break;
+                            case "insert":
+                                if($query["insert"])
+                                {
+                                    $sSQL = "INSERT INTO " .  $query["from"] . "
+                                        (
+                                            " . $query["insert"]["head"] . "
+                                        ) VALUES (
+                                            " . $query["insert"]["body"] . "
+                                        )";
+                                    $res = $db->execute($sSQL);
+                                    if($res) {
+                                        $this->result[$service] = array(
+                                            "keys" => $db->getInsertID(true)
+                                        );
+                                    } else {
+                                        $this->isError("Insert - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                    }
+                                }
+                                break;
+                            case "update":
+                                if($query["update"] && $query["where"])
+                                {
+                                    $sSQL = "SELECT " . $query["key"] . " 
+                                            FROM " .  $query["from"] . "
+                                            WHERE " . $query["where"];
+                                    $res = $db->query($sSQL);
+                                    if($res) {
+                                        $res = $this->extractKeys($db->getRecordset(), $query["key"]);
 
-						if(!$this->isError()) {
-                            if(is_array($keys))
-                            {
-                                $sSQL = "UPDATE " .  $query["from"] . " SET 
-                                            " . $query["update"] . "
-                                        WHERE " . $query["key"] . " IN(" . $db->toSql(implode("," , $keys), "Text", false) . ")";
-                                $res = $db->execute($sSQL);
-                                if($res) {
-                                    $this->result[$service] = array(
-                                        "keys"                      => $keys
-                                        , "action"                  => "update"
-                                    );
-                                } else {
-                                    $this->isError("Update - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                        if (is_array($res)) {
+                                            $sSQL = "UPDATE " . $query["from"] . " SET 
+                                                        " . $query["update"] . "
+                                                    WHERE " . $query["key"] . " IN(" . $db->toSql(implode(",", $res), "Text", false) . ")";
+                                            $db->execute($sSQL);
+
+                                            $this->result[$service] = array(
+                                                "keys" => $res
+                                            );
+                                        } else {
+                                            $this->result[$service] = false;
+                                        }
+                                    } else {
+                                        $this->isError("Update - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                    }
                                 }
-                            }
-                            elseif($query["insert"])
-                            {
-                                $sSQL = "INSERT INTO " .  $query["from"] . "
-                                    (
-                                        " . $query["insert"]["head"] . "
-                                    ) VALUES (
-                                        " . $query["insert"]["body"] . "
-                                    )";
-                                $res = $db->execute($sSQL);
-                                if($res) {
-                                    $this->result[$service] = array(
-                                        "keys"                      => $db->getInsertID(true)
-                                        , "action"                  => "insert"
-                                    );
-                                } else {
-                                    $this->isError("Insert - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                break;
+                            case "write":
+                                $keys                                       = null;
+                                if($query["update"] && $query["where"])
+                                {
+                                    $sSQL = "SELECT " . $query["key"] . " 
+                                            FROM " .  $query["from"] . "
+                                            WHERE " . $query["where"];
+                                    $res = $db->query($sSQL);
+                                    if($res) {
+                                        $keys                               = $this->extractKeys($db->getRecordset(), $query["key"]);
+                                    } else {
+                                        $this->isError("Read - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                    }
                                 }
-                            }
+
+                                if(!$this->isError()) {
+                                    if(is_array($keys))
+                                    {
+                                        $sSQL = "UPDATE " .  $query["from"] . " SET 
+                                                    " . $query["update"] . "
+                                                WHERE " . $query["key"] . " IN(" . $db->toSql(implode("," , $keys), "Text", false) . ")";
+                                        $res = $db->execute($sSQL);
+                                        if($res) {
+                                            $this->result[$service] = array(
+                                                "keys"                      => $keys
+                                                , "action"                  => "update"
+                                            );
+                                        } else {
+                                            $this->isError("Update - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                        }
+                                    }
+                                    elseif($query["insert"])
+                                    {
+                                        $sSQL = "INSERT INTO " .  $query["from"] . "
+                                            (
+                                                " . $query["insert"]["head"] . "
+                                            ) VALUES (
+                                                " . $query["insert"]["body"] . "
+                                            )";
+                                        $res = $db->execute($sSQL);
+                                        if($res) {
+                                            $this->result[$service] = array(
+                                                "keys"                      => $db->getInsertID(true)
+                                                , "action"                  => "insert"
+                                            );
+                                        } else {
+                                            $this->isError("Insert - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                        }
+                                    }
+                                }
+                                break;
+                            case "delete":
+                                if($query["where"])
+                                {
+                                    $sSQL = "DELETE FROM " .  $query["from"] . "  
+                                            WHERE " . $query["where"];
+                                    $res = $db->execute($sSQL);
+                                    if($res) {
+                                        $this->result[$service] = true;
+                                    } else {
+                                        $this->isError("Delete - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
+                                    }
+                                }
+                                break;
+                            default:
                         }
-                        break;
-                    case "delete":
-                        if($query["where"])
-                        {
-                            $sSQL = "DELETE FROM " .  $query["from"] . "  
-                                    WHERE " . $query["where"];
-                            $res = $db->execute($sSQL);
-                            if($res) {
-                                $this->result[$service] = true;
-                            } else {
-                                $this->isError("Delete - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
-                            }
-                        }
-                        break;
-                    default:
+                    } else {
+                        $this->isError("Query: " . $query);
+                    }
+                } else {
+                    $this->isError($type . "_no_DB");
                 }
+            } else {
+                $this->isError("Controller not Found");
             }
+        } else {
+            $this->isError("Controller Empty");
         }
 
         return $service;
@@ -718,165 +781,172 @@ class Storage extends vgCommon
         if($service)
         {
             $controller                                                 = "storage" . ucfirst($service);
-            //require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
+            if($this->controllers_rev[$controller]) {
+                //require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
 
-            $driver                                                     = new $controller($this);
-            $db                                                         = $driver->getDevice();
-           // $config                                                     = $driver->getConfig();
+                $driver                                                     = new $controller($this);
+                $db                                                         = $driver->getDevice();
+               // $config                                                     = $driver->getConfig();
 
-            if(!$db)
-                $this->isError($type . "_no_DB");
-
-            if($this->isError()) {
-                $this->result[$service] = $this->isError();
-            } else {
-                //da normalizzare i campi in ingresso esempio:
-                //gestire calcoli hit = hit +1
-                //gestire doppi in un set field array(22,22,22) users
-				$query = $this->getQuery($driver);
-				switch($this->action)
-                {
-                    case "read":
-                        $exts = null;
-                        $res = $db->query(array(
-                            "select" 	=> $query["select"]
-                            , "from" 	=> $query["from"]
-                            , "where" 	=> $query["where"]
-							, "sort" 	=> $query["sort"]
-							, "limit"	=> $query["limit"]
-                        ));
-                        if($res) {
-                            if($this->exts && count($query["select"]) > 0) {
-                                if (is_array($db->fields_names) && count($db->fields_names)) {
-                                    foreach ($db->fields_names AS $name) {
-                                        if($name == $query["key"])
-                                            $exts[$name] = null;
-                                        elseif (strpos($name, "ID_") === 0)
-                                            $exts[$name] = null;
-                                        elseif ($this->relationship[$name]) {
-                                            $exts[$name] = null;
-                                        } elseif ($this->relationship[$this->alias[$name]]) {
-                                            $exts[$name] = $this->alias[$name];
-                                        }
-                                    }
-                                }
-                                //if($exts)
-                                //    $this->result[$service]["exts"] = array();
-                            }
-                            if($db->nextRecord())
-                            {
-                                do {
-                                    $this->result[$service]["keys"][] = $db->record[$query["key"]];
-                                    if($exts) {
-                                        foreach($exts AS $field_name => $field_alias) {
-                                            if($db->record[$field_name]) {
-                                                /*if(strpos(",") === false) {
-                                                    $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$db->record[$field_name]] = $db->record[$field_name];
-                                                } else {*/
-                                                $ids = explode(",", $db->record[$field_name]);
-                                                foreach ($ids AS $id) {
-                                                    $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$id][] = $db->record[$query["key"]];
+                if($db) {
+                    //da normalizzare i campi in ingresso esempio:
+                    //gestire calcoli hit = hit +1
+                    //gestire doppi in un set field array(22,22,22) users
+                    $query = $this->getQuery($driver);
+                    if(is_array($query)) {
+                        switch($this->action)
+                        {
+                            case "read":
+                                $exts = null;
+                                $res = $db->query(array(
+                                    "select" 	=> $query["select"]
+                                    , "from" 	=> $query["from"]
+                                    , "where" 	=> $query["where"]
+                                    , "sort" 	=> $query["sort"]
+                                    , "limit"	=> $query["limit"]
+                                ));
+                                if($res) {
+                                    if($this->exts && count($query["select"]) > 0) {
+                                        if (is_array($db->fields_names) && count($db->fields_names)) {
+                                            foreach ($db->fields_names AS $name) {
+                                                if($name == $query["key"])
+                                                    $exts[$name] = null;
+                                                elseif (strpos($name, "ID_") === 0)
+                                                    $exts[$name] = null;
+                                                elseif ($this->relationship[$name]) {
+                                                    $exts[$name] = null;
+                                                } elseif ($this->relationship[$this->alias[$name]]) {
+                                                    $exts[$name] = $this->alias[$name];
                                                 }
-                                                //$this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] = (array) $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] + array_fill_keys($ids, $db->record[$query["key"]]);
-                                                //}
                                             }
                                         }
+                                        //if($exts)
+                                        //    $this->result[$service]["exts"] = array();
                                     }
-                                    $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
-                                } while($db->nextRecord());
-                            }
-                        } else {
-                            $this->isError("unable to read: " . print_r($query, true));
-                        }
-                        break;
-					case "insert":
-						if($query["insert"])
-						{
-							$res                            = $db->insert($query["insert"], $query["from"]);
-							if($res) {
-                                $this->result[$service] = array(
-                                    "keys"                  => $db->getInsertID(true)
-                                );
-                            } else {
-                                $this->isError("unable to insert: " . print_r($query, true));
-                            }
-						}
-						break;
-                    case "update":
-						if($query["update"] && $query["where"])
-						{
-							$res = $db->update(array(
-								"set" 				        => $query["update"]
-								, "where" 			        => $query["where"]
-							), $query["from"]);
-                            if($res) {
-                                $this->result[$service] = array(
-                                    "keys"                  => $db->getInsertID(true)
-                                );
-                            } else {
-                                $this->isError("unable to update: " . print_r($query, true));
-                            }
-						}
-                        break;
-                    case "write":
-                        $keys                               = null;
-						if($query["update"] && $query["where"])
-						{
-							$res = $db->query(array(
-								"select"			        => array($query["key"] => 1)
-								, "from" 			        => $query["from"]
-								, "where" 			        => $query["where"]
-							));
-							if($res) {
-                                $keys                       = $this->extractKeys($db->getRecordset(), $query["key"]);
-                            } else {
-                                $this->isError("unable to read: " . print_r($query, true));
-                            }
-						}
-                        if(!$this->isError()) {
-                            if(is_array($keys)) {
-                                $update 				    = $driver->convertFields(array($query["key"] => $res), "where");
-                                $update["set"] 			    = $query["update"];
-                                $update["from"] 		    = $query["from"];
+                                    if($db->nextRecord())
+                                    {
+                                        do {
+                                            $this->result[$service]["keys"][] = $db->record[$query["key"]];
+                                            if($exts) {
+                                                foreach($exts AS $field_name => $field_alias) {
+                                                    if($db->record[$field_name]) {
+                                                        /*if(strpos(",") === false) {
+                                                            $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$db->record[$field_name]] = $db->record[$field_name];
+                                                        } else {*/
+                                                        $ids = explode(",", $db->record[$field_name]);
+                                                        foreach ($ids AS $id) {
+                                                            $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$id][] = $db->record[$query["key"]];
+                                                        }
+                                                        //$this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] = (array) $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] + array_fill_keys($ids, $db->record[$query["key"]]);
+                                                        //}
+                                                    }
+                                                }
+                                            }
+                                            $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
+                                        } while($db->nextRecord());
+                                    }
+                                } else {
+                                    $this->isError("unable to read: " . print_r($query, true));
+                                }
+                                break;
+                            case "insert":
+                                if($query["insert"])
+                                {
+                                    $res                            = $db->insert($query["insert"], $query["from"]);
+                                    if($res) {
+                                        $this->result[$service] = array(
+                                            "keys"                  => $db->getInsertID(true)
+                                        );
+                                    } else {
+                                        $this->isError("unable to insert: " . print_r($query, true));
+                                    }
+                                }
+                                break;
+                            case "update":
+                                if($query["update"] && $query["where"])
+                                {
+                                    $res = $db->update(array(
+                                        "set" 				        => $query["update"]
+                                        , "where" 			        => $query["where"]
+                                    ), $query["from"]);
+                                    if($res) {
+                                        $this->result[$service] = array(
+                                            "keys"                  => $db->getInsertID(true)
+                                        );
+                                    } else {
+                                        $this->isError("unable to update: " . print_r($query, true));
+                                    }
+                                }
+                                break;
+                            case "write":
+                                $keys                               = null;
+                                if($query["update"] && $query["where"])
+                                {
+                                    $res = $db->query(array(
+                                        "select"			        => array($query["key"] => 1)
+                                        , "from" 			        => $query["from"]
+                                        , "where" 			        => $query["where"]
+                                    ));
+                                    if($res) {
+                                        $keys                       = $this->extractKeys($db->getRecordset(), $query["key"]);
+                                    } else {
+                                        $this->isError("unable to read: " . print_r($query, true));
+                                    }
+                                }
+                                if(!$this->isError()) {
+                                    if(is_array($keys)) {
+                                        $update 				    = $driver->convertFields(array($query["key"] => $res), "where");
+                                        $update["set"] 			    = $query["update"];
+                                        $update["from"] 		    = $query["from"];
 
-                                $res                        = $db->update($update, $update["from"]);
-                                if($res) {
-                                    $this->result[$service] = array(
-                                        "keys" 				=> $keys
-                                        , "action" 			=> "update"
-                                    );
-                                } else {
-                                    $this->isError("unable to update: " . print_r($query, true));
+                                        $res                        = $db->update($update, $update["from"]);
+                                        if($res) {
+                                            $this->result[$service] = array(
+                                                "keys" 				=> $keys
+                                                , "action" 			=> "update"
+                                            );
+                                        } else {
+                                            $this->isError("unable to update: " . print_r($query, true));
+                                        }
+                                    }
+                                    elseif($query["insert"])
+                                    {
+                                        $res                        = $db->insert($query["insert"], $query["from"]);
+                                        if($res) {
+                                            $this->result[$service] = array(
+                                                "keys" 				=> $db->getInsertID(true)
+                                                , "action" 			=> "insert"
+                                            );
+                                        } else {
+                                            $this->isError("unable to insert: " . print_r($query, true));
+                                        }
+                                    }
                                 }
-                            }
-                            elseif($query["insert"])
-                            {
-                                $res                        = $db->insert($query["insert"], $query["from"]);
-                                if($res) {
-                                    $this->result[$service] = array(
-                                        "keys" 				=> $db->getInsertID(true)
-                                        , "action" 			=> "insert"
-                                    );
-                                } else {
-                                    $this->isError("unable to insert: " . print_r($query, true));
+                                break;
+                            case "delete":
+                                if($query["where"])
+                                {
+                                    $res                            = $db->delete($query["where"], $query["from"]);
+                                    if($res) {
+                                        $this->result[$service]     = true;
+                                    } else {
+                                        $this->isError("unable to delete: " . print_r($query, true));
+                                    }
                                 }
-                            }
+                                break;
+                            default:
                         }
-                        break;
-                    case "delete":
-                        if($query["where"])
-                        {
-                            $res                            = $db->delete($query["where"], $query["from"]);
-                            if($res) {
-                                $this->result[$service]     = true;
-                            } else {
-                                $this->isError("unable to delete: " . print_r($query, true));
-                            }
-                        }
-                        break;
-                    default:
+                    } else {
+                        $this->isError("Query: " . $query);
+                    }
+                } else {
+                    $this->isError($type . "_no_DB");
                 }
+            } else {
+                $this->isError("Controller not Found");
             }
+        } else {
+            $this->isError("Controller Empty");
         }
 
 		return $service;
@@ -892,22 +962,32 @@ class Storage extends vgCommon
     {
 
         $type                                                           = "fs";
+        $config                                                         = $this->getConfig($type);
+
         if(!$service)
-            $service                                                    = $this->controllers[$type]["default"];
+            $service                                                    = $config["service"];
 
         if($service)
         {
-			$config = $this->getConfig($type);
+            if($config["name"]) {
+                if(!is_array($config["name"]))
+                    $config["name"] = array($config["name"]);
 
-			if(is_array($config["name"])) {
-				$filename = implode("/", array_intersect_key($this->where, array_flip($config["name"])));
-			} elseif($config["name"]) {
-				$filename = $this->where[$config["name"]];
-			}
+                $arrFilename                                            = ($this->action == "insert" || $this->action == "write"
+                                                                            ? array_intersect_key($this->data  , array_flip($config["name"]))
+                                                                            : array_intersect_key($this->where , array_flip($config["name"]))
+                                                                        );
+                $filename =(is_array($arrFilename) && count($arrFilename)
+                    ? implode("-", $arrFilename)
+                    : false
+                );
+
+            }
+
 			if($filename) {
-				$file = $this->getDiskPath() . $config["path"] . $filename;
+				$file                                                   = $this->getDiskPath() . $config["path"] . $filename;
 
-				$fs = new Filemanager($service, $file);
+				$fs                                                     = new Filemanager($service, $file);
 
 				switch ($this->action) {
 					case "read":
@@ -937,7 +1017,11 @@ class Storage extends vgCommon
 						break;
 					default:
 				}
-			}
+			} elseif($filename !== false) {
+			    $this->isError("File not Found: " . $filename);
+            }
+        } else {
+            $this->isError("Controller Empty");
         }
 
 		return $service;
@@ -989,6 +1073,13 @@ class Storage extends vgCommon
 					$arrValue                                           = null;
 					$field                                              = null;
                     $toField                                            = null;
+
+                    if($name == "*") {
+                        $res[$this->table["alias"]]                     = $record;
+                        unset($res["*"]);
+                        continue;
+                    }
+
                     if(!is_bool($value)) {
                         $arrType                                        = $this->convert($value);
                         $field                                          = $arrType["field"];
@@ -1006,7 +1097,7 @@ class Storage extends vgCommon
                     } else {
                         $key                                            = $name;
                     }
-
+//echo $key . "\n";
     				if(strpos($field, ".") > 0) {
     					$arrValue                                       = explode(".", $field);
     					if(is_array($record[$arrValue[0]])) {
@@ -1298,14 +1389,17 @@ class Storage extends vgCommon
     }
 
     private function in($source, $convert) {
+        $res                                                                = $source;
         $method                                                             = $convert["name"];
         $params                                                             = $convert["params"];
 
         if(is_array($source)) {
-            foreach($source AS $i => $v) {
-                $res[$i]                                                    = $this->convertWith($v, $method, $params);
+            if(count($source)) {
+                foreach ($source AS $i => $v) {
+                    $res[$i]                                                = $this->convertWith($v, $method, $params);
+                }
             }
-        } else {
+        } elseif($source) {
             $res                                                            = $this->convertWith($source, $method, $params);
         }
 
@@ -1407,7 +1501,8 @@ class Storage extends vgCommon
 			}
 
 			switch($struct_type) {
-				case "arrayOfNumber":																			//array
+                case "arrayIncremental":																//array
+			    case "arrayOfNumber":	    															//array
 				case "array":																			//array
 					if(strrpos($value, "++") === strlen($value) -2) {								//++ to array
 						//skip
@@ -1422,19 +1517,18 @@ class Storage extends vgCommon
 							$fields[$name] = $value;                                                            //array to array
 					} elseif(is_bool($value)) {                                                                //boolean to array
 						$fields[$name] = array((int)$value);
-					} elseif(is_numeric($value) || $struct_type == "arrayOfNumber") {
+					} elseif(is_numeric($value) || $struct_type == "arrayOfNumber" || $struct_type == "arrayIncremental") {
 						if (strpos($value, ".") !== false || strpos($value, ",") !== false)    //double to array
 							$fields[$name] = array((double)$value);
 						else                                                                                //int to array
 							$fields[$name] = array((int)$value);
 					} elseif(strtotime($value)) {															//date to array
 						$fields[$name] = array($value);
-					} elseif($value == "empty") {                                                            //empty to array
+					} elseif($value == "empty" || !$value) {                                                  //empty to array
 						$fields[$name] = array();
 					} else {                                                                                //other to array
 						$fields[$name] = array((string)$value);
 					}
-
 					break;
 				case "boolean":																			//boolean
 					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to boolean

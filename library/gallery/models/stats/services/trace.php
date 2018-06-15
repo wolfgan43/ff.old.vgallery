@@ -57,8 +57,7 @@ class statsTrace
 																	"service"				=> "php"
 																	, "path"                => "/cache/trace"
 																	, "name"                => array("visitor")
-																	, "var"					=> null
-																	)
+                                                                )
 															);
 	private $struct											= array(
 																"visitor"					=> "number"
@@ -89,6 +88,10 @@ class statsTrace
                                                                 , "created"                 => "number"
 																, "user_vars"				=> "array"
 															);
+    private $relationship									= array();
+    private $indexes										= array();
+    private $tables											= array();
+    private $alias											= array();
 
 	public function __construct($stats)
 	{
@@ -118,15 +121,15 @@ class statsTrace
 		return $res;
 	}
 
-	public function sum_vars($where = null, $rules = null) {
+	public function sum_vars($where = null, $rules = null, $table = "user_vars") {
 		$res = array();
 		$stats = $this->get_stats($where);
 
 		if(is_array($stats["result"]) && count($stats["result"])) {
-			$pages = $stats["result"];
+			$results = $stats["result"];
 
-			foreach ($pages AS $page) {
-				$user_vars = $page["user_vars"];
+			foreach ($results AS $result) {
+				$user_vars = $result[$table];
 				if (is_array($user_vars) && count($user_vars)) {
 					foreach ($user_vars AS $key => $value) {
 						foreach ($rules AS $rule) {
@@ -142,26 +145,26 @@ class statsTrace
 		return $res;
 	}
 
-	public function get_vars($where = null, $fields = null) {
+	public function get_vars($where = null, $fields = null, $table = "user_vars") {
 		$res = null;
 		$stats = $this->get_stats($where);
 
 		if(is_array($stats["result"]) && count($stats["result"])) {
-			$pages = $stats["result"];
+			$results = $stats["result"];
 			$key = 0;
 //todo: da creare gli aggregati
 			if(!is_array($fields) && strlen($fields))
 				$fields = array($fields);
 
-			foreach($pages AS $page) {
+			foreach($results AS $result) {
 				if (is_array($fields) && count($fields)) {
 					foreach ($fields AS $field) {
-						if (array_key_exists($field, $page["user_vars"])) {
-							$res[$key][$field] = $page["user_vars"][$field];
+						if (array_key_exists($field, $result[$table])) {
+							$res[$key][$field] = $result[$table][$field];
 						}
 					}
 				} else {
-					$res[$key] = $page["user_vars"];
+					$res[$key] = $result[$table];
 				}
 
                 if($res[$key])
@@ -175,33 +178,33 @@ class statsTrace
 		);
 	}
 
-	public function set_vars($set, $where = null, $old = null) {
-		$arrWhere 							= $this->normalize_params($where);
-		if(is_array($set) && count($set)) {
-			$storage 						= $this->getStorage();
+    /**
+     * @param $set
+     * @param null $where
+     * @param string $table
+     * @return null
+     */
+    public function set_vars($set, $where = null, $table = "user_vars") {
+        $arrWhere 							= $this->normalize_params($where);
+        if(is_array($set) && count($set)) {
+            $storage 						= $this->getStorage();
 
-			if(!$old) {
-				$res = $storage->read($arrWhere
-					, array(
-						"user_vars"			=> true
-					));
+            $res                            = $storage->read($arrWhere);
+            $old 						    = $res["result"][0];
 
-				$old 						= $res["result"][0]["user_vars"];
-			}
+            if(is_array($old)) {
+                $set                        = array($table => $set);
+                $user_vars                  = $this->stats->normalize_fields($set, array_intersect_key($old, $set));
+            }
+        }
 
-			if(is_array($old))
-				$user_vars 					= $this->stats->normalize_fields($set, $old);
-		}
+        if($user_vars && $where) {
+            $user_vars["last_update"]       = time();
+            $update                         = $storage->update($user_vars, $arrWhere);
+        }
 
-		if($user_vars && $where) {
-			$res = $storage->update(array(
-				"user_vars" 				=> $user_vars
-				, "last_update"				=> time()
-			), $arrWhere);
-		}
-
-		return $res;
-	}
+        return $res;
+    }
 
 	public function write_stats($insert = null, $update = null) {
 		Stats::getInstance("user")->write($insert["author"]);
@@ -220,6 +223,20 @@ class statsTrace
 		);
 	}
 
+    /**
+     * @param $type
+     * @return array
+     */
+    public function getStruct() {
+        return array(
+            "struct"                                        => $this->struct
+            , "indexes"                                     => $this->indexes
+            , "relationship"                                => $this->relationship
+            , "table"                                       => $this->tables
+            , "alias"                                       => $this->alias
+            , "connectors"                                  => false
+        );
+    }
 	private function getPageFields($fields = null) {
 		if(!is_array($fields)) {
 			$fields = array(
@@ -247,9 +264,7 @@ class statsTrace
 	 */
 	private function getStorage()
 	{
-		$storage = Storage::getInstance($this->services, array(
-			"struct" => $this->struct
-		));
+		$storage = Storage::getInstance($this->services, $this->getStruct());
 
 		return $storage;
 	}

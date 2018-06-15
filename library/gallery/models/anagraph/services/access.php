@@ -58,8 +58,7 @@ class anagraphAccess
 																	"service"				    => "php"
 																	, "path"                    => "/cache/anagraph/access"
 																	, "name"                    => array("url")
-																	, "var"					    => null
-																	)
+                                                                )
 															);
     private static $struct								    = array(
 	                                                            "users" => array(
@@ -92,6 +91,7 @@ class anagraphAccess
                                                                     , "name"                    => "string"
                                                                     , "type"                    => "string"
                                                                     , "ID_user"                 => "number"
+                                                                    , "last_update"             => "number"
                                                                 )
                                                                 , "tokens" => array(
                                                                     "ID"                        => "primary"
@@ -141,6 +141,7 @@ class anagraphAccess
     private static $indexes                                 = array(
                                                                 "users"                         => array(
                                                                     "ID_domain"                 => "hardindex"
+                                                                    , "acl"                     => "hardindex"
                                                                 )
                                                                 , "devices"                     => array(
                                                                     "ID_user"                   => "hardindex"
@@ -191,7 +192,7 @@ class anagraphAccess
                                                                 "users"                         => array(
                                                                     "ID_languages"              => "ID_lang"
                                                                     , "ID_domains"              => "ID_domain"
-                                                                    , "ID_primary_gid"          => "acl"
+                                                                    , "primary_gid"             => "acl"
                                                                     , "expiration"              => "expire"
                                                                 )
                                                                 , "groups"                      => array(

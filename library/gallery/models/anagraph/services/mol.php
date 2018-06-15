@@ -23,9 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-class anagraphDoctor
+class anagraphMol
 {
-	const TYPE                                              = "doctor";
+	const TYPE                                              = "mol";
 	const MAIN_TABLE                                        = "doctors";
 
 	private $device                                         = null;
@@ -58,8 +58,7 @@ class anagraphDoctor
 																	"service"				    => "php"
 																	, "path"                    => "/cache/anagraph/doctor"
 																	, "name"                    => array("name")
-																	, "var"					    => null
-																	)
+                                                                )
 															);
     private static $struct								    = array(
 	                                                            "doctors" => array(
@@ -85,6 +84,7 @@ class anagraphDoctor
                                                                     , "nome_pubmed"                     => "string"
                                                                     , "premium_sponsor"                 => "string"
                                                                     , "mail_er"                         => "number"
+                                                                    , "newsletter"                      => "number"
                                                                 )
                                                                 , "studi" => array(
                                                                     "ID"                                => "primary"
@@ -94,9 +94,14 @@ class anagraphDoctor
                                                                     , "ID_place"                        => "number"
                                                                     , "note_aggiuntive"                 => "text"
                                                                     , "website"                         => "string"
-                                                                    , "prenotazioni_online"             => "number"
-                                                                    , "struttura"                       => "number"
-                                                                    , "smart_url"                       => "string"
+                                                                    , "prenotazioni_online"             => "boolean"
+                                                                    , "struttura"                       => "boolean"
+                                                                    , "address"                         => "string"
+                                                                    , "cap"                             => "string"
+                                                                    , "city"                            => "string"
+                                                                    , "province"                        => "string"
+                                                                    , "telephone"                       => "string"
+                                                                    , "fax"                             => "string"
                                                                 )
                                                                 , "publishing" => array(
                                                                     "ID"                                => "primary"
@@ -118,10 +123,76 @@ class anagraphDoctor
                                                                     , "categories"                      => "string"
                                                                     , "created"                         => "number"
                                                                 )
+                                                                , "article" => array(
+                                                                    "ID"                                => "primary"
+                                                                    , "ID_type"                         => "number"
+                                                                    , "ID_vgallery"                     => "number"
+                                                                    , "is_dir"                          => "number"
+                                                                    , "last_update"                     => "number"
+                                                                    , "name"                            => "string"
+                                                                    , "owner"                           => "number"
+                                                                    , "parent"                          => "string"
+                                                                    , "visible"                         => "number"
+                                                                    , "tags"                            => "string"
+                                                                    , "cats"                            => "string"
+                                                                    , "meta_description"                => "number"
+                                                                    , "meta_title"                      => "string"
+                                                                    , "meta_robots"                     => "string"
+                                                                    , "meta_canonical"                  => "string"
+                                                                    , "meta"                            => "text"
+                                                                    , "permalink"                       => "string"
+                                                                    , "created"                         => "number"
+                                                                    , "published_at"                    => "number"
+                                                                )
+                                                                , "question" => array(
+                                                                    "ID"                                => "primary"
+                                                                    , "ID_doctor"                       => "number"
+                                                                    , "doctor_dest"                     => "number"
+                                                                    , "ID_user"                         => "number"
+                                                                    , "title"                           => "string"
+                                                                    , "question"                        => "text"
+                                                                    , "categories"                      => "string"
+                                                                    , "automatic_categories"            => "string"
+                                                                    , "answered"                        => "number"
+                                                                    , "last_update"                     => "number"
+                                                                    , "insert_date"                     => "number"
+                                                                    , "date_publishing"                 => "number"
+                                                                    , "smart_url"                       => "string"
+                                                                    , "public"                          => "number"
+                                                                    , "abstract"                        => "string"
+                                                                    , "approfondimento"                 => "text"
+                                                                    , "approfondimento_top"             => "text"
+                                                                    , "ready"                           => "number"
+                                                                    , "meta_robots"                     => "string"
+                                                                    , "referef"                         => "string"
+                                                                    , "premium"                         => "number"
+                                                                    , "main_content"                    => "string"
+                                                                    , "hidden_question"                 => "number"
+                                                                )
+                                                                , "blog" => array(
+                                                                    "ID"                                => "primary"
+                                                                    , "ID_doctor"                       => "number"
+                                                                    , "title"                           => "string"
+                                                                    , "smart_url"                       => "string"
+                                                                    , "abstract"                        => "text"
+                                                                    , "text"                            => "text"
+                                                                    , "status"                          => "string"
+                                                                    , "last_update"                     => "number"
+                                                                    , "date_publishing"                 => "number"
+                                                                    , "tags"                            => "string"
+                                                                    , "date_insert"                     => "number"
+                                                                    , "cover"                           => "string"
+                                                                    , "meta_robots"                     => "string"
+                                                                    , "canonical"                       => "string"
+                                                                )
 															);
     private static $relationship							= array(
                                                                 "doctors" => array(
-                                                                    "studi"                     => array(
+                                                                    "ID_anagraph"               => array(
+                                                                        "tbl"                           => "anagraph"
+                                                                        , "key"                         => "ID"
+                                                                    )
+                                                                    , "studi"                   => array(
                                                                         "external"                      => "ID_anagraph"
                                                                         , "primary"                     => "ID"
                                                                     )
@@ -137,11 +208,15 @@ class anagraphDoctor
                                                                         "external"                      => "ID_anagraph"
                                                                         , "primary"                     => "ID"
                                                                     )
-                                                                )
-                                                                , "studi" => array(
-                                                                    "doctors"                   => array(
+                                                                    , Anagraph::MAIN_TABLE      => array(
                                                                         "external"                      => "ID_anagraph"
                                                                         , "primary"                     => "ID"
+                                                                    )
+                                                                )
+                                                                , "studi" => array(
+                                                                    "doctors"        => array(
+                                                                        "external"                      => "ID_anagraph"
+                                                                        , "primary"                     => "ID_anagraph"
                                                                     )
                                                                     , "place"                   => array(
                                                                         "external"                      => "ID_place"
@@ -149,21 +224,39 @@ class anagraphDoctor
                                                                     )
                                                                 )
                                                                 , "publishing" => array(
-                                                                    "doctors"                   => array(
+                                                                   "doctors"        => array(
                                                                         "external"                      => "ID_anagraph"
-                                                                        , "primary"                     => "ID"
+                                                                        , "primary"                     => "ID_anagraph"
                                                                     )
                                                                 )
                                                                 , "request" => array(
-                                                                    "doctors"                   => array(
+                                                                    "doctors"        => array(
                                                                         "external"                      => "ID_anagraph"
-                                                                        , "primary"                     => "ID"
+                                                                        , "primary"                     => "ID_anagraph"
                                                                     )
                                                                 )
                                                                 , "request_confirmed" => array(
-                                                                    "doctors"                   => array(
+                                                                    "doctors"        => array(
                                                                         "external"                      => "ID_anagraph"
-                                                                        , "primary"                     => "ID"
+                                                                        , "primary"                     => "ID_anagraph"
+                                                                    )
+                                                                )
+                                                                , "article" => array(
+                                                                    "doctors"        => array(
+                                                                        "external"                      => "ID_anagraph"
+                                                                        , "primary"                     => "ID_anagraph"
+                                                                    )
+                                                                )
+                                                                , "question" => array(
+                                                                    "doctors"        => array(
+                                                                        "external"                      => "ID_anagraph"
+                                                                        , "primary"                     => "ID_anagraph"
+                                                                    )
+                                                                )
+                                                                , "blog" => array(
+                                                                    "doctors"        => array(
+                                                                        "external"                      => "ID_anagraph"
+                                                                        , "primary"                     => "ID_anagraph"
                                                                     )
                                                                 )
                                                             );
@@ -182,6 +275,15 @@ class anagraphDoctor
                                                                     "ID_anagraph"                       => "hardindex"
                                                                 )
                                                                 , "request_confirmed" => array(
+                                                                    "ID_anagraph"                       => "hardindex"
+                                                                )
+                                                                , "article" => array(
+                                                                    "owner"                             => "hardindex"
+                                                                )
+                                                                , "question" => array(
+                                                                    "ID_anagraph"                       => "hardindex"
+                                                                )
+                                                                , "blog" => array(
                                                                     "ID_anagraph"                       => "hardindex"
                                                                 )
                                                             );
@@ -225,6 +327,33 @@ class anagraphDoctor
                                                                 , "request_confirmed" => array(
                                                                     "name"                              => "cm_mod_pm_doctor_request_confirm"
                                                                     , "alias"                           => "request_confirmed"
+                                                                    , "engine"                          => "InnoDB"
+                                                                    , "crypt"                           => false
+                                                                    , "pairing"                         => false
+                                                                    , "transfert"                       => false
+                                                                    , "charset"                         => "utf8"
+                                                                )
+                                                                , "article" => array(
+                                                                    "name"                              => "vgallery_nodes"
+                                                                    , "alias"                           => "article"
+                                                                    , "engine"                          => "InnoDB"
+                                                                    , "crypt"                           => false
+                                                                    , "pairing"                         => false
+                                                                    , "transfert"                       => false
+                                                                    , "charset"                         => "utf8"
+                                                                )
+                                                                , "question" => array(
+                                                                    "name"                              => "cm_mod_pm_question"
+                                                                    , "alias"                           => "question"
+                                                                    , "engine"                          => "InnoDB"
+                                                                    , "crypt"                           => false
+                                                                    , "pairing"                         => false
+                                                                    , "transfert"                       => false
+                                                                    , "charset"                         => "utf8"
+                                                                )
+                                                                , "blog" => array(
+                                                                    "name"                              => "cm_mod_blog"
+                                                                    , "alias"                           => "blog"
                                                                     , "engine"                          => "InnoDB"
                                                                     , "crypt"                           => false
                                                                     , "pairing"                         => false

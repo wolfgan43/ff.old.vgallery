@@ -69,23 +69,29 @@ class authSession
             $data["FF"]                                         = $this->issetSession(authSession::DATA_FF);
             $data["user"]                                       = (array) $this->getSession(authSession::DATA_USER);
 
-            $return                                             = array_intersect_key($data["user"], array_fill_keys($opt["fields"], true));
+            if($opt["user"])                                    $res["user"] = $data["user"];
 
-            $return["status"]                                   = "0";
-            $return["error"]                                    = "";
+            if(is_array($opt["fields"]) && count($opt["fields"])) {
+                foreach ($opt["fields"] AS $name => $asName) {
+                    if($data["user"][$asName])                  $res[$asName] = $data["user"][$asName];
+                }
+            }
+
+            $res["status"]                                      = "0";
+            $res["error"]                                       = "";
         } else {
             $this->destroy();
 
-            $return["status"]                                   = "404";
-            $return["error"]                                    = "Invalid Session";
+            $res["status"]                                      = "404";
+            $res["error"]                                       = "Invalid Session";
 
-            if($opt["prompt_login"]) {
+            if($opt["redirect"]) {
                // Cms::doRedirect("login");
             }
 
         }
 
-        return $return;
+        return $res;
     }
 
     /**

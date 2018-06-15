@@ -23,16 +23,16 @@
  * @link https://bitbucket.org/cmsff/vgallery
  */
 
-class statsUser
+class statsVisitor
 {
-	const TYPE                                              = "user";
+	const TYPE                                              = "visitor";
 
 	private $device                                         = null;
 	private $stats                                        	= null;
 	private $services										= array(
 																"nosql" 					=> null
-																, "sql"						=> null
-																, "fs" 						=> null
+																//, "sql"						=> null
+																//, "fs" 						=> null
 															);
 	private $connectors										= array(
 																"sql"                       => array(
@@ -41,7 +41,7 @@ class statsUser
 																	, "password"   			=> null
 																	, "name"       			=> null
 																	, "prefix"				=> "TRACE_DATABASE_"
-																	, "table"               => "trace_users"
+																	, "table"               => "trace_visitors"
 																	, "key"                 => "ID"
 																)
 																, "nosql"                   => array(
@@ -50,36 +50,44 @@ class statsUser
 																	, "password"    		=> null
 																	, "name"       			 => null
 																	, "prefix"				=> "TRACE_MONGO_DATABASE_"
-																	, "table"               => "cache_users"
+																	, "table"               => "cache_visitors"
 																	, "key"                 => "ID"
 																	)
 																, "fs"                      => array(
 																	"service"				=> "php"
-																	, "path"                => "/cache/users"
+																	, "path"                => "/cache/visitors"
 																	, "name"                => array("src")
                                                                 )
 															);
 	private $struct											= array(
-																"id_anagraph"				=> "number"
+                                                                "uid"						=> "number"
+                                                                , "id_domain"               => "number"
+                                                                , "id_anagraph"             => "number"
+                                                                , "acl"                     => "number"
 																, "avatar"					=> "string"
-																, "name"					=> "string"
+																, "username"				=> "string"
 																, "smart_url"				=> "string"
 																, "email"					=> "string"
 																, "tel"						=> "string"
-																, "src"						=> "string"
-																, "url"						=> "string"
-																, "tags"					=> "arrayOfNumber"
-																, "uid"						=> "number"
-																, "token"					=> "array"
+
+                                                                , "token"					=> "array"
+                                                                , "devices"				    => "array"
+
+                                                                , "tags"					=> "array"
+                                                                , "tagsByEvents"			=> "array"
+
+                                                                , "search"                  => "array"
+                                                                , "trace"                   => "arrayIncremental"
+
 																, "created"					=> "number"
 																, "last_update"				=> "number"
+																, "last_login"				=> "number"
 																, "user_vars"				=> "array"
 															);
     private $relationship									= array();
     private $indexes										= array();
     private $tables											= array();
     private $alias											= array();
-
     /**
      * statsUser constructor.
      * @param $stats
@@ -109,7 +117,7 @@ class statsUser
     public function get_stats($where = null, $set = null, $fields = null)
 	{
 		$arrWhere = $this->normalize_params($where);
-		$arrFields = $this->getUserFields($fields);
+		$arrFields = $this->getVisitorFields($fields);
 		$storage = $this->getStorage();
 
 		$res = $storage->read($arrWhere, $arrFields);
@@ -217,7 +225,6 @@ class statsUser
 		);
 	}*/
 
-
     /**
      * @param $set
      * @param null $where
@@ -225,44 +232,55 @@ class statsUser
      * @return null
      */
     public function set_vars($set, $where = null, $table = "user_vars") {
-        $arrWhere 							= $this->normalize_params($where);
-        if(is_array($set) && count($set)) {
-            $storage 						= $this->getStorage();
+		$arrWhere 							= $this->normalize_params($where);
+		if(is_array($set) && count($set)) {
+			$storage 						= $this->getStorage();
 
             $res                            = $storage->read($arrWhere);
             $old 						    = $res["result"][0];
 
-            if(is_array($old)) {
+			if(is_array($old)) {
                 $set                        = array($table => $set);
                 $user_vars                  = $this->stats->normalize_fields($set, array_intersect_key($old, $set));
             }
-        }
+		}
 
-        if($user_vars && $where) {
+		if($user_vars && $where) {
             $user_vars["last_update"]       = time();
-            $update                         = $storage->update($user_vars, $arrWhere);
-        }
+			$update                         = $storage->update($user_vars, $arrWhere);
+		}
 
-        return $res;
-    }
+		return $res;
+	}
 
     /**
      * @param null $insert
      * @param null $update
      */
-    public function write_stats($insert = null, $update = null) {
-		$user = $this->getUserStats();
+    public function write_stats($page = null, $user = null) {
+		if(!$user)                          $user = cache_get_session();
 
-		$this->getStorage()->write(
-			(is_array($insert)
-				? array_replace_recursive($user["insert"], $insert)
-				: $user["insert"]
-			)
-			, (is_array($update)
-				? array_replace_recursive($user["update"], $update)
-				: $user["update"]
-			)
-		);
+		/*$anagraph = Auth::getAnagraph(); todo: da finire
+print_r($anagraph);
+die();*/
+		if($user["ID"]) {
+            $visitor                        = $this->getVisitorStats($user, $page);
+
+            if($visitor) {
+                $storage                    = $this->getStorage();
+
+                $res                        = $storage->read($visitor["where"]);
+                if(is_array($res)) {
+                    $update                 = $storage->update(
+                                                $this->stats->normalize_fields($visitor["set"], array_intersect_key($res["result"][0], $visitor["set"]))
+                                                , $visitor["where"]
+                                            );
+                } else {
+                    $insert                 = $storage->insert($this->stats->normalize_fields($visitor["insert"]));
+                }
+            }
+        }
+        return $res;
 
 	}
 
@@ -285,7 +303,7 @@ class statsUser
      * @param null $fields
      * @return array|null
      */
-    private function getUserFields($fields = null) {
+    private function getVisitorFields($fields = null) {
 		if(!is_array($fields))              $fields = array_fill_keys(array_keys($this->struct), true);
 
 		return $fields;
@@ -294,41 +312,99 @@ class statsUser
     /**
      * @return mixed
      */
-    private function getUserStats()
+    private function getVisitorStats($user, $page = null)
 	{
-		$globals = ffGlobals::getInstance("gallery");
+        $devices                            = array();
+        $token                              = array();
 
-		//codice operativo
+        $tags                               = array();
+        $tagsByEvents                       = array();
+        $trace                              = array();
+
+        $user_vars                          = (is_array($user["user_vars"]) && count($user["user_vars"])
+                                                ? $user["user_vars"]
+                                                : array()
+                                            );
+        //codice operativo
 		$created 							= time();
 
-		$user["insert"] = array(
-			"id_anagraph" 					=> $globals->author["id"]
-			, "avatar"						=> $globals->author["avatar"]
-			, "name" 						=> $globals->author["name"]
-			, "smart_url" 					=> $globals->author["smart_url"]
-			, "email"						=> $globals->author["email"]
-			, "tel"							=> $globals->author["tel"]
-			, "src" 						=> $globals->author["src"]
-			, "url" 						=> $globals->author["url"]
-			, "tags" 						=> $globals->author["tags"]
-			, "uid" 						=> $globals->author["uid"]
-			, "token"						=> $globals->author["token"]
+        if(is_array($user["token"]) && count($user["token"])) {
+		    $token                          = $user["token"];
+        }
+
+        $visitor                            = system_trace_get_visitor();
+        if($visitor) {
+            $devices[$visitor["unique"]]     = "++";
+        }
+
+        if($page) {
+            if(is_array($page["tags"]["primary"]) && count($page["tags"]["primary"])) {
+                foreach($page["tags"]["primary"] AS $tag) {
+                    $tags[$tag]                 = "++";
+                    $tagsByEvents[date("Y", $created)][$tag]       = "++";
+                    $tagsByEvents[date("Y-m", $created)][$tag]     = "++";
+                }
+            }
+
+            $trace                          = array(
+                                                "event"             => "pageview"
+                                                , "type"            => $page["type"]
+                                                , "url"             => $page["url"]
+                                                , "domain"          => $page["domain"]
+                                                , "title"           => $page["title"]
+                                                , "description"     => $page["description"]
+                                                , "cover"           => $page["cover"]
+                                                , "owner"           => $page["author"]["id"]
+                                                , "tags"            => $page["tags"]
+                                                , "created"         => $created
+                                            );
+        }
+
+		$res["insert"] = array(
+			"uid" 					        => $user["ID"]
+            , "id_domain"				    => $user["ID_domain"]
+            , "id_anagraph"                 => $user["anagraph"]["ID"]
+            , "acl"						    => ($user["acl"]
+                                                ? $user["acl"]
+                                                : $user["primary_gid"]
+                                            )
+            , "avatar"						=> $user["avatar"]
+			, "username" 				    => $user["username"]
+			, "smart_url" 					=> $user["username_slug"]
+			, "email"						=> $user["email"]
+			, "tel"							=> $user["tel"]
+
+            , "token"						=> $token
+            , "devices"						=> $devices
+
+            , "tags" 						=> $tags
+            , "tagsByEvents"                => $tagsByEvents
+
+            , "search"                      => array()
+            , "trace"                       => $trace
+
 			, "created"						=> $created
 			, "last_update"					=> $created
-			, "user_vars"					=> $globals->author["user_vars"]
+			, "last_login"					=> strtotime($user["lastlogin"])
+			, "user_vars"					=> $user_vars
 
 		);
-		$user["update"]["set"] = array(
-			"tags" 							=> $globals->author["tags"]
-			, "token"						=> $globals->author["token"]
-			, "last_update"	    			=> $created
+
+        $res["set"] = array(
+            "token"						    => $token
+            , "devices"						=> $devices
+            , "tags" 						=> $tags
+            , "tagsByEvents"                => $tagsByEvents
+            , "trace"                       => $trace
+            , "last_update"					=> $created
+            , "last_login"					=> strtotime($user["lastlogin"])
 		);
 
-		$user["update"]["where"] = array(
-			"id_anagraph" 					=> $globals->author["id"]
+        $res["where"] = array(
+			"uid" 					        => $user["ID"]
 		);
 
-		return $user;
+		return $res;
 	}
 
 
@@ -350,14 +426,14 @@ class statsUser
 		if(is_array($params)) {
 			$where 							= $params;
 		} elseif(strlen($params)) {
-			$where = array(
-				"id_anagraph" 				=> $params
-			);
+			$where                          = array(
+                                                "uid" => $params
+                                            );
 		} else {
-			$user_permission 				= cache_get_session();
-			$where = array(
-				"uid" 						=> $user_permission["ID"]
-			);
+            $user 				            = cache_get_session();
+			$where                          = array(
+                                                "uid" => $user["ID"]
+                                            );
 		}
 
 		return $where;

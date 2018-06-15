@@ -25,11 +25,12 @@
  */
 
 class storageMongodb {
-    const TYPE                                              = "nosql";
+    const TYPE                                                                      = "nosql";
+    const KEY                                                                       = "_id";
 
-	private $device                                         = null;
-    private $config                                         = null;
-    private $storage                                        = null;
+	private $device                                                                 = null;
+    private $config                                                                 = null;
+    private $storage                                                                = null;
 
     /**
      * storageMongodb constructor.
@@ -37,18 +38,25 @@ class storageMongodb {
      */
     public function __construct($storage)
     {
-        $this->storage = $storage;
-        $this->setConfig();
+        $this->storage                                                              = $storage;
+        //$this->setConfig();
 
-        $this->device = new ffDB_MongoDB();
-        $this->device->on_error = "ignore";
-        if ($this->device->connect($this->config["name"], $this->config["host"], $this->config["username"], $this->config["password"])) {
-            $this->config["key"] = "_id";
+        $this->config                                                               = $this->storage->getConfig($this::TYPE);
+
+        $this->device                                                               = new ffDB_MongoDB();
+        $this->device->on_error                                                     = "ignore";
+        if ($this->device->connect(
+            $this->config["name"]
+            , $this->config["host"]
+            , $this->config["username"]
+            , $this->config["password"]
+        )) {
+            $this->config["key"]                                                    = $this::KEY;
         } else {
-            $this->device = false;
+            $this->device                                                           = false;
         }
-        $storage->convertData("ID", "_id");
-        $storage->convertWhere("ID", "_id");
+        $storage->convertData("ID", $this::KEY);
+        $storage->convertWhere("ID", $this::KEY);
     }
 
     /**
@@ -61,8 +69,19 @@ class storageMongodb {
 		$res 																		= array();
     	$struct 																	= $this->storage->getParam("struct");
 
-		if(is_array($fields) && count($fields)) {
-			foreach ($fields AS $name => $value) {
+		if(is_array($fields) && count($fields))
+		{
+			foreach ($fields AS $name => $value)
+			{
+                if($name == "*") {
+                    if($flag == "select") {
+                        $res = null;
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+
 				if ($name == "key") {
 					$name 															= $this->config["key"];
 				} elseif(0 && strpos($name, "key") === 1) {
@@ -120,7 +139,8 @@ class storageMongodb {
 						}
 
 						switch ($struct_type) {
-							case "arrayOfNumber":                                                                         //array
+                            case "arrayIncremental":                                                                     //array
+							case "arrayOfNumber":                                                                        //array
 							case "array":                                                                                //array
 								//search
 								if (is_array($value) && count($value)) {
@@ -262,9 +282,10 @@ class storageMongodb {
     /**
      * @todo: da togliere
      */
-    private function setConfig()
+    /*private function setConfig()
 	{
 		$this->config = $this->storage->getConfig($this::TYPE);
+
 		if(!$this->config["name"])
 		{
 			$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
@@ -295,7 +316,7 @@ class storageMongodb {
 			}
 		}
 
-	}
+	}*/
 
     /**
      * @param $value

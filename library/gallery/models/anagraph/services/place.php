@@ -58,8 +58,7 @@ class place
 																	"service"				    => "php"
 																	, "path"                    => "/cache/place"
 																	, "name"                    => array("name")
-																	, "var"					    => null
-																	)
+                                                                )
 															);
     private static $struct								    = array(
 	                                                            "place" => array(
