@@ -345,9 +345,9 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
         $tpl->set_var("lang_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
         		
 		if(is_array($international))
-			$international = array_merge($international, ffTemplate::_get_word_by_code("", null, null, true));
+			$international = array_merge($international, ffTranslator::dump());
 		else 
-			$international = ffTemplate::_get_word_by_code("", null, null, true);
+			$international = ffTranslator::dump();
 
 		uksort($international, "strnatcasecmp");
 	    foreach($international AS $international_key => $international_value) {

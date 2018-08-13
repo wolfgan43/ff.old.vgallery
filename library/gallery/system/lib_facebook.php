@@ -50,9 +50,6 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 		return;
 	}	
 	
-	if($selected_lang)
-		ffTemplate::$_MultiLang_default = $selected_lang;
-
 	$globals->services["facebook"] = new Facebook(array(
 		"appId" => global_settings("MOD_SEC_SOCIAL_FACEBOOK_APPID")
 		, "secret" => global_settings("MOD_SEC_SOCIAL_FACEBOOK_SECRET")
