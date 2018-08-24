@@ -39,7 +39,7 @@ class Jobs extends vgCommon
 																//, "sql"						=> null
 																//, "fs" 						=> null
 															);
-	private $connectors										= array(
+    protected $connectors										= array(
 																"sql"                       => array(
 																	"host"          		=> null
 																	, "username"    		=> null
@@ -62,8 +62,7 @@ class Jobs extends vgCommon
 																	"service"				=> "php"
 																	, "path"                  => "/cache/spooler"
 																	, "name"                => array("source", "params")
-																	, "var"					=> null
-																	)
+                                                                )
 															);
     private $struct											= array(
     															"kid"						=> "number"
@@ -85,7 +84,7 @@ class Jobs extends vgCommon
 																, "server"					=> "array"
 																, "session"					=> "array"
 																, "runned"					=> "number" //how many times is runned
-																, "logs"					=> "array"
+																, "logs"					=> "arrayIncremental"
 																, "called"					=> "number" //how many times is called from user
 															);
     private	$delay											= 10; //second

@@ -1,0 +1,47 @@
+<div id="new-login-box" class="login-box-page">
+    <div class="login-box-title">{_login_page_title}</div>
+    <div class="login-input-container">
+        <div class="error-container">
+            <input class="hidden"/>
+        </div>
+        <input type="hidden" name="csrf" value="{csrf_token}">
+        <!--BeginSezDomainHidden-->
+        <input type="hidden" name="domain" value="{domain_name}">
+        <!--EndSezDomainHidden-->
+        <!--BeginSezDomain-->
+        <label class="field-label">{_domain_field_label}</label>
+        <div class="domain-container">
+            <input name="domain" class="domain" type="text" placeholder="{_domain_field_placeholde}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="return ff.modules.auth.submitProcessKey(event, 'loginUtenteNewBox');" required>
+        </div>
+        <!--EndSezDomain-->
+        <label class="field-label">{_email_field_label}</label>
+        <div class="username-container">
+            <input name="username" class="username" type="email" placeholder="{_email_field_placeholde}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="return ff.modules.auth.submitProcessKey(event, 'loginUtenteNewBox');" required>
+        </div>
+        <label class="field-label">{_password_field_label}</label>
+        <input name="password" class="password" type="password" placeholder="{_password_field_placeholder}" onkeydown="return ff.modules.auth.submitProcessKey(event, 'loginUtenteNewBox');" required>
+        <!--BeginSezRecoverPassword-->
+        <div class="pass-recover"><a href="{recover_password_path}">{_recover_password_link}</a></div>
+        <!--EndSezRecoverPassword-->
+        <!--BeginSezRecoverUsername-->
+        <div class="pass-username"><a href="{recover_username_path}">{_recover_username_link}</a></div>
+        <!--EndSezRecoverUsername-->
+        <a id="loginUtenteNewBox" href="javascript:void(0);" class="button login-button" onclick="ff.modules.auth.login.submit('{login_url}', 'login', 'new-login-box', this, '{ret_url}');">{_login_button_action}</a>
+        <!--BeginSezStayConnect-->
+        <div class="stayconnected">
+            <span>
+            <input type="checkbox" id="rememberme" name="stayconnected"/>
+            <label for="rememberme"></label>
+            <ins onclick="jQuery('#rememberme').click();">{_stay_connected_label}</ins>
+            </span>
+        </div>
+        <!--EndSezStayConnect-->
+
+    </div>
+    <!--BeginSezSocialLogin-->
+    <a class="{social_class}-register-button social-button" onclick="ff.modules.auth.social.requestLogin('{social_dialog_name}', '{social_path}');"><i class="{social_icon}"></i>{social_text_button}{social_name}</a>
+    <!--EndSezSocialLogin-->
+    <!--BeginSezRegistration-->
+    <div class="go-to-register">{_go_to_register_text}?<a href="{register_path}">{_go_to_register_link}!</a></div>
+    <!--EndSezRegistration-->
+</div>

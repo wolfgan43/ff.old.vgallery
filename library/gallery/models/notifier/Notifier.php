@@ -136,6 +136,19 @@ class Notifier extends vgCommon
 													, "delivered"			=> "delivered"
 													, "display_in"			=> "display_in"
 												)
+                                                /*, "email" => array(
+                                                   "ID"                     => "ID"
+                                                    , "name"                => "name"
+                                                    , "subject"             => "subject"
+                                                    , "fields"         	    => "media"
+                                                    , "notify"              => "enable_notify"
+                                                    , "from_name"           => "from_name"
+                                                    , "from_email"          => "from_email"
+                                                    , "tpl_email_path"      => "tpl_email_path"
+                                                    , "fields_example"      => "fields_example"
+                                                    , "owner_example"       => "owner_example"
+                                                    , "email_debug"         => "email_debug"
+                                                )*/
 											)
 											, "type" => array(
 												"visitor"				    => "string"
@@ -150,7 +163,7 @@ class Notifier extends vgCommon
 												, "media"                   => array(
 													"default"			    => "string"
 													, "cover"			    => "string:toImage"
-													, "video"			    => "string:toEembed"
+													, "video"			    => "string:toEmbed"
 												) //contiene cover, embed o altro come fields custom
 												, "reader"                  => "string" //mail, server
 												, "actions"                 => "array"
@@ -164,7 +177,7 @@ class Notifier extends vgCommon
 												, "delivered"			    => "boolean"
 												, "display_in"			    => "string"
 											)
-                                            , "email"                       => array(
+                                           /* , "email"                       => array(
                                                 "struct"                    => array(
                                                     "table"                 => "email"
                                                     , "key"                 => "ID"
@@ -192,7 +205,7 @@ class Notifier extends vgCommon
                                                         , "type"            => "type"
                                                     )
                                                 )
-                                            )
+                                            )*/
                                         );
 	protected $visitor                  = null;
 	protected $url                    	= null;
@@ -201,6 +214,12 @@ class Notifier extends vgCommon
 
 	protected $users                    = array();
 	protected $groups                   = array();
+
+    protected $emails                   = array();
+    protected $tels                     = array();
+
+    protected $unknown                  = array();
+    protected $unknown_message          = array();
 
 	protected $type                    	= null;
 	protected $title                    = null;
@@ -215,7 +234,8 @@ class Notifier extends vgCommon
 
 	protected $unique                   = false;                //notifica unica. Incrementa l'hit ad ogni insert
     protected $timer                    = 300000;
-	protected $delivered               	= false;
+    protected $limit                    = 50;
+    protected $delivered               	= false;
     protected $display_in               = "/";
 
     private $page						= null;
@@ -255,51 +275,76 @@ class Notifier extends vgCommon
          //da aggiungere inizializzazioni classe necessarie come anagraph
     }
 
+    public static function delivered() {
+        if(DEBUG_PROFILING === true)
+			$start 								                    = Stats::stopwatch();
+
+    	$notifier                                                   = Notifier::getInstance();
+        $globals                                                    = ffGlobals::getInstance("gallery");
+        check_function("get_user_data");
+        //todo: da implementare la classe anagraph
+        $anagraph                                                   = user2anagraph();
+
+        $limit_path[]                                               = $globals->page["user_path"];
+        if($globals->page["user_path"] != "/")  $limit_path[] = "/";
+
+        $where                                                      = array(
+                                                                        "uid" 				=> $anagraph["ID"]
+                                                                        , "display_in" 		=> $limit_path
+                                                                        , "delivered"       => false
+                                                                    );
+        $notifier->update(array(
+            "delivered"     => true
+        ), $where);
+
+        if(DEBUG_PROFILING === true)                                $return["exTime"] = Stats::stopwatch($start);
+
+		return $return;
+    }
+
     /**
      * @param $is_delivered
      * @param null $keys
      * @return array|null
      */
-    public static function response($is_delivered, $keys = null) {
+    public static function response($keys = null) {
 		if(DEBUG_PROFILING === true)                                $start = Stats::stopwatch();
 
     	$notifier                                                   = Notifier::getInstance();
-		if($is_delivered && is_array($keys) && count($keys)) {
-			$return = null;
+        $globals                                                    = ffGlobals::getInstance("gallery");
 
-			$notifier->update(array(
-				"delivered"         => true
-			), array(
-				"key"               => $keys
-				, "delivered"       => false
-			));
-		} else {
-			$globals                                                = ffGlobals::getInstance("gallery");
-			check_function("get_user_data");    //todo: da implementare la classe anagraph
-			$anagraph                                               = user2anagraph();
+        check_function("get_user_data");
+        //todo: da implementare la classe anagraph
+        $anagraph                                                   = user2anagraph();
 
-			$limit_path[]                                           = $globals->page["user_path"];
-			if($globals->page["user_path"] != "/")
-				$limit_path[]                                       = "/";
+        $limit_path[]                                               = $globals->page["user_path"];
+        if($globals->page["user_path"] != "/")                      $limit_path[] = "/";
 
-			$return                                                 = $notifier->read(array(
-                                                                        "uid" 				=> $anagraph["ID"]
-                                                                        , "display_in" 		=> $limit_path
-                                                                        , "!key" 			=> $keys
-                                                                    ), array(
-                                                                        "title" 			=> true
-                                                                        , "message" 		=> true
-                                                                        , "cover"			=> "media.cover"
-                                                                        , "video"			=> "media.video"
-                                                                        , "class"			=> "media.class"
-                                                                        , "type"			=> true
-                                                                        , "created" 		=> true
-                                                                        , "delivered" 		=> ":toString"
+        $where                                                      = array(
+                                                                        "uid" 				    => $anagraph["ID"]
+                                                                        , "display_in" 		    => $limit_path
+                                                                    );
+
+        if(is_array($keys) && count($keys)) {
+            $where["!key"] 		                                    = $keys;
+            $where["delivered"]                                     = false;
+        }
+
+        $return                                                     = $notifier->read($where, array(
+                                                                            "title" 			=> true
+                                                                            , "message" 		=> true
+                                                                            , "cover"			=> "media.cover"
+                                                                            , "video"			=> "media.video"
+                                                                            , "class"			=> "media.class"
+                                                                            , "type"			=> true
+                                                                            , "created" 		=> true
+                                                                            , "delivered" 		=> ":toString"
+                                                                            )
+                                                                        , array(
+                                                                             "created" 			=> "DESC"
                                                                         )
-                                                                    , array(
-                                                                         "created" 			=> "DESC"
-                                                                    ));
-		}
+                                                                        , $notifier->limit
+                                                                    );
 
         if(DEBUG_PROFILING === true && is_array($return))           $return["exTime"] = Stats::stopwatch($start);
 
@@ -312,37 +357,42 @@ class Notifier extends vgCommon
      * @param null $sort
      * @return array|null
      */
-    public function read($where = null, $fields = null, $sort = null)
+    public function read($where = null, $fields = null, $sort = null, $limit = null)
     {
         $this->clearResult();
 
         if(!$this->isError())
         {
-			$service = "server";
+			/*$service = "server";
 			$struct = $this->controllers[$service]["struct"];
 			$connectors = $this->controllers[$service]["storage"];
             foreach($connectors AS $type => $data)
             {
-                if(!$data)
-                {
-                    $connectors[$type] = array(
-                        "service" => null 
-                        , "connector" => $this->struct["connectors"][$type]
-                    );
-                }
+                $connectors[$type] = ($data
+                    ? $data
+                    : $this->struct["connectors"][$type]
+                );
             }
+            //die();
+            $this->setConfig($connectors);
 
 			$storage = Storage::getInstance($connectors, array(
 				"struct" => $this->getTypeOf($struct)
-			));
-            $this->result = $storage->read($where, $fields, $sort);
+			));*/
+
+            $storage = $this->getStorage();
+            $this->result = $storage->read($where, $fields, $sort, $limit);
             $res = ($this->result
-				? $this->result
+				? (is_array($this->result)
+                    ? $this->result + array("timer" => $this->timer)
+                    : $this->result
+                )
 				: array(
 					"result" => array()
+                    , "timer" => $this->timer
 				)
 			);
-			$res["timer"] = $this->timer;
+
             return $res;
         }
     }
@@ -358,11 +408,10 @@ class Notifier extends vgCommon
 
 		if(!$this->isError())
 		{
-			$service = "server";
-
 			$last_update = time();
-			$struct = $this->controllers[$service]["struct"];
 
+            /*$service = "server";
+			$struct = $this->controllers[$service]["struct"];
 			$connectors = $this->controllers[$service]["storage"];
 			foreach($connectors AS $type => $data)
 			{
@@ -373,17 +422,19 @@ class Notifier extends vgCommon
 						, "connector" => $this->struct["connectors"][$type]
 					);
 				}
-			}
+			}*/
 
-			$query["set"] = $this->getfields($set);
-			$query["where"] = $this->getfields($where);
+			$query["set"] = $set;
+			$query["where"] = $where;
 
 			if($query["set"] && $query["where"]) {
-				$query["set"][$this->getField("last_update")] = $last_update;
+				$query["set"]["last_update"] = $last_update;
 
-				$storage = Storage::getInstance($connectors, array(
+				$storage = $this->getStorage();
+
+				/*$storage = Storage::getInstance($connectors, array(
 					"struct" => $this->getTypeOf($struct)
-				));
+				));*/
 
 				$this->result = $storage->update($query["set"], $query["where"]);
 			} else {
@@ -409,24 +460,21 @@ class Notifier extends vgCommon
      */
     public function send($message = null, $users = null, $groups = null, $title = null, $type = null, $media = null, $actions = null, $schedule = null, $expire = null, $referer = null)
     {
-        $this->clearResult($users || $groups);
-
         $this->traceByVisitor();
+
+        $this->setUser($message, $users, $groups);
 		$this->setMessage($message, $title, $type, $schedule, $expire, $media, $actions, $referer);
 
-		switch($this->type) {
+		/*switch($this->type) {
             case "pool":
                 if(!$this->actions)
                     $this->isError("notify_action_required");
                 break;
             default:
-        }
+        }*/
 
         if(!$this->isError()) 
         {
-			$this->addUsers($users);
-			$this->addGroups($groups);
-
             foreach($this->services AS $controller => $services)
             {
                 $funcController = "controller_" . $controller;
@@ -606,6 +654,44 @@ class Notifier extends vgCommon
 		return $this->title;
 	}
 
+    private function getStorage($service = "server") {
+        $struct                                                         = $this->controllers[$service]["struct"];
+        $connectors                                                     = $this->controllers[$service]["storage"];
+        foreach($connectors AS $type => $data)
+        {
+            $connectors[$type]                                          = ($data
+                                                                            ? $data
+                                                                            : $this->struct["connectors"][$type]
+                                                                        );
+        }
+
+        $this->setConfig($connectors);
+        $storage                                                        = Storage::getInstance($connectors, array(
+                                                                            "struct" => $this->getTypeOf($struct)
+                                                                        ));
+
+        return $storage;
+    }
+
+	private function setUser($message, $users = null, $groups = null) {
+        $users                                                          = ($message["users"]
+                                                                            ? $message["users"]
+                                                                            : $users
+                                                                        );
+        $groups                                                         = ($message["groups"]
+                                                                            ? $message["groups"]
+                                                                            : $groups
+                                                                        );
+
+        $this->clearResult($users || $groups || $message["email"] || $message["tel"]);
+
+        $this->addGroups($groups);
+
+        $this->addUsers($users);
+        $this->addUsers($message["email"]);
+        $this->addUsers($message["tel"]);
+    }
+
     /**
      * @param $message
      * @param $title
@@ -628,34 +714,42 @@ class Notifier extends vgCommon
 		}
 
 		$this->title							= ($title
-			? $title
-			: $message["title"]
-		);
+                                                    ? $title
+                                                    : $message["title"]
+                                                );
+                                                unset($message["title"]);
 		$this->type								= ($type
-			? $type
-			: $message["type"]
-		);
+                                                    ? $type
+                                                    : $message["type"]
+                                                );
+                                                unset($message["type"]);
 		$this->schedule							= ($schedule
-			? $schedule
-			: $message["schedule"]
-		);
+                                                    ? $schedule
+                                                    : $message["schedule"]
+                                                );
+                                                unset($message["schedule"]);
 		$this->expire							= ($expire
-			? $expire
-			: $message["expire"]
-		);
-
+                                                    ? $expire
+                                                    : $message["expire"]
+                                                );
+                                                unset($message["expire"]);
 		$this->setMedia(			 	 		$media
-			? $media
-			: $message["media"]
-		);
+                                                    ? $media
+                                                    : $message["media"]
+                                                );
+                                                unset($message["media"]);
 		$this->setActions(						$actions
-			? $actions
-			: $message["actions"]
-		);
+                                                    ? $actions
+                                                    : $message["actions"]
+                                                );
+		                                        unset($message["actions"]);
 		$this->setReferer(						$referer
-			? $referer
-			: $message["referer"]
-		);
+                                                    ? $referer
+                                                    : $message["referer"]
+                                                );
+                                                unset($message["referer"]);
+
+        $this->unknown_message                  = $message;
 
 		return $this->message;
 	}
@@ -807,13 +901,14 @@ class Notifier extends vgCommon
 
 			if(is_array($users) && count($users)) {
 				foreach($users AS $user) {
-					if (is_numeric($user)) {
+                    if (Cms::getInstance("validator")->isEmail($user)) {
+                        $this->addTo($user, "emails");
+                    } elseif (substr($user, 0, 1) == "+" && Cms::getInstance("validator")->isTel($user)) {
+                        $this->addTo($user, "tels");
+                    } elseif (is_numeric($user)) {
 						$this->addTo($user, "users");
-					} elseif (strpos($user, "@")) {
-//da fare con la mail
-
 					} else {
-//da fare con username
+                        $this->addTo($user, "unknown");
 					}
 				}
 			}
@@ -916,7 +1011,7 @@ class Notifier extends vgCommon
      * @param string $type
      * @return mixed
      */
-    private function getFields($fields, $type = "db")
+    /*private function getFields($fields, $type = "db")
 	{
 		if(is_array($fields) && count($fields)) {
 			foreach($fields AS $name => $value) {
@@ -924,20 +1019,20 @@ class Notifier extends vgCommon
 			}
 		}
 		return $res;
-	}
+	}*/
 
     /**
      * @param $name
      * @param string $type
      * @return string
      */
-    private function getField($name, $type = "db")
+   /* private function getField($name, $type = "db")
     {
         return ($name == "key"
         	? "key"
 			: $this->struct["table"][$type][$name]
 		);
-    }
+    }*/
 
     /**
      * @param $type
@@ -1076,29 +1171,23 @@ class Notifier extends vgCommon
      */
     private function controller_email($service = null)
     {
-        $type                                                           = "email";
-        if(!$service)
-            $service                                                    = $this->controllers["email"]["default"];
-
-        if($service)
-        {
-			$this->setReader($service);
-
-            $mailer = Mailer::getInstance();
-/*
-			$mailer->send($message = null
-				, $subject = null
-				, $to = null
-				, $from = null
-				, $cc = null
-				, $bcc = null
-				, $actions = null
-				, $attach = null
-				, $referer = null
-			);*/
+        $service                                                        = "email";
+        $this->setReader($service);
 
 
-        }
+        $message                                                        = (is_array($this->unknown_message) && count($this->unknown_message)
+                                                                            ? array("content" => $this->message) + $this->unknown_message
+                                                                            : $this->message
+                                                                        );
+
+        $mailer                                                         = Mailer::getInstance();
+        $res                                                            = $mailer->send(
+                                                                            $message
+                                                                            , $this->title
+                                                                            , $this->emails
+                                                                        );
+
+        $this->result[$service] = $res;
     }
 
     /**
@@ -1154,7 +1243,7 @@ class Notifier extends vgCommon
         if(is_array($IDs))
             $this->$type = array_merge($this->$type, $IDs);
         elseif($IDs)
-            array_push($this->$type, $IDs);        
+            array_push($this->$type, $IDs);
     }
 
     /**
@@ -1162,11 +1251,16 @@ class Notifier extends vgCommon
      */
     private function clearResult($reset_recipients = false)
     {
-        $this->notify = array();
-        $this->result = array();
+        $this->notify                   = array();
+        $this->result                   = array();
         if($reset_recipients) {
-            $this->users = array();
-            $this->grops = array();
+            $this->users                = array();
+            $this->grops                = array();
+
+            $this->emails               = array();
+            $this->tels                 = array();
+
+            $this->unknown              = array();
         }
         $this->isError("");
     }
@@ -1199,7 +1293,10 @@ class Notifier extends vgCommon
             ? $this->isError()
             : ($onlyKey
 				? $this->getResultKeys()
-				: $this->result
+				: (count($this->services) > 1
+                    ? $this->result
+                    : current($this->result)
+                )
 			)
         );
     }

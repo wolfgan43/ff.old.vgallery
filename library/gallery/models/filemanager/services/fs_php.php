@@ -106,7 +106,7 @@ class filemanagerPhp
 				}
 
 				if($return) {
-					if($keys)
+                    if($keys)
 					{
 						if(!is_array($keys))
 							$keys = array($keys);
@@ -122,14 +122,15 @@ class filemanagerPhp
 							}
 						}
 					} else {
-						$res                                        = $return;
+						$res                                    = $return;
 					}
 				} else {
-					$this->filemanager->isError("Return Empty");
+                    $res                                        = null;
+					//$this->filemanager->isError("Return Empty");
 				}
             } else {
                 @unlink($this->filemanager->getParam("path"));
-                $this->filemanager->isError("syntax errors into file");
+                $this->filemanager->isError("syntax errors into file" . (Filemanager::DEBUG ? ": " . $path : ""));
             }
         }
 

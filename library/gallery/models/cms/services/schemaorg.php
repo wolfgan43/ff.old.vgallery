@@ -36,7 +36,7 @@ class cmsSchemaorg
     protected $controllers                                  = array(
     );
     protected $controllers_rev                              = null;
-	private $connectors										= array(
+    protected $connectors										= array(
                                                                 "sql"                   => array(
                                                                     "host"          	=> null
                                                                     , "username"    	=> null
@@ -59,7 +59,6 @@ class cmsSchemaorg
                                                                     "service"			=> "php"
                                                                     , "path"            => "/cache/schemaorg"
                                                                     , "name"            => array("name")
-                                                                    , "var"				=> null
                                                                 )
 															);
 	private $struct											= array(

@@ -58,8 +58,7 @@ class anagraphDomain
 																	"service"				    => "php"
 																	, "path"                    => "/cache/anagraph/domains"
 																	, "name"                    => array("name")
-																	, "var"					    => null
-																	)
+                                                                )
 															);
     private static $struct								    = array(
 	                                                            "domains" => array(
@@ -82,19 +81,6 @@ class anagraphDomain
                                                                     , "company_city"            => "string"
                                                                     , "company_email"           => "string"
                                                                     , "company_ID_place"        => "number" //todo: da fare la relationship con gmap coords
-
-                                                                    //todo: da togliere
-                                                                    , "server_csr_url"          => "string"
-                                                                    , "server_csr_ip"           => "string"
-                                                                    , "server_csr_protocol"     => "string"
-                                                                    , "server_pkey_url"         => "string"
-                                                                    , "server_pkey_ip"          => "string"
-                                                                    , "server_pkey_protocol"    => "string"
-                                                                    , "cert_expire"             => "number"
-                                                                    , "cert_alg"                => "string"
-                                                                    , "cert_id_length"          => "number"
-                                                                    , "cert_key_length"         => "number"
-                                                                    , "cert_precision"          => "number"
                                                                 )
                                                                 , "security" => array(
                                                                     "ID"                        => "primary"
@@ -112,6 +98,12 @@ class anagraphDomain
                                                                     , "cert_precision"          => "number"
                                                                     , "token_expire"            => "number"
                                                                     , "token_type"              => "string"
+                                                                    , "sa_alg"                  => "string"
+                                                                    , "sa_expire"               => "number"
+                                                                    , "sa_sender"               => "string"
+                                                                    , "sa_human"                => "string"
+                                                                    , "pw_hash"                 => "string"
+                                                                    , "pw_validator"            => "string"
                                                                 )
                                                                 , "access" => array(
                                                                     "ID"                        => "primary"
@@ -146,6 +138,33 @@ class anagraphDomain
                                                                     , "json_only"               => "number"
                                                                     , "domains"                 => "string"
                                                                 )
+                                                                , "registration" => array(
+                                                                    "ID"                        => "primary"
+                                                                    , "ID_domain"               => "number"
+                                                                    , "ID_group"                => "number"
+                                                                    , "anagraph_type"           => "string"
+                                                                    , "token"                   => "number"
+                                                                    , "activation"              => "string"
+                                                                )
+                                                                , "policy" => array(
+                                                                    "ID"                        => "primary"
+                                                                    , "ID_domain"               => "number"
+                                                                    , "ID_group"                => "number"
+                                                                    , "groups"                  => "string"
+                                                                    , "scopes"                  => "string"
+                                                                )
+                                                                , "policy_granted" => array(
+                                                                    "ID"                        => "primary"
+                                                                    , "ID_domain"               => "number"
+                                                                    , "ID_user_trusted"         => "number"
+                                                                    , "ID_user_shared"          => "number"
+                                                                    , "client_id"               => "string"
+                                                                    , "ID_device"               => "number"
+                                                                    , "scopes"                  => "string"
+                                                                    , "expire"                  => "number"
+                                                                    , "created"                 => "number"
+                                                                    , "last_update"             => "number"
+                                                                )
 															);
     private static $relationship							= array(
                                                                 "domains"                       => array(
@@ -164,6 +183,14 @@ class anagraphDomain
                                                                     , "scopes"                  => array(
                                                                         "external"                  => "ID_domain"
                                                                         , "primary"                 => "ID"
+                                                                    )
+                                                                    , "policy"                  => array(
+                                                                        "external"                  => "ID_domain"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                    , "policy_granted"          => array(
+                                                                        "external"                  => "ID_domain"
+                                                                    , "primary"                 => "ID"
                                                                     )
                                                                 )
                                                                 , "security"                    => array(
@@ -190,6 +217,18 @@ class anagraphDomain
                                                                         , "primary"                 => "ID"
                                                                     )
                                                                 )
+                                                                , "policy"                      => array(
+                                                                    "domains"                   => array(
+                                                                        "external"                  => "ID_domain"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                )
+                                                                , "policy_granted"              => array(
+                                                                    "domains"                   => array(
+                                                                        "external"                  => "ID_domain"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                )
                                                             );
     private static $indexes                                 = array(
                                                                 "security"                      => array(
@@ -204,10 +243,16 @@ class anagraphDomain
                                                                 , "scopes"                      => array(
                                                                     "ID_domain"                 => "hardindex"
                                                                 )
+                                                                , "policy"                      => array(
+                                                                    "ID_domain"                 => "hardindex"
+                                                                )
+                                                                , "policy_granted"              => array(
+                                                                    "ID_domain"                 => "hardindex"
+                                                                )
                                                             );
     private static $tables                                  = array(
                                                                 "domains"                       => array(
-                                                                    "name"                      => "cm_mod_security_domains"
+                                                                    "name"                      => "domains"
                                                                     , "alias"                   => "domain"
                                                                     , "engine"                  => "InnoDB"
                                                                     , "crypt"                   => false
@@ -216,7 +261,7 @@ class anagraphDomain
                                                                     , "charset"                 => "utf8"
                                                                 )
                                                                 , "security"                     => array(
-                                                                    "name"                      => "cm_mod_security_domains_settings"
+                                                                    "name"                      => "domains_security"
                                                                     , "alias"                   => "security"
                                                                     , "engine"                  => "InnoDB"
                                                                     , "crypt"                   => false
@@ -225,7 +270,7 @@ class anagraphDomain
                                                                     , "charset"                 => "utf8"
                                                                 )
                                                                 , "access"                     => array(
-                                                                    "name"                      => "cm_mod_security_domains_access"
+                                                                    "name"                      => "domains_access"
                                                                     , "alias"                   => "access"
                                                                     , "engine"                  => "InnoDB"
                                                                     , "crypt"                   => false
@@ -251,11 +296,37 @@ class anagraphDomain
                                                                     , "transfert"               => false
                                                                     , "charset"                 => "utf8"
                                                                 )
-
+                                                                , "registration"                => array(
+                                                                    "name"                      => "domains_registration"
+                                                                    , "alias"                   => "registration"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
+                                                                , "policy"                      => array(
+                                                                    "name"                      => "domains_policy"
+                                                                    , "alias"                   => "policy"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
+                                                                , "policy_granted"              => array(
+                                                                    "name"                      => "domains_policy_granted"
+                                                                    , "alias"                   => "permission"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
 
                                                             );
     private static $alias                                   = array(
-                                                                "domains"                       => array(
+                                                               /* "domains"                       => array(
                                                                     "nome"                      => "name"
                                                                     , "ip_address"              => "ip"
                                                                     , "creation_date"           => "created"
@@ -264,7 +335,7 @@ class anagraphDomain
                                                                 )
                                                                 , "clients"                      => array(
                                                                     "client_id"                  => "ID"
-                                                                )
+                                                                )*/
                                                             );
 
     /**

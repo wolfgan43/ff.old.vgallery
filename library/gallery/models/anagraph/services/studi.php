@@ -58,8 +58,7 @@ class doctorStudi
 																	"service"				    => "php"
 																	, "path"                    => "/cache/studi"
 																	, "name"                    => array("name")
-																	, "var"					    => null
-																	)
+                                                                )
 															);
     private static $struct								    = array(
 	                                                            "studi" => array(

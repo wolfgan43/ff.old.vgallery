@@ -34,7 +34,7 @@ class statsUser
 																, "sql"						=> null
 																, "fs" 						=> null
 															);
-	private $connectors										= array(
+    protected $connectors										= array(
 																"sql"                       => array(
 																	"host"          		=> null
 																	, "username"    		=> null
@@ -56,9 +56,8 @@ class statsUser
 																, "fs"                      => array(
 																	"service"				=> "php"
 																	, "path"                => "/cache/users"
-																	, "name"                => array("src")
-																	, "var"					=> null
-																	)
+																	, "name"                => array("smart_url")
+                                                                )
 															);
 	private $struct											= array(
 																"id_anagraph"				=> "number"
@@ -74,9 +73,12 @@ class statsUser
 																, "token"					=> "array"
 																, "created"					=> "number"
 																, "last_update"				=> "number"
-																, "last_login"				=> "number"
 																, "user_vars"				=> "array"
 															);
+    private $relationship									= array();
+    private $indexes										= array();
+    private $tables											= array();
+    private $alias											= array();
 
     /**
      * statsUser constructor.
@@ -123,15 +125,15 @@ class statsUser
      * @param null $rules
      * @return array
      */
-    public function sum_vars($where = null, $rules = null) {
+    public function sum_vars($where = null, $rules = null, $table = "user_vars") {
 		$res = array();
 		$stats = $this->get_stats($where);
 
 		if(is_array($stats["result"]) && count($stats["result"])) {
-			$users = $stats["result"];
+			$results = $stats["result"];
 
-			foreach ($users AS $user) {
-				$user_vars = $user["user_vars"];
+			foreach ($results AS $result) {
+				$user_vars = $result[$table];
 				if (is_array($user_vars) && count($user_vars)) {
 					foreach ($user_vars AS $key => $value) {
 						foreach ($rules AS $rule) {
@@ -152,26 +154,26 @@ class statsUser
      * @param null $fields
      * @return null
      */
-    public function get_vars($where = null, $fields = null) {
+    public function get_vars($where = null, $fields = null, $table = "user_vars") {
         $res = null;
         $stats = $this->get_stats($where);
 
         if(is_array($stats["result"]) && count($stats["result"])) {
-            $pages = $stats["result"];
+            $results = $stats["result"];
             $key = 0;
 //todo: da creare gli aggregati
             if(!is_array($fields) && strlen($fields))
                 $fields = array($fields);
 
-            foreach($pages AS $page) {
+            foreach($results AS $result) {
                 if (is_array($fields) && count($fields)) {
                     foreach ($fields AS $field) {
-                        if (array_key_exists($field, $page["user_vars"])) {
-                            $res[$key][$field] = $page["user_vars"][$field];
+                        if (array_key_exists($field, $result[$table])) {
+                            $res[$key][$field] = $result[$table][$field];
                         }
                     }
                 } else {
-                    $res[$key] = $page["user_vars"];
+                    $res[$key] = $result[$table];
                 }
 
                 if($res[$key])
@@ -215,39 +217,34 @@ class statsUser
 		);
 	}*/
 
+
     /**
      * @param $set
      * @param null $where
-     * @param null $old
+     * @param string $table
      * @return null
      */
-    public function set_vars($set, $where = null, $old = null) {
-		$arrWhere 							= $this->normalize_params($where);
-		if(is_array($set) && count($set)) {
-			$storage 						= $this->getStorage();
+    public function set_vars($set, $where = null, $table = "user_vars") {
+        $arrWhere 							= $this->normalize_params($where);
+        if(is_array($set) && count($set)) {
+            $storage 						= $this->getStorage();
 
-			if(!$old) {
-				$res = $storage->read($arrWhere
-					, array(
-						"user_vars"			=> true
-					));
+            $res                            = $storage->read($arrWhere);
+            $old 						    = $res["result"][0];
 
-				$old 						= $res["result"][0]["user_vars"];
-			}
+            if(is_array($old)) {
+                $set                        = array($table => $set);
+                $user_vars                  = $this->stats->normalize_fields($set, array_intersect_key($old, $set));
+            }
+        }
 
-			if(is_array($old))
-				$user_vars 					= $this->stats->normalize_fields($set, $old);
-		}
+        if($user_vars && $where) {
+            $user_vars["last_update"]       = time();
+            $update                         = $storage->update($user_vars, $arrWhere);
+        }
 
-		if($user_vars && $where) {
-			$res = $storage->update(array(
-				"user_vars" 				=> $user_vars
-				, "last_update"				=> time()
-			), $arrWhere);
-		}
-
-		return $res;
-	}
+        return $res;
+    }
 
     /**
      * @param null $insert
@@ -255,41 +252,41 @@ class statsUser
      */
     public function write_stats($insert = null, $update = null) {
 		$user = $this->getUserStats();
-
-		$this->getStorage()->write(
-			(is_array($insert)
-				? array_replace_recursive($user["insert"], $insert)
-				: $user["insert"]
-			)
-			, (is_array($update)
-				? array_replace_recursive($user["update"], $update)
-				: $user["update"]
-			)
-		);
+        if($user) {
+            $this->getStorage()->write(
+                (is_array($insert)
+                    ? array_replace_recursive($user["insert"], $insert)
+                    : $user["insert"]
+                )
+                , (is_array($update)
+                    ? array_replace_recursive($user["update"], $update)
+                    : $user["update"]
+                )
+            );
+        }
 	}
+
+    /**
+     * @param $type
+     * @return array
+     */
+    public function getStruct() {
+        return array(
+            "struct"                                        => $this->struct
+            , "indexes"                                     => $this->indexes
+            , "relationship"                                => $this->relationship
+            , "table"                                       => $this->tables
+            , "alias"                                       => $this->alias
+            , "connectors"                                  => false
+        );
+    }
 
     /**
      * @param null $fields
      * @return array|null
      */
     private function getUserFields($fields = null) {
-		if(!is_array($fields)) {
-			$fields = array(
-				"id_anagraph"				=> true
-				, "avatar"					=> true
-				, "name"					=> true
-				, "smart_url"				=> true
-				, "email"					=> true
-				, "tel"						=> true
-				, "src"						=> true
-				, "tags"					=> true
-				, "uid"						=> true
-				, "token"					=> true
-				, "created"					=> true
-				, "last_update"				=> true
-				, "user_vars"				=> true
-			);
-		}
+		if(!is_array($fields))              $fields = array_fill_keys(array_keys($this->struct), true);
 
 		return $fields;
 	}
@@ -302,36 +299,35 @@ class statsUser
 		$globals = ffGlobals::getInstance("gallery");
 
 		//codice operativo
-		$created 							= time();
+        if($globals->author) {
+            $created 							= time();
+            $user["insert"] = array(
+                "id_anagraph" 					=> $globals->author["id"]
+                , "avatar"						=> $globals->author["avatar"]
+                , "name" 						=> $globals->author["name"]
+                , "smart_url" 					=> $globals->author["smart_url"]
+                , "email"						=> $globals->author["email"]
+                , "tel"							=> $globals->author["tel"]
+                , "src" 						=> $globals->author["src"]
+                , "url" 						=> $globals->author["url"]
+                , "tags" 						=> $globals->author["tags"]
+                , "uid" 						=> $globals->author["uid"]
+                , "token"						=> $globals->author["token"]
+                , "created"						=> $created
+                , "last_update"					=> $created
+                , "user_vars"					=> $globals->author["user_vars"]
 
-		$user["insert"] = array(
-			"id_anagraph" 					=> $globals->author["id"]
-			, "avatar"						=> $globals->author["avatar"]
-			, "name" 						=> $globals->author["name"]
-			, "smart_url" 					=> $globals->author["smart_url"]
-			, "email"						=> $globals->author["email"]
-			, "tel"							=> $globals->author["tel"]
-			, "src" 						=> $globals->author["src"]
-			, "url" 						=> $globals->author["url"]
-			, "tags" 						=> $globals->author["tags"]
-			, "uid" 						=> $globals->author["uid"]
-			, "token"						=> $globals->author["token"]
-			, "created"						=> $created
-			, "last_update"					=> $created
-			, "last_login"					=> "0"
-			, "user_vars"					=> $globals->author["user_vars"]
+            );
+            $user["update"]["set"] = array(
+                "tags" 							=> $globals->author["tags"]
+                , "token"						=> $globals->author["token"]
+                , "last_update"	    			=> $created
+            );
 
-		);
-		$user["update"]["set"] = array(
-			"tags" 							=> $globals->author["tags"]
-			, "token"						=> $globals->author["token"]
-			, "last_update"	    			=> $created
-		);
-
-		$user["update"]["where"] = array(
-			"id_anagraph" 					=> $globals->author["id"]
-		);
-
+            $user["update"]["where"] = array(
+                "id_anagraph" 					=> $globals->author["id"]
+            );
+        }
 		return $user;
 	}
 
@@ -341,9 +337,7 @@ class statsUser
      */
     private function getStorage()
 	{
-		$storage = Storage::getInstance($this->services, array(
-			"struct" => $this->struct
-		));
+		$storage = Storage::getInstance($this->services, $this->getStruct());
 
 		return $storage;
 	}

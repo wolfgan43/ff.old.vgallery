@@ -25,11 +25,12 @@
  */
 
 class storageMongodb {
-    const TYPE                                              = "nosql";
+    const TYPE                                                                      = "nosql";
+    const KEY                                                                       = "_id";
 
-	private $device                                         = null;
-    private $config                                         = null;
-    private $storage                                        = null;
+	private $device                                                                 = null;
+    private $config                                                                 = null;
+    private $storage                                                                = null;
 
     /**
      * storageMongodb constructor.
@@ -37,18 +38,25 @@ class storageMongodb {
      */
     public function __construct($storage)
     {
-        $this->storage = $storage;
-        $this->setConfig();
+        $this->storage                                                              = $storage;
+        //$this->setConfig();
 
-        $this->device = new ffDB_MongoDB();
-        $this->device->on_error = "ignore";
-        if ($this->device->connect($this->config["name"], $this->config["host"], $this->config["username"], $this->config["password"])) {
-            $this->config["key"] = "_id";
+        $this->config                                                               = $this->storage->getConfig($this::TYPE);
+
+        $this->device                                                               = new ffDB_MongoDB();
+        $this->device->on_error                                                     = "ignore";
+        if ($this->device->connect(
+            $this->config["name"]
+            , $this->config["host"]
+            , $this->config["username"]
+            , $this->config["password"]
+        )) {
+            $this->config["key"]                                                    = $this::KEY;
         } else {
-            $this->device = false;
+            $this->device                                                           = false;
         }
-        $storage->convertData("ID", "_id");
-        $storage->convertWhere("ID", "_id");
+        $storage->convertData("ID", $this::KEY);
+        $storage->convertWhere("ID", $this::KEY);
     }
 
     /**
@@ -61,8 +69,25 @@ class storageMongodb {
 		$res 																		= array();
     	$struct 																	= $this->storage->getParam("struct");
 
-		if(is_array($fields) && count($fields)) {
-			foreach ($fields AS $name => $value) {
+		if(is_array($fields) && count($fields))
+		{
+            if($flag == "where" && is_array($fields['$or'])) {
+                $res["where"]['$or']                                                = $this->convertFields($fields['$or'], "where_OR");
+            }
+
+            unset($fields['$or']);
+			foreach ($fields AS $name => $value)
+			{
+                if($name == "*") {
+                    if($flag == "select") {
+                        $res                                                        = null;
+                        $result["select"]                                           = null;
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+
 				if ($name == "key") {
 					$name 															= $this->config["key"];
 				} elseif(0 && strpos($name, "key") === 1) {
@@ -84,153 +109,225 @@ class storageMongodb {
 					continue;
 				}
 
+
+
 				$field 																= $this->storage->normalizeField($name, $value);
 
-				if($field["res"]) {
-					$res 															= array_replace_recursive($res, $field["res"]);
-					continue;
-				}
-				switch($flag) {
-					case "select":
-						$res["select"][$field["name"]] 								= ($field["value"]
-																						? true
-																						: false
-																					);
-						break;
-					case "insert":
-						$res["insert"][$field["name"]] 								= $field["value"];
-						break;
-					case "update":
-						$res["update"]['$set'][$field["name"]] 						= $field["value"];
-						break;
-					case "where":
-						if(!is_array($value))
-							$value 													= $field["value"];
+				if($field == "special") {
+					$res[$flag][$name]                                              = $value;
+				} else {
+                    switch($flag) {
+                        case "select":
+                            $res["select"][$field["name"]] 						    = ($field["value"]
+                                                                                        ? true
+                                                                                        : false
+                                                                                    );
+                            break;
+                        case "insert":
+                            $res["insert"][$field["name"]] 							= $field["value"];
+                            break;
+                        case "update":
+                            if($field["type"] == "arrayIncremental"
+                                || $field["type"] == "arrayOfNumber"
+                                || $field["type"] == "array"
+                            ) {
+                                switch($field["op"]) {
+                                    case "++":
+                                        //skip
+                                        break;
+                                    case "--":
+                                        //skip
+                                        break;
+                                    case "+":
+                                        $res["update"]['$addToSet'][$field["name"]] = $field["value"];
+                                        break;
+                                    default:
+                                        $res["update"]['$set'][$field["name"]]      = $field["value"];
+                                }
+                            } elseif($field["type"] == "number"
+                                || $field["type"] == "primary"
+                            ) {
+                                switch($field["op"]) {
+                                    case "++":
+                                        $res["update"]['$inc'][$field["name"]]      = 1;
+                                        break;
+                                    case "--":
+                                        $res["update"]['$inc'][$field["name"]]      = -1;
+                                        break;
+                                    case "+":
+                                        //skip
+                                        //$res["update"]['$concat'][$field["name"]]   = array('$' . $field["name"], ",", $field["value"]);
+                                        break;
+                                    default:
+                                        $res["update"]['$set'][$field["name"]]      = $field["value"];
+                                }
+                            } elseif($field["type"] == "string"
+                                || $field["type"] == "char"
+                                || $field["type"] == "text"
+                            ) {
+                                switch($field["op"]) {
+                                    case "++":
+                                        //skip
+                                        break;
+                                    case "--":
+                                        //skip
+                                        break;
+                                    case "+":
+                                        $res["update"]['$concat'][$field["name"]]   = array('$' . $field["name"], ",", $field["value"]);
+                                        break;
+                                    default:
+                                        $res["update"]['$set'][$field["name"]]      = $field["value"];
+                                }
+                            } else {
+                                $res["update"]['$set'][$field["name"]] 				= $field["value"];
+                            }
 
-						if($field["name"] == $this->config["key"])
-							$value 													= $this->convertID($value);
+                            break;
+                        case "where":
+                        case "where_OR":
+                            if(!is_array($value))
+                                $value 										        = $field["value"];
 
-						$res["where"][$field["name"]] 								= $value;
+                            if($field["name"] == $this->config["key"])
+                                $value 											    = $this->convertID($value);
 
-						if(is_array($struct[$field["name"]])) {
-							$struct_type 											= "array";
-						} else {
-							$arrStructType 											= explode(":", $struct[$field["name"]], 2);
-							$struct_type 											= $arrStructType[0];
-						}
+                            $res["where"][$field["name"]] 						    = $value;
 
-						switch ($struct_type) {
-							case "arrayOfNumber":                                                                         //array
-							case "array":                                                                                //array
-								//search
-								if (is_array($value) && count($value)) {
-									if(!$this->storage->isAssocArray($value)) {
-										$res["where"][$field["name"]] 				= array(
-																						($field["not"] ? '$nin' : '$in') => $value
-																					);
-									}
-                                } elseif(is_array($value) && !count($value)) {
-                                    $res["where"][$field["name"]]                   = array();
-								} else {
-									unset($res["where"][$field["name"]]);
-								}
-								break;
-							case "boolean":
-								if ($field["not"] && $value !== null) {                                                //not
-									$res["where"][$field["name"]] 					= array(
-																						'$ne' => $value
-																					);
-								}
-								break;
-							case "date":
-							case "number":
-                            case "primary":
-								if($value !== null) {
-									if ($field["op"] && $value !== null) {                                                //< > <= >=
-										$op = "";
-										switch($field["op"]) {
-											case ">":
-												$op 								= ($field["not"] ? '$lt' : '$gt');
-												break;
-											case ">=":
-												$op 								= ($field["not"] ? '$lte' : '$gte');
-												break;
-											case "<":
-												$op 								= ($field["not"] ? '$gt' : '$lt');
-												break;
-											case "<=":
-												$op 								= ($field["not"] ? '$gte' : '$lte');
-												break;
-											default:
-										}
-										if($op) {
-											$res["where"][$field["name"]] 			= array(
-												"$op" => $value
-											);
-										}
-									} elseif ($field["not"]) {                                                //not
-										$res["where"][$field["name"]] 				= array(
-																						'$ne' => $value
-																					);
-									}
-								}
-								if (is_array($value) && count($value)) {
-									$res["where"][$field["name"]] 					= array(
-																						($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
-																							? $value
-																							: array_map('intval', $value)
-																						)
-																					);
-								}
-								break;
-							case "string":
-                            case "char":
-                            case "text":
-							default:
-								if (is_array($value) && count($value)) {
-									$res["where"][$field["name"]] 					= array(
-																						($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
-																							? $value
-																							: array_map('strval', $value)
-																						)
-																					);
-								} elseif ($field["not"]) {                                                        //not
-									if($value) {
-										$res["where"][$field["name"]] 				= array(
-																						'$ne' => $value
-																					);
-									} else {
-										unset($res["where"][$field["name"]]);
-									}
-								}
-							//string
-						}
-						break;
-					default:
-				}
+                            if(is_array($struct[$field["name"]])) {
+                                $struct_type 									    = "array";
+                            } else {
+                                $arrStructType 									    = explode(":", $struct[$field["name"]], 2);
+                                $struct_type 									    = $arrStructType[0];
+                            }
+
+                            switch ($struct_type) {
+                                case "arrayIncremental":                                                                     //array
+                                case "arrayOfNumber":                                                                        //array
+                                case "array":                                                                                //array
+                                    //search
+                                    if (is_array($value) && count($value)) {
+                                        if(!$this->storage->isAssocArray($value)) {
+                                            $res["where"][$field["name"]] 		    = array(
+                                                                                        ($field["not"] ? '$nin' : '$in') => $value
+                                                                                    );
+                                        }
+                                    } elseif(is_array($value) && !count($value)) {
+                                        $res["where"][$field["name"]]               = array();
+                                    } else {
+                                        unset($res["where"][$field["name"]]);
+                                    }
+                                    break;
+                                case "boolean":
+                                    if ($field["not"] && $value !== null) {                                                //not
+                                        $res["where"][$field["name"]] 			    = array(
+                                                                                        '$ne' => $value
+                                                                                    );
+                                    }
+                                    break;
+                                case "date":
+                                case "number":
+                                case "primary":
+                                    if($value !== null) {
+                                        if ($field["op"]) {                                                //< > <= >=
+                                            switch($field["op"]) {
+                                                case ">":
+                                                    $op 						    = ($field["not"] ? '$lt' : '$gt');
+                                                    break;
+                                                case ">=":
+                                                    $op 						    = ($field["not"] ? '$lte' : '$gte');
+                                                    break;
+                                                case "<":
+                                                    $op 						    = ($field["not"] ? '$gt' : '$lt');
+                                                    break;
+                                                case "<=":
+                                                    $op 						    = ($field["not"] ? '$gte' : '$lte');
+                                                    break;
+                                                default:
+                                                    $op                             = "";
+                                            }
+                                            if($op) {
+                                                $res["where"][$field["name"]] 	    = array(
+                                                                                        "$op" => $value
+                                                                                    );
+                                            }
+                                        } elseif ($field["not"]) {                                                //not
+                                            $res["where"][$field["name"]] 		    = array(
+                                                                                        '$ne' => $value
+                                                                                    );
+                                        }
+                                    }
+                                    if (is_array($value) && count($value)) {
+                                        $res["where"][$field["name"]] 			    = array(
+                                                                                        ($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
+                                                                                            ? $value
+                                                                                            : array_map('intval', $value)
+                                                                                        )
+                                                                                    );
+                                    }
+                                    break;
+                                case "string":
+                                case "char":
+                                case "text":
+                                default:
+                                    if (is_array($value) && count($value)) {
+                                        $res["where"][$field["name"]] 			    = array(
+                                                                                        ($field["not"] ? '$nin' : '$in') => (($field["name"] == $this->config["key"])
+                                                                                            ? $value
+                                                                                            : array_map('strval', $value)
+                                                                                        )
+                                                                                    );
+                                    } elseif ($field["not"]) {                                                        //not
+                                        if($value) {
+                                            $res["where"][$field["name"]] 		    = array(
+                                                                                        '$ne' => $value
+                                                                                    );
+                                        } else {
+                                            unset($res["where"][$field["name"]]);
+                                        }
+                                    }
+                                //string
+                            }
+                            break;
+                        default:
+                    }
+                }
 			}
 
             if(is_array($res)) {
+			    $result                                                             = $res;
                 switch ($flag) {
                     case "select":
-                        $res["select"][$this->config["key"]]                        = true;
+                        if($result["select"] != "*") {
+                            $key_name                                               = $this->storage->getFieldAlias($this->config["key"]);
+                            if (!$result["select"][$key_name])                      $result["select"][$key_name] = true;
+                        }
                         break;
                     case "insert":
                         break;
                     case "update":
                         break;
                     case "where":
+                    case "where_OR":
                         break;
                     case "sort":
                         break;
                     default:
                 }
             }
-        } elseif($flag == "select") {
-
+        } else {
+            switch($flag) {
+                case "select":
+                    $result["select"] = null;
+                    break;
+                case "where":
+                case "where_OR":
+                    $result["where"] = true;
+                    break;
+                default:
+            }
         }
 
-		return $res;
+		return $result;
 	}
 
     /**
@@ -262,9 +359,10 @@ class storageMongodb {
     /**
      * @todo: da togliere
      */
-    private function setConfig()
+    /*private function setConfig()
 	{
 		$this->config = $this->storage->getConfig($this::TYPE);
+
 		if(!$this->config["name"])
 		{
 			$prefix = ($this->config["prefix"] && defined($this->config["prefix"] . "NAME") && constant($this->config["prefix"] . "NAME")
@@ -295,7 +393,7 @@ class storageMongodb {
 			}
 		}
 
-	}
+	}*/
 
     /**
      * @param $value

@@ -48,7 +48,9 @@ class Stats extends vgCommon
 		}
 		return self::$singleton;
 	}
-    public static function registerErrors() {
+
+	/******* DA Togliere *********/
+   /* public static function registerErrors() {
         declare(ticks=1);
 
         register_tick_function(function() {
@@ -154,11 +156,7 @@ class Stats extends vgCommon
         echo $html;
     }
 
-    /**
-     * @param bool $end
-     * @param bool $isXHR
-     * @return mixed
-     */
+
     public static function benchmark($end = false, $isXHR = false) {
         static $res;
 
@@ -205,7 +203,9 @@ class Stats extends vgCommon
             }
         }
 
-    }
+    }*/
+    /******* DA Togliere *********/
+
 
     /**
      * @param null $start
@@ -287,14 +287,20 @@ class Stats extends vgCommon
      * @param null $where
      * @return null
      */
-    public function get($fields = null, $where = null) {
+    public function get($fields = null, $where = null, $table = null) {
 		$this->clearResult();
-		if(!$where) {
+		if(!$where && $fields && !$table) {
 			$where = $fields;
 			$fields = null;
-		}
+		} elseif($fields && $where && !is_array($where) && !$table) {
+            $table = $where;
+            $where = $fields;
+            $fields = null;
 
-		$this->result = $this->getDriver()->get_vars($where, $fields);
+        }
+        if(!$table) $table = "user_vars";
+
+		$this->result = $this->getDriver()->get_vars($where, $fields, $table);
 		return $this->getResult();
 	}
 
@@ -330,10 +336,10 @@ class Stats extends vgCommon
      * @param $where
      * @return null
      */
-    public function sum($rules, $where) {
+    public function sum($rules, $where, $table = null) {
 		$this->clearResult();
 
-		$this->result = $this->getDriver()->sum_vars($where, $rules);
+		$this->result = $this->getDriver()->sum_vars($where, $rules, $table);
 
 		return $this->getResult();
 	}
@@ -481,11 +487,12 @@ class Stats extends vgCommon
      * @param null $old
      * @return null
      */
-    public function set($set, $where = null, $old = null) {
+    public function set($set, $where = null, $table = null) {
 		$this->clearResult();
 
-		$this->result = $this->getDriver()->set_vars($set, $where, $old);
+        if(!$table) $table = "user_vars";
 
+		$this->result = $this->getDriver()->set_vars($set, $where, $table);
 		return $this->getResult();
 	}
 
@@ -512,26 +519,47 @@ class Stats extends vgCommon
      * @return null
      */
     public function normalize_fields($set, $old = null) {
+        $def = $this->getDriver()->getStruct();
         if(is_array($set) && count($set)) {
             if($old)
                 $res = $old;
 
             foreach ($set AS $key => $value) {
-                switch ((string) $value) {
-                    case "++":
+                if(is_array($value)) {
+                    if(!count($value)) {
                         $res[$key] = ($old[$key]
-                            ? ++$old[$key]
-                            : 1
-                        );
-                        break;
-                    case "--":
-                        $res[$key] = ($old[$key]
-                            ? --$old[$key]
-                            : 0
-                        );
-                        break;
-                    default:
-                        $res[$key] = $value;
+                                        ? $old[$key]
+                                        : array()
+                                    );
+                    } elseif($def["struct"][$key] === "arrayIncremental") {
+                        $last = $res[$key][count($res[$key]) - 1];
+
+                        if($value != $last)
+                            $res[$key][] = $value;
+
+                    } else {
+                        $res[$key] = $this->normalize_fields($value, $old[$key]);
+                    }
+                } else {
+                    switch ($value) {
+                        //case "+":
+                        //    $res[$key][] = $value;
+                        //    break;
+                        case "++":
+                            $res[$key] = ($old[$key]
+                                ? ++$old[$key]
+                                : 1
+                            );
+                            break;
+                        case "--":
+                            $res[$key] = ($old[$key]
+                                ? --$old[$key]
+                                : 0
+                            );
+                            break;
+                        default:
+                            $res[$key] = $value;
+                    }
                 }
             }
         }
