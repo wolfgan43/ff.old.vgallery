@@ -24,17 +24,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @link https://github.com/wolfgan43/vgallery
  */
 
+if(!defined("SESSION_NAME"))                                define("SESSION_NAME", false);
+if(!defined("SESSION_SAVE_PATH"))                           define("SESSION_SAVE_PATH", false);
+
+if(!defined("MOD_SECURITY_SESSION_PERMANENT"))             define("MOD_SECURITY_SESSION_PERMANENT", true);
+if(!defined("MOD_SECURITY_COOKIE_SHARE"))                  define("MOD_SECURITY_COOKIE_SHARE", true);
+
+if(!defined("MOD_SEC_GUEST_GROUP_ID"))                     define("MOD_SEC_GUEST_GROUP_ID", "2");
+if(!defined("MOD_SEC_GUEST_GROUP_NAME"))                   define("MOD_SEC_GUEST_GROUP_NAME", "guests");
+
 class authSession
 {
     const SESSION_NAME                                          = SESSION_NAME;
     const SESSION_PATH                                          = SESSION_SAVE_PATH;
-    const SESSION_STARTED                                       = "MOD_SECURITY_SESSION_STARTED";
-    const COOKIE_SHARE                                          = MOD_SECURITY_SESSION_PERMANENT;
-
+    const COOKIE_PERMANENT                                      = MOD_SECURITY_SESSION_PERMANENT;
+    const COOKIE_SHARE                                          = MOD_SECURITY_COOKIE_SHARE;
+//todo: da implementare CSRF_PROTECTION
     const APPID                                                 = APPID;
 
-    const DATA_USER                                             = "user_permission";
-    const DATA_FF                                               = "__FF_SESSION__";
+    const GUEST_GROUP_ID                                        = MOD_SEC_GUEST_GROUP_ID;
+    const GUEST_GROUP_NAME                                      = MOD_SEC_GUEST_GROUP_NAME;
+
+    const DATA_USER                                             = "auth";
+    const DATA_CSRF                                             = "__CSRF__";
 
 
 
@@ -56,30 +68,44 @@ class authSession
      */
     public function check($opt = null) {
         $session_valid                                          = false;
-        if(defined(authSession::SESSION_STARTED)) {
+        if(Auth::isLogged()) {
             $session_valid                                      = true;
         } else {
-            if($this->checkSession())
-            {
-                if(@session_start())
+            if($this->checkSession()) {
+                if(@session_start()) {
                     $session_valid                              = true;
+                }
+            } else {
+                $session_valid                                  = null;
             }
         }
-        if($session_valid) {
-            $data["FF"]                                         = $this->issetSession(authSession::DATA_FF);
-            $data["user"]                                       = (array) $this->getSession(authSession::DATA_USER);
 
-            if($opt["user"])                                    $res["user"] = $data["user"];
+        $csrf                                                   = $this->env(authSession::DATA_CSRF);
 
-            if(is_array($opt["fields"]) && count($opt["fields"])) {
-                foreach ($opt["fields"] AS $name => $asName) {
-                    if($data["user"][$asName])                  $res[$asName] = $data["user"][$asName];
-                }
+        if($session_valid && $csrf) {
+            if(!Auth::password(null, $csrf)) {
+                $session_valid                                  = false;
             }
+        }
 
-            $res["status"]                                      = "0";
-            $res["error"]                                       = "";
-        } else {
+        if($session_valid) {
+            $anagraph                                           = $this->env(authSession::DATA_USER);
+
+            /**
+             * Set islogged
+             */
+            if(Auth::isLogged($anagraph["user"]["acl"])) {
+                if($opt["user"])                                    { $res["user"] = $anagraph["user"]; }
+
+                $res["status"]                                      = "0";
+                $res["error"]                                       = "";
+            } else {
+                $this->destroy();
+
+                $res["status"]                                      = "401";
+                $res["error"]                                       = "Insufficent Permission";
+            }
+        } elseif($session_valid === false) {
             $this->destroy();
 
             $res["status"]                                      = "404";
@@ -99,18 +125,114 @@ class authSession
      * @param null $fields
      * @return string
      */
-    public function create($ID, $opt = null) {
-        $token = mod_security_create_session($ID); //$opt["fields"] da gestire
-        $res = array(
-            //... fields custom
-            "token" => array(
-                "name"      => ""
-                , "expire"  => "-1"
-            )
-        );
+    public function create($ID, $domain = null, $opt = null) {
+        $this->sessionPath();
+        $this->sessionName();
+//print_r($opt);
+
+        if($opt["csrf"]) {
+            if(!Auth::password(null, $opt["csrf"])) {
+                return "Invalid Session";
+            }
+        }
+
+        $permanent                                              = ($opt["refresh"] === null
+                                                                    ? authSession::COOKIE_PERMANENT
+                                                                    : $opt["refresh"]
+                                                                );
+        /**
+         * Purge header and remove old cookie
+         */
+        $this->destroy();
+        session_regenerate_id(true);
+        session_start();
+        $session_id                                             = session_id();
+
+
+
+        $select                                                 = array(
+                                                                    "anagraph.*"
+                                                                    , "access.users.*"
+                                                                    , "access.groups.*"
+                                                                    , "access.tokens.token" => "name"
+                                                                    , "access.tokens.expire"
+                                                                    , "access.tokens.type"
+                                                                );
+
+        $anagraph                                               = Auth::getAnagraphByUser($ID, $opt["model"], $select);
+        if($domain)                                             { $anagraph["domain"] = $domain; }
+
+        /**
+         * Set islogged
+         */
+        if(Auth::isLogged($anagraph["user"]["acl"])) {
+            /*
+             * Set Session Data
+             */
+            $this->env(authSession::DATA_USER, $anagraph);
+            if($opt["csrf"]) {
+                $this->env(authSession::DATA_CSRF, $opt["csrf"]);
+            }
+
+            /*
+             * Set Cookie
+             */
+            if($permanent) {
+                $this->cookie_create($this->sessionName(), $session_id, $permanent);
+            }
+            if($domain["name"]) {
+                $this->cookie_create("Domain", $domain["name"], $permanent);
+            }
+            $this->cookie_create("group", $anagraph["user"]["acl_primary"], $permanent);
+
+
+            $res = array(
+                "session"   => array(
+                    "name"  => $this->sessionName()
+                    , "id"  => $this->sessionId()
+                )
+                , "status"  => "0"
+                , "error"   => ""
+            );
+        } else {
+            $this->destroy();
+            $res = array(
+                "session"   => array(
+                    "name"  => $this->sessionName()
+                , "id"  => $this->sessionId()
+                )
+            , "status"  => "401"
+            , "error"   => "Insufficent Permission"
+            );
+        }
         return $res;
     }
 
+    public function env($name, $value = null) {
+        if($value) {
+            $_SESSION[$name] = $value;
+        } else {
+            return $_SESSION[$name];
+        }
+    }
+    public function envIsset($name) {
+        return isset($_SESSION[$name]);
+    }
+    public function envUnset($name) {
+        $res = $_SESSION[$name];
+        unset($_SESSION[$name]);
+
+        return $res;
+    }
+    public function userInfo($set = null) {
+        $anagraph = $this->env(authSession::DATA_USER);
+        if(is_array($set) && count($set)) {
+            $anagraph = array_replace_recursive($anagraph, $set);
+            $this->env(authSession::DATA_USER, $anagraph);
+        }
+
+        return $anagraph;
+    }
     /**
      * @param bool $cookie
      */
@@ -118,35 +240,30 @@ class authSession
         @session_unset();
         @session_destroy();
 
+        $session_name = $this->sessionName();
         if($cookie) {
-            $this->cookie_destroy();
+            header_remove("Set-Cookie");
+            $this->cookie_destroy($session_name);
+            $this->cookie_destroy("Domain");
+            $this->cookie_destroy("group");
+
         }
-    }
-
-    /**
-     * @param $name
-     * @return bool
-     */
-    private function issetSession($name) {
-        return isset($_SESSION[authSession::APPID . $name]);
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    private function getSession($name) {
-        return $_SESSION[authSession::APPID . $name];
+        unset($_GET[$session_name], $_POST[$session_name], $_COOKIE[$session_name], $_REQUEST[$session_name]);
+        unset($_GET["Domain"], $_POST["Domain"], $_COOKIE["Domain"], $_REQUEST["Domain"]);
+        unset($_GET["group"], $_POST["group"], $_COOKIE["group"], $_REQUEST["group"]);
     }
 
     /**
      * @param null $name
      * @return null|string
      */
-    private function getSessionName($name = null) {
+    private function sessionName($name = null) {
         static $isset                                           = null;
 
-        if(!$name)                                              $name   = authSession::SESSION_NAME;
+        if(!$name)                                              $name = (authSession::SESSION_NAME
+                                                                    ? authSession::SESSION_NAME
+                                                                    : session_name()
+                                                                );
         if($isset != $name) {
             session_name($name);
             $isset                                              = $name;
@@ -159,10 +276,13 @@ class authSession
      * @param null $path
      * @return array|false|null|string
      */
-    private function getSessionPath($path = null) {
+    private function sessionPath($path = null) {
         static $isset                                           = null;
 
-        if(!$path)                                              $path   = authSession::SESSION_PATH;
+        if(!$path)                                              $path = (authSession::SESSION_PATH
+                                                                    ? authSession::SESSION_PATH
+                                                                    : session_save_path()
+                                                                );
         if($isset != $path) {
             session_save_path($path);
             $isset                                              = $path;
@@ -172,23 +292,13 @@ class authSession
     }
 
     /**
-     * @return bool
-     */
-    private function checkShareCookie() {
-        return (authSession::COOKIE_SHARE === true
-            ? true
-            : false
-        );
-    }
-
-    /**
      * @param null $id
      * @param null $path
      * @return bool
      */
     private function checkSession($id = null, $path = null) {
-        if(!$id)                                                $id     = $this->getSessionId();
-        if(!$path)                                              $path   = $this->getSessionPath();
+        if(!$id)                                                $id     = $this->sessionId();
+        if(!$path)                                              $path   = $this->sessionPath();
 
         return file_exists(rtrim($path, "/") . "/sess_" . $id);
     }
@@ -196,8 +306,8 @@ class authSession
     /**
      * @return mixed
      */
-    private function getSessionId() {
-        $session_name                                           = $this->getSessionName();
+    private function sessionId() {
+        $session_name                                           = $this->sessionName();
         return ($_REQUEST[$session_name]
             ? $_REQUEST[$session_name]
             : $_COOKIE[$session_name]
@@ -223,24 +333,41 @@ class authSession
     /**
      * @param string $name
      */
-    private function cookie_destroy($name = authSession::SESSION_NAME) { //_ut
+    private function cookie_create($name, $value, $permanent = null) { //_ut
+        if(!$permanent)                                         $permanent = authSession::COOKIE_PERMANENT;
+        $sessionCookie                                          = session_get_cookie_params();
+        $lifetime                                               = ($permanent
+                                                                    ? time() + (60 * 60 * 24 * 365)
+                                                                    : $sessionCookie["lifetime"]
+                                                                );
+
+        //setcookie($name, $value, $lifetime, $sessionCookie['path'], $_SERVER["HTTP_HOST"], $sessionCookie['secure'], $sessionCookie["httponly"]);
+
+        $sessionCookie                                          = $this->cookie_share_in_subdomains();
+        setcookie($name, $value, $lifetime, $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure'], $sessionCookie["httponly"]);
+        $_COOKIE[$name] = $value;
+    }
+
+    /**
+     * @param string $name
+     */
+    private function cookie_destroy($name) { //_ut
         $sessionCookie                                          = session_get_cookie_params();
         setcookie($name, false, $sessionCookie["lifetime"], $sessionCookie['path'], $_SERVER["HTTP_HOST"], $sessionCookie['secure'], $sessionCookie["httponly"]);
 
-        if($this->cookie_share_in_subdomains()) {
-            $sessionCookie                                      = session_get_cookie_params();
-            setcookie($name, false, $sessionCookie["lifetime"], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure'], $sessionCookie["httponly"]);
-        }
+        $sessionCookie                                          = $this->cookie_share_in_subdomains();
+        setcookie($name, false, $sessionCookie["lifetime"], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure'], $sessionCookie["httponly"]);
+
+        unset($_COOKIE[$name]);
     }
 
     /**
      * @return bool
      */
-    private function cookie_share_in_subdomains() {
-        $check_share                                            = $this->checkShareCookie();
-        if($check_share)                                        session_set_cookie_params(0, '/', '.' . $this->getPrimaryDomain());
+    private function cookie_share_in_subdomains($share = authSession::COOKIE_SHARE) {
+        if($share)                                              session_set_cookie_params(0, '/', '.' . $this->getPrimaryDomain());
 
-        return $check_share;
+        return session_get_cookie_params();
     }
 
 }

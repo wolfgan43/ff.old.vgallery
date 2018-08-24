@@ -64,6 +64,7 @@ class anagraphAccess
 	                                                            "users" => array(
 	                                                                "ID"                        => "primary"
                                                                     , "acl"                     => "number"
+                                                                    , "acl_primary"             => "string"
                                                                     , "expire"                  => "number"
                                                                     , "status"                  => "number"
                                                                     , "username"                => "string"
@@ -71,27 +72,37 @@ class anagraphAccess
                                                                     , "email"                   => "string"
                                                                     , "tel"                     => "string"
                                                                     , "password"                => "string:inPassword"
-                                                                    , "password_old"            => "string:inPassword"
-                                                                    , "password_last_update"    => "number"
                                                                     , "avatar"                  => "string"
                                                                     , "created"                 => "number"
                                                                     , "last_update"             => "number"
                                                                     , "last_login"              => "number"
                                                                     , "ID_lang"                 => "number"
-                                                                    , "SID"                     => "string"
+                                                                    , "SID"                     => "string:inPassword"
                                                                     , "SID_expire"              => "number"
+                                                                    , "SID_device"              => "number"
+                                                                    , "SID_ip"                  => "string"
+                                                                    , "SID_question"            => "string"
+                                                                    , "SID_answer"              => "string:inPassword"
                                                                 )
                                                                 , "groups" => array(
                                                                     "ID"                        => "primary"
                                                                     , "name"                    => "string"
                                                                     , "level"                   => "number"
                                                                 )
+                                                                , "user_groups" => array(
+                                                                    "ID"                        => "primary"
+                                                                    , "ID_user"                 => "number"
+                                                                    , "ID_group"                => "number"
+                                                                )
                                                                 , "devices" => array(
-                                                                    "client_id"                 => "string"
+                                                                    "ID"                        => "primary"
+                                                                    , "client_id"               => "string"
+                                                                    , "ID_user"                 => "number"
                                                                     , "name"                    => "string"
                                                                     , "type"                    => "string"
-                                                                    , "ID_user"                 => "number"
                                                                     , "last_update"             => "number"
+                                                                    , "hits"                    => "number"
+                                                                    , "ips"                     => "text"
                                                                 )
                                                                 , "tokens" => array(
                                                                     "ID"                        => "primary"
@@ -118,6 +129,10 @@ class anagraphAccess
                                                                         "external"                  => "ID_user"
                                                                         , "primary"                 => "ID"
                                                                     )
+                                                                    , "user_groups"                  => array(
+                                                                        "external"                  => "ID_user"
+                                                                        , "primary"                 => "ID"
+                                                                    )
                                                                 )
                                                                 , "devices"                     => array(
                                                                     "users"                     => array(
@@ -137,6 +152,12 @@ class anagraphAccess
                                                                         , "primary"                 => "ID"
                                                                     )
                                                                 )
+                                                                , "user_groups" => array(
+                                                                    anagraphAccess::MAIN_TABLE  => array(
+                                                                        "external"                  => "ID_user"
+                                                                        , "primary"                 => "ID"
+                                                                    )
+                                                                )
                                                             );
     private static $indexes                                 = array(
                                                                 "users"                         => array(
@@ -152,7 +173,7 @@ class anagraphAccess
                                                             );
     private static $tables                                  = array(
                                                                 "users"                         => array(
-                                                                    "name"                      => "cm_mod_security_users"
+                                                                    "name"                      => "access_users"
                                                                     , "alias"                   => "user"
                                                                     , "engine"                  => "InnoDB"
                                                                     , "crypt"                   => false
@@ -161,7 +182,7 @@ class anagraphAccess
                                                                     , "charset"                 => "utf8"
                                                                 )
                                                                 , "groups"                      => array(
-                                                                    "name"                      => "cm_mod_security_groups"
+                                                                    "name"                      => "access_groups"
                                                                     , "alias"                   => "group"
                                                                     , "engine"                  => "InnoDB"
                                                                     , "crypt"                   => false
@@ -169,8 +190,17 @@ class anagraphAccess
                                                                     , "transfert"               => false
                                                                     , "charset"                 => "utf8"
                                                                 )
+                                                                , "user_groups"                 => array(
+                                                                    "name"                      => "access_users_groups"
+                                                                    , "alias"                   => "user_groups"
+                                                                    , "engine"                  => "InnoDB"
+                                                                    , "crypt"                   => false
+                                                                    , "pairing"                 => false
+                                                                    , "transfert"               => false
+                                                                    , "charset"                 => "utf8"
+                                                                )
                                                                 , "devices"                     => array(
-                                                                    "name"                      => "devices"
+                                                                    "name"                      => "access_devices"
                                                                     , "alias"                   => "device"
                                                                     , "engine"                  => "InnoDB"
                                                                     , "crypt"                   => false
@@ -179,7 +209,7 @@ class anagraphAccess
                                                                     , "charset"                 => "utf8"
                                                                 )
                                                                 , "tokens"                      => array(
-                                                                    "name"                      => "cm_mod_security_token"
+                                                                    "name"                      => "access_tokens"
                                                                     , "alias"                   => "token"
                                                                     , "engine"                  => "InnoDB"
                                                                     , "crypt"                   => false
@@ -189,15 +219,19 @@ class anagraphAccess
                                                                 )
                                                             );
     private static $alias                                   = array(
+                                                                /*
                                                                 "users"                         => array(
                                                                     "ID_languages"              => "ID_lang"
                                                                     , "ID_domains"              => "ID_domain"
                                                                     , "primary_gid"             => "acl"
                                                                     , "expiration"              => "expire"
+                                                                    , "activation_code"         => "SID"
+                                                                    , "lastlogin"               => "last_login"
                                                                 )
                                                                 , "groups"                      => array(
                                                                     "gid"                       => "ID"
                                                                 )
+                                                                */
                                                             );
 
     /**

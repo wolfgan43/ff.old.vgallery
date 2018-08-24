@@ -48,7 +48,9 @@ class Stats extends vgCommon
 		}
 		return self::$singleton;
 	}
-    public static function registerErrors() {
+
+	/******* DA Togliere *********/
+   /* public static function registerErrors() {
         declare(ticks=1);
 
         register_tick_function(function() {
@@ -154,11 +156,7 @@ class Stats extends vgCommon
         echo $html;
     }
 
-    /**
-     * @param bool $end
-     * @param bool $isXHR
-     * @return mixed
-     */
+
     public static function benchmark($end = false, $isXHR = false) {
         static $res;
 
@@ -205,7 +203,9 @@ class Stats extends vgCommon
             }
         }
 
-    }
+    }*/
+    /******* DA Togliere *********/
+
 
     /**
      * @param null $start

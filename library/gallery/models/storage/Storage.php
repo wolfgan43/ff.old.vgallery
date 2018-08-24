@@ -26,8 +26,15 @@
 
 class Storage extends vgCommon
 {
+    const DEBUG                                                 = DEBUG_MODE;
+    const MAX_NUMROWS                                           = 10000;
+    const MAX_RESULTS                                           = 1000;
+    const MAX_RECURSION                                         = 100;
+
     static $singleton                   = null;
-    
+    static $cache                       = array();
+
+
     protected $services                 = array(
                                             "sql"               => null
                                         );     
@@ -89,6 +96,8 @@ class Storage extends vgCommon
 	private $limit                     	= null;
     private $reader						= null;
     private $result                     = null;
+
+    public $use_cache                   = true;
 
     /**
      * I services sono le tipologie di database che si vogliono utilizzare simultaneamente.
@@ -152,6 +161,7 @@ class Storage extends vgCommon
 
 		$this->setServices($services);
 		$this->setParams($params);
+
     }
 
     /**
@@ -328,6 +338,7 @@ class Storage extends vgCommon
             else
                 $config = $this->connectors[$type];
         }
+
         return $config;
     }
     public function setConnector($name, $service = null)
@@ -520,15 +531,16 @@ class Storage extends vgCommon
         foreach($this->services AS $controller => $services)
         {
             //$this->isError("");
+            if(!$services)                                              $this->services[$controller] = $this->setConnector($controller);
 
-            $funcController = "controller_" . $controller;
-            $service = $this->$funcController(is_array($services)
-                ? $services["service"]
-                : $services
-            );
+            $funcController                                             = "controller_" . $controller;
+            $service                                                    = $this->$funcController(is_array($services)
+                                                                            ? $services["service"]
+                                                                            : $services
+                                                                        );
 
             if($this->action == "read" && is_array($this->result[$service])) {
-                $this->reader = $service;
+                $this->reader                                           = $service;
                 break;
             }
         }
@@ -552,88 +564,136 @@ class Storage extends vgCommon
             if($this->controllers_rev[$controller]) {
                 // require_once($this->getAbsPathPHP("/storage/services/" . $type . "_" . $service, true));
 
-                $driver                                                     = new $controller($this);
-                $db                                                         = $driver->getDevice();
+                $driver                                                 = new $controller($this);
+                $db                                                     = $driver->getDevice();
                 //$config                                                     = $driver->getConfig();
 
                 if($db) {
-                    $query = $this->getQuery($driver);
+                    $query                                              = $this->getQuery($driver);
 
                     if(is_array($query)) {
                         switch($this->action)
                         {
                             case "read":
-                                $exts = array();
-                                $this->result[$service] = array();
-                                $sSQL = "SELECT " . $query["select"] . "  
-                                        FROM " .  $query["from"] . "
-                                        WHERE " . $query["where"]
-                                        . ($query["sort"]
-                                            ? " ORDER BY " . $query["sort"]
-                                            : ""
-                                        )
-                                        . ($query["limit"]
-                                            ? " LIMIT " . (is_array($query["limit"])
-                                                ? $query["limit"]["skip"] . ", " . $query["limit"]["limit"]
-                                                : $query["limit"]
-                                            )
-                                            : ""
-                                        );
-                                $res = $db->query($sSQL);
+                                /**
+                                 * Cache Global by Singleton
+                                 */
+                                $cache_key                              = $this->getCacheKey($query["from"]);
+
+                                if($this::DEBUG) {
+                                    Storage::$cache[$cache_key]["count"]++;
+                                    if (Storage::$cache[$cache_key]["count"] > Storage::MAX_RECURSION) {
+                                        Cms::getInstance("debug")->dump("Max Recursion: " . print_r($query, true));
+                                        exit;
+                                    }
+                                }
+
+                                if($this->use_cache && !$this->exts) {
+                                    if(isset(Storage::$cache[$cache_key]["data"])) {
+                                        if($this::DEBUG)                    Cms::getInstance("debug")->dumpLog($query, "query_duplicate");
+                                        return Storage::$cache[$cache_key]["data"];
+                                    }
+                                }
+
+                                $exts                                   = array();
+                                $this->result                           = array();
+                                $sSQL                                   = "SELECT "
+                                                                            . ($query["limit"]["calc_found_rows"]
+                                                                                ? " SQL_CALC_FOUND_ROWS "
+                                                                                : ""
+                                                                            ) . $query["select"] . "  
+                                                                            FROM " .  $query["from"] . "
+                                                                            WHERE " . $query["where"]
+                                                                            . ($query["sort"]
+                                                                                ? " ORDER BY " . $query["sort"]
+                                                                                : ""
+                                                                            )
+                                                                            . ($query["limit"]
+                                                                                ? " LIMIT " . (is_array($query["limit"])
+                                                                                    ? $query["limit"]["skip"] . ", " . $query["limit"]["limit"]
+                                                                                    : $query["limit"]
+                                                                                )
+                                                                                : ""
+                                                                            );
+                                $res                                        = $db->query($sSQL);
+
+                                //echo $sSQL . "<br>\n\n";
                                 if(!$res) {  //todo: da ristrutturare per gli up down
                                     switch ($db->errno) {
                                         case "1146":
                                             $driver->up();
-                                            $res = $db->query($sSQL);
+                                            $res                            = $db->query($sSQL);
                                             break;
                                         default:
                                     }
                                 }
+
                                 if($res) {
                                     if($this->exts /*&& $query["select"] != "*"*/) {
                                         if (is_array($db->fields_names) && count($db->fields_names)) {
                                             foreach ($db->fields_names AS $name) {
                                                 if($name == $query["key"])
-                                                    $exts[$name] = null;
+                                                    $exts[$name]            = null;
                                                 elseif (strpos($name, "ID_") === 0)
-                                                    $exts[$name] = null;
+                                                    $exts[$name]            = null;
                                                 elseif ($this->relationship[$name]) {
-                                                    $exts[$name] = null;
+                                                    $exts[$name]            = null;
                                                 } elseif ($this->relationship[$this->alias[$name]]) {
-                                                    $exts[$name] = $this->alias[$name];
+                                                    $exts[$name]            = $this->alias[$name];
                                                 }
                                             }
                                         }
                                         //if($exts)
                                             //$this->result[$service]["exts"] = array();
                                     }
+                                    $count = $db->numRows();
+                                    if($count < $this::MAX_NUMROWS) {
+                                        $recordset = $db->getRecordset();
 
-                                    if($db->nextRecord())
-                                    {
-                                        $key = $this->getFieldAlias($query["key"]);
-                                        do {
-                                            $this->result[$service]["keys"][] = $db->record[$key];
-                                            if($exts) {
-                                                foreach($exts AS $field_name => $field_alias) {
-                                                    if($db->record[$field_name]) {
-                                                        /*if(strpos(",") === false) {
-                                                            $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$db->record[$field_name]] = $db->record[$field_name];
-                                                        } else {*/
-                                                            $ids = explode(",", $db->record[$field_name]);
-                                                            foreach ($ids AS $id) {
-                                                                $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$id][] = $db->record[$key];
-                                                            }
-                                                            //print_r($ids);
-                                                            //$this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] = (array) $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] + array_fill_keys($ids, $db->record[$query["key"]]);
-                                                        //}
+                                        if($count > $this::MAX_RESULTS) {
+                                            $this->result[$service]["rawdata"] = $recordset;
+                                        } else {
+                                            $key = $this->getFieldAlias($query["key"]);
+                                            foreach($recordset AS $record) {
+                                                $this->result[$service]["keys"][] = $record[$key];
+                                                if($exts) {
+                                                    foreach($exts AS $field_name => $field_alias) {
+                                                        if($record[$field_name]) {
+                                                            /*if(strpos(",") === false) {
+                                                                $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$record[$field_name]] = $record[$field_name];
+                                                            } else {*/
+                                                                $ids = explode(",", $record[$field_name]);
+                                                                foreach ($ids AS $id) {
+                                                                    $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)][$id][] = $record[$key];
+                                                                }
+                                                                //print_r($ids);
+                                                                //$this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] = (array) $this->result[$service]["exts"][($field_alias ? $field_alias : $field_name)] + array_fill_keys($ids, $record[$query["key"]]);
+                                                            //}
+                                                        }
                                                     }
                                                 }
+
+
+                                                $this->result[$service]["result"][] = $this->fields2output($record, $this->data);
+                                            };
+
+                                            if($query["limit"]["calc_found_rows"]) {
+                                                $db->query("SELECT FOUNT_ROWS() AS tot_row");
+                                                if ($db->nextRecord()) {
+                                                    $this->result[$service]["count"] = $db->getField("tot_row", "Number", true);
+                                                }
                                             }
+                                        }
 
-                                            $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
-                                        } while($db->nextRecord());
+                                        if($this->use_cache) {
+                                            Storage::$cache[$cache_key]["query"]                                            = $query;
+                                            if($this->exts) {
+                                                Storage::$cache[$cache_key][serialize($this->result[$service]["exts"])]     = $this->result[$service];
+                                            } else {
+                                                Storage::$cache[$cache_key]["data"]                                         = $this->result[$service];
+                                            }
+                                        }
                                     }
-
                                 } else {
                                     $this->isError("Read - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
                                 }
@@ -647,6 +707,7 @@ class Storage extends vgCommon
                                         ) VALUES (
                                             " . $query["insert"]["body"] . "
                                         )";
+
                                     $res = $db->execute($sSQL);
                                     if($res) {
                                         $this->result[$service] = array(
@@ -660,28 +721,37 @@ class Storage extends vgCommon
                             case "update":
                                 if($query["update"] && $query["where"])
                                 {
-                                    $sSQL = "SELECT " . $query["key"] . " 
+                                    $sSQL = "UPDATE " . $query["from"] . " SET 
+                                                    " . $query["update"] . "
+                                                WHERE " . $query["where"];
+                                    $this->result[$service] = $db->execute($sSQL);
+
+
+
+                                    /*if($this->where[$query["key"]]) {
+                                        $res = array($this->where[$query["key"]]);
+                                    } else {
+                                        $sSQL = "SELECT " . $query["key"] . " 
                                             FROM " .  $query["from"] . "
                                             WHERE " . $query["where"];
-                                    $res = $db->query($sSQL);
-                                    if($res) {
-                                        $res = $this->extractKeys($db->getRecordset(), $query["key"]);
-
-                                        if (is_array($res)) {
-                                            $sSQL = "UPDATE " . $query["from"] . " SET 
-                                                        " . $query["update"] . "
-                                                    WHERE " . $query["key"] . " IN(" . $db->toSql(implode(",", $res), "Text", false) . ")";
-                                            $db->execute($sSQL);
-
-                                            $this->result[$service] = array(
-                                                "keys" => $res
-                                            );
-                                        } else {
-                                            $this->result[$service] = false;
+                                        $res = $db->query($sSQL);
+                                        if($res) {
+                                            $res = $this->extractKeys($db->getRecordset(), $query["key"]);
                                         }
-                                    } else {
-                                        $this->isError("Update - N°: " . $db->errno . " Msg: " . $db->error . " SQL: " . $sSQL);
                                     }
+
+                                    if (is_array($res)) {
+                                        $sSQL = "UPDATE " . $query["from"] . " SET 
+                                                    " . $query["update"] . "
+                                                WHERE " . $query["key"] . " IN(" . $db->toSql(implode(",", $res), "Text", false) . ")";
+                                        $db->execute($sSQL);
+
+                                        $this->result[$service] = array(
+                                            "keys" => $res
+                                        );
+                                    } else {
+                                        $this->result[$service] = false;
+                                    }*/
                                 }
                                 break;
                             case "write":
@@ -797,6 +867,26 @@ class Storage extends vgCommon
                         switch($this->action)
                         {
                             case "read":
+                                /**
+                                 * Cache Global by Singleton
+                                 */
+                                $cache_key                                  = $this->getCacheKey($query["from"], $query["key"]);
+                                if($this::DEBUG) {
+                                    Storage::$cache[$cache_key]["count"]++;
+                                    if (Storage::$cache[$cache_key]["count"] > Storage::MAX_RECURSION) {
+                                        Cms::getInstance("debug")->dump("Max Recursion: " . print_r($query, true));
+                                        exit;
+                                    }
+                                }
+
+                                if($this->use_cache && !$this->exts) {
+
+                                    if(isset(Storage::$cache[$cache_key]["data"])) {
+                                        if($this::DEBUG)                    Cms::getInstance("debug")->dumpLog($query, "query_duplicate");
+                                        return Storage::$cache[$cache_key]["data"];
+                                    }
+                                }
+
                                 $exts = null;
                                 $res = $db->query(array(
                                     "select" 	=> $query["select"]
@@ -805,6 +895,7 @@ class Storage extends vgCommon
                                     , "sort" 	=> $query["sort"]
                                     , "limit"	=> $query["limit"]
                                 ));
+
                                 if($res) {
                                     if($this->exts && count($query["select"]) > 0) {
                                         if (is_array($db->fields_names) && count($db->fields_names)) {
@@ -842,11 +933,29 @@ class Storage extends vgCommon
                                                     }
                                                 }
                                             }
+
                                             $this->result[$service]["result"][] = $this->fields2output($db->record, $this->data);
                                         } while($db->nextRecord());
+
+                                        if($query["limit"]["calc_found_rows"]) {
+                                            $this->result[$service]["count"] = $db->count(array(
+                                                "select" 	=> $query["select"]
+                                                , "from" 	=> $query["from"]
+                                                , "where" 	=> $query["where"]
+                                            ));
+                                        }
+                                    }
+
+                                    if($this->use_cache && !$this->exts) {
+                                        Storage::$cache[$cache_key]["query"]                                            = $query;
+                                        if($this->exts) {
+                                            Storage::$cache[$cache_key][serialize($this->result[$service]["exts"])]     = $this->result[$service];
+                                        } else {
+                                            Storage::$cache[$cache_key]["data"]                                         = $this->result[$service];
+                                        }
                                     }
                                 } else {
-                                    $this->isError("unable to read: " . print_r($query, true));
+                                    $this->isError("noSql: unable to read" . ($this::DEBUG ? ": " . print_r($query, true) : ""));
                                 }
                                 break;
                             case "insert":
@@ -858,7 +967,7 @@ class Storage extends vgCommon
                                             "keys"                  => $db->getInsertID(true)
                                         );
                                     } else {
-                                        $this->isError("unable to insert: " . print_r($query, true));
+                                        $this->isError("noSql: unable to insert" . ($this::DEBUG ? ": " . print_r($query, true) : ""));
                                     }
                                 }
                                 break;
@@ -874,7 +983,7 @@ class Storage extends vgCommon
                                             "keys"                  => $db->getInsertID(true)
                                         );
                                     } else {
-                                        $this->isError("unable to update: " . print_r($query, true));
+                                        $this->isError("noSql: unable to update" . ($this::DEBUG ? ": " . print_r($query, true) : ""));
                                     }
                                 }
                                 break;
@@ -890,7 +999,7 @@ class Storage extends vgCommon
                                     if($res) {
                                         $keys                       = $this->extractKeys($db->getRecordset(), $query["key"]);
                                     } else {
-                                        $this->isError("unable to read: " . print_r($query, true));
+                                        $this->isError("noSql: unable to read" . ($this::DEBUG ? ": " . print_r($query, true) : ""));
                                     }
                                 }
                                 if(!$this->isError()) {
@@ -906,7 +1015,7 @@ class Storage extends vgCommon
                                                 , "action" 			=> "update"
                                             );
                                         } else {
-                                            $this->isError("unable to update: " . print_r($query, true));
+                                            $this->isError("noSql: unable to update" . ($this::DEBUG ? ": " . print_r($query, true) : ""));
                                         }
                                     }
                                     elseif($query["insert"])
@@ -918,7 +1027,7 @@ class Storage extends vgCommon
                                                 , "action" 			=> "insert"
                                             );
                                         } else {
-                                            $this->isError("unable to insert: " . print_r($query, true));
+                                            $this->isError("noSql: unable to insert" . ($this::DEBUG ? ": " . print_r($query, true) : ""));
                                         }
                                     }
                                 }
@@ -930,7 +1039,7 @@ class Storage extends vgCommon
                                     if($res) {
                                         $this->result[$service]     = true;
                                     } else {
-                                        $this->isError("unable to delete: " . print_r($query, true));
+                                        $this->isError("noSql: unable to delete" . ($this::DEBUG ? ": " . print_r($query, true) : ""));
                                     }
                                 }
                                 break;
@@ -977,15 +1086,22 @@ class Storage extends vgCommon
                                                                             ? array_intersect_key($this->data  , array_flip($config["name"]))
                                                                             : array_intersect_key($this->where , array_flip($config["name"]))
                                                                         );
-                $filename =(is_array($arrFilename) && count($arrFilename)
-                    ? implode("-", $arrFilename)
-                    : false
-                );
-
+                $filename                                               =(is_array($arrFilename) && count($arrFilename)
+                                                                            ? implode("-", $arrFilename)
+                                                                            : false
+                                                                        );
             }
-
 			if($filename) {
-				$file                                                   = $this->getDiskPath() . $config["path"] . $filename;
+                $file                                                   = $this->getDiskPath()
+                                                                            . str_replace(
+                                                                                array(
+                                                                                    "[TABLE]"
+                                                                                )
+                                                                                , array(
+                                                                                    $this->getTable($config["table"])
+                                                                                )
+                                                                                , $config["path"]
+                                                                            )  . "/" . Util::url_rewrite($filename);
 
 				$fs                                                     = new Filemanager($service, $file);
 
@@ -1018,7 +1134,7 @@ class Storage extends vgCommon
 					default:
 				}
 			} elseif($filename !== false) {
-			    $this->isError("File not Found: " . $filename);
+			    $this->isError("File not Found: " . print_r($arrFilename, true));
             }
         } else {
             $this->isError("Controller Empty");
@@ -1058,16 +1174,39 @@ class Storage extends vgCommon
 			)
         );
     }
+    private function getCacheKey($table, $exclude = null) {
+        $select = (array) $this->data;
+        unset($select[$exclude]);
+        $where = (array) $this->where;
 
+        return $table . ":" . serialize($where) . "=>" . serialize($select);
+    }
     /**
      * @param $record
      * @param null $prototype
      * @return array
      */
     private function fields2output($record, $prototype = null) {
-    	if($prototype) {
-			$res                                                        = array_fill_keys(array_keys(array_filter($prototype)), "");
+        static $hits                                                    = array();
 
+        if($this::DEBUG) {
+            $hash = md5(serialize($this->where));
+            $hits["count"]++;
+            $hits[$hash]["where"] = $this->where;
+            $hits[$hash]["records"]++;
+            if($hits["count"] > $this::MAX_RESULTS) {
+                Cache::log(array(
+                    "URL" =>  $_SERVER["REQUEST_URI"]
+                    , "Too Many Caller" => $hits
+                ), "storage_max_results");
+                $hits = array();
+            }
+        }
+
+        $this->recordsetCast($record);
+
+    	if($prototype) {
+    	    $res                                                        = array_fill_keys(array_keys(array_filter($prototype)), "");
     		if(is_array($prototype)) {
     			foreach ($prototype AS $name => $value) {
 					$arrValue                                           = null;
@@ -1077,33 +1216,32 @@ class Storage extends vgCommon
                     if($name == "*") {
                         $res[$this->table["alias"]]                     = $record;
                         unset($res["*"]);
-                        continue;
+                        break;
                     }
 
+                    $key                                                = $name;
                     if(!is_bool($value)) {
                         $arrType                                        = $this->convert($value);
-                        $field                                          = $arrType["field"];
-                        $toField                                        = $arrType["to"];
 
-/*                        $arrType                                        = explode(":", $value, 2);
-                        $field                                          = $arrType[0];
-                        $toField                                        = $arrType[1];
-*/
-                        $key                                            = $field;
+                        $toField                                        = $arrType["to"];
+                        if($arrType["field"]) {
+                            $field                                      = $arrType["field"];
+                            $key                                        = $field;
+                        }
+
                         unset($res[$name]);
                     } elseif($this->alias[$name]) {
     				    $key                                            = $this->alias[$name];
     				    unset($res[$name]);
-                    } else {
-                        $key                                            = $name;
                     }
 //echo $key . "\n";
     				if(strpos($field, ".") > 0) {
     					$arrValue                                       = explode(".", $field);
     					if(is_array($record[$arrValue[0]])) {
+                            $key                                        = $name;
 							$res[$key]                                  = $record[$arrValue[0]][$arrValue[1]];
 						} elseif($record[$arrValue[0]]) {
-    						$subvalue                                   = json_decode($record[$arrValue[0]]);
+    						$subvalue                                   = $this->decode($record[$arrValue[0]]);
     						if($subvalue)
 								$res[$key]                              = $subvalue[$arrValue[1]];
 						}
@@ -1131,19 +1269,41 @@ class Storage extends vgCommon
 					}
 
 					if($toField) {
-                        $toField["name"]                                = $name;
-						$res[$key]                                      = $this->to($res[$key], $toField);
+						$res[$key]                                      = $this->to($res[$key], $toField, $name);
 					}
-				}
+                }
 			} else {
 				$res[$prototype]                                        = $record[$prototype];
 			}
 		} else {
     		$res                                                        = $record;
 		}
-
 		return $res;
 	}
+
+	private function recordsetCast(&$record) {
+        if(is_array($record) && count($record)) {
+            foreach ($record as $key => $value) {
+                switch ($this->struct[$key]) {
+                    case "array":
+                        $record[$key] = (is_array($value)
+                                            ? $value
+                                            : $this->decode($value)
+                                        );
+                        break;
+                    case "number":
+                    case "primary":
+                        if(strpos(".", $value) === false)
+                            $record[$key] = (int)$value;
+                        else
+                            $record[$key] = (double)$value;
+                        break;
+
+                    default:
+                }
+            }
+        }
+    }
 
 	private function convert($def, $key = null) {
         $arrStruct                                                      = explode(":", $def);
@@ -1169,6 +1329,7 @@ class Storage extends vgCommon
                 $res[$op]                                               = $func;
             }
         }
+
         return ($key
             ? $res[$key]
             : $res
@@ -1196,15 +1357,16 @@ class Storage extends vgCommon
      * @param $name
      * @return array|string
      */
-    private function to($source, $convert) {
+    private function to($source, $convert, $default = null) {
         $method                                                             = $convert["name"];
         $params                                                             = $convert["params"];
-    	switch($method) {
+
+        switch($method) {
 			case "IMAGE":
 				if($source === true) {
 					$res                                                    = '<i></i>';
 				} elseif(strpos($source, "/") === 0) {
-					if(is_file(DISK_UPDIR . $source)) {
+					if(is_file(FF_DISK_UPDIR . $source)) {
 						$res                                                = '<img src="' . CM_SHOWFILES . $source . '" />';
 					} elseif(is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/images" . $source)) {
 						$res                                                = '<img src="' . CM_SHOWFILES . "/" . FRONTEND_THEME . "/images" . $source . '" />';
@@ -1267,7 +1429,7 @@ class Storage extends vgCommon
 				}
 
 				$conv                                                       = array(
-                                                                                $prefix . "01/" => " " . ffTemplate::_get_word_by_code("January") . " "
+                                                                                $prefix . "01/" => " " . ffTemplate::_get_word_by_code("Januaunable to updatery") . " "
                                                                                 , $prefix . "02/" => " " . ffTemplate::_get_word_by_code("February") . " "
                                                                                 , $prefix . "03/" => " " . ffTemplate::_get_word_by_code("March") . " "
                                                                                 , $prefix . "04/" => " " . ffTemplate::_get_word_by_code("April") . " "
@@ -1299,7 +1461,7 @@ class Storage extends vgCommon
 					if(is_string($source)) {
 						$res                                                = $source;
 					} else {
-						$res                                                = $params["name"];
+						$res                                                = $default;
 					}
 				} else {
 					$res                                                    = "";
@@ -1317,7 +1479,7 @@ class Storage extends vgCommon
                 $res                                                        = $this->decrypt($source, $params[0], $method);
                 break;
 			default:
-				$res                                                        = $source;
+				$res                                                        = $default;
 		}
 
 		return $res;
@@ -1362,11 +1524,23 @@ class Storage extends vgCommon
                 $res                                                        = md5($data);
                 break;
             case "OLDPASSWORD":
+                $res                                                        = "*" . strtoupper(sha1(sha1($data, TRUE)));
+                break;
             case "PASSWORD":
                 $res                                                        = "*" . strtoupper(sha1(sha1($data, TRUE)));
+
+                //$res                                                        = password_hash($data, PASSWORD_DEFAULT);
+                //todo: da usare Password_Verify
+                break;
+            case "BCRYPT":
+                $res                                                        = password_hash($data, PASSWORD_BCRYPT);
+                break;
+            case "ARGON2I":
+                $res                                                        = password_hash($data, PASSWORD_ARGON2I);
                 break;
             case "REPLACE";
                 $res                                                        = str_replace($params[0], $params[1], $data);
+                break;
             case "CONCAT";
                 $res                                                        = $data . " " . implode(" ", $params);
                 break;
@@ -1441,13 +1615,13 @@ class Storage extends vgCommon
         }
     }
     private function encrypt($data, $password, $algorithm = "AES256", $cost = 12) {
-        $params                                                                 = $this->getEncryptParams($password, $algorithm, $cost);
+        $params                                                             = $this->getEncryptParams($password, $algorithm, $cost);
         if($params)  // av3DYGLkwBsErphcyYp+imUW4QKs19hUnFyyYcXwURU=
             return base64_encode(openssl_encrypt($data, $params["method"], $params["key"], OPENSSL_RAW_DATA, $params["iv"]));
     }
 
     private function decrypt($encrypted, $password, $algorithm = "AES256", $cost = 12) {
-        $params                                                                 = $this->getEncryptParams($password, $algorithm, $cost);
+        $params                                                             = $this->getEncryptParams($password, $algorithm, $cost);
         if($params) // My secret message 1234
             return openssl_decrypt(base64_decode($encrypted), $params["method"], $params["key"], OPENSSL_RAW_DATA, $params["key"]);
     }
@@ -1457,159 +1631,189 @@ class Storage extends vgCommon
      * @return array
      */
     public function normalizeField($name, $value) {
-    	static $fields = array();
+    	//static $fields = array();
+        $res                                                                = false;
+        //if(1 || !$fields[$name]) {
+            if(is_array($value)) {
+                if(isset($value['$gt'])
+                    || isset($value['$gte'])
+                    || isset($value['$lt'])
+                    || isset($value['$lte'])
+                    || isset($value['$eq'])
+                    || isset($value['$regex'])
+                    || isset($value['$in'])
+                    || isset($value['$nin'])
+                    || isset($value['$ne'])
+                    || isset($value['$inset'])
+                ) {
+                    $res                                                    = "special";
+                }
+            }
 
-    	if(1 || !$fields[$name]) {
-			$not = false;
-			if (strpos($name, "!") === 0) {
-				$name = substr($name, 1);
-				$not = true;
-			}
-			if (strpos($name, ">") === strlen($name) - 1) {
-				$name = substr($name, 0, -1);
-				$op = ">";
-			}
-			if (strpos($name, ">=") === strlen($name) - 2) {
-				$name = substr($name, 0, - 2);
-				$op = ">=";
-			}
+            if(!$res) {
+                $not                                                        = false;
+                if (strpos($name, "!") === 0) {
+                    $name                                                   = substr($name, 1);
+                    $not                                                    = true;
+                }
+                if (strpos($name, ">") === strlen($name) - 1) {
+                    $name                                                   = substr($name, 0, -1);
+                    $op                                                     = ">";
+                }
+                if (strpos($name, ">=") === strlen($name) - 2) {
+                    $name                                                   = substr($name, 0, - 2);
+                    $op                                                     = ">=";
+                }
 
-			if (strpos($name, "<") === strlen($name) - 1) {
-				$name = substr($name, 0, -1);
-				$op = "<";
-			}
+                if (strpos($name, "<") === strlen($name) - 1) {
+                    $name                                                   = substr($name, 0, -1);
+                    $op                                                     = "<";
+                }
 
-			if (strpos($name, "<=") === strlen($name) - 2) {
-				$name = substr($name, 0, -2);
-				$op = "<=";
-			}
+                if (strpos($name, "<=") === strlen($name) - 2) {
+                    $name                                                   = substr($name, 0, -2);
+                    $op                                                     = "<=";
+                }
 
-			/*if(!is_array($value)) {
-				$arrValue = explode(":", $value, 2);
-				$value = $arrValue[0];
-			}*/
-			if(is_array($this->struct[$name])) {
-				$struct_type = "array";
-			} else {
-			    $arrType = $this->convert($this->struct[$name]);
-                $struct_type = $arrType["field"];
-                $toField = $arrType["in"];
-				/*
-			    $arrStructType = explode(":", $this->struct[$name], 2);
-				$struct_type = $arrStructType[0];
-				*/
-			}
 
-			switch($struct_type) {
-                case "arrayIncremental":																//array
-			    case "arrayOfNumber":	    															//array
-				case "array":																			//array
-					if(strrpos($value, "++") === strlen($value) -2) {								//++ to array
-						//skip
-					} elseif(strrpos($value, "--") === strlen($value) -2) {							//-- to array
-						//skip
-					} elseif(strpos($value, "+") === 0) {
-						$res["update"]['$addToSet'][$name] = substr($value, 1);
-					} elseif(is_array($value)) {
-						if ($struct_type == "arrayOfNumber")                                            //array number to array
-							$fields[$name] = array_map('intval', $value);
-						else
-							$fields[$name] = $value;                                                            //array to array
-					} elseif(is_bool($value)) {                                                                //boolean to array
-						$fields[$name] = array((int)$value);
-					} elseif(is_numeric($value) || $struct_type == "arrayOfNumber" || $struct_type == "arrayIncremental") {
-						if (strpos($value, ".") !== false || strpos($value, ",") !== false)    //double to array
-							$fields[$name] = array((double)$value);
-						else                                                                                //int to array
-							$fields[$name] = array((int)$value);
-					} elseif(strtotime($value)) {															//date to array
-						$fields[$name] = array($value);
-					} elseif($value == "empty" || !$value) {                                                  //empty to array
-						$fields[$name] = array();
-					} else {                                                                                //other to array
-						$fields[$name] = array((string)$value);
-					}
-					break;
-				case "boolean":																			//boolean
-					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to boolean
-						//skip
-					} elseif(strrpos($value, "--") === strlen($value) -2) {                            //-- to boolean
-						//skip
-					} elseif(strpos($value, "+") === 0) {												//+ to boolean
-						//skip
-					} elseif(is_array($value)) {															//array to boolean
-						//skip
-					} elseif(is_bool($value)) {                                                            //boolean to boolean
-						$fields[$name] = $value;
-					} elseif(is_numeric($value)) {															//number to boolean
-						$fields[$name] = (bool)$value;
-					} elseif($value == "empty") {                                                            //empty seq to boolean
-						$fields[$name] = false;
-					} else {                                                                                    //other to boolean
-						$fields[$name] = (bool)$value;
-					}
-					break;
-				case "date":																			//date
-					$fields[$name] = $value;
-					break;
-                case "number":                                                                          //number
-				case "primary":
-					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to number
-						$res["update"]['$inc'][$name] = 1;
-					} elseif(strrpos($value, "--") === strlen($value) -2) {                                //-- to number
-						$res["update"]['$inc'][$name] = -1;
-					} elseif(strpos($value, "+") === 0) {                                            //+ to number
-						$res["update"]['$concat'][$name] = array('$' . $name, ",", substr($value, 1));
-					} elseif(is_array($value)) {																//array to number
-						//skip
-					} elseif(is_bool($value)) {                                                                //boolean to number
-						$fields[$name] = (int)$value;
-					} elseif(!is_numeric($value) && strtotime($value)) {                                     //date to number
-						$fields[$name] = strtotime($value);
-					} elseif (strpos($value, ".") !== false || strpos($value, ",") !== false) {    //double to number
-						$fields[$name] = (double)$value;
-					} elseif($value == "empty") {                                                                //empty to number
-						$fields[$name] = 0;
-					} else {
-						$fields[$name] = (int)$value;                                                        //other to number
-					}
-					break;
-				case "string":																			//string
-                case "char":
-                case "text":
-				default:
-					if(strrpos($value, "++") === strlen($value) -2) {                                //++ to string
-						$res["update"]['$concat'][$name] = array('$' . $name, "+1");
-					} elseif(strrpos($value, "--") === strlen($value) -2){                                //-- to string
-						$res["update"]['$concat'][$name] = array('$' . $name, "-1");
-					} elseif(strpos($value, "+") === 0){                                                //+ to string
-						$res["update"]['$concat'][$name] = array('$' . $name, ",", substr($value, 1));
-					} elseif(is_array($value)) {
-						if($this->isAssocArray($value))														//array assoc to string
-							$fields[$name] = json_encode($value);
-						else																				//array seq to string
-							$fields[$name] = implode(",", array_unique($value));
-					} elseif(is_bool($value)) {                                                                //boolean to string
-						$fields[$name] = (string)($value ? "1" : "0");
-					} elseif(is_numeric($value)) {															//number to string
-						$fields[$name] = (string)$value;
-					} elseif($value == "empty") {                                                            //empty seq to string
-						$fields[$name] = "";
-                    } elseif(substr($name, 0, 1) == "_") {                                                            //empty seq to string
+
+                /*if(!is_array($value)) {
+                    $arrValue = explode(":", $value, 2);
+                    $value = $arrValue[0];
+                }*/
+                if(is_array($this->struct[$name])) {
+                    $struct_type                                            = "array";
+                } else {
+                    $arrType                                                = $this->convert($this->struct[$name]);
+                    $struct_type                                            = $arrType["field"];
+                    $toField                                                = $arrType["in"];
+                    /*
+                    $arrStructType = explode(":", $this->struct[$name], 2);
+                    $struct_type = $arrStructType[0];
+                    */
+                }
+
+                switch($struct_type) {
+                    case "arrayIncremental":																            //array
+                    case "arrayOfNumber":	    															            //array
+                    case "array":																			            //array
+                        if(strrpos($value, "++") === strlen($value) -2) {								            //++ to array
+                            //skip
+                        } elseif(strrpos($value, "--") === strlen($value) -2) {					                //-- to array
+                            //skip
+                        } elseif(strpos($value, "+") === 0) {
+                            $op                                             = "+";
+                            $fields[$name]                                  = substr($value, 1);
+                        } elseif(is_array($value)) {
+                            if ($struct_type == "arrayOfNumber")                                                        //array number to array
+                                $fields[$name]                              = array_map('intval', $value);
+                            else
+                                $fields[$name]                              = $value;                                   //array to array
+                        } elseif(is_bool($value)) {                                                                     //boolean to array
+                            $fields[$name] = array((int)$value);
+                        } elseif(is_numeric($value) || $struct_type == "arrayOfNumber" || $struct_type == "arrayIncremental") {
+                            if (strpos($value, ".") !== false || strpos($value, ",") !== false)             //double to array
+                                $fields[$name]                              = array((double)$value);
+                            else                                                                                        //int to array
+                                $fields[$name]                              = array((int)$value);
+                        } elseif(strtotime($value)) {															        //date to array
+                            $fields[$name]                                  = array($value);
+                        } elseif($value == "empty" || !$value) {                                                        //empty to array
+                            $fields[$name]                                  = array();
+                        } else {                                                                                        //other to array
+                            $fields[$name]                                  = array((string)$value);
+                        }
+                        break;
+                    case "boolean":																			            //boolean
+                        if(strrpos($value, "++") === strlen($value) -2) {                                         //++ to boolean
+                            //skip
+                        } elseif(strrpos($value, "--") === strlen($value) -2) {                                   //-- to boolean
+                            //skip
+                        } elseif(strpos($value, "+") === 0) {												        //+ to boolean
+                            //skip
+                        } elseif(is_array($value)) {															        //array to boolean
+                            //skip
+                        } elseif(is_bool($value)) {                                                                     //boolean to boolean
+                            $fields[$name]                                  = $value;
+                        } elseif(is_numeric($value)) {															        //number to boolean
+                            $fields[$name]                                  = (bool)$value;
+                        } elseif($value == "empty") {                                                                   //empty seq to boolean
+                            $fields[$name]                                  = false;
+                        } else {                                                                                        //other to boolean
+                            $fields[$name]                                  = (bool)$value;
+                        }
+                        break;
+                    case "date":																			            //date
                         $fields[$name] = $value;
-					} else {                                                                                //other to string
-                        $fields[$name] = (string)$value;
-					}
-			}
-		}
+                        break;
+                    case "number":                                                                                      //number
+                    case "primary":
+                        if(strrpos($value, "++") === strlen($value) -2) {                                         //++ to number
+                            $op                                             = "++";
+                            $fields[$name]                                  = substr($value, -2);
+                        } elseif(strrpos($value, "--") === strlen($value) -2) {                                   //-- to number
+                            $op                                             = "--";
+                            $fields[$name]                                  = substr($value, -2);
+                        } elseif(strpos($value, "+") === 0) {                                                     //+ to number
+                            $op                                             = "+";
+                            $fields[$name]                                  = substr($value, 1);
+                        } elseif(is_array($value)) {																    //array to number
+                            //skip
+                        } elseif(is_bool($value)) {                                                                     //boolean to number
+                            $fields[$name]                                  = (int)$value;
+                        } elseif(!is_numeric($value) && strtotime($value)) {                                            //date to number
+                            $fields[$name]                                  = strtotime($value);
+                        } elseif (strpos($value, ".") !== false || strpos($value, ",") !== false) {         //double to number
+                            $fields[$name]                                  = (double)$value;
+                        } elseif($value == "empty") {                                                                   //empty to number
+                            $fields[$name]                                  = 0;
+                        } else {
+                            $fields[$name]                                  = (int)$value;                              //other to number
+                        }
+                        break;
+                    case "string":																			            //string
+                    case "char":
+                    case "text":
+                    default:
+                        if(strrpos($value, "++") === strlen($value) -2) {                                         //++ to string
+                            $op                                             = "++";
+                            $fields[$name]                                  = substr($value, -2);
+                        } elseif(strrpos($value, "--") === strlen($value) -2){                                    //-- to string
+                            $op                                             = "--";
+                            $fields[$name]                                  = substr($value, -2);
+                        } elseif(strpos($value, "+") === 0){                                                      //+ to string
+                            $op                                             = "+";
+                            $fields[$name]                                  = substr($value, 1);
+                        } elseif(is_array($value)) {
+                            if($this->isAssocArray($value))														        //array assoc to string
+                                $fields[$name]                              = json_encode($value);
+                            else																				        //array seq to string
+                                $fields[$name]                              = implode(",", array_unique($value));
+                        } elseif(is_bool($value)) {
+                            $fields[$name]                                  = (string)($value ? "1" : "0");
+                        } elseif(is_numeric($value)) {															        //number to string
+                            $fields[$name]                                  = (string)$value;
+                        } elseif($value == "empty") {                                                                   //empty seq to string
+                            $fields[$name]                                  = "";
+                        } elseif(substr($name, 0, 1) == "_") {                                               //empty seq to string
+                            $fields[$name]                                  = $value;
+                        } else {                                                                                        //other to string
+                            $fields[$name]                                  = (string)$value;
+                        }
+                }
 
-    	return array(
-    		"value"     => $this->in($fields[$name], $toField)
-			, "name"    => $name
-			, "not"     => $not
-			, "op"      => $op
-			, "res"     => $res
-		);
+                $res                                                        = array(
+                                                                                "value"     => $this->in($fields[$name], $toField)
+                                                                                , "name"    => $name
+                                                                                , "not"     => $not
+                                                                                , "op"      => $op
+                                                                                , "type"    => $struct_type
+                                                                                //, "res"     => $res
+                                                                            );
+            }
+		//}
+
+    	return $res;
 	}
 
 

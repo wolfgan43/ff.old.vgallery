@@ -92,6 +92,18 @@ class AuthCertificate {
                             $this->commonName                           = $cert_data['subject']['CN'];
                             $this->emailAddress                         = $cert_data['subject']['emailAddress'];
 
+                            $res["certificate"]                         = array(
+                                                                            "countryName"               => $this->countryName
+                                                                            , "stateOrProvinceName"     => $this->stateOrProvinceName
+                                                                            , "localityName"            => $this->localityName
+                                                                            , "organizationName"        => $this->organizationName
+                                                                            , "commonName"              => $this->commonName
+                                                                            , "emailAddress"            => $this->emailAddress
+                                                                            , "kd"                      => $this->index("kd")
+                                                                            , "kp"                      => $this->index("kp")
+                                                                            , "kl"                      => $this->index("kl")
+                                                                            , "secret"                  => $this->getDomain("secret")
+                                                                        );
                             $res["status"]                              = "0";
                             $res["error"]                               = "";
                         }

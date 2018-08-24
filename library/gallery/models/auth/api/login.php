@@ -24,32 +24,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @link https://github.com/wolfgan43/vgallery
  */
 
-switch (basename($cm->real_path_info, "." . vgCommon::PHP_EXT)) {
-    case "login":
-        $res = Auth::login(array("type" => "token"));
-        break;
-    case "logout":
-        $res = Auth::logout(array("type" => "token"));
-        break;
-    case "registration":
-        $res = Auth::registration();
-        break;
-    case "check":
-        $res = Auth::check();
-        break;
-    case "refresh":
-        $res = Auth::check(); //da impostare il refrsh con la request
-        break;
-    case "recover":
-        break;
-    case "activation":
-        break;
-    default:
-        http_response_code("501");
-}
-
-if($res["status"])
-    http_response_code("400");
-
-echo ffCommon_jsonenc($res, true);
-exit;
+$return = Auth::login(array("type" => "token")); //todo: da valutare

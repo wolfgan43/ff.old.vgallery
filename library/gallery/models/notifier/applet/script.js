@@ -3,12 +3,20 @@ jQuery(function() {
         "template" : "notification-item"
         , "target": "#notification-handle"
         , "vars" : {
-            "counter" : ".noty-box .count"
+           // "counter" : "#dd-notifications-count"
         }
         , "callback" : function(data) {
-            if(data["result"].length) {
+            if(data["result"].length || jQuery("#notification-handle").children().length) {
                 jQuery(".noty-box .notification-empty").addClass("hidden");
                 jQuery("#notification-dropdown").removeClass("noty-empty");
+                var countTotal      = jQuery("#notification-handle").children().length;
+                var countDelivered  = jQuery("#notification-handle > .notification.delivered").length;
+                var countNew        = countTotal - countDelivered;
+
+                if(countNew) {
+                    jQuery("#notifications-count").text(countNew).show();
+                }
+                jQuery("#dd-notifications-count").text(countTotal);
             } else {
                 jQuery(".noty-box .notification-empty").removeClass("hidden");
                 jQuery("#notification-dropdown").addClass("noty-empty");
@@ -18,15 +26,18 @@ jQuery(function() {
 
     jQuery(document).on("click", "#bell", function (e){
         e.preventDefault();
-        if ($("#notification-dropdown").is(":hidden")) {
-            $(".noty-background").show();
-            $("#notification-dropdown").css('display', 'block').removeClass('fadeOutUp').addClass('fadeInDown');
+        if (jQuery("#notification-dropdown").is(":hidden")) {
+            jQuery(".noty-background").show();
+            jQuery("#notification-dropdown").css('display', 'block').removeClass('fadeOutUp').addClass('fadeInDown');
+            jQuery("#notifications-count").text("").hide();
+            ff.cms.get("notifyDelivered");
         } else {
-            $("#notification-dropdown").removeClass('fadeInDown').addClass('fadeOutUp')
+            jQuery("#notification-handle > .notification:not(.delivered)").addClass("delivered");
+            jQuery("#notification-dropdown").removeClass('fadeInDown').addClass('fadeOutUp')
                 .on('animationend webkitAnimationEnd oanimationend MSAnimationEnd', function(){
-                    $(this).off('animationend webkitAnimationEnd oanimationend MSAnimationEnd');
-                    $(this).hide();
-                    $(".noty-background").hide();
+                    jQuery(this).off('animationend webkitAnimationEnd oanimationend MSAnimationEnd');
+                    jQuery(this).hide();
+                    jQuery(".noty-background").hide();
                 });
         }
     });

@@ -62,7 +62,7 @@ class authToken
                                                                 );
         if($opt["fields"])                                      $select = $select + $opt["fields"];
         if($opt["user"])                                        $select[] = "users.*";
-        $return                                                 = Anagraph::getInstance("access")->read($select
+        $return                                                 = Anagraph::getInstanceNoStrict("access")->read($select
                                                                     , array(
                                                                         "tokens.token"              => $token
                                                                         , "tokens.type"             => $type
@@ -89,7 +89,6 @@ class authToken
                 }
 
                 if($opt["user"])                                $res["user"] = $return["user"];
-
                 if($opt["fields"] && is_array($res) && $res["status"] === "0") {
                     foreach ($opt["fields"] AS $name => $asName) {
                         if($return[$asName])
@@ -117,7 +116,7 @@ class authToken
      * @param null $fields
      * @return null
      */
-    public function getUser($token = null, $fields = null) {
+    public function getUserInfo($token = null, $fields = null) {
         $user = null;
 
 
@@ -162,7 +161,7 @@ class authToken
                                                                     , "tokens.expire"
                                                                 );
 
-        $token                                                  = Anagraph::getInstance("access")->read($select
+        $token                                                  = Anagraph::getInstanceNoStrict("access")->read($select
                                                                     , array(
                                                                         "tokens.ID_user"        => $ID_user
                                                                         , "tokens.type"         => $type
@@ -195,7 +194,7 @@ class authToken
                                                                     , "tokens.token"    => $this->create(Auth::APPID . "-" . $ID_user . "-" . $type)
                                                                     , "tokens.expire"   => $this::EXPIRE
                                                                 );
-                $result                                         = Anagraph::getInstance("access")->insert($insert);
+                $result                                         = Anagraph::getInstanceNoStrict("access")->insert($insert);
                 if(is_array($result)) {
                     $res["token"]                               = array(
                                                                     "name"              => $insert["tokens.token"]
@@ -217,7 +216,7 @@ class authToken
         }
 
         /*if($opt["fields"] && $ID_user && is_array($res) && $res["status"] === "0") {
-            $user                                               = Anagraph::getInstance()->read(
+            $user                                               = Anagraph::getInstanceNoStrict()->read(
                                                                     $opt["fields"]
                                                                     , array(
                                                                         "ID_user"        => $ID_user
@@ -258,7 +257,7 @@ class authToken
                                                                 );
         }
 
-        $result                                                 = Anagraph::getInstance("access")->update(
+        $result                                                 = Anagraph::getInstanceNoStrict("access")->update(
                                                                     $set
                                                                     , $where
                                                                 );

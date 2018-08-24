@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 class Filemanager extends vgCommon
 {
     static $singleton                                                   = null;
-
+    const DEBUG                                                         = DEBUG_MODE;
     const SEARCH_IN_KEY                                                 = 1;
     const SEARCH_IN_VALUE                                               = 2;
     const SEARCH_IN_BOTH                                                = 3;

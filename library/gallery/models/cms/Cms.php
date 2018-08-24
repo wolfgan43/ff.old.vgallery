@@ -36,14 +36,7 @@ class Cms extends vgCommon
     protected $connectors               = array(
                                         );
     protected $struct					= array();
-    private $action                     = null;
-    private $data                       = array();
-    private $set                     	= array();
-    private $where                      = null;
-	private $sort                      	= null;
-	private $limit                     	= null;
-    private $table                      = null;
-    private $reader						= null;
+
     private $result                     = null;
 
     /**
@@ -67,14 +60,24 @@ class Cms extends vgCommon
     public function __construct() {
 		$this->loadControllers(__DIR__);
     }
+
+    public static function getSchema($type = null, $name = null, $default = null) {
+        return self::schema($type, $name, $default);
+    }
+    public static function requestCapture($rules = null, $key = null) {
+
+
+        return self::getRequest($rules, $key);
+    }
+
     private function getService($service, $params = null) {
-        $controller                     = "cms" . ucfirst($service);
-
-        $this->controllers[$service]    = ($this->controllers_rev[$controller]
-                                            ? new $controller($this, $params)
-                                            : false
-                                        );
-
+        $controller                                 = "cms" . ucfirst($service);
+        if(!is_object($this->controllers[$service])) {
+            $this->controllers[$service]            = ($this->controllers_rev[$controller]
+                                                        ? new $controller($this, $params)
+                                                        : false
+                                                    );
+        }
         return $this->controllers[$service];
     }
     /**
@@ -154,7 +157,9 @@ class Cms extends vgCommon
         //system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
         Cache::log(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
 
-        cache_send_header_content(false, false, false, false);
+        ffMedia::sendHeaders(null, array(
+            "cache" => "must-revalidate"
+        ));
 
         if(strpos($destination, "/") !== 0)
             $destination = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $destination;

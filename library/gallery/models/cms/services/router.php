@@ -34,7 +34,7 @@ class cmsRouter
     const PRIORITY_LOW			                            = 4;
     const PRIORITY_VERY_LOW		                            = 5;
     const PRIORITY_BOTTOM 		                            = 6;
-    const PRIORITY_DEFAULT 		                            = cmRouter::PRIORITY_NORMAL;
+    const PRIORITY_DEFAULT 		                            = cmsRouter::PRIORITY_NORMAL;
 
 	private $rules                                          = array();
 	private $cms                                        	= null;
@@ -63,7 +63,7 @@ class cmsRouter
 
 	public function check($path, $source = null) {
         if($source) {
-            $res = preg_match("#" . $source . "#i", $path);
+            $res = preg_match($this->regexp($source), $path);
         } else {
             $res = $this->find($path);
         }
@@ -72,6 +72,7 @@ class cmsRouter
     }
     public function run($path = null) {
         $rule                                               = $this->check($path);
+
         $destination                                        = $rule["destination"];
         if($destination) {
             if(is_array($rule["matches"])) {
@@ -90,22 +91,15 @@ class cmsRouter
     }
 	public function addRules($rules) {
         if(is_array($rules) && count($rules)) {
-            foreach($rules AS $rule) {
-                $this->addRule($rule);
+            foreach($rules AS $rule => $params) {
+                if(is_array($params)) {
+                    $this->addRule(array("source" => $rule) + $params);
+                } else {
+                    $this->addRule($rule, $params);
+                }
             }
         }
 
-    }
-    private function find($path) {
-        $matches = array();
-        foreach ($this->rules as $source => $rule) {
-            if(preg_match("#" . $source . "#i", $path, $matches)) {
-                $res = $rule;
-                $res["matches"] = $matches;
-                break;
-            }
-        }
-        return $res;
     }
     public function addRule($source, $destination = null, $priority = cmsRouter::PRIORITY_DEFAULT, $redirect = false) {
         if(is_array($source) && !$destination) {
@@ -117,11 +111,31 @@ class cmsRouter
         }
 
         if($source && $destination) {
-            $this->rules[$source] = array(
-                "destination"           => $destination
-                , "priority"            => $priority
+            $this->rules[$priority . "-" . $source] = array(
+                "source"                => $source
+                , "destination"         => $destination
                 , "redirect"            => $redirect
             );
         }
     }
+    private function find($path) {
+        $matches = array();
+        ksort($this->rules);
+
+        foreach ($this->rules as $source => $rule) {
+            if(preg_match($this->regexp($rule["source"]), $path, $matches)) {
+                $res = $rule;
+                $res["matches"] = $matches;
+                break;
+            }
+        }
+        return $res;
+    }
+    private function regexp($rule) {
+        return "#" . (strpos($rule, "[") === false
+                ? str_replace("\*", "(.*)", preg_quote($rule, "#"))
+                : $rule
+            ) . "#i";
+    }
+
 }

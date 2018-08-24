@@ -36,6 +36,8 @@ abstract class vgCommon
 	const LIBS_CMS_PATH                 = "/library/gallery";
 	const CONFIG_PATH                   = "/themes/site/conf";
     const JOBS_PATH                     = "/themes/site/jobs";
+    const EMAIL_PATH                    = "/themes/site/contents/email";
+    const TPL_PATH                      = "/themes/site/contents";
     const CACHE_PATH                    = "/cache";
 
 	const ASSETS_PATH                   = "/themes/site";
@@ -48,8 +50,9 @@ abstract class vgCommon
     private $error                      = null;
     private $debug                      = array();
 
-    static $settings                    = array();
-    static $request                     = null;
+    private static $env                 = array();
+    private static $settings            = array();
+    private static $request             = null;
     static $disk_path                   = null;
     private $theme                      = array(
                                             "cms"           => "gallery"
@@ -72,7 +75,34 @@ abstract class vgCommon
 			default;
 		}
 	}
+    public static function widget($name, $config = null) {
+        $user_path                      = self::getPathInfo();
+        $schema                         = self::schema(null, "widgets");
 
+        if(is_array($schema[$user_path])) {
+            $config                     = array_replace_recursive($config, $schema[$user_path]);
+        } elseif(is_array($schema[$name])) {
+            $config                     = array_replace_recursive($config, $schema[$name]);
+        }
+
+        return require(__DIR__ . "/" . strtolower(get_called_class()) . "/widgets/" . $name . "/index." . self::PHP_EXT);
+    }
+
+    public static function env($name, $value = null) {
+        $class_name                     = strtolower(get_called_class());
+
+        if($value) {
+            self::$env[$class_name][$name]  = $value;
+        }
+
+        return self::$env[$class_name][$name];
+    }
+    /**
+     * @return bool
+     */
+    protected static function _isXHR() {
+        return $_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest";
+    }
     /**
      * @param null $what
      * @return string
@@ -104,6 +134,9 @@ abstract class vgCommon
                 break;
             case "job":
                 $path                   = self::JOBS_PATH;
+                break;
+            case "tpl":
+                $path                   = self::TPL_PATH;
                 break;
             case "":
             case null:
@@ -142,6 +175,7 @@ abstract class vgCommon
 
             $settings_path                                      = self::_getDiskPath($params["default_path"])
                                                                     . "/settings" . "." . self::PHP_EXT;
+
             if (is_file($settings_path)) {
                 $schema                                         = array();
                 require($settings_path);
@@ -160,11 +194,11 @@ abstract class vgCommon
             }
 
             if(is_array($arrSettings) && count($arrSettings)) {
-                foreach($arrSettings AS $key => $path) {
+                foreach($arrSettings AS $var => $path) {
                     if(is_file($path)) {
-                        ${$key}                                 = array();
+                        ${$var}                                 = array();
                         require($path);
-                        self::$settings[$class_name][$key]      = ${$key};
+                        self::$settings[$class_name][$var]      = ${$var};
                     }
                 }
             }
@@ -221,10 +255,12 @@ abstract class vgCommon
                                                                                             , "unknown" => array()
                                                                                         );
             $request                                                                    = self::getReq($rules["request_method"]);
-
             if(is_array($request) && count($request)) {
                 self::$request["rawdata"]                                               = $request;
-
+                $arrRuleGet                                                             = (is_array($rules["get"])
+                                                                                            ? array_flip($rules["get"])
+                                                                                            : array()
+                                                                                        );
                 foreach($request AS $req_key => $req_value) {
                     //if(is_array($request[$req_key]))                                    continue;
                     //if(is_array($req_value))                                            continue;
@@ -280,6 +316,11 @@ abstract class vgCommon
                             if($req_key != $rkf) {
                                 self::$request["invalid"][$req_key]                     = $req_key . "=" . urlencode($req_value);
                                 unset(self::$request["rawdata"][$req_key]);
+                            } elseif(isset($arrRuleGet[$rkf])) {
+                                //$res["get"]["search"]["available_terms"][$rkf] = $req_value;
+                                //$res["get"]["query"][$rkf] = $rkf . "=" . urlencode($res["get"]["search"]["available_terms"][$rkf]);
+                            } elseif($rules["exts"][$rkf]) {
+                                eval('self::$request' . $rules["exts"][$rkf] . ' = ' . $req_value . ";");
                             } elseif(is_numeric($rkf) && !$req_value) {
                                 self::$request["invalid"][$rkf]                         = $rkf . "=" . urlencode($req_value);
                                 unset(self::$request["rawdata"][$req_key]);
@@ -399,14 +440,38 @@ abstract class vgCommon
             }
         }
 
+
+        $res["valid"]                                                                   = array_diff_key($res["rawdata"], (array) $res["unknown"]);
+
         return ($key
             ? $res[$key]
             : $res
         );
     }
 
+    /*
+    public function tpl_parse($name, $vars = array()) {
+        $path = (strpos($name, FF_DISK_PATH) === 0
+            ? $name
+            : __DIR__ . "/" . $name
+        );
+
+        $content = file_get_contents($path);
+
+        return str_replace(array_keys($vars), array_values($vars), $content);
+    }*/
 
 
+    protected function dirname($path) {
+        return dirname($path);
+    }
+    /**
+     * @param null $path
+     * @return string
+     */
+    public function isXHR() {
+        return $this::_isXHR();
+    }
     /**
      * @param null $path
      * @return string
@@ -470,13 +535,18 @@ abstract class vgCommon
      * @param null $params
      * @return array
      */
-    public function debug($note = null, $params = null)
+    public function debug($note = null, $params = null, $dump = false)
     {
-        if($note !== null)
-            $this->debug[get_called_class()][$note . "-" . time()] = $params;
-
-        if($this->debug)
-            return $this->debug;
+        if($note !== null) {
+            $source                     = get_called_class();
+            $params["when"][]           = time();
+            $this->debug[][$note]       = $params;
+            Cache::log($note, $source);
+        }
+        if($dump) {
+            Cms::getInstance("debug")->dump($note);
+            exit;
+        }
     }
 
     /**
@@ -510,7 +580,7 @@ abstract class vgCommon
         } elseif($error !== null)
         {
             $this->error = $error;
-            $this->debug($error);
+            $this->debug($error, null, true);
         }
         if($this->error)
             return $this->error;
@@ -588,7 +658,7 @@ abstract class vgCommon
      * @param $connector
      */
     public function getConnector($connector) {
-		$this->connectors[$connector];
+		return $this->connectors[$connector];
 	}
 
     /**
@@ -683,36 +753,42 @@ abstract class vgCommon
     {
         $prefix                                                                             = ($service["prefix"] && defined($service["prefix"] . "NAME") && constant($service["prefix"] . "NAME")
                                                                                                 ? $service["prefix"]
-                                                                                                : vgCommon::getPrefix($name)
+                                                                                                : false
                                                                                             );
+        if(!$prefix) {
+            $connector                                                                      = $this->getConnector($name);
+            if(!$connector["name"])                                                         $prefix = vgCommon::getPrefix($name);
 
-        $connector["host"]                                                                  = (defined($prefix . "HOST")
+        }
+        if($prefix) {
+            $connector["host"]                                                              = (defined($prefix . "HOST")
                                                                                                 ? constant($prefix . "HOST")
                                                                                                 : "localhost"
                                                                                             );
-        $connector["username"]                                                              = (defined($prefix . "USER")
+            $connector["username"]                                                          = (defined($prefix . "USER")
                                                                                                 ? constant($prefix . "USER")
                                                                                                 : ""
                                                                                             );
-        $connector["password"]                                                               = (defined($prefix . "PASSWORD")
+            $connector["password"]                                                          = (defined($prefix . "PASSWORD")
                                                                                                 ? constant($prefix . "PASSWORD")
                                                                                                 : ""
                                                                                             );
-        $connector["name"]                                                                  = ($service["database"]
+            $connector["name"]                                                              = ($service["database"]
                                                                                                 ? $service["database"]
                                                                                                 : (defined($prefix . "NAME")
                                                                                                     ? constant($prefix . "NAME")
                                                                                                     :  ""
                                                                                                 )
                                                                                             );
-        $connector["table"]                                                                 = ($service["table"]
+            $connector["table"]                                                             = ($service["table"]
                                                                                                 ? $service["table"]
                                                                                                 : ""
                                                                                             );
-        $connector["key"]                                                                   = ($service["key"]
+            $connector["key"]                                                               = ($service["key"]
                                                                                                 ? $service["key"]
                                                                                                 : ""
                                                                                             );
+        }
 
         return $connector;
     }

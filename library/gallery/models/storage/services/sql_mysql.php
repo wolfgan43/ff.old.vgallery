@@ -73,12 +73,17 @@ class storageMysql {
 		$struct 																	= $this->storage->getParam("struct");
 		if(is_array($fields) && count($fields))
 		{
+		    if($flag == "where" && is_array($fields['$or'])) {
+                $res['$or']                                                         = $this->convertFields($fields['$or'], "where_OR");
+            }
+
+		    unset($fields['$or']);
 			foreach($fields AS $name => $value)
 			{
 			    if($name == "*") {
 			        if($flag == "select") {
-			            $res = null;
-                        $result["select"] = "*";
+			            $res                                                        = null;
+                        $result["select"]                                           = "*";
 			            break;
                     } else {
 			            continue;
@@ -110,109 +115,176 @@ class storageMysql {
 				}
 
 				$field 																= $this->storage->normalizeField($name, $value);
+                if($field == "special") {
+                    if($flag == "where" || $flag == "where_OR") {
+                        foreach($value AS $op => $subvalue) {
+                            switch($op) {
+                                case '$gt':
+                                    $res[$name . '-' . $op] 				        = "`" . $name . "`" . " > " . $this->device->toSql($subvalue, "Number");
+                                    break;
+                                case '$gte':
+                                    $res[$name . '-' . $op] 				        = "`" . $name . "`" . " >= " . $this->device->toSql($subvalue, "Number");
+                                    break;
+                                case '$lt':
+                                    $res[$name . '-' . $op] 						= "`" . $name . "`" . " < " . $this->device->toSql($subvalue, "Number");
+                                    break;
+                                case '$lte':
+                                    $res[$name . '-' . $op] 						= "`" . $name . "`" . " <= " . $this->device->toSql($subvalue, "Number");
+                                    break;
+                                case '$eq':
+                                    $res[$name . '-' . $op] 						= "`" . $name . "`" . " = " . $this->device->toSql($subvalue);
+                                    break;
+                                case '$regex':
+                                    $res[$name . '-' . $op] 						= "`" . $name . "`" . " LIKE " . $this->device->toSql(str_replace(array("(.*)", "(.+)", ".*", ".+", "*", "+"), "%", $subvalue));
+                                    break;
+                                case '$in':
+                                    if(is_array($subvalue))
+                                        $res[$name . '-' . $op] 					= "`" . $name . "`" . " IN('" . str_replace(", ", "', '", $this->device->toSql(implode(", ", $subvalue), "Text", false)) . "')";
+                                    else
+                                        $res[$name . '-' . $op] 					= "`" . $name . "`" . " IN('" . str_replace(",", "', '", $this->device->toSql($subvalue, "Text", false)) . "')";
+                                    break;
+                                case '$nin':
+                                    if(is_array($subvalue))
+                                        $res[$name . '-' . $op] 					= "`" . $name . "`" . " NOT IN('" . str_replace(", ", "', '", $this->device->toSql(implode(", ", $subvalue), "Text", false)) . "')";
+                                    else
+                                        $res[$name . '-' . $op] 					= "`" . $name . "`" . " NOT IN('" . str_replace(",", "', '", $this->device->toSql($subvalue, "Text", false)) . "')";
+                                    break;
+                                case '$ne':
+                                    $res[$name . '-' . $op] 						= "`" . $name . "`" . " <> " . $this->device->toSql($subvalue);
+                                    break;
+                                case '$inset':
+                                    $res[$name . '-' . $op] 						= " FIND_IN_SET(" . $this->device->toSql(str_replace(",", "','", $subvalue)) . ", `" . $name . "`)";
+                                    break;
+                                default:
+                            }
+                        }
+                    }
+                } else {
+                    switch($flag) {
+                        case "select":
+                            $res[$name]         									= $field["name"];
+                            break;
+                        case "insert":
+                            $res["head"][$name]         							= $field["name"];
+                            if(is_array($field["value"])) {
+                                if($this->storage->isAssocArray($field["value"]))														//array assoc to string
+                                    $res["body"][$name] 							= "'" . str_replace("'", "\\'", json_encode($field["value"])) . "'";
+                                else																				//array seq to string
+                                    $res["body"][$name] 							= $this->device->toSql(implode(",", array_unique($field["value"])));
+                            } else {
+                                $res["body"][$name]         						= $this->device->toSql($field["value"]);
+                            }
+                            break;
+                        case "update":
+                            if(is_array($field["value"])) {
+                                switch($field["op"]) {
+                                    case "++":
+                                        //skip
+                                        break;
+                                    case "--":
+                                        //skip
+                                        break;
+                                    case "+":
+                                        if($this->storage->isAssocArray($field["value"])) {                                                        //array assoc to string
+                                            //skip
+                                        } else {																				//array seq to string
+                                            $res[$name] 							= "`" . $field["name"] . "` = " . "CONCAT(`"  . $field["name"] . "`, IF(`"  . $field["name"] . "` = '', '', ','), " . $this->device->toSql(implode(",", array_unique($field["value"]))) . ")";
+                                        }
+                                        break;
+                                    default:
+                                        if($this->storage->isAssocArray($field["value"]))														//array assoc to string
+                                            $res[$name] 							= "`" . $field["name"] . "` = " . "'" . str_replace("'", "\\'", json_encode($field["value"])) . "'";
+                                        else																				//array seq to string
+                                            $res[$name] 							= "`" . $field["name"] . "` = " . $this->device->toSql(implode(",", array_unique($field["value"])));
+                                }
+                            } else {
+                                $res[$name]         								= "`" . $field["name"] . "` = " . $this->device->toSql($field["value"]);
+                                switch($field["op"]) {
+                                    case "++":
+                                        $res[$name] = $res[$name] . " + 1";
+                                        break;
+                                    case "--":
+                                        $res[$name] = $res[$name] . " - 1";
+                                        break;
+                                    case "+":
+                                        $res[$name] 								= "`" . $field["name"] . "` = " . "CONCAT(`"  . $field["name"] . "`, IF(`"  . $field["name"] . "` = '', '', ','), " . $this->device->toSql($field["value"]) . ")";
+                                        break;
+                                    default:
+                                }
+                            }
+                            break;
+                        case "where":
+                        case "where_OR":
+                            if(!is_array($value))
+                                $value 												= $field["value"];
 
-				//if($field["res"])
-				//	$result															= $field["res"];
+                            if($field["name"] == $this->config["key"]) {
+                                $value 												= $this->convertID($value);
+                            }
 
-				switch($flag) {
-					case "select":
-						$res[$name]         										= $field["name"];
-						break;
-					case "insert":
-						$res["head"][$name]         								= $field["name"];
-						if(is_array($field["value"])) {
-							if($this->storage->isAssocArray($field["value"]))														//array assoc to string
-								$res["body"][$name] 								= "'" . str_replace("'", "\\'", json_encode($field["value"])) . "'";
-							else																				//array seq to string
-								$res["body"][$name] 								= $this->device->toSql(implode(",", array_unique($field["value"])));
-						} else {
-							$res["body"][$name]         							= $this->device->toSql($field["value"]);
-						}
-						break;
-					case "update":
-						if(is_array($field["value"])) {
-							if($this->storage->isAssocArray($field["value"]))														//array assoc to string
-								$res[$name] 										= "`" . $field["name"] . "` = " . "'" . str_replace("'", "\\'", json_encode($field["value"])) . "'";
-							else																				//array seq to string
-								$res[$name] 										= "`" . $field["name"] . "` = " . $this->device->toSql(implode(",", array_unique($field["value"])));
-						} else {
-							$res[$name]         									= "`" . $field["name"] . "` = " . $this->device->toSql($field["value"]);
-						}
-						break;
-					case "where":
-						if(!is_array($value))
-							$value 													= $field["value"];
+                            if(is_array($struct[$field["name"]])) {
+                                $struct_type 										= "array";
+                            } else {
+                                $arrStructType 										= explode(":", $struct[$field["name"]], 2);
+                                $struct_type 										= $arrStructType[0];
+                            }
 
-						if($field["name"] == $this->config["key"]) {
-							$value 													= $this->convertID($value);
-						}
-
-						if(is_array($struct[$field["name"]])) {
-							$struct_type 											= "array";
-						} else {
-							$arrStructType 											= explode(":", $struct[$field["name"]], 2);
-							$struct_type 											= $arrStructType[0];
-						}
-
-						switch ($struct_type) {
-                            case "arrayIncremental":                                                                     //array
-						    case "arrayOfNumber":                                                                        //array
-							case "array":                                                                                //array
-								if (is_array($value) && count($value)) {
-									foreach($value AS $i => $item) {
-										$res[$name][] 								= ($field["not"] ? "NOT " : "") . "FIND_IN_SET(" . $this->device->toSql($item) . ", `" . $field["name"] . "`)";
-									}
-									$res[$name] 									= "(" . implode(($field["not"] ? " AND " : " OR "), $res[$name]) . ")";
-								}
-								break;
-							case "boolean":
-							case "date":
-							case "number":
-                            case "primary":
-							case "string":
-                            case "char":
-                            case "text":
-							default:
-								if (is_array($value)) {
-									if(count($value))
-										$res[$name] 								= "`" . $field["name"] . "` " . ($field["not"] ? "NOT " : "") . "IN(" . $this->valueToFunc($value, $struct_type) . ")";
-								} else {
-									if ($field["op"]) {                                                //< > <= >=
-										$op = "";
-										switch($field["op"]) {
-											case ">":
-												$op 								= ($field["not"] ? '<' : '>');
-												break;
-											case ">=":
-												$op 								= ($field["not"] ? '<=' : '>=');
-												break;
-											case "<":
-												$op 								= ($field["not"] ? '>' : '<');
-												break;
-											case "<=":
-												$op 								= ($field["not"] ? '>=' : '<=');
-												break;
-											default:
-										}
-										if($op) {
-											$res[$name] 							= "`" . $field["name"] . "` " . $op . " " . $this->valueToFunc($value, $struct_type);
-										}
-									} else {
-										$res[$name]     							= "`" . $field["name"] . "` " . ($field["not"] ? "<>" : "=") . " " . $this->valueToFunc($value, $struct_type);
-									}
-								}
-						}
-						break;
-					default:
-				}
+                            switch ($struct_type) {
+                                case "arrayIncremental":                                                                     //array
+                                case "arrayOfNumber":                                                                        //array
+                                case "array":                                                                                //array
+                                    if (is_array($value) && count($value)) {
+                                        foreach($value AS $i => $item) {
+                                            $res[$name][] 							= ($field["not"] ? "NOT " : "") . "FIND_IN_SET(" . $this->device->toSql($item) . ", `" . $field["name"] . "`)";
+                                        }
+                                        $res[$name] 								= "(" . implode(($field["not"] ? " AND " : " OR "), $res[$name]) . ")";
+                                    }
+                                    break;
+                                case "boolean":
+                                case "date":
+                                case "number":
+                                case "primary":
+                                case "string":
+                                case "char":
+                                case "text":
+                                default:
+                                    if (is_array($value)) {
+                                        if(count($value))
+                                            $res[$name] 							= "`" . $field["name"] . "` " . ($field["not"] ? "NOT " : "") . "IN(" . $this->valueToFunc($value, $struct_type) . ")";
+                                    } else {
+                                        switch($field["op"]) {
+                                            case ">":
+                                                $op 								= ($field["not"] ? '<' : '>');
+                                                break;
+                                            case ">=":
+                                                $op 								= ($field["not"] ? '<=' : '>=');
+                                                break;
+                                            case "<":
+                                                $op 								= ($field["not"] ? '>' : '<');
+                                                break;
+                                            case "<=":
+                                                $op 								= ($field["not"] ? '>=' : '<=');
+                                                break;
+                                            default:
+                                                $op                                 = ($field["not"] ? "<>" : "=");
+                                        }
+                                        $res[$name] 							    = "`" . $field["name"] . "` " . $op . " " . $this->valueToFunc($value, $struct_type);
+                                    }
+                            }
+                            break;
+                        default:
+                    }
+                }
 			}
 
 			if(is_array($res)) {
 				switch ($flag) {
 					case "select":
-					    $key_name                                                   = $this->storage->getFieldAlias($this->config["key"]);
-
-						$result["select"]  											= (!$res[$key_name] ? "`" . $key_name . "`, " : "") . "`" . implode("`, `", $res) . "`";
+                        $result["select"] = "`" . implode("`, `", $res) . "`";
+					    if($result["select"] != "*") {
+                            $key_name                                               = $this->storage->getFieldAlias($this->config["key"]);
+                            if(!$res[$key_name])                                    $result["select"] .= ", `" . $key_name . "`";
+                        }
 						break;
 					case "insert":
 						$result["insert"]["head"] 									= "`" . implode("`, `", $res["head"]) . "`";
@@ -224,6 +296,9 @@ class storageMysql {
 					case "where":
 						$result["where"] 											= implode(" AND ", $res);
 						break;
+                    case "where_OR":
+                        $result["where"] 											= implode(" OR ", $res);
+                        break;
 					case "sort":
 						$result["sort"]												= implode(", ", $res);
 						break;
@@ -236,6 +311,7 @@ class storageMysql {
                     $result["select"] = "*";
                     break;
                 case "where":
+                case "where_OR":
                     $result["where"] = " 1 ";
                     break;
                 default:
