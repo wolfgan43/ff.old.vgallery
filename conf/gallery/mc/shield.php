@@ -48,11 +48,11 @@ function installer_fpc($url) {
 
 $res = array();
 if(!is_file(__DIR__ . "/conf/gallery/install/index.php")) {
-	$res = installer_fpc(MASTER ."/api/updater/install");
+	$res = installer_fpc(MASTER ."/api/updater/installer");
 	$res = json_decode($res, true);
 }
 
-if(!isset($res["error"])) {
+if(!$res["error"]) {
     if(is_file(__DIR__ . "/conf/gallery/install/index.php")) {
         require(__DIR__ . "/conf/gallery/install/index.php");
     } else {

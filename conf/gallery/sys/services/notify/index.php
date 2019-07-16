@@ -1,16 +1,13 @@
 <?php
-if(!mod_security_check_session(false) 
-	|| get_session("UserNID") == MOD_SEC_GUEST_USER_ID
-	|| !(AREA_NOTIFY_SHOW_MODIFY || AREA_SCHEDULE_SHOW_MODIFY)
-) {
-	prompt_login();
+if(!Auth::isLogged()) {
+    exit;
 }
 
-$cm->oPage->addContent(null, true, "rel"); 
+$cm->oPage->addContent(null, true, "rel");
 
 if(isset($_REQUEST["frmAction"])) {
     $db = ffDB_Sql::factory();
-    
+
     if($_REQUEST["frmAction"] == "hideall") {
         $sSQL = "UPDATE notify_message SET visible = '0'";
         $db->execute($sSQL);

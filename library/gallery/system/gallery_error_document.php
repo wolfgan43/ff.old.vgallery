@@ -60,10 +60,10 @@ function system_gallery_error_document($settings_path) {
     http_response_code($error_type);
     
     if($skip_fs) {
-        output_header(FF_DISK_PATH . $error_path);
+        ffMedia::sendHeaders(FF_DISK_PATH . $error_path);
         readfile(FF_DISK_PATH . $error_path);
     } else {
-        if(strpos($_SERVER["REQUEST_URI"], SITE_UPDIR) === 0 || strpos($_SERVER["REQUEST_URI"], FF_THEME_DIR) === 0) {
+        if(strpos($_SERVER["REQUEST_URI"], FF_SITE_UPDIR) === 0 || strpos($_SERVER["REQUEST_URI"], FF_THEME_DIR) === 0) {
             $request_uri = parse_url($_SERVER["REQUEST_URI"]);
             if(!@file_exists(FF_DISK_PATH . rtrim($request_uri["path"], "/")) && strlen($error_path)) {
                 $real_path = $_SERVER["REQUEST_URI"];
@@ -84,11 +84,11 @@ function system_gallery_error_document($settings_path) {
                 }
 
                 if(strlen($new_real_path) && file_exists(FF_DISK_PATH . $new_real_path)) {
-                    output_header(FF_DISK_PATH . $new_real_path);
+                    ffMedia::sendHeaders(FF_DISK_PATH . $new_real_path);
                     readfile(FF_DISK_PATH . $new_real_path);
                     $is_valid_resource = true;    
                 } else {
-                    output_header(FF_DISK_PATH . $error_path);
+                    ffMedia::sendHeaders(FF_DISK_PATH . $error_path);
                     $is_valid_resource = false;
                 }
             }

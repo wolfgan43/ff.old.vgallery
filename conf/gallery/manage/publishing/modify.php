@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_PUBLISHING_SHOW_MODIFY) {
+if (!Auth::env("AREA_PUBLISHING_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -36,7 +36,7 @@ $oRecord->populate_edit_SQL = "SELECT publishing.*
 									) AS display_name
 								FROM publishing 
 								WHERE publishing.ID =" . $db_gallery->toSql($_REQUEST["keys"]["ID"], "Number");
-$oRecord->buttons_options["delete"]["display"] = AREA_PUBLISHING_SHOW_DELETE;
+$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_PUBLISHING_SHOW_DELETE");
 $oRecord->addEvent("on_do_action", "PublishingModify_on_do_action");
 $oRecord->addEvent("on_done_action", "PublishingModify_on_done_action");
 
@@ -79,7 +79,7 @@ if(isset($_REQUEST["keys"]["ID"]))
 
 
 /* Title Block */
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content-adv">' . cm_getClassByFrameworkCss("vg-publishing", "icon-tag", array("2x", "content-adv")) . $publishing_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content-adv">' . Cms::getInstance("frameworkcss")->get("vg-publishing", "icon-tag", array("2x", "content-adv")) . $publishing_title . '</h1>';
 $oRecord->additional_fields = array("last_update" =>  new ffData(time(), "Number"));
 
 $oField = ffField::factory($cm->oPage);

@@ -57,12 +57,12 @@ function system_set_meta($oPage)
 
 
     $standard_meta["description"] = (is_array($globals->meta["description"]) ? implode(", ", $globals->meta["description"]) : "");
-    if(strlen($standard_meta["description"]) > VG_SEO_DESCRIPTION_LIMIT) {
-        $standard_meta["description"] = substr($standard_meta["description"], 0, VG_SEO_DESCRIPTION_LIMIT);
+    if(strlen($standard_meta["description"]) > Cms::env("LIMIT_CHARACTER_SEO")) {
+        $standard_meta["description"] = substr($standard_meta["description"], 0, Cms::env("LIMIT_CHARACTER_SEO"));
         $standard_meta["description"] = substr($standard_meta["description"], 0, strrpos($standard_meta["description"], " "));
     }
      
-	 if(!defined("AVOID_META_KEYWORDS") || !AVOID_META_KEYWORDS)
+	 if(!Cms::env("AVOID_META_KEYWORDS"))
      	$standard_meta["keywords"] = (is_array($globals->meta["keywords"]) ? implode(", ", $globals->meta["keywords"]) : "");
 	 else 
 	 	$standard_meta["keywords"] = "";

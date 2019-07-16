@@ -64,7 +64,7 @@ $oRecord->skip_action = true;
 $oRecord->buttons_options["print"]["display"] = false;
 $oRecord->user_vars["formcnf-ID"] = $_REQUEST["keys"]["formcnf-ID"];
 
-//$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
+//$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
 
 
 $oField = ffField::factory($cm->oPage);

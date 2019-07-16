@@ -35,6 +35,7 @@ function process_addon_variant($user_path, $ID_node, $vgallery_name, $enable_mul
 		$count_compare = 0;
 		krsort($arrUserPath);
 		$strCompare = basename($user_path);
+        $sSQL_where = "";
 		foreach($arrUserPath AS $arrUserPath_key => $arrUserPath_value) {
 			if($count_compare + $limit_compare == count($arrUserPath)) {
 				break;
@@ -103,7 +104,7 @@ function process_addon_variant($user_path, $ID_node, $vgallery_name, $enable_mul
         }
         
         if(is_array($vg_data) && count($vg_data)) {
-            if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+            if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
                 $file_permission = get_file_permission(null, "vgallery_nodes", array_keys($vg_data));
 
 			//$tpl_data["custom"] = "variant.html";
@@ -112,7 +113,8 @@ function process_addon_variant($user_path, $ID_node, $vgallery_name, $enable_mul
 			$tpl_data["result"] = get_template_cascading($user_path, $tpl_data, "/tpl/addon");
 
 			$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-			$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+			//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+            $tpl->load_file($tpl_data["result"]["name"], "main");
                 
             //$tpl = ffTemplate::factory(get_template_cascading($user_path, "variant.html", "/vgallery"));
             //$tpl->load_file("variant.html", "main");
@@ -131,11 +133,11 @@ function process_addon_variant($user_path, $ID_node, $vgallery_name, $enable_mul
             $variant_set = false;
 
             foreach($vg_data AS $vg_data_key => $vg_data_value) {
-                if(ENABLE_STD_PERMISSION) {
+                if(Cms::env("ENABLE_STD_PERMISSION")) {
                     if(check_function("get_file_permission"))
                         $file_permission = get_file_permission(stripslash($vg_data_value["parent"]) . "/" . $vg_data_value["name"], "vgallery_nodes");
 
-                    if (!check_mod($file_permission, 1, ($enable_multilang_visible ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
+                    if (!check_mod($file_permission, 1, ($enable_multilang_visible ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
                         continue;
                 } else {
                     if(!$vg_data_value["visible"] > 0) {

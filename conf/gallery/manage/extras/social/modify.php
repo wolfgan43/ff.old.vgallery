@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_PROPERTIES_SHOW_MODIFY) {
+if (!Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -228,10 +228,7 @@ function ExtrasSocialModify_on_done_action($component, $action) {
                     )
                     ";
         $db->execute($sSQL);
-        
-        if (FF_ENABLE_MEM_SHOWFILES_CACHING) {
-			ffCache::getInstance(CM_CACHE_ADAPTER)->set("__vgallery_settings_thumb__");
-		}
+
+        ffCache::getInstance()->clear("/vg/thumbs");
     }
 }
-?>

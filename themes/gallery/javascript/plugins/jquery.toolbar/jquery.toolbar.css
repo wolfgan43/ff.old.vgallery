@@ -1,6 +1,71 @@
 .hb-inner {
 	width:100%;
 }
+
+.\.vg-popup-visible { display:block; position:relative; }
+
+.vg-popup {
+  position:absolute;
+  top:0;
+	right:0;
+  width:auto;
+  white-space:nowrap;
+  font-size: 0px;
+	z-index:10;
+}
+
+.vg-popup UL { margin:0; }
+
+.dropdown-menu .vg-popup {
+	right:auto;
+	left:calc(100% + 8px);
+}
+
+.vg-popup .admin-link {
+  display:inline-block;
+}
+
+.dropdown-menu .vg-popup:before {
+  content:"";
+  display:block;
+  border:8px solid #222;
+  border-left-color:transparent;
+  border-top-color:transparent;
+  border-bottom-color:transparent;
+  border-top-width:4px;
+  border-bottom-width:4px;
+  width:0px;
+  height:0px;
+  position:absolute;
+  left:0;
+  top:12px;
+  transform:translateX(-100%);
+
+}
+
+.admin-link A {
+  padding:5px;
+  color:#fff;
+  width:32px;
+  display:block;
+  height: 32px;
+  overflow:hidden;
+  text-align:center;
+  background:#222;
+  font-size:14px;
+}
+
+.vg-popup .fa-stack:first-child {
+  position:static !important;
+}
+
+.vg-popup .fa-stack:nth-child(2) {
+  display:none;
+}
+
+.block .vg-toolbar {
+	position: absolute;
+}
 .vg-toolbar {
 	width:100%;
 	display:block;
@@ -134,7 +199,7 @@
 	float:left;
 }
 
-.vg-toolbar A:hover { color:#fff !important; opacity:1; }
+ .vg-toolbar A:hover { color:#fff !important; opacity:1; }
 
 .vg-layout-actions A {
 	width:32px;
@@ -151,7 +216,7 @@
 }
 
 
-.vg-edit-actions { float:right;  text-align:right; white-space:nowrap; }
+.vg-edit-actions { float:right; white-space:nowrap; }
 .vg-edit-actions LI { display:inline-block; max-width:100%}
 
 .vg-edit-actions LI:nth-child(1):nth-last-child(2),
@@ -183,43 +248,3 @@
 }
 
 /* end compact */
-
-.vg-toolbar {
-	z-index:100;
-	/*height:auto !important;*/
-	/*width:auto !important;*/
-	right:0;
-}
-
-.dropdown-menu .vg-toolbar,
-.vgmenu .vg-toolbar {
-	height:auto !important;
-	right:-100%;
-}
-
-.vg-item .vg-toolbar {
-	width:auto !important;
-}
-
-.vg-item .vg-toolbar LI {
-	line-height:1;
-}
-
-.vg-item .vg-toolbar LI A {
-	line-height:1;
-	padding:8px !important;
-}
-
-
-.vg-toolbar UL {
-	max-width:100% !important;
-	background:#222;
-}
-
-/*.vg-toolbar LI { line-height:1 }*/
-
-.vg-toolbar LI>A {
-	height:auto !important;
-	/*line-height:1;
-	padding:8px !important;*/
-}

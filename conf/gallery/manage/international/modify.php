@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_INTERNATIONAL_SHOW_MODIFY) {
+if (!Auth::env("AREA_INTERNATIONAL_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -181,23 +181,14 @@ function InternationalModify_on_done_action($component, $action) {
         $db->execute($sSQL);
 
         //UPDATE CACHE 
-        $db->query("SELECT * FROM " . FF_PREFIX . "languages WHERE " . FF_PREFIX . "languages.status = '1'"); 
+        //UPDATE CACHE
+        $db->query("SELECT * FROM " . FF_PREFIX . "languages WHERE " . FF_PREFIX . "languages.status = '1'");
         if($db->nextRecord()) {
-            $i18n_error = false;
             do {
-                if($handle = @fopen(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT, 'w')) {
-                    $i18n_content = "";
-                    if(@fwrite($handle, $i18n_content) === FALSE) {
-                        $i18n_error = true;
-                    }
-                    @fclose($handle);
-                } else {
-                    $i18n_error = true;
-                }
+                ffTranslator::clear($db->getField("code")->getValue());
             } while($db->nextRecord());
         }
 
-        return $i18n_error;
+        return false;
     }
 }
-?>

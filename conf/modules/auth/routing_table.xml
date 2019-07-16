@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+	<!--Restricted Begin-->
+	<rule id="restricted">
+		<priority>HIGH</priority>
+		<source>^/restricted(.*)</source>
+		<destination>
+			<module>auth</module>
+			<url>/session$0</url>
+		</destination>
+        <auth>
+            <profiles>admin,data-entry</profiles>
+        </auth>
+		<process_next />
+		<accept_path_info />
+		<reverse>/restricted</reverse>
+		<index>999</index>
+	</rule>
+    <rule id="vgallerymodify">
+        <priority>NORMAL</priority>
+        <source>^/restricted/vgallery(.*)</source>
+        <reverse>/restricted/vgallery</reverse>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/vgallery(/[^/]+)*/modify$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/vgallery(/[^/]+)*/relationship$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/relationship$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/vgallery(/[^/]+)*/seo$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/seo$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/vgallery(/[^/]+)*/permission$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/permission$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/vgallery(.*)/properties$</source>
+        <destination>
+            <url>/conf/gallery/manage/extras/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/publishing(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage/publishing$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/publishing/properties(.*)$</source>
+        <destination>
+            <url>/conf/gallery/manage/extras/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/modules/([^/]+)/(.*)</source>
+        <destination>
+            <url>/conf/gallery/modules/$1/manage/$2</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/modules/(.*)/extra(.*)</source>
+        <destination>
+            <url>/conf/gallery/modules/$1/extra$2</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/draft(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage/draft$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule id="gallerymodify">
+        <priority>NORMAL</priority>
+        <source>^/restricted/resources(.*)</source>
+        <reverse>/restricted/resources</reverse>
+        <destination>
+            <url>/conf/gallery/manage/resources$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/resources/properties(.*)$</source>
+        <destination>
+            <url>/conf/gallery/manage/extras/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/resources/ecommerce(.*)$</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/additionaldata/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule id="international">
+        <priority>NORMAL</priority>
+        <source>^/restricted/wordcode(.*)</source>
+        <reverse>/restricted/wordcode</reverse>
+        <destination>
+            <url>/conf/gallery/manage/international$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+	<rule id="tags">
+        <priority>NORMAL</priority>
+        <source>^/restricted/tags(.*)</source>
+        <reverse>/restricted/tags</reverse>
+        <destination>
+            <url>/conf/gallery/manage/tags$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+	<rule id="place">
+        <priority>NORMAL</priority>
+        <source>^/restricted/place(.*)</source>
+        <reverse>/restricted/place</reverse>
+        <destination>
+            <url>/conf/gallery/manage/place$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/site-map(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage/static$1</url>
+        </destination>
+        <accept_path_info />
+        <index>2</index>
+    </rule>
+    <rule>
+        <priority>HIGH</priority>
+        <source>^/restricted/seo(.*)/modify</source>
+        <destination>
+            <url>/conf/gallery/manage/seo/modify$1</url>
+        </destination>
+        <accept_path_info />
+        <index>3</index>
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/anagraph(.*)</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/anagraph$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/anagraph(.*)/modify$</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/anagraph/modify$1</url>
+        </destination>
+        <accept_path_info />
+        <index>10</index>
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/anagraph(.*)/preview$</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/anagraph/preview$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+	<rule>
+        <priority>NORMAL</priority>
+        <source>^/restricted/info(.*)</source>
+        <destination>
+            <url>/conf/gallery/sys$1</url>
+        </destination>
+    </rule>
+	<rule id="mod_auth_users">
+		<priority>NORMAL</priority>
+		<source>^/restricted/users(.*)</source>
+		<destination>
+			<module>auth</module>
+			<url>/users$1</url>
+		</destination>
+		<reverse>/restricted/users</reverse>
+	</rule>
+	<rule id="mod_auth_profiling">
+		<priority>NORMAL</priority>
+		<source>^/restricted/profiling(.*)</source>
+		<destination>
+			<module>auth</module>
+			<url>/profiling$1</url>
+		</destination>
+		<reverse>/restricted/profiling</reverse>
+	</rule>
+	<rule id="mod_auth_domains">
+		<priority>NORMAL</priority>
+		<source>^/restricted/domains(.*)</source>
+		<destination>
+			<module>auth</module>
+			<url>/domains$1</url>
+		</destination>
+		<reverse>/restricted/domains</reverse>
+	</rule>
+	<!--Restricted End-->
+
+
+
+    <!-- Admin Begin-->
+	<rule id="admin">
+		<priority>HIGH</priority>
+		<source>^/admin(.*)</source>
+        <reverse>/admin</reverse>
+		<destination>
+			<module>auth</module>
+			<url>/session$0</url>
+		</destination>
+        <auth>
+            <profiles>admin</profiles>
+        </auth>
+        <accept_path_info />
+        <process_next />
+        <index>999</index>
+    </rule>
+	<rule id="admingallery">
+        <priority>NORMAL</priority>
+        <source>^/admin(.*)</source>
+        <reverse>/admin</reverse>
+        <destination>
+            <url>/conf/gallery$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/layout(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule id="gallerymanage">
+        <priority>NORMAL</priority>
+        <source>^/admin/layout/themes(.*)</source>
+        <reverse>/admin/layout/themes</reverse>
+        <destination>
+            <url>/conf/gallery/manage/themes$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/modules(.*)</source>
+        <destination>
+            <url>/conf/gallery/modules$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/utility(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule id="adminnotify">
+        <priority>NORMAL</priority>
+        <source>^/admin/utility/notify(.*)</source>
+        <reverse>/admin/utility/notify</reverse>
+        <destination>
+            <url>/conf/gallery/manage/notify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/ecommerce(.*)</source>
+        <destination>
+            <url>/conf/gallery/ecommerce$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/utility/routing(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage/routing$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/vgallery/nodes(/[^/]+)*/modify$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/vgallery/nodes(/[^/]+)*/publish$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/publish$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/vgallery/nodes(/[^/]+)*/relationship$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/relationship$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/vgallery/nodes(/[^/]+)*/seo$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/seo$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/vgallery/nodes(/[^/]+)*/permission$</source>
+        <destination>
+            <url>/conf/gallery/manage/vgallery/nodes/permission$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/vgallery/nodes(.*)/properties$</source>
+        <destination>
+            <url>/conf/gallery/manage/extras/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/content/vgallery/nodes(.*)/ecommerce$</source>
+        <destination>
+            <url>/conf/gallery/ecommerce/additionaldata/modify$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration(.*)</source>
+        <destination>
+            <url>/conf/gallery/manage</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+
+    <rule id="admininstall">
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/install(.*)</source>
+        <reverse>/admin/configuration/install</reverse>
+        <destination>
+            <url>/conf/gallery/install$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/domain(.*)</source>
+        <reverse>/admin/configuration/domain</reverse>
+        <destination>
+            <url>/conf/gallery/mc$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule id="adminupdater">
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/updater(.*)</source>
+        <reverse>/admin/configuration/updater</reverse>
+        <destination>
+            <url>/conf/gallery/updater$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/import(.*)</source>
+        <destination>
+            <url>/conf/gallery/import$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/services(.*)</source>
+        <destination>
+            <url>/conf/gallery/services$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+    <rule id="adminchecker">
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/checker(.*)</source>
+        <reverse>/admin/configuration/checker</reverse>
+        <destination>
+            <url>/conf/gallery/checker$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+	<rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/cm/layout(.*)</source>
+        <destination>
+            <url>/cm/contents/layout$1</url>
+        </destination>
+    </rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/layout/cm/showfiles(.*)</source>
+        <destination>
+            <url>/cm/contents/showfiles$1</url>
+        </destination>
+    </rule>
+	<rule id="ds">
+		<priority>NORMAL</priority>
+		<source>^/admin/ds(.*)</source>
+		<destination>
+			<url>/cm/contents/ds$1</url>
+		</destination>
+		<accept_path_info />
+		<reverse>/admin/ds</reverse>
+		<index>999</index>
+	</rule>
+    <rule>
+        <priority>NORMAL</priority>
+        <source>^/admin/configuration/cm/settings(.*)</source>
+        <destination>
+            <module>restricted</module>
+            <url>/settings$1</url>
+        </destination>
+        <accept_path_info />
+    </rule>
+	<!--Admin End -->
+    <rule id="mod_auth_login">
+		<priority>NORMAL</priority>
+		<source>/login$</source>
+		<destination>
+			<module>auth</module>
+			<url>/login$1</url>
+		</destination>
+		<reverse>/login</reverse>
+        <index>100</index>
+	</rule>
+    <rule id="mod_auth_social">
+        <priority>NORMAL</priority>
+		<source>^/login/social(/[^/]*)?(/[^/]*)?$</source>
+        <destination>
+			<module>auth</module>
+            <url>/social$1$2</url>
+        </destination>
+        <reverse>/login/social</reverse>
+    </rule>
+	<rule id="mod_auth_activation">
+		<priority>NORMAL</priority>
+		<source>/activation(.*)</source>
+		<destination>
+			<module>auth</module>
+			<url>/activation$1</url>
+		</destination>
+		<reverse>/activation</reverse>
+        <index>10</index>
+	</rule>
+	<rule id="mod_auth_recover">
+		<priority>NORMAL</priority>
+		<source>/recover(.*)</source>
+		<destination>
+			<module>auth</module>
+			<url>/recover$1</url>
+		</destination>
+		<reverse>/recover</reverse>
+        <index>10</index>
+	</rule>
+	<rule id="mod_auth_registration">
+		<priority>NORMAL</priority>
+		<source>^/registration(.*)</source>
+		<destination>
+			<module>auth</module>
+			<url>/registration$1</url>
+		</destination>
+		<reverse>/registration</reverse>
+	</rule>
+</configdata>

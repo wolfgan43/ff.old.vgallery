@@ -23,6 +23,19 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
+
+
+if(!function_exists("cache_get_page_by_id")) {
+    function cache_get_page_by_id($id) {
+        $page = Cms::getSchema("page");
+
+        if(isset($page["/" . $id]))
+            return "/" . $id;
+        else
+            return "/error";
+    }
+}
+
 function set_template_var($tpl, $vars = null, $prefix = "") {
     if($vars === null) {
         $globals = ffGlobals::getInstance("gallery");
@@ -91,20 +104,6 @@ function get_template_header($user_path, $admin_menu = null, $layout = null, &$t
 		    if(!isset($block["exclude"]["class"]["filename"]))
 				$filename = ffCommon_url_rewrite(ffGetFilename($tpl->sTemplate));
 		}
-	}
-	if(AREA_SHOW_NAVBAR_ADMIN) {
-		if($layout_settings_popup === null && check_function("get_layout_settings")) {
-	    	$layout_settings_popup = get_layout_settings(NULL, "ADMIN");		
-                $layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"] = "toolbar";
-                $layout_settings_popup["ADMIN_INTERFACE_MENU_PLUGIN"] = "toolbaradmin";
-                $layout_settings_popup["ADMIN_INTERFACE_PLUGIN"] = "";
-		
-		    setJsRequest($layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"]);
-		    setJsRequest($layout_settings_popup["ADMIN_POPUP_MENU_PLUGIN"]);
-		}
-
-		$block["admin"]["menu"] = $layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"];
-		$block["admin"]["popup"] = $layout_settings_popup["ADMIN_POPUP_MENU_PLUGIN"];
 	}
 
 	if($layout !== null) {

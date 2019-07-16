@@ -61,16 +61,15 @@ $oField->container_class = "avatar_uploadifive";
 $oField->label = ffTemplate::_get_word_by_code("uploadifive"); 
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/doc/record";
-$oField->file_temp_path = DISK_UPDIR . "/tmp/doc";
-$oField->file_max_size = MAX_UPLOAD;
-$oField->file_show_filename = true; 
+$oField->file_storing_path = FF_DISK_UPDIR . "/doc/record";
+$oField->file_temp_path = FF_DISK_UPDIR . "/tmp/doc";
+$oField->file_show_filename = true;
 $oField->file_full_path = true;
 $oField->file_check_exist = true;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/avatar/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/avatar/[_FILENAME_]";
 $oField->control_type = "file";
 $oField->file_show_delete = true;
 $oField->widget = "uploadify";
@@ -85,16 +84,15 @@ $oField->id = "avatar_uploadify";
 $oField->label = ffTemplate::_get_word_by_code("uploadify");
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/doc/record";
-$oField->file_temp_path = DISK_UPDIR . "/tmp/doc";
-$oField->file_max_size = MAX_UPLOAD;
-$oField->file_show_filename = true; 
+$oField->file_storing_path = FF_DISK_UPDIR . "/doc/record";
+$oField->file_temp_path = FF_DISK_UPDIR . "/tmp/doc";
+$oField->file_show_filename = true;
 $oField->file_full_path = true;
 $oField->file_check_exist = false;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/avatar/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/avatar/[_FILENAME_]";
 $oField->control_type = "file";
 $oField->file_show_delete = true;
 $oField->file_writable = true;
@@ -107,16 +105,15 @@ $oField->id = "avatar2";
 $oField->label = ffTemplate::_get_word_by_code("kcuploadifive");
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/doc/record";
-$oField->file_temp_path = DISK_UPDIR . "/tmp/doc";
-$oField->file_max_size = MAX_UPLOAD;
-$oField->file_show_filename = true; 
+$oField->file_storing_path = FF_DISK_UPDIR . "/doc/record";
+$oField->file_temp_path = FF_DISK_UPDIR . "/tmp/doc";
+$oField->file_show_filename = true;
 $oField->file_full_path = true;
 $oField->file_check_exist = false;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/avatar/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/avatar/[_FILENAME_]";
 $oField->control_type = "file";
 $oField->file_show_delete = true;
 $oField->file_writable = true;
@@ -132,16 +129,15 @@ $oField->id = "avatar_kcuploadifive";
 $oField->label = ffTemplate::_get_word_by_code("kcuploadify");
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/doc/record";
-$oField->file_temp_path = DISK_UPDIR . "/tmp/doc";
-$oField->file_max_size = MAX_UPLOAD;
-$oField->file_show_filename = true; 
+$oField->file_storing_path = FF_DISK_UPDIR . "/doc/record";
+$oField->file_temp_path = FF_DISK_UPDIR . "/tmp/doc";
+$oField->file_show_filename = true;
 $oField->file_full_path = true;
 $oField->file_check_exist = false;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/avatar/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/avatar/[_FILENAME_]";
 $oField->control_type = "file";
 $oField->file_show_delete = true;
 $oField->file_writable = true;
@@ -154,16 +150,15 @@ $oField->id = "avatar_ckuploadify";
 $oField->label = ffTemplate::_get_word_by_code("ckuploadifive");
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/doc/record";
-$oField->file_temp_path = DISK_UPDIR . "/tmp/doc";
-$oField->file_max_size = MAX_UPLOAD;
-$oField->file_show_filename = true; 
+$oField->file_storing_path = FF_DISK_UPDIR . "/doc/record";
+$oField->file_temp_path = FF_DISK_UPDIR . "/tmp/doc";
+$oField->file_show_filename = true;
 $oField->file_full_path = true;
 $oField->file_check_exist = false;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/avatar/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/avatar/[_FILENAME_]";
 $oField->control_type = "file";
 $oField->file_show_delete = true;
 $oField->file_writable = true;
@@ -179,16 +174,15 @@ $oField->id = "avatar_ckuploadifive";
 $oField->label = ffTemplate::_get_word_by_code("ckuploadify");
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/doc/record";
-$oField->file_temp_path = DISK_UPDIR . "/tmp/doc";
-$oField->file_max_size = MAX_UPLOAD;
-$oField->file_show_filename = true; 
+$oField->file_storing_path = FF_DISK_UPDIR . "/doc/record";
+$oField->file_temp_path = FF_DISK_UPDIR . "/tmp/doc";
+$oField->file_show_filename = true;
 $oField->file_full_path = true;
 $oField->file_check_exist = false;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/avatar/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/avatar/[_FILENAME_]";
 $oField->control_type = "file";
 $oField->file_show_delete = true;
 $oField->file_writable = true;
@@ -356,91 +350,10 @@ if(!isset($_REQUEST["keys"]["ID"]))
 	$oField->autocompletetoken_label = ffTemplate::_get_word_by_code("autocompletetoken_label");
 	$oField->autocompletetoken_combo = true;
 	$oField->autocompletetoken_compare_having = "name";
-	$oField->source_SQL = "SELECT 
-								vgallery_nodes.ID
-								, (
-									SELECT 
-										IF(vgallery_nodes.is_dir > 0
-											, CONCAT(
-												REPLACE(IF(vgallery_nodes.parent = '/', '', CONCAT(vgallery_nodes.parent, '/')), '-', ' ')
-												, IF(ISNULL(GROUP_CONCAT(vgallery_rel_nodes_fields.description))
-													, vgallery_nodes.name
-													, GROUP_CONCAT(DISTINCT vgallery_rel_nodes_fields.description ORDER BY vgallery_fields.`order_thumb` SEPARATOR ' - ')
-												)
-											)
-											, CONCAT(
-												" . (AREA_ECOMMERCE_SHOW_ID_IN_MENU
-													? " vgallery_nodes.ID
-														, ' - '
-														, "
-													: ""
-												) . "
-												IF(ISNULL(GROUP_CONCAT(vgallery_rel_nodes_fields.description))
-													, vgallery_nodes.name
-													, GROUP_CONCAT(DISTINCT vgallery_rel_nodes_fields.description ORDER BY vgallery_fields.enable_in_menu, vgallery_fields.`order_thumb` SEPARATOR ' - ')
-												)
-												, REPLACE(IF(vgallery_nodes.parent = '/', '', CONCAT(' (', vgallery_nodes.parent, ') ')), '-', ' ')
-											)
-									) AS name
-									FROM vgallery_rel_nodes_fields 
-										INNER JOIN vgallery_fields ON vgallery_fields.ID = vgallery_rel_nodes_fields.ID_fields 
-									WHERE 
-										vgallery_rel_nodes_fields.description <> ''
-										AND vgallery_rel_nodes_fields.ID_nodes = vgallery_nodes.ID 
-										AND vgallery_rel_nodes_fields.ID_fields IN (SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.enable_in_menu > 0 OR vgallery_fields.enable_smart_url > 0)
-										AND vgallery_rel_nodes_fields.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
-								) AS name
-								" . (ECOMMERCE_DISABLE_LIMIT_STOCK
-									? ""
-									: "    , (
-											SELECT SUM( 
-												IF(ecommerce_documents_bill.operation = 'received'
-													, IF(ISNULL(ecommerce_documents_bill_detail.qta), 0, ecommerce_documents_bill_detail.qta)
-													, IF(ISNULL(ecommerce_documents_bill_detail.qta), 0, CONCAT('-', ecommerce_documents_bill_detail.qta))
-												) 
-											) AS qta
-											FROM `ecommerce_documents_bill_detail`
-											INNER JOIN ecommerce_documents_bill ON ecommerce_documents_bill.ID = ecommerce_documents_bill_detail.ID_bill
-											WHERE ecommerce_documents_bill_detail.ID_items = vgallery_nodes.ID
-										) AS available"
-									) . "
-						   FROM vgallery_nodes
-								INNER JOIN vgallery_type ON vgallery_type.ID = vgallery_nodes.ID_type
-								INNER JOIN vgallery ON vgallery.ID = vgallery_nodes.ID_vgallery
-								INNER JOIN ecommerce_settings ON ecommerce_settings.ID_items = vgallery_nodes.ID AND ecommerce_settings.tbl_src = 'vgallery_nodes'
-						   WHERE 1
-								AND vgallery_nodes.ID NOT IN ( SELECT ID_items FROM ecommerce_order_detail WHERE tbl_src = 'vgallery_nodes' AND type = " . $db->toSql("byqta", "Text") . " AND ID_order = " . $db->toSql($ID_order, "Number") . " )
-								AND vgallery.enable_ecommerce = '1'
-								AND IF(NOT(vgallery_nodes.is_dir > 0) OR (NOT(ISNULL(ecommerce_settings.ID)) AND (ecommerce_settings.basic_price > 0 OR NOT(ecommerce_settings.cascading) > 0))
-									, 1
-									, 0
-								)
-								" . (ENABLE_STD_PERMISSION
-									? "
-										AND vgallery_nodes.ID
-											NOT IN 
-											(
-												SELECT vgallery_rel_nodes_fields.ID_nodes
-													FROM vgallery_rel_nodes_fields
-												WHERE
-													vgallery_rel_nodes_fields.ID_fields = (SELECT vgallery_fields.ID 
-																							FROM vgallery_fields 
-																								INNER JOIN vgallery_type ON vgallery_type.ID = vgallery_fields.ID_type 
-																							WHERE vgallery_fields.name = " .  $db->toSql("visible", "Text") . " 
-																								AND vgallery_type.name = " .  $db->toSql("System", "Text") . ")
-													AND vgallery_rel_nodes_fields.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
-													AND vgallery_rel_nodes_fields.description = " . $db->toSql("0", "Text") . "
-											)
-									"
-									: " AND vgallery_nodes.visible > 0"
-								) . "
-						   [AND] [WHERE]
-						   " . (ECOMMERCE_DISABLE_LIMIT_STOCK
-								? ""
-								: " HAVING (available > 0) [HAVING_AND] "
-						   ) . "
+	$oField->source_SQL = "SELECT ID, username FROM cm_mod_security_users
+						   [WHERE]
 						   [HAVING]
-						   [ORDER] [COLON] vgallery_nodes.is_dir DESC, name
+						   [ORDER] 
 						   [LIMIT]"; 
 	$oField->store_in_db = false;
 	$oRecord->addContent($oField); 

@@ -28,8 +28,15 @@ $mailer = Mailer::getInstance();
 $mailer->send("ciao", "ciao", "wolfgan@gmail.com");
 die();
 
+
+
+
 Jobs::getInstance()->run();
 die();*/
+
+$res = Anagraph::getInstance(null, "nosql")->read(array("anagraph.created"), array("anagraph.created" => "1538584530"));
+print_r($res);
+die();
 
 
 /*
@@ -41,6 +48,22 @@ $notifier = Notifier::getInstance("sms");
 $notifier->send("You Welcome2AHAHAH!", "+393397324389");
 print_r($notifier);*/
 
+$visitor = Stats::getInstance("visitor");
+$trace = $visitor->get("101719", "trace");
+print_r($trace);
+
+$trace = $visitor->get(array("url"), array("uid" => "101719"), "trace");
+print_r($trace);
+echo "-----------------------------";
+
+$trace = $visitor->set(array("event" => "ciao", "url" => "test"), array("uid" => "101719"), "trace");
+
+$trace = $visitor->set(array(
+
+        "2018" => array(
+            "250" => "++")), array("uid" => "101719"), "tagsByEvents");
+
+die();
 /*
 
 $stats = Stats::getInstance("page");
@@ -50,10 +73,77 @@ $stat = $stats->range("2018-03", "hits", array("owner" => 205096));
 
 print_r($stat);
 die();*/
+/*
+$access = Anagraph::getInstance("access");
+$pippo = $access->read(
+    array(
+        "anagraph.ID"
+    , "anagraph.name"
+    , "anagraph.email"
+    , "mol.doctors.mol_province"
+    , "mol.studi.province"
+    , "access.users.username"
+    , "access.tokens.token"
+    ),
+    array(
+        "ID" => 101719
+    , "access.tokens.type" => "live"
+    )
+);
+print_r($pippo);*/
 
 
 
-//$user_vars = Stats::getInstance("user")->get(array("follow", "follow-user-" . get_session("UserNID")), array("id_anagraph" => 54149));
+$anagraphObject = Anagraph::getInstance();
+$arrAnagraphList = $anagraphObject->read(
+    array(
+        "anagraph.ID"
+        , "anagraph.name"
+        , "anagraph.email"
+        , "mol.doctors.mol_province"
+        , "mol.studi.province"
+        , "access.users.username"
+        , "access.tokens.token"
+    ),
+    array(
+        "ID" => 9
+        //, "access.tokens.type" => "live"
+    )
+);
+
+$pippo = $anagraphObject->read(
+    array(
+        "anagraph.ID"
+    , "anagraph.name"
+    , "anagraph.email"
+    , "mol.doctors.mol_province"
+    , "mol.studi.province"
+    , "access.users.username"
+    , "access.tokens.token"
+    ),
+    array(
+        "access.users.ID" => 101719
+    , "access.tokens.type" => "live"
+    )
+);
+print_r($pippo);
+print_r($arrAnagraphList);
+
+print_r($anagraphObject->debug());
+die();
+
+$storage = Storage::getInstance(array("sql" => array    (
+    "controller" => null
+    , "database" => null // "test"
+    , "table" => "anagraph"
+)));
+
+print_r($storage->find(array("ID" => "9")));
+
+die("cio");
+
+
+//$user_vars = Stats::getInstance("user")->get(array("follow", "follow-user-" . Auth::get("user")->id), array("id_anagraph" => 54149));
 
 //$ciao = Cms::getUrl("/asd/asd");
 $res = Auth::check("15611e20e192216d8f34990e8a75968962e0b2b4");

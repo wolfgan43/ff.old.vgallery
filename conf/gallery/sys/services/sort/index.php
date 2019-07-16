@@ -1,6 +1,6 @@
 <?php
-if(!mod_security_check_session(false) || get_session("UserNID") == MOD_SEC_GUEST_USER_ID) {
-	prompt_login();
+if(!Auth::isLogged()) {
+    exit;
 }
 
 if(strpos($_REQUEST["resource"], "mod_") === 0) {
@@ -160,7 +160,7 @@ $resources = array(
                             , "insertMissing" => array(
                                 "parent" => $cm->real_path_info
                                 , "is_dir" => 0
-                                , "owner" => get_session("UserNID")
+                                , "owner" => Auth::get("user")->id
                                 , "created" => time()
                                 , "last_update" => time()
                                 , "ID_domain" => mod_security_get_domain()
@@ -168,7 +168,7 @@ $resources = array(
     )
 );
 
-$resources = cache_get_settings("services", "sort", $resources);
+$resources = Cms::getSchema("services", "sort", $resources);
 
 if(!isset($_REQUEST["resource"]) && strlen(basename($cm->real_path_info))) {
 	$_REQUEST["resource"] = basename($cm->real_path_info);

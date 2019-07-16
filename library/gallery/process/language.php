@@ -40,7 +40,8 @@ function process_language($selected_lang, $user_path, &$layout)
     					? $layout["template"]
     					: "default"
     				) . ".html";
-    
+
+    $tpl_data["id"] = $unic_id;
     $tpl_data["custom"] = "language.html";
     $tpl_data["base"] = $template_name;
     $tpl_data["path"] = $layout["tpl_path"];
@@ -48,7 +49,8 @@ function process_language($selected_lang, $user_path, &$layout)
     $tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
     
     $tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");       
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
     
     
 /*    
@@ -60,7 +62,8 @@ function process_language($selected_lang, $user_path, &$layout)
     $tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 
     $tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-    $tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   */
+    //$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");*/
 
     /**
     * Admin Father Bar
@@ -92,18 +95,18 @@ function process_language($selected_lang, $user_path, &$layout)
 
 	if($layout_settings["AREA_LANGUAGE_ACTUAL_SHOW_IMAGE"] || $layout_settings["AREA_LANGUAGE_LIST_SHOW_IMAGE"]) {
 		if($layout_settings["AREA_LANGUAGE_USE_ICON_16X16"]) {
-			if(is_file(FF_DISK_PATH . "/themes/" . $oPage->theme . "/css/lang-flags16.css")) {
+			if(is_file(FF_DISK_PATH . "/themes/" . FRONTEND_THEME . "/css/lang-flags16.css")) {
 				$layout["class"]["flag"] = "f16";
-				$cm->oPage->tplAddCss("langFlag", "lang-flags16.css", FF_THEME_DIR . "/" . $oPage->theme . "/css");
+				$cm->oPage->tplAddCss("langFlag", "lang-flags16.css", FF_THEME_DIR . "/" . FRONTEND_THEME . "/css");
 			} elseif(is_file(FF_DISK_PATH . "/themes/" . THEME_INSET . "/css/lang-flags16.css")) {
 				$layout["class"]["flag"] = "f16";
 				$cm->oPage->tplAddCss("langFlag", "lang-flags16.css", FF_THEME_DIR . "/" . THEME_INSET . "/css");
 			}
 		} else
 		{
-			if(is_file(FF_DISK_PATH . "/themes/" . $oPage->theme . "/css/lang-flag32.css")) {
+			if(is_file(FF_DISK_PATH . "/themes/" . FRONTEND_THEME . "/css/lang-flag32.css")) {
 				$layout["class"]["flag"] = "f32";
-				$cm->oPage->tplAddCss("langFlag", "lang-flags32.css", FF_THEME_DIR . "/" . $oPage->theme . "/css");
+				$cm->oPage->tplAddCss("langFlag", "lang-flags32.css", FF_THEME_DIR . "/" . FRONTEND_THEME . "/css");
 			} elseif(is_file(FF_DISK_PATH . "/themes/" . THEME_INSET . "/css/lang-flags32.css")) {
 				$layout["class"]["flag"] = "f32";
 				$cm->oPage->tplAddCss("langFlag", "lang-flags32.css", FF_THEME_DIR . "/" . THEME_INSET . "/css");
@@ -130,13 +133,13 @@ function process_language($selected_lang, $user_path, &$layout)
    			$menu_item_properties = "";
         	if($lang_code == LANGUAGE_INSET) {
         		$menu_target = "ACTUAL";
-        		$menu_item_properties = ' class="' . cm_getClassByFrameworkCss("current", "util") . '"';
+        		$menu_item_properties = ' class="' . Cms::getInstance("frameworkcss")->get("current", "util") . '"';
         		$tpl->set_var("item_url", "javascript:void(0);"); 
-        		$tpl->set_var("item_lang", "");
+        		$tpl->set_var("item_lang", 'rel="nofollow"');
 			} else {
 				$menu_target = "LIST";
 				$tpl->set_var("item_url", normalize_url($globals->settings_path, HIDE_EXT, true, $lang_code) . $query_string); 
-				$tpl->set_var("item_lang", ' lang="' . $lang["tiny_code"] . '"');
+				$tpl->set_var("item_lang", ' lang="' . $lang["tiny_code"] . '" rel="nofollow"');
 			}
 			$tpl->set_var("menu_item_properties", $menu_item_properties);
 
@@ -155,7 +158,7 @@ function process_language($selected_lang, $user_path, &$layout)
 		    $tpl->parse("SezLang", true);
    		}
 		
-		$menu_class["default"] = cm_getClassByFrameworkCss("navbar", "bar");
+		$menu_class["default"] = Cms::getInstance("frameworkcss")->get("navbar", "bar");
 		$menu_class["plugin"] = $layout_settings["AREA_LANGUAGE_PLUGIN"];
 		
 		$tpl->set_var("menu_class", implode(" " , $menu_class));
@@ -198,7 +201,7 @@ function process_language($selected_lang, $user_path, &$layout)
         	$lang_code = $db->getField("code", "Text", true);
         	if($lang_code == LANGUAGE_INSET) {
         		$menu_target = "ACTUAL";
-        		$menu_item_properties = ' class="' . cm_getClassByFrameworkCss("current", "util") . '"';
+        		$menu_item_properties = ' class="' . Cms::getInstance("frameworkcss")->get("current", "util") . '"';
         		$tpl->set_var("item_url", "javascript:void(0);"); 
 			} else {
 				$menu_target = "LIST";
@@ -221,7 +224,7 @@ function process_language($selected_lang, $user_path, &$layout)
 	        $tpl->parse("SezLang", true);
 		} while($db->nextRecord());
 
-		$menu_class["default"] = cm_getClassByFrameworkCss("navbar", "bar");
+		$menu_class["default"] = Cms::getInstance("frameworkcss")->get("navbar", "bar");
 		$menu_class["plugin"] = $layout_settings["AREA_LANGUAGE_PLUGIN"];
 		
 		$tpl->set_var("menu_class", implode(" " , $menu_class));

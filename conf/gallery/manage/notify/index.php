@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!(AREA_NOTIFY_SHOW_MODIFY || AREA_SCHEDULE_SHOW_MODIFY)) {
+if (!(Auth::env("AREA_NOTIFY_SHOW_MODIFY") || Auth::env("AREA_SCHEDULE_SHOW_MODIFY"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -86,7 +86,7 @@ $oGrid->addActionButtonHeader($oButton);
 
 $cm->oPage->addContent($oGrid, "rel", null, array("title" => ffTemplate::_get_word_by_code("message"))); 
 
-if(AREA_SCHEDULE_SHOW_MODIFY) {
+if(Auth::env("AREA_SCHEDULE_SHOW_MODIFY")) {
 	$oGrid = ffGrid::factory($cm->oPage);
 	$oGrid->full_ajax = true;
 	$oGrid->id = "schedule";
@@ -172,18 +172,18 @@ function notify_on_before_parse_row($component) {
 	$db->query($sSQL);
 	if($db->nextRecord()) {
 		if($db->getField("visible", "Number", true)) {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["visible"]->icon = null;
             $component->grid_buttons["visible"]->url = $component->parent[0]->site_path . $component->parent[0]->page_path . "/modify/?[KEYS]ret_url=" . urlencode($component->parent[0]->getRequestUri()) . "&NotifyModify_frmAction=hide";
 			$component->grid_buttons["visible"]->label = ffTemplate::_get_word_by_code("notifies_visible");
 		} else {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["visible"]->icon = null;
 			$component->grid_buttons["visible"]->url = $component->parent[0]->site_path . $component->parent[0]->page_path . "/modify/?[KEYS]ret_url=" . urlencode($component->parent[0]->getRequestUri()) . "&NotifyModify_frmAction=show";
 			$component->grid_buttons["visible"]->label = ffTemplate::_get_word_by_code("notifies_hidden");
 		}
 	} else {
-        $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+        $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
         $component->grid_buttons["visible"]->icon = null;
 		$component->grid_buttons["visible"]->url = $component->parent[0]->site_path . $component->parent[0]->page_path . "/modify/?[KEYS]ret_url=" . urlencode($component->parent[0]->getRequestUri()) . "&NotifyModify_frmAction=show";
 		$component->grid_buttons["visible"]->label = ffTemplate::_get_word_by_code("notifies_hidden");

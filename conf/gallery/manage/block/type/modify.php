@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_LAYOUT_SHOW_MODIFY) {
+if (!Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
    
@@ -221,8 +221,8 @@ function LayoutSettingsDetail_on_before_process_row($component, $record) {
 //    ffErrorHandler::raise("asd", E_USER_ERROR, NULL, get_defined_vars())   ;
 	$db_selection = ffDB_Sql::factory();
     $type = $component->main_record[0]->key_fields["ID"]->getValue();
-    if(check_function("get_layout_settings"))
-    	$layout_settings = get_layout_settings(NULL, $type); 
+    //if(check_function("get_layout_settings"))
+    	$layout_settings = Cms::getPackage($type); //get_layout_settings(NULL, $type);
    
     $obj_page_field = $component->form_fields["value"];
     $obj_page_field->label = $record["layout_settings_description"]->getValue();

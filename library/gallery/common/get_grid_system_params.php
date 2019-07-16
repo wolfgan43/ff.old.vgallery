@@ -29,7 +29,7 @@ function get_grid_system_params() {
 
 function get_grid_system_menu($type, $follow_default_setting = true, $is_child = false) {
 	$cm = cm::getInstance();
-	$framework_css = cm_getFrameworkCss();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 	if($follow_default_setting)
 		$template_framework = $framework_css["name"];
 
@@ -68,7 +68,7 @@ function get_grid_system_menu_default($template_framework)
 	switch ($template_framework) {
 		case "bootstrap":
 			$tpl_name 						= "default_bootstrap.html";
-			$icon  							= cm_getClassByFrameworkCss("more", "icon");
+			$icon  							= Cms::getInstance("frameworkcss")->get("more", "icon");
 			$class["current"] 				= "active";
 			$class["has_child"] 			= "dropdown";
 			$class["sticky"] 				= "navbar-fixed-top";
@@ -228,7 +228,7 @@ function get_grid_system_menu_side_offcanvas_child($template_framework, $side = 
 
 function get_grid_system_breadcrumb($follow_default_setting = true) {
 	$cm = cm::getInstance();
-	$framework_css = cm_getFrameworkCss();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 	if($follow_default_setting)
 		$template_framework = $framework_css["name"];
 

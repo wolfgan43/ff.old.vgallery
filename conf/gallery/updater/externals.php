@@ -263,7 +263,7 @@ if(is_array($external) && count($external)) {
 	                                        switch($operation[$key]["action"]) {
 	                                            case "addnew":
 	                                                $part_path = "";
-	                                                foreach(explode("/", ffCommon_dirname($operation[$key]["value"])) AS $tmp_path) {
+	                                                foreach(explode("/", dirname($operation[$key]["value"])) AS $tmp_path) {
 	                                                    if(strlen($tmp_path)) {
 	                                                        $part_path .= "/" . $tmp_path;
 	                                                        
@@ -537,7 +537,7 @@ function UpdaterCheck_on_do_action($component, $action) {
                         switch($operations[$value["ID"]]["action"]) {
                             case "addnew":
                                 $part_path = "";
-                                foreach(explode("/", ffCommon_dirname($operations[$value["ID"]]["value"])) AS $tmp_path) {
+                                foreach(explode("/", dirname($operations[$value["ID"]]["value"])) AS $tmp_path) {
                                     if(strlen($tmp_path)) {
                                         $part_path .= "/" . $tmp_path;
                                         

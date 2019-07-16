@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_VGALLERY_TYPE_SHOW_MODIFY) {
+if (!Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -122,9 +122,9 @@ if($simple_interface && $src_type)
 $oGrid->record_id = "VGalleryTypeModify";
 $oGrid->resources[] = $oGrid->record_id;
 $oGrid->display_edit_bt = false;
-$oGrid->display_edit_url = AREA_VGALLERY_TYPE_SHOW_MODIFY;
-$oGrid->display_delete_bt = AREA_VGALLERY_TYPE_SHOW_MODIFY && !$simple_interface;
-$oGrid->display_new = AREA_VGALLERY_SHOW_TYPE_MODIFY && !$simple_interface;
+$oGrid->display_edit_url = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
+$oGrid->display_delete_bt = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY") && !$simple_interface;
+$oGrid->display_new = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY") && !$simple_interface;
 $oGrid->buttons_options["export"]["display"] = !$simple_interface;
 $oGrid->use_search = !$simple_interface;
 $oGrid->use_paging = !$simple_interface;
@@ -197,9 +197,9 @@ if(MASTER_CONTROL && !$simple_interface) {
 	$oGrid->record_id = "VGalleryTypeModify";
 	$oGrid->resources[] = $oGrid->record_id;
 	$oGrid->display_edit_bt = false;
-	$oGrid->display_edit_url = AREA_VGALLERY_TYPE_SHOW_MODIFY;
-	$oGrid->display_delete_bt = AREA_VGALLERY_TYPE_SHOW_MODIFY;
-	$oGrid->display_new = AREA_VGALLERY_SHOW_TYPE_MODIFY;
+	$oGrid->display_edit_url = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
+	$oGrid->display_delete_bt = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
+	$oGrid->display_new = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
 	
 	$oGrid->addEvent("on_before_parse_row", "vgalleryType_on_before_parse_row");
 
@@ -266,7 +266,7 @@ function vgalleryType_on_before_parse_row($component) {
     	if(!$component->db[0]->getField("is_clone", "Number", true)) {
 		    if($component->db[0]->getField("public", "Number", true)) {
 		        //$component->grid_buttons["public"]->image = "visible.png";
-                $component->grid_buttons["public"]->class = cm_getClassByFrameworkCss("globe", "icon");
+                $component->grid_buttons["public"]->class = Cms::getInstance("frameworkcss")->get("globe", "icon");
                 $component->grid_buttons["public"]->label = ffTemplate::_get_word_by_code("set_no_public");
 	            $component->grid_buttons["public"]->action_type = "submit"; 
 	            $component->grid_buttons["public"]->form_action_url = $component->grid_buttons["public"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["public"]->parent[0]->addit_record_param . "setpublic=0&ret_url=" . urlencode($component->parent[0]->getRequestUri());
@@ -279,7 +279,7 @@ function vgalleryType_on_before_parse_row($component) {
 	            }   
 		    } else {
 	            //$component->grid_buttons["public"]->image = "notvisible.png";
-                $component->grid_buttons["public"]->class = cm_getClassByFrameworkCss("globe", "icon", array("transparent"));
+                $component->grid_buttons["public"]->class = Cms::getInstance("frameworkcss")->get("globe", "icon", array("transparent"));
                 $component->grid_buttons["public"]->label = ffTemplate::_get_word_by_code("set_public");
 	            $component->grid_buttons["public"]->action_type = "submit";     
 	            $component->grid_buttons["public"]->form_action_url = $component->grid_buttons["public"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["public"]->parent[0]->addit_record_param . "setpublic=1&ret_url=" . urlencode($component->parent[0]->getRequestUri());

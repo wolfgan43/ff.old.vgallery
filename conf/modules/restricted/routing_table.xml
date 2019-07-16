@@ -1,45 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configdata>
     <rule>
-        <priority>NORMAL</priority>
-        <source>^/admin/configuration/cm/settings(.*)</source>
+        <priority>HIGH</priority>
+        <source>^/admin(.*)</source>
         <destination>
             <module>restricted</module>
-            <url>/settings$1</url>
+            <url>/layout$0</url>
         </destination>
-        <accept_path_info />
-    </rule>
-	<rule id="admin">
-		<priority>HIGH</priority>
-		<source>^/admin(.*)</source>
-        <reverse>/admin</reverse> 
-		<destination>
-			<module>restricted</module>
-			<url>/layout$0</url>
-		</destination>
-        <accept_path_info />
         <process_next />
-	</rule>
-    <rule id="restricted">
+        <accept_path_info />
+        <reverse>/admin</reverse>
+    </rule>
+    <rule>
         <priority>HIGH</priority>
         <source>^/restricted(.*)</source>
+        <destination>
+            <module>restricted</module>
+            <url>/layout$0</url>
+        </destination>
+        <process_next />
+        <accept_path_info />
         <reverse>/restricted</reverse>
-        <destination>
-            <module>restricted</module>
-            <url>/layout$0</url>
-        </destination>
-        <accept_path_info />
-        <process_next />
-    </rule>
-    <rule id="manage">
-        <priority>HIGH</priority>
-        <source>^/manage(.*)</source>
-        <reverse>/manage</reverse>
-        <destination>
-            <module>restricted</module>
-            <url>/layout$0</url>
-        </destination>
-        <accept_path_info />
-        <process_next />
     </rule>
 </configdata>

@@ -107,7 +107,7 @@ function set_field_permalink($tbl_src, $ID_node, $exclude_category = false, $upd
   						"vgallery_nodes.visible" => 1
   					)
   					, "update" => array(
-  						"uid" => get_session("UserNID")
+  						"uid" => Auth::get("user")->id
   						, "last_update" => time()
   					) /*, SUBSTRING(vgallery_nodes.parent, LENGTH(CONCAT('/', layout.value)) + 1)*/
                     , "field_source_user_path" => "ID"

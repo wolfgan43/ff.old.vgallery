@@ -68,7 +68,7 @@ RewriteCond   %{REQUEST_URI}    !^/wiki
 RewriteRule   ^(.*)    /index\.php/$0 [L,QSA]
 
 <IfModule mod_deflate.c>
-# force deflate for mangled headers 
+# force deflate for mangled headers
 # developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/
     <IfModule mod_setenvif.c>
       <IfModule mod_headers.c>
@@ -79,10 +79,10 @@ RewriteRule   ^(.*)    /index\.php/$0 [L,QSA]
 
   # Legacy versions of Apache
   AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
-  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/javascript text/javascript
   AddOutputFilterByType DEFLATE text/xml application/xml text/x-component
   AddOutputFilterByType DEFLATE application/xhtml+xml application/rss+xml application/atom+xml
-  AddOutputFilterByType DEFLATE application/vnd.ms-fontobject application/x-font-ttf font/opentype 
+  AddOutputFilterByType DEFLATE application/vnd.ms-fontobject application/x-font-ttf font/opentype
   AddOutputFilterByType DEFLATE image/svg+xml image/png image/jpeg image/gif image/x-icon
 </IfModule>
 
@@ -110,7 +110,7 @@ RewriteRule   ^(.*)    /index\.php/$0 [L,QSA]
   ExpiresByType application/rss+xml       "access plus 1 hour"
 
 # Favicon (cannot be renamed)
-  ExpiresByType image/x-icon              "access plus 1 month" 
+  ExpiresByType image/x-icon              "access plus 1 month"
 
 # Media: images, video, audio
   ExpiresByType image/gif                 "access plus 1 month"
@@ -140,7 +140,7 @@ RewriteRule   ^(.*)    /index\.php/$0 [L,QSA]
 </IfModule>
 
 <IfModule mod_headers.c>
-    <FilesMatch "\.(js|css|xml|gz|svg)$"> 
+    <FilesMatch "\.(js|css|xml|gz|svg)$">
         Header set Cache-Control: public
     </FilesMatch>
 	# FileETag None is not enough for every server.
@@ -150,7 +150,7 @@ RewriteRule   ^(.*)    /index\.php/$0 [L,QSA]
 
   <FilesMatch "\.(html|js|css|xml|gz|svg)$">
       Header append Vary: Accept-Encoding
-  </FilesMatch>     
+  </FilesMatch>
 </IfModule>
 
 # Since we`re sending far-future expires, we dont need ETags for static content.

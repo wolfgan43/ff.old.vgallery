@@ -183,7 +183,7 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 		                )
 		            ) {
 		                $res = $data;
-		            } else if(strlen($data) && file_exists(DISK_UPDIR . $data) && is_file(DISK_UPDIR . $data)) { 
+		            } else if(strlen($data) && file_exists(FF_DISK_UPDIR . $data) && is_file(FF_DISK_UPDIR . $data)) { 
 		                $res = cm_showfiles_get_abs_url((strlen($field_thumb) ? "/" . $field_thumb : "") . $data);
 		            } else {
 		                $res = cm_showfiles_get_abs_url("/" . CM_DEFAULT_THEME . "/images/spacer.gif");
@@ -260,7 +260,7 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 		                    } else {
 		                        $res = $data;
 		                    }
-			                if(is_file(DISK_UPDIR . $data)) {
+			                if(is_file(FF_DISK_UPDIR . $data)) {
 								if(isset($real_def_source) && $real_def_source[1] == "nolink") {
 			                        $res = '<span class="found">' . $res . '</span>';
 								} else {
@@ -297,19 +297,15 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 		if(strlen($res)) {
 			if(array_key_exists("permissions", $field)) {
 				if(is_array($field["permissions"]) && count($field["permissions"])) {
-					$user_permission = get_session("user_permission");
-					
-					foreach($field["permissions"] AS $group_key => $func_name) {
-						if(array_key_exists($group_key, $user_permission["groups"])) {
-							switch($func_name) {
-								case "censor":
-									$res = substr($res, 0, 1) . str_repeat("*", strlen($res) - 2 ) . substr($res, -1);
-									break;
-								default:
-							}
-							
-						}
-					}
+					$user = Auth::get("user");
+					if($field["permissions"][$user->acl]) {
+                        switch($field["permissions"][$user->acl]) {
+                            case "censor":
+                                $res = substr($res, 0, 1) . str_repeat("*", strlen($res) - 2 ) . substr($res, -1);
+                                break;
+                            default:
+                        }
+                    }
 				}
 			}
 		}
@@ -485,29 +481,29 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 					$permission_action = $prototype["action"];
 		}
 
-		$user_permission = get_session("user_permission");
-		if(array_key_exists("permissions_service", $user_permission)) {
+		$user = Auth::get();
+		if($user["permissions_service"]) {
 			if(strlen($permission_action)) {
-				if(array_key_exists("AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action), $user_permission["permissions_service"])) {
-					$button_permission["specific"] = $user_permission["permissions_service"]["AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action)];
-				} elseif(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user_permission["permissions_service"])) {
-					$button_permission["default"] = $user_permission["permissions_service"]["AREA_SHOW_" . strtoupper($service_name)];
+				if(array_key_exists("AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action), $user["permissions_service"])) {
+					$button_permission["specific"] = $user["permissions_service"]["AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action)];
+				} elseif(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user["permissions_service"])) {
+					$button_permission["default"] = $user["permissions_service"]["AREA_SHOW_" . strtoupper($service_name)];
 				}
 			} else {
-				if(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user_permission["permissions_service"])) {
-					$button_permission["default"] = $user_permission["permissions_service"]["AREA_SHOW_" . strtoupper($service_name)];
+				if(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user["permissions_service"])) {
+					$button_permission["default"] = $user["permissions_service"]["AREA_SHOW_" . strtoupper($service_name)];
 				}
 			}
-		} elseif(array_key_exists("permissions", $user_permission)) {
+		} elseif($user["permissions"]) {
 			if(strlen($permission_action)) {
-				if(array_key_exists("AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action), $user_permission["permissions"])) {
-					$button_permission["specific"] = $user_permission["permissions"]["AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action)];
-				} elseif(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user_permission["permissions"])) {
-					$button_permission["default"] = $user_permission["permissions"]["AREA_SHOW_" . strtoupper($service_name)];
+				if(array_key_exists("AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action), $user["permissions"])) {
+					$button_permission["specific"] = $user["permissions"]["AREA_" . strtoupper($service_name) . "_SHOW_" . strtoupper($permission_action)];
+				} elseif(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user["permissions"])) {
+					$button_permission["default"] = $user["permissions"]["AREA_SHOW_" . strtoupper($service_name)];
 				}
 			} else {
-				if(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user_permission["permissions"])) {
-					$button_permission["default"] = $user_permission["permissions"]["AREA_SHOW_" . strtoupper($service_name)];
+				if(array_key_exists("AREA_SHOW_" . strtoupper($service_name), $user["permissions"])) {
+					$button_permission["default"] = $user["permissions"]["AREA_SHOW_" . strtoupper($service_name)];
 				}
 			}
 		} else {
@@ -675,7 +671,7 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 				$prototype["url"] = $path_info . $str_query_string;
 		    }
 		    if($prototype["html"] === null) { //icon ico-' . $prototype["class"]
-			    $prototype["html"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . $return_params . '\', \'' . $prototype["source_action"] . '\');"></a>';
+			    $prototype["html"] = '<a class="' . Cms::getInstance("frameworkcss")->get($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . $return_params . '\', \'' . $prototype["source_action"] . '\');"></a>';
 		    }
 		    
 		    if($prototype["js"] === null) {
@@ -706,11 +702,11 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
         	if(is_array($bt_ret) && count($bt_ret)) {
         		if($enable_button) { //icon ico-' . $prototype["class"] . '
         			if(array_key_exists("action." . $prototype["class"] . ".html", $bt_ret))
-	            		$ret["action." . $prototype["class"] . ".html"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "" . '\', \'' . $prototype["source_action"] . '\');"></a>';
+	            		$ret["action." . $prototype["class"] . ".html"] = '<a class="' . Cms::getInstance("frameworkcss")->get($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "" . '\', \'' . $prototype["source_action"] . '\');"></a>';
 					if(array_key_exists("action." . $prototype["class"] . ".html.dialog", $bt_ret))
-	            		$ret["action." . $prototype["class"] . ".html.dialog"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "dialog" . '\', \'' . $prototype["source_action"] . '\');"></a>';
+	            		$ret["action." . $prototype["class"] . ".html.dialog"] = '<a class="' . Cms::getInstance("frameworkcss")->get($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "dialog" . '\', \'' . $prototype["source_action"] . '\');"></a>';
 		            if(array_key_exists("action." . $prototype["class"] . ".html.request", $bt_ret))
-	            		$ret["action." . $prototype["class"] . ".html.request"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "request" . '\', \'' . $prototype["source_action"] . '\');"></a>';
+	            		$ret["action." . $prototype["class"] . ".html.request"] = '<a class="' . Cms::getInstance("frameworkcss")->get($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "request" . '\', \'' . $prototype["source_action"] . '\');"></a>';
 		            if(array_key_exists("action." . $prototype["class"] . ".js", $bt_ret))
 	            		$ret["action." . $prototype["class"] . ".js"] = 'ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "" . '\', \'' . $prototype["source_action"] . '\');';
 		            if(array_key_exists("action." . $prototype["class"] . ".js.dialog", $bt_ret))
@@ -737,9 +733,9 @@ function api_parse_field_by_type($field, $data, $data_key = "", $exclude_tag = f
 				}
         	} else {
         		if($enable_button) {  //icon ico-' . $prototype["class"] . '
-		            $ret["action." . $prototype["class"] . ".html"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "" . '\', \'' . $prototype["source_action"] . '\');"></a>';
-		            $ret["action." . $prototype["class"] . ".html.dialog"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "dialog" . '\', \'' . $prototype["source_action"] . '\');"></a>';
-		            $ret["action." . $prototype["class"] . ".html.request"] = '<a class="' . cm_getClassByFrameworkCss($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "request" . '\', \'' . $prototype["source_action"] . '\');"></a>';
+		            $ret["action." . $prototype["class"] . ".html"] = '<a class="' . Cms::getInstance("frameworkcss")->get($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "" . '\', \'' . $prototype["source_action"] . '\');"></a>';
+		            $ret["action." . $prototype["class"] . ".html.dialog"] = '<a class="' . Cms::getInstance("frameworkcss")->get($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "dialog" . '\', \'' . $prototype["source_action"] . '\');"></a>';
+		            $ret["action." . $prototype["class"] . ".html.request"] = '<a class="' . Cms::getInstance("frameworkcss")->get($prototype["class"], "icon") . '" href="javascript:ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "request" . '\', \'' . $prototype["source_action"] . '\');"></a>';
 		            $ret["action." . $prototype["class"] . ".js"] = 'ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "" . '\', \'' . $prototype["source_action"] . '\');';
 		            $ret["action." . $prototype["class"] . ".js.dialog"] = 'ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "dialog" . '\', \'' . $prototype["source_action"] . '\');';
 		            $ret["action." . $prototype["class"] . ".js.request"] = 'ff.tplService.parseAction(\'' . ($srv_id ? $srv_id : $service_name) . '\',\'' . $prototype["url"] . '\', \'' . $str_param_url . '\', \'' . "request" . '\', \'' . $prototype["source_action"] . '\');';

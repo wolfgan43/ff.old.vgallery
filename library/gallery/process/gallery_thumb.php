@@ -34,6 +34,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
     $db = ffDB_Sql::factory();
 
+    $unic_id = $layout["prefix"] . $layout["ID"];
     $layout["unic_id"] = $layout["prefix"] . $layout["ID"] . "T";
     $layout_settings = $layout["settings"];
 
@@ -188,8 +189,8 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	    if ($db->nextRecord()) {
 		do {
 		    $file = stripslash($db->getField("parent")->getValue()) . "/" . $db->getField("name")->getValue();
-		    $real_file = DISK_UPDIR . $file;
-		    if ((is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH /* && basename($real_file) != GALLERY_TPL_PATH */) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
+		    $real_file = FF_DISK_UPDIR . $file;
+		    if ((is_dir($real_file) /* && basename($real_file) != ffMedia::STORING_BASE_NAME  && basename($real_file) != GALLERY_TPL_PATH */) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
 			$rst[$file]["ID_node"] = $db->getField("ID")->getValue();
 			$rst[$file]["data_type_publish"] = $db->getField("data_type_publish")->getValue();
 
@@ -201,14 +202,14 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		    if ((is_array($rst_key) && count($rst_key)))
 			$rst_key = null;
 
-		    if (ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+		    if (Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 			get_file_permission(null, "files", $rst_key);
 
 		    foreach ($rst AS $file => $file_value) {
-			if (ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+			if (Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 			    $file_permission = get_file_permission($file, "files");
 
-			if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+			if (check_mod($file_permission, 1, true, Auth::env("AREA_GALLERY_SHOW_MODIFY"))) {
 			    $rst[$file]["permission"] = $file_permission;
 			} else {
 			    unset($rst[$file]);
@@ -258,7 +259,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
      * Admin Father Bar
      */
     if (is_array($publishing) && count($publishing) > 0) {
-	if (AREA_PUBLISHING_SHOW_MODIFY || AREA_PUBLISHING_SHOW_DETAIL || AREA_PUBLISHING_SHOW_DELETE) {
+	if (Auth::env("AREA_PUBLISHING_SHOW_MODIFY") || Auth::env("AREA_PUBLISHING_SHOW_DETAIL") || Auth::env("AREA_PUBLISHING_SHOW_DELETE")) {
 	    $enable_error = true;
 
 	    $admin_menu["admin"]["unic_name"] = $layout["unic_id"];
@@ -268,26 +269,26 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
 	    $admin_menu["admin"]["disable_huge"] = true;
 
-	    if (AREA_PUBLISHING_SHOW_DETAIL) {
+	    if (Auth::env("AREA_PUBLISHING_SHOW_DETAIL")) {
 		$admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/detail/" . ffCommon_url_rewrite(basename($settings_thumb_path)) . "?keys[ID]=" . $ID_publish . "&extype=publishing";
 	    }
-	    if (AREA_PUBLISHING_SHOW_MODIFY) {
+	    if (Auth::env("AREA_PUBLISHING_SHOW_MODIFY")) {
 		$admin_menu["admin"]["modify"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/modify?keys[ID]=" . $ID_publish . "&extype=" . $settings_thumb_type;
 	    }
-	    if (AREA_PUBLISHING_SHOW_DELETE) {
+	    if (Auth::env("AREA_PUBLISHING_SHOW_DELETE")) {
 		$admin_menu["admin"]["delete"] = ffDialog(TRUE, "yesno", ffTemplate::_get_word_by_code("vgallery_erase_title"), ffTemplate::_get_word_by_code("vgallery_erase_description"), "--returl--", FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/modify?keys[ID]=" . $ID_publish . "&extype=publishing&ret_url=" . "--encodereturl--" . "&PublishingModify_frmAction=confirmdelete", FF_SITE_PATH . "/dialog");
 	    }
-	    if (AREA_PROPERTIES_SHOW_MODIFY) {
+	    if (Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 		$admin_menu["admin"]["extra"] = FF_SITE_PATH . VG_SITE_RESTRICTED . "/publishing/properties?path=" . urlencode($settings_thumb_path) . "&extype=publishing" . "&layout=" . $layout["ID"];
 	    }
-	    if (AREA_ECOMMERCE_SHOW_MODIFY) {
+	    if (Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
 		$admin_menu["admin"]["ecommerce"] = "";
 	    }
-	    if (AREA_LAYOUT_SHOW_MODIFY) {
+	    if (Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 		$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
 		$admin_menu["admin"]["layout"]["type"] = $layout["type"];
 	    }
-	    if (AREA_SETTINGS_SHOW_MODIFY) {
+	    if (Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
 		$admin_menu["admin"]["setting"] = ""; //"PUBLISHING";
 	    }
 
@@ -298,12 +299,12 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
 	$is_owner = false;
     } else {
-	if (ENABLE_STD_PERMISSION) {
+	if (Cms::env("ENABLE_STD_PERMISSION")) {
 	    if (check_function("get_file_permission"))
 		$father_permission = get_file_permission($user_path, "files");
 
 	    if ($is_owner === null) {
-		if ($father_permission["owner"] > 0 && ($father_permission["owner"] === get_session("UserNID")))
+		if ($father_permission["owner"] > 0 && ($father_permission["owner"] === Auth::get("user")->id))
 		    $is_owner = true;
 		else
 		    $is_owner = false;
@@ -311,13 +312,13 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	}
 
 	if (check_mod($father_permission, 2) && (
-		AREA_GALLERY_SHOW_ADDNEW || AREA_GALLERY_SHOW_MODIFY || AREA_GALLERY_SHOW_DELETE || AREA_PROPERTIES_SHOW_MODIFY || AREA_ECOMMERCE_SHOW_MODIFY || AREA_LAYOUT_SHOW_MODIFY || AREA_SETTINGS_SHOW_MODIFY || $is_owner
+            Auth::env("AREA_GALLERY_SHOW_ADDNEW") || Auth::env("AREA_GALLERY_SHOW_MODIFY") || Auth::env("AREA_GALLERY_SHOW_DELETE") || Auth::env("AREA_PROPERTIES_SHOW_MODIFY") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") || Auth::env("AREA_LAYOUT_SHOW_MODIFY") || Auth::env("AREA_SETTINGS_SHOW_MODIFY") || $is_owner
 		)
 	) {
 	    $enable_error = true;
 
 	    $admin_menu["admin"]["unic_name"] = $layout["unic_id"] . $user_path . "-" . $is_owner;
-	    if ($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
+	    if ($is_owner && !Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
 		$admin_menu["admin"]["title"] = ffTemplate::_get_word_by_code("gallery_modify_owner");
 	    } else {
 		$admin_menu["admin"]["title"] = $layout["title"] . ": " . $settings_thumb_path;
@@ -327,7 +328,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
 	    $admin_menu["admin"]["disable_huge"] = true;
 
-	    if (AREA_GALLERY_SHOW_ADDNEW && is_dir(DISK_UPDIR . $user_path) && $search_param === null) {
+	    if (Auth::env("AREA_GALLERY_SHOW_ADDNEW") && is_dir(FF_DISK_UPDIR . $user_path) && $search_param === null) {
 		if ($file_properties["allow_insert_dir"])
 		    $admin_menu["admin"]["adddir"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/add/dir?path=" . urlencode($settings_thumb_path) . "&extype=" . $settings_thumb_type;
 		else
@@ -341,25 +342,25 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		$admin_menu["admin"]["adddir"] = "";
 		$admin_menu["admin"]["addnew"] = "";
 	    }
-	    if ($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
-		$admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_GALLERY . "/add/item?path=" . urlencode($settings_thumb_path) . "&owner=" . get_session("UserNID") . "&extype=" . $settings_thumb_type;
+	    if ($is_owner && !Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
+		$admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_GALLERY . "/add/item?path=" . urlencode($settings_thumb_path) . "&owner=" . Auth::get("user")->id . "&extype=" . $settings_thumb_type;
 	    }
 	    $admin_menu["admin"]["modify"] = "";
 	    $admin_menu["admin"]["delete"] = "";
 
 	    $arrSettingThumbPath = explode("/", $settings_thumb_path);
-	    if (AREA_PROPERTIES_SHOW_MODIFY) {
+	    if (Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 		$admin_menu["admin"]["extra"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/properties?path=" . urlencode("/" . $arrSettingThumbPath[1]) . "&extype=" . $settings_thumb_type . "&layout=" . $layout["ID"];
 	    }
-	    if (AREA_ECOMMERCE_SHOW_MODIFY && $search_param === null && ENABLE_ECOMMERCE_FILES) {
+	    if (Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && $search_param === null && Cms::env("ENABLE_ECOMMERCE_FILES")) {
 		$admin_menu["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/ecommerce?path=" . urlencode("/" . $arrSettingThumbPath[1]) . "&extype=" . $settings_thumb_type;
 	    }
 
-	    if (AREA_LAYOUT_SHOW_MODIFY && !$layout["is_rel"]) {
+	    if (Auth::env("AREA_LAYOUT_SHOW_MODIFY") && !$layout["is_rel"]) {
 		$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
 		$admin_menu["admin"]["layout"]["type"] = $layout["type"];
 	    }
-	    if (AREA_SETTINGS_SHOW_MODIFY && $search_param === null) {
+	    if (Auth::env("AREA_SETTINGS_SHOW_MODIFY") && $search_param === null) {
 		$admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
 	    }
 
@@ -410,6 +411,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	if(!$layout["tpl_path"])
 		$layout["tpl_path"] = "/tpl/gallery";
 
+    $tpl_data["id"] = $unic_id;
 	if(isset($tpl_data["type"])) {
 	    $tpl_data["custom"] = basename($settings_thumb_path) . "." . $tpl_data["type"];
 	    $tpl_data["base"] = "gallery" . $rel_tpl . "." . $tpl_data["type"];
@@ -425,7 +427,8 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");  
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
 	/*
     if (isset($tpl_data["type"]) && $tpl_data["type"] == "xml") {
@@ -527,7 +530,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
     }
 
     foreach ($rst as $file => $value) {
-	if ($file_properties["hide_dir"] && is_dir(DISK_UPDIR . $file))
+	if ($file_properties["hide_dir"] && is_dir(FF_DISK_UPDIR . $file))
 	    unset($rst[$file]);
 
 	if (is_array($arrFileExt) && count($arrFileExt)) {
@@ -563,9 +566,9 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
 	$count_files++;
 
-	$real_file = DISK_UPDIR . $file;
+	$real_file = FF_DISK_UPDIR . $file;
 	$file_permission = & $rst[$file]["permission"];
-	$mime = ffMimeType($real_file);
+	$mime = ffMedia::getMimeTypeByFilename($real_file);
 
 	$tpl->set_var("user_path", FF_SITE_PATH . VG_SITE_GALLERYMODIFY . $file); //. "?ret_url=" . urlencode($_SERVER['REQUEST_URI']));
 
@@ -616,16 +619,16 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 
 	if ($file_properties["image"]["fields"]) {
 	    $image_path = $file;
-	    if (is_dir(DISK_UPDIR . $file) && $layout_settings["AREA_GALLERY_ENABLE_COVER"]) {
-		if (strlen($layout_settings["AREA_GALLERY_ENABLE_COVER_NAME"]) && is_file(realpath(DISK_UPDIR . stripslash($file) . "/" . $layout_settings["AREA_GALLERY_ENABLE_COVER_NAME"]))) {
+	    if (is_dir(FF_DISK_UPDIR . $file) && $layout_settings["AREA_GALLERY_ENABLE_COVER"]) {
+		if (strlen($layout_settings["AREA_GALLERY_ENABLE_COVER_NAME"]) && is_file(realpath(FF_DISK_UPDIR . stripslash($file) . "/" . $layout_settings["AREA_GALLERY_ENABLE_COVER_NAME"]))) {
 		    $image_path = stripslash($file) . "/" . $layout_settings["AREA_GALLERY_ENABLE_COVER"];
 		} else {
-		    $tmp_img = glob(DISK_UPDIR . stripslash($file) . "/*");
+		    $tmp_img = glob(FF_DISK_UPDIR . stripslash($file) . "/*");
 		    if (is_array($tmp_img) && count($tmp_img)) {
 			sort($tmp_img);
 			foreach ($tmp_img AS $tmp_img_key => $tmp_img_value) {
 			    if (is_file($tmp_img_value)) {
-				$mime = ffMimeType(DISK_UPDIR . stripslash($file) . "/" . basename($tmp_img_value));
+				$mime = ffMedia::getMimeTypeByFilename(FF_DISK_UPDIR . stripslash($file) . "/" . basename($tmp_img_value));
 				if (strpos($mime, "image") !== false) {
 				    $image_path = stripslash($file) . "/" . basename($tmp_img_value);
 				    break;
@@ -636,32 +639,32 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		}
 	    }
 
-	    if (is_file(DISK_UPDIR . $image_path)) {
-		if ($file_properties["image"]["src"]["default"]["ID"] > 0) {
-		    if (check_function("get_thumb"))
-				$arrThumb = get_thumb(
-					$image_path
+	    if (strpos(CM_SHOWFILES, "://") !== false || is_file(FF_DISK_UPDIR . $image_path)) {
+			if ($file_properties["image"]["src"]["default"]["ID"] > 0) {
+				if (check_function("get_thumb"))
+					$arrThumb = get_thumb(
+						$image_path
+						, array(
+							 "fake_name" => $alias
+							, "thumb" => $file_properties["image"]["src"]
+						)
+						, "default"
+					);
+
+				/*
+				$arrThumb = get_thumb($image_path
 					, array(
-						 "fake_name" => $alias
-						, "thumb" => $file_properties["image"]["src"]
+					"fake_name" => $alias
+					, "mode" => $file_properties["image"]["src"]["default"]["name"]
+					, "format" => $file_properties["image"]["format"]
 					)
-					, "default"
-				);	
-				
-		    /*
-			$arrThumb = get_thumb($image_path
-			    , array(
-				"fake_name" => $alias
-				, "mode" => $file_properties["image"]["src"]["default"]["name"]
-				, "format" => $file_properties["image"]["format"]
-			    )
-			);*/
-		    $tpl->set_var("show_thumb", $arrThumb["src"]);
-		} else {
-		    $tpl->set_var("show_thumb", FF_SITE_PATH . constant("CM_SHOWFILES") . $image_path);
-		}
+				);*/
+				$tpl->set_var("show_thumb", $arrThumb["src"]);
+			} else {
+				$tpl->set_var("show_thumb", CM_SHOWFILES . $image_path);
+			}
 	    } else {
-		$tpl->set_var("show_thumb", FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/spacer.gif");
+		$tpl->set_var("show_thumb", CM_SHOWFILES . "/" . THEME_INSET . "/images/spacer.gif");
 	    }
 
 	    $tpl->set_var("alt_name", ffCommon_specialchars($name));
@@ -725,7 +728,8 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		    $tpl->set_var("SezGalleryImageViewLink", "");
 		    $tpl->parse("SezGalleryImageViewNoLink", false);
 		}
-	    } elseif (is_file($real_file)) {
+	    } elseif (strpos(CM_SHOWFILES, "://") !== false || is_file($real_file)) {
+
 		if ($file_properties["image"]["link_to"] == "image") {
 		    $tpl->set_var("target", "");
 		    if ($alternative_path) {
@@ -831,7 +835,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		    $tpl->set_var("SezGalleryImageViewLink", "");
 		    $tpl->parse("SezGalleryImageViewNoLink", false);
 		}
-	    }
+		}
 
 	    if ($tpl_data_valid) {
 		if (isset($tpl_data["tag" . $rel_tpl]["gallery_row_image"]) && strlen($tpl_data["tag" . $rel_tpl]["gallery_row_image"])) {
@@ -1055,7 +1059,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	    $tpl->set_var("SezGalleryWordFileTime", "");
 	}
 
-	if (ENABLE_ECOMMERCE_FILES && is_file($real_file) && !$tpl_data_valid) {
+	if (Cms::env("ENABLE_ECOMMERCE_FILES") && is_file($real_file) && !$tpl_data_valid) {
 	    if (check_function("process_addon_ecommerce_cart"))
 		$tpl->set_var("ecommerce_cart", process_addon_ecommerce_cart($layout, $file, $count_files, "files", true, NULL, NULL, $user_path, "", null, null, null));
 
@@ -1074,19 +1078,19 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	    if (
 		    (
 		    check_mod($file_permission, 2) && (
-		    AREA_GALLERY_SHOW_ADDNEW || AREA_GALLERY_SHOW_MODIFY || AREA_GALLERY_SHOW_DELETE || AREA_PROPERTIES_SHOW_MODIFY || AREA_ECOMMERCE_SHOW_MODIFY || AREA_LAYOUT_SHOW_MODIFY || AREA_SETTINGS_SHOW_MODIFY
+                Auth::env("AREA_GALLERY_SHOW_ADDNEW") || Auth::env("AREA_GALLERY_SHOW_MODIFY") || Auth::env("AREA_GALLERY_SHOW_DELETE") || Auth::env("AREA_PROPERTIES_SHOW_MODIFY") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") || Auth::env("AREA_LAYOUT_SHOW_MODIFY") || Auth::env("AREA_SETTINGS_SHOW_MODIFY")
 		    )
 		    ) || $is_owner
 	    ) {
 		$popup["admin"]["unic_name"] = $layout["unic_id"] . $file . "-" . $is_owner;
-		if ($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
+		if ($is_owner && !Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
 		    $popup["admin"]["title"] = ffTemplate::_get_word_by_code("gallery_modify_owner");
 		} else {
 		    $popup["admin"]["title"] = $layout["title"] . ": " . $file;
 		}
 		$popup["admin"]["class"] = $layout["type_class"];
 		$popup["admin"]["group"] = $layout["type_group"];
-		/*                if(AREA_GALLERY_SHOW_ADDNEW && is_dir($real_file)) {
+		/*                if(Auth::env("AREA_GALLERY_SHOW_ADDNEW") && is_dir($real_file)) {
 		  $popup["admin"]["adddir"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/add/dir?path=" . urlencode($file);
 		  $popup["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/add/item?path=" . urlencode($file);
 		  } else {
@@ -1096,24 +1100,24 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		 */
 		$popup["admin"]["disable_huge"] = true;
 
-		if ($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
-		    $popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_GALLERY . "/modify?path=" . urlencode($file) . "&extype=files&owner=" . get_session("UserNID");
-		    $popup["admin"]["delete"] = ffDialog(TRUE, "yesno", ffTemplate::_get_word_by_code("vgallery_erase_title"), ffTemplate::_get_word_by_code("vgallery_erase_description"), "--returl--", FF_SITE_PATH . VG_SITE_GALLERY . "/modify?path=" . urlencode($file) . "&extype=files&owner=" . get_session("UserNID") . "&ret_url=" . "--encodereturl--" . "&GalleryModify_frmAction=confirmdelete", FF_SITE_PATH . VG_SITE_GALLERY . "/dialog");
+		if ($is_owner && !Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
+		    $popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_GALLERY . "/modify?path=" . urlencode($file) . "&extype=files&owner=" . Auth::get("user")->id;
+		    $popup["admin"]["delete"] = ffDialog(TRUE, "yesno", ffTemplate::_get_word_by_code("vgallery_erase_title"), ffTemplate::_get_word_by_code("vgallery_erase_description"), "--returl--", FF_SITE_PATH . VG_SITE_GALLERY . "/modify?path=" . urlencode($file) . "&extype=files&owner=" . Auth::get("user")->id . "&ret_url=" . "--encodereturl--" . "&GalleryModify_frmAction=confirmdelete", FF_SITE_PATH . VG_SITE_GALLERY . "/dialog");
 		} else {
-		    if (AREA_GALLERY_SHOW_MODIFY) {
+		    if (Auth::env("AREA_GALLERY_SHOW_MODIFY")) {
 			$popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/modify?path=" . urlencode($file) . "&extype=files";
 		    }
-		    if (AREA_GALLERY_SHOW_DELETE) {
+		    if (Auth::env("AREA_GALLERY_SHOW_DELETE")) {
 			$popup["admin"]["delete"] = ffDialog(TRUE, "yesno", ffTemplate::_get_word_by_code("vgallery_erase_title"), ffTemplate::_get_word_by_code("vgallery_erase_description"), "--returl--", FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/modify?path=" . urlencode($file) . "&extype=files&ret_url=" . "--encodereturl--" . "&GalleryModify_frmAction=confirmdelete", FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/dialog");
 		    }
 		}
-		if (AREA_PROPERTIES_SHOW_MODIFY) {
+		if (Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 		    // $popup["admin"]["extra"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/properties?path=" . urlencode($file) . "&extype=files" . "&layout=" . $layout["ID"];
 		}
-		if (AREA_ECOMMERCE_SHOW_MODIFY && ENABLE_ECOMMERCE_FILES) {
+		if (Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && Cms::env("ENABLE_ECOMMERCE_FILES")) {
 		    $popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/ecommerce?path=" . urlencode($file) . "&extype=files";
 		}
-		if (AREA_SETTINGS_SHOW_MODIFY) {
+		if (Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
 		    $popup["admin"]["setting"] = "";
 		}
 
@@ -1148,19 +1152,19 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		$popup["admin"]["group"] = $layout["type_group"];
 		$popup["admin"]["addnew"] = "";
 
-		if (AREA_GALLERY_SHOW_MODIFY) {
+		if (Auth::env("AREA_GALLERY_SHOW_MODIFY")) {
 		    $popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/modify?path=" . urlencode($file) . "&extype=files";
 		}
-		if (AREA_GALLERY_SHOW_DELETE) {
+		if (Auth::env("AREA_GALLERY_SHOW_DELETE")) {
 		    $popup["admin"]["delete"] = ffDialog(TRUE, "yesno", ffTemplate::_get_word_by_code("vgallery_erase_title"), ffTemplate::_get_word_by_code("vgallery_erase_description"), "--returl--", FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/modify?path=" . urlencode($file) . "&extype=files&ret_url=" . "--encodereturl--" . "&GalleryModify_frmAction=confirmdelete", FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/dialog");
 		}
-		if (AREA_PROPERTIES_SHOW_MODIFY) {
+		if (Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 		    // $popup["admin"]["extra"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/properties?path=" . urlencode($file) . "&extype=files" . "&layout=" . $layout["ID"];
 		}
-		if (AREA_ECOMMERCE_SHOW_MODIFY && ENABLE_ECOMMERCE_FILES) {
+		if (Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && Cms::env("ENABLE_ECOMMERCE_FILES")) {
 		    $popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_GALLERYMODIFY . "/ecommerce?path=" . urlencode($file) . "&extype=files";
 		}
-		if (AREA_SETTINGS_SHOW_MODIFY) {
+		if (Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
 		    $popup["admin"]["setting"] = "";
 		}
 
@@ -1198,10 +1202,10 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 	if (strlen($block["admin"]["popup"])) {
 	    $serial_popup = json_encode($popup);
 	    $tpl->set_var("admin", ' data-admin="' . FF_SITE_PATH . VG_SITE_FRAME . $globals->user_path . "?sid=" . set_sid($serial_popup, $popup["admin"]["unic_name"] . " P") . '"');
-	    $item_class["admin"] = "admin-bar";
+	    //$item_class["admin"] = "admin-bar";
 	}
 	if (is_array($file_properties["default_grid"]) && count($file_properties["default_grid"]))
-	    $item_class["grid"] = cm_getClassByFrameworkCss($file_properties["default_grid"], "col");
+	    $item_class["grid"] = Cms::getInstance("frameworkcss")->get($file_properties["default_grid"], "col");
 	$item_class["base"] = "gallery_col" . $col;
 	$tpl->set_var("real_name", preg_replace('/[^a-zA-Z0-9]/', '', $layout["unic_id"] . ffGetFilename($real_file)));
 	$tpl->set_var("class_col", implode(" ", $item_class));
@@ -1299,7 +1303,7 @@ function process_gallery_thumb($rst, $user_path, $search_param = NULL, $souce_us
 		    ) {
 			$tpl->set_var("show_thumb", $file);
 		    } else {
-			$tpl->set_var("show_thumb", FF_SITE_PATH . constant("CM_SHOWFILES") . $file);
+			$tpl->set_var("show_thumb", CM_SHOWFILES . $file);
 		    }
 
 		    $tpl->set_var("alt_name", basename($file));

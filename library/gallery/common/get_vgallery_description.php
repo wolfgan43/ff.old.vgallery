@@ -103,7 +103,7 @@ function get_vgallery_description($full_path, $return_string = null, $reference 
 			    } while($db_additional_info->nextRecord());
 
 			    if(is_array($arrFormField) && count($arrFormField)) {
-    			    foreach($arrFormField AS $$arrFormField_key => $arrFormField_value) {
+    			    foreach($arrFormField AS $arrFormField_key => $arrFormField_value) {
 					    if($arrFormField_value["data_type"] == "data" || $arrFormField_value["data_type"] == "selection") {
 						    $sSQL_field .= " 
             				    , (SELECT 
@@ -218,13 +218,13 @@ function get_vgallery_description($full_path, $return_string = null, $reference 
 	    						|| $field_value["extended_type"] == "UploadImage"
 							) {
 								$image_path = $db_additional_info->getField($field_name, "Text", true);
-								if((!(strlen($image_path) && is_file(realpath(DISK_UPDIR . $image_path))))) { 
-									$tmp_img = glob(DISK_UPDIR . $db_additional_info->getField("full_path")->getValue()  . "/*");
+								if((!(strlen($image_path) && is_file(realpath(FF_DISK_UPDIR . $image_path))))) { 
+									$tmp_img = glob(FF_DISK_UPDIR . $db_additional_info->getField("full_path")->getValue()  . "/*");
 									if(is_array($tmp_img) && count($tmp_img)) {
 										sort($tmp_img);
 										foreach($tmp_img AS $tmp_img_key => $tmp_img_value) {
 											if(is_file($tmp_img_value)) {
-												$mime = ffMimeType(DISK_UPDIR . $db_additional_info->getField("full_path")->getValue()  . "/" . basename($tmp_img_value));
+												$mime = ffMedia::getMimeTypeByFilename(FF_DISK_UPDIR . $db_additional_info->getField("full_path")->getValue()  . "/" . basename($tmp_img_value));
 						                        if(strpos($mime, "image") !== false) {
 													$image_path = $db_additional_info->getField("full_path")->getValue()  . "/". basename($tmp_img_value);
 										            break;

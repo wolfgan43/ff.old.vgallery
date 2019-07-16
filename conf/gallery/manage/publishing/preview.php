@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!(AREA_PUBLISHING_SHOW_MODIFY || AREA_PUBLISHING_SHOW_DETAIL)) {
+if (!(Auth::env("AREA_PUBLISHING_SHOW_MODIFY") || Auth::env("AREA_PUBLISHING_SHOW_DETAIL"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -67,8 +67,8 @@ if($db_gallery->nextRecord()) {
         $layout["title"] = $db_gallery->getField("name")->getValue();
         $layout["type"] = "PUBLISHING";
         $layout["location"] = "Content";
-        if(check_function("get_layout_settings"))
-        	$layout["settings"] = get_layout_settings(NULL, "PUBLISHING");
+        //if(check_function("get_layout_settings"))
+        	$layout["settings"] = Cms::getPackage("publishing"); //get_layout_settings(NULL, "PUBLISHING");
         $layout["visible"] = NULL;
 
         if(check_function("process_gallery_thumb")) {
@@ -81,8 +81,8 @@ if($db_gallery->nextRecord()) {
         $layout["title"] = $db_gallery->getField("name")->getValue();
         $layout["type"] = "PUBLISHING";
         $layout["location"] = "Content";
-        if(check_function("get_layout_settings"))
-        	$layout["settings"] = get_layout_settings(NULL, "PUBLISHING");
+        //if(check_function("get_layout_settings"))
+        	$layout["settings"] = Cms::getPackage("publishing"); //get_layout_settings(NULL, "PUBLISHING");
         $layout["visible"] = NULL;
 
         if(check_function("process_vgallery_thumb")) {

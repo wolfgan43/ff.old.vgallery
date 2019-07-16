@@ -10,12 +10,12 @@ if($path == "")
     $path = "/";
 
 $is_owner = false;
-if (!AREA_GALLERY_SHOW_MODIFY) {
-    if(is_file(DISK_UPDIR . $path)) {
-		if(ENABLE_STD_PERMISSION) {
+if (!Auth::env("AREA_GALLERY_SHOW_MODIFY")) {
+    if(is_file(FF_DISK_UPDIR . $path)) {
+		if(Cms::env("ENABLE_STD_PERMISSION")) {
     		if(check_function("get_file_permission"))
     			$file_permission = get_file_permission(ffCommon_dirname($path));
-    		if($file_permission["owner"] > 0 && $file_permission["owner"] === get_session("UserNID")) {
+    		if($file_permission["owner"] > 0 && $file_permission["owner"] === Auth::get("user")->id) {
     			use_cache(false);
     			$is_owner = true;
 			} else {
@@ -23,7 +23,7 @@ if (!AREA_GALLERY_SHOW_MODIFY) {
 			}
 		} else {
 			$owner = $_REQUEST["owner"];
-			if($owner == get_session("UserNID")) {
+			if($owner == Auth::get("user")->id) {
     			use_cache(false);
     			$is_owner = true;
 			} else {
@@ -43,9 +43,9 @@ if(strpos($cm->oPage->page_path, VG_SITE_GALLERY) === 0) {
 	$simple_interface = false;
 }
 
-if(is_file(FF_DISK_PATH . FF_UPDIR . $path)) {
+if(is_file(FF_DISK_UPDIR. $path)) {
     $real_file = $path;
-} elseif(is_file(FF_DISK_PATH . FF_UPDIR . "/tmp" . $path)) {
+} elseif(is_file(FF_DISK_UPDIR . "/tmp" . $path)) {
     $real_file = "/tmp" . $path;
 }
 
@@ -79,7 +79,7 @@ if($db_gallery->nextRecord()) {
                 , '0'
                 , " . $db_gallery->toSql(time(), "Number") . "
                 , " . $db_gallery->toSql(time(), "Number") . "
-                , " . $db_gallery->toSql(get_session("UserNID"), "Number") . "
+                , " . $db_gallery->toSql(Auth::get("user")->id, "Number") . "
             )";
     $db_gallery->execute($sSQL);
     $ID_files = $db_gallery->getInsertID(true);
@@ -88,18 +88,18 @@ if($db_gallery->nextRecord()) {
 
 $tpl = ffTemplate::factory(FF_THEME_DISK_PATH . "/" . THEME_INSET . "/contents/admin/media");
 $tpl->load_file("preview.html", "main");                              
-$tpl->set_var("container_class", cm_getClassByFrameworkCss(array(4), "col", "preview"));
-$tpl->set_var("download_class", cm_getClassByFrameworkCss("download", "icon")); 
-$tpl->set_var("modify_class", cm_getClassByFrameworkCss("crop", "icon")); 
+$tpl->set_var("container_class", Cms::getInstance("frameworkcss")->get(array(4), "col", "preview"));
+$tpl->set_var("download_class", Cms::getInstance("frameworkcss")->get("download", "icon")); 
+$tpl->set_var("modify_class", Cms::getInstance("frameworkcss")->get("crop", "icon")); 
 $tpl->set_var("media_path", $real_file); 
 $tpl->set_var("view_path", CM_SHOWFILES); 
 $tpl->set_var("preview_path", CM_SHOWFILES . "/200x200"); 
 if(check_function("get_literal_size"))
-	$tpl->set_var("media_size", get_literal_size(filesize(FF_DISK_PATH . FF_UPDIR . $real_file))); 
+	$tpl->set_var("media_size", get_literal_size(filesize(FF_DISK_UPDIR . $real_file)));
 $tpl->set_var("media_time", time()); 
-$tpl->set_var("row_class", cm_getClassByFrameworkCss("row", "form")); 
-$tpl->set_var("control_class", cm_getClassByFrameworkCss("control", "form")); 
-$tpl->set_var("info_class", cm_getClassByFrameworkCss("info", "callout") . " " . cm_getClassByFrameworkCss("text-overflow", "util")); 
+$tpl->set_var("row_class", Cms::getInstance("frameworkcss")->get("row", "form")); 
+$tpl->set_var("control_class", Cms::getInstance("frameworkcss")->get("control", "form")); 
+$tpl->set_var("info_class", Cms::getInstance("frameworkcss")->get("info", "callout") . " " . Cms::getInstance("frameworkcss")->get("text-overflow", "util")); 
 
 
 $parent_path = ffCommon_dirname($path);
@@ -107,7 +107,7 @@ $arrParentPath = explode("/", trim($parent_path, "/"));
 if(is_array($arrParentPath) && count($arrParentPath)) {
     foreach($arrParentPath AS $arrParentPath_value) { 
         $parent_title = ucwords(str_replace("-", " " , $arrParentPath_value));
-        $str_menu_parent_path .= ($str_menu_parent_path ? '<ul>' : '') . '<li class="' . cm_getClassByFrameworkCss(array("text-nowrap", "text-overflow"), "util") . '" title="' . $parent_title . '"><a href="javascript:void(0);"' . cm_getClassByFrameworkCss("folder-open", "icon-tag") . " " . $parent_title . '</a>';
+        $str_menu_parent_path .= ($str_menu_parent_path ? '<ul>' : '') . '<li class="' . Cms::getInstance("frameworkcss")->get(array("text-nowrap", "text-overflow"), "util") . '" title="' . $parent_title . '"><a href="javascript:void(0);"' . Cms::getInstance("frameworkcss")->get("folder-open", "icon-tag") . " " . $parent_title . '</a>';
     }
 }
 //$tpl->set_var("media_path", $parent_path); 
@@ -126,14 +126,14 @@ $oRecord->id = "GalleryModify";
 $oRecord->resources[] = $oRecord->id;
 //$oRecord->title = ffTemplate::_get_word_by_code("gallery_title");
 $oRecord->src_table = "files";
-$oRecord->buttons_options["delete"]["display"] = AREA_GALLERY_SHOW_DELETE;
+$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_GALLERY_SHOW_DELETE");
 //$oRecord->buttons_options["update"]["label"] = ffTemplate::_get_word_by_code("gallery_nodes_updateback");
 //$oRecord->buttons_options["update"]["index"] = 3;
 $oRecord->buttons_options["print"]["display"] = false;
 
 $oRecord->user_vars["path"] = ffCommon_dirname($path);
 /* Title Block */
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . cm_getClassByFrameworkCss("vg-gallery", "icon-tag", array("2x", "content")) . $gallery_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . Cms::getInstance("frameworkcss")->get("vg-gallery", "icon-tag", array("2x", "content")) . $gallery_title . '</h1>';
 $oRecord->setWidthComponent(8);
 $oRecord->class = "nopadding";
 
@@ -488,7 +488,7 @@ function GalleryModify_on_do_action($component, $action) {
                 }
                 break;
             case "update":
-                    if(is_file(DISK_UPDIR . stripslash($actual_path_old) . "/" . $component->form_fields["name"]->value_ori->getValue()) || is_dir(DISK_UPDIR . stripslash($actual_path_old) . "/" . $component->form_fields["name"]->value_ori->getValue())) {
+                    if(is_file(FF_DISK_UPDIR . stripslash($actual_path_old) . "/" . $component->form_fields["name"]->value_ori->getValue()) || is_dir(FF_DISK_UPDIR . stripslash($actual_path_old) . "/" . $component->form_fields["name"]->value_ori->getValue())) {
                         $db->query("SELECT * 
                                     FROM files 
                                     WHERE files.parent = " . $db->toSql($actual_path) . "
@@ -505,7 +505,7 @@ function GalleryModify_on_do_action($component, $action) {
                             $new_parent = stripslash($actual_path) . "/" . $component->form_fields["name"]->value->getValue();
 
                             if($old_parent != $new_parent) {
-	                            if(@rename(DISK_UPDIR . $old_parent, DISK_UPDIR . $new_parent)) {
+	                            if(@rename(FF_DISK_UPDIR . $old_parent, FF_DISK_UPDIR . $new_parent)) {
 	                                $db->execute("UPDATE vgallery_rel_nodes_fields 
 	                                            SET vgallery_rel_nodes_fields.description = REPLACE(vgallery_rel_nodes_fields.description, " . $db->toSql($old_parent)  . ", " . $db->toSql($new_parent) . ")
 	                                            WHERE vgallery_rel_nodes_fields.description LIKE '%" . $db->toSql($old_parent, "Text", false)  . "%'"
@@ -532,7 +532,7 @@ function GalleryModify_on_do_action($component, $action) {
 					if($db->nextRecord()) {
                         $full_path = $db->getField("full_path", "Text", true);
                         if($full_path && ffCommon_dirname($full_path) != $full_path && check_function("fs_operation"))
-						    purge_dir(DISK_UPDIR . $full_path, $full_path, true);
+						    purge_dir(FF_DISK_UPDIR . $full_path, $full_path, true);
 					}
 				}
                 break;

@@ -5,7 +5,7 @@ function MD_maps_on_before_parse_row($component) {
 }
 
 function module_maps_tabs($arrVgallery) {
-    $tpl = ffTemplate::factory(get_template_cascading($globals->user_path, "marker_tab.html", "/modules/maps", ffCommon_dirname(__FILE__)));
+    $tpl = ffTemplate::factory(get_template_cascading($globals->user_path, "marker_tab.html", "/modules/maps", __DIR__));
     $tpl->load_file("marker_tab.html", "main");
     
     array_unshift($arrVgallery, ffTemplate::_get_word_by_code("all"));

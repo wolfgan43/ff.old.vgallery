@@ -86,7 +86,7 @@ if(is_array($sys["module"]) && count($sys["module"]))
 			/**
 			* Admin Father Bar
 			*/                    
-            if(AREA_MODULES_SHOW_MODIFY) {
+            if(Auth::env("AREA_MODULES_SHOW_MODIFY")) {
                 $admin_menu["admin"]["unic_name"] = $module_value["layout"]["prefix"] . $module_value["layout"]["ID"];
                 $admin_menu["admin"]["title"] = $layout_value["title"] . ": " . $user_path;
                 $admin_menu["admin"]["class"] = $layout_value["type_class"];
@@ -100,7 +100,7 @@ if(is_array($sys["module"]) && count($sys["module"]))
                 $admin_menu["admin"]["ecommerce"] = "";
                 $admin_menu["admin"]["layout"] = "";
                 $admin_menu["admin"]["setting"] = ""; //$layout_value["type"];
-                if(MODULE_SHOW_CONFIG) {
+                if(Auth::env("MODULE_SHOW_CONFIG")) {
                     $admin_menu["admin"]["module"]["value"] = strtolower($module_key);
                     $admin_menu["admin"]["module"]["params"] = $module_value["layout"]["ID"];
 
@@ -162,7 +162,7 @@ elseif(isset($sys["type"]))
             break;
 		case "GALLERY_MENU_CHILD":       //da eliminare
 			if(check_function("process_gallery_menu_child"))
-				$frame_buffer = process_gallery_menu_child($user_path, $sys["source_user_path"], $sys["real_user_path"], $sys["layout"], ($sys["is_absolute"] ? FF_DISK_PATH : DISK_UPDIR), $sys["skip_control"]);
+				$frame_buffer = process_gallery_menu_child($user_path, $sys["source_user_path"], $sys["real_user_path"], $sys["layout"], ($sys["is_absolute"] ? FF_DISK_PATH : FF_DISK_UPDIR), $sys["skip_control"]);
 			break;
 		case "VGALLERY_MENU_CHILD":
 			if(check_function("process_vgallery_menu_child"))
@@ -439,14 +439,15 @@ elseif(strlen($settings_path))
 					
 				$db->query($sSQL);
 				if($db->nextRecord() && check_function("system_layer_gallery")) {
-					if(check_function("get_layout_settings"))
-						$layout_settings_popup = get_layout_settings(NULL, "ADMIN"); 
+					//if(check_function("get_layout_settings"))
+						$layout_settings_popup = Cms::getPackage("admin"); //get_layout_settings(NULL, "ADMIN");
 
 					//do {
 						$ID_layout = $db->getField("ID", "Number", true);
 						$type = $db->getField("type", "Text", true);
 						$layout["prefix"] = "L";
 						$layout["ID"] = $ID_layout;
+                        $layout["smart_url"] = $db->getField("smart_url", "Text", true);
 						$layout["title"] = $db->getField("name", "Text", true);
 						$layout["class"] = $db->getField("class", "Text", true);
 						$layout["type_class"] = $db->getField("type_class", "Text", true);
@@ -461,8 +462,13 @@ elseif(strlen($settings_path))
 						$layout["last_update"] = $db->getField("last_update", "Text", true);
 						$layout["frequency"] = $db->getField("frequency", "Text", true);
 						if($layout["visible"]) {
-							if(check_function("get_layout_settings"))
-								$layout["settings"] = get_layout_settings($ID_layout, $type);
+                            $layout["settings"] = Cms::getPackage($layout["smart_url"]);
+                            if(!$layout["settings"]) {
+                                $layout["settings"] = Cms::getPackage($layout["type"]);
+                            }
+
+                            //if(check_function("get_layout_settings"))
+								//$layout["settings"] = get_layout_settings($ID_layout, $type);
 							$layout["ajax"] = false;
 							$layout["db"]["value"] = $layout["value"];
 							$layout["db"]["params"] = $layout["params"];
@@ -493,8 +499,9 @@ elseif(strlen($settings_path))
 		//$globals->cache["data_blocks"] = array(); // x cache_page
 
 		if(check_function("system_layer_gallery")) {
-			if(check_function("get_layout_settings"))
-				$layout_settings_popup = get_layout_settings(NULL, "ADMIN"); 
+//			if(check_function("get_layout_settings"))
+//				$layout_settings_popup = get_layout_settings(NULL, "ADMIN");
+            $layout_settings_popup = Cms::getPackage("admin");
 
 			$main_section_params["count_block"] = 0;
 			//$main_section_params["js_custom_is_set"] = true;

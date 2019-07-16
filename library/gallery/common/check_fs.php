@@ -42,7 +42,7 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
     if (is_dir($absolute_path)) {
         if ($handle = @opendir($absolute_path)) {
             while (false !== ($file = readdir($handle))) { 
-                if ($file != "." && $file != ".." && $file != CM_SHOWFILES_THUMB_PATH && $file !=  "_sys") { 
+                if ($file != "." && $file != ".." && $file != ffMedia::STORING_BASE_NAME && $file !=  "_sys") {
                     if (is_dir($absolute_path . "/" . $file)) {
                         check_fs(stripslash($absolute_path) . "/" . $file, stripslash($relative_path) . "/" . $file);
                     } else {
@@ -76,9 +76,9 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
                                 : ""
                             )
                         );
-                $relative_name = ffCommon_url_rewrite(ffGetFilename(stripslash($absolute_path) . "/" . $file)) 
-                        . (pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION)
-                            ? "." . ffCommon_url_rewrite(pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION))
+                $relative_name = ffCommon_url_rewrite(ffGetFilename($absolute_path))
+                        . (pathinfo($absolute_path, PATHINFO_EXTENSION)
+                            ? "." . ffCommon_url_rewrite(pathinfo($absolute_path, PATHINFO_EXTENSION))
                             : ""
                         );
 
@@ -98,9 +98,9 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
                             : ""
                         )
                     );
-            $relative_name = ffCommon_url_rewrite(ffGetFilename(stripslash($absolute_path) . "/" . $file))  //todo: da fixare
-                    . (pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION)
-                        ? "." . ffCommon_url_rewrite(pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION))
+            $relative_name = ffCommon_url_rewrite(ffGetFilename($absolute_path))
+                    . (pathinfo($absolute_path, PATHINFO_EXTENSION)
+                        ? "." . ffCommon_url_rewrite(pathinfo($absolute_path, PATHINFO_EXTENSION))
                         : ""
                     );
         } else {
@@ -115,7 +115,7 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
 function check_fs_closest_db($strFile) {
 	if($strFile) 
 	{
-		$is_dir = is_dir(DISK_UPDIR . $strFile);
+		$is_dir = is_dir(FF_DISK_UPDIR . $strFile);
 
 		do {
 			check_fs_db(ffCommon_dirname($strFile), basename($strFile), $is_dir);
@@ -165,7 +165,7 @@ function check_fs_db($strPath, $strFile, $is_dir) {
                         , " . $db->toSql($strPath, "Text") . "
                         , " . $db->toSql($is_dir, "Text") . "
                         , " . $db->toSql(time(), "Text") . "
-                        , " . $db->toSql(get_session("UserNID"), "Number") . "
+                        , " . $db->toSql(Auth::get("user")->id, "Number") . "
                     )";
             $db->query($sSQL);
             if($db->affectedRows()) {
@@ -223,7 +223,7 @@ function purge_fs_db($user_path) {
     $db->query($sSQL);
     if ($db->nextRecord()) {
         do {
-            if(!(is_dir(DISK_UPDIR . $db->getField("full_path")->getValue()) || is_file(DISK_UPDIR . $db->getField("full_path")->getValue())) || (strpos($db->getField("full_path")->getValue(), "/" . "_sys") !== false)) {
+            if(!(is_dir(FF_DISK_UPDIR . $db->getField("full_path")->getValue()) || is_file(FF_DISK_UPDIR . $db->getField("full_path")->getValue())) || (strpos($db->getField("full_path")->getValue(), "/" . "_sys") !== false)) {
                 delete_file_from_db($db->getField("parent")->getValue(), $db->getField("name")->getValue());
             }
         } while($db->nextRecord());

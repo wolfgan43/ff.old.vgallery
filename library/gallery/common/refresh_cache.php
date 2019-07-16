@@ -246,7 +246,7 @@ function update_cache_file($last_update, $path = null) {
             ";
     $db->query($sSQL);
     if($db->nextRecord()) {
-        $schema = cache_get_settings();
+        $schema = Cms::getSchema();
 
         $cache = array();
         //$count_page = $db->numRows();

@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_LAYOUT_SHOW_MODIFY) {
+if (!Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 	ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -20,7 +20,7 @@ $oRecord->resources[] = $oRecord->id;
 //$oRecord->title = ffTemplate::_get_word_by_code("layout_settings_title");
 $oRecord->src_table = "layout_type";
 $oRecord->addEvent("on_done_action", "LayoutSettingsModify_on_done_action");
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . cm_getClassByFrameworkCss("vg-draft", "icon-tag", array("2x", "content")) . $layout_name . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . Cms::getInstance("frameworkcss")->get("vg-draft", "icon-tag", array("2x", "content")) . $layout_name . '</h1>';
 
 $oRecord->buttons_options["delete"]["display"] = false;
 
@@ -147,8 +147,8 @@ function LayoutSettingsDetail_on_before_process_row($component, $record) {
 
     $type = $component->user_vars["tbl_src"];
     
-    if(check_function("get_layout_settings"))
-    	$layout_settings = get_layout_settings(NULL, $type); 
+    //if(check_function("get_layout_settings"))
+    	$layout_settings = Cms::getPackage($type); // get_layout_settings(NULL, $type);
    
     $obj_page_field = $component->form_fields["value"];
     // $component->user_vars["group"][(strlen($record["settings_group"]->getValue()) ? "general" : $record["settings_group"]->getValue())] = true;

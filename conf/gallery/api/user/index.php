@@ -23,15 +23,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
+if(basename($cm->real_path_info) == "activation.html") {
+    print_r($_SERVER);
+           die();
+
+}
 
 
 
 switch (basename($cm->real_path_info, "." . vgCommon::PHP_EXT)) {
     case "login":
-        $return = Auth::login(array("type" => "token"));
+        $return = Auth::login(array("method" => "token"));
         break;
     case "logout":
-        $return = Auth::logout(array("type" => "token"));
+        $return = Auth::logout(array("method" => "token"));
         break;
     case "registration":
         $return = Auth::registration();
@@ -39,23 +44,29 @@ switch (basename($cm->real_path_info, "." . vgCommon::PHP_EXT)) {
     case "check":
         $return = Auth::check();
         break;
+    case "code":
+        $return = Auth::code();
+        break;
     case "refresh":
-        $return = Auth::check(); //da impostare il refrsh con la request
+        $return = Auth::check(array("method" => "refresh"));
         break;
-    case "recover":
-        $return = Auth::rec();
+    case "recover": //todo: da fare
+        $return = Auth::recover();
         break;
-    case "activation":
+    case "activation": //todo: da finire
         $return = Auth::activation();
         break;
     case "key":
         $return = Auth::key();
         break;
-    case "share":
+    case "share": //todo: da fare
         $return = Auth::share();
         break;
-    case "join":
+    case "join": //todo: da fare
         $return = Auth::join();
+        break;
+    case "list": //todo: da finire
+        $return = Auth::users();
         break;
     case "certificate":
         $return = Auth::createCertificate();

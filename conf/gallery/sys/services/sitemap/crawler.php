@@ -1,6 +1,6 @@
 <?php
-if(!mod_security_check_session(false) || get_session("UserNID") == MOD_SEC_GUEST_USER_ID) {
-	prompt_login();
+if(!Auth::isLogged()) {
+    exit;
 }
 
 $db = ffDB_Sql::factory();
@@ -317,15 +317,15 @@ $arrSeoAnalysis = array(
 );
 
 $arrStatus = array(
-	"success" => cm_getClassByFrameworkCss("check-circle", "icon-tag")
-	, "warning" => cm_getClassByFrameworkCss("exclamation-circle", "icon-tag")
-	, "error" => cm_getClassByFrameworkCss("times-circle", "icon-tag")
-	, "loading" => cm_getClassByFrameworkCss("spinner", "icon-tag", "spin")
+	"success" => Cms::getInstance("frameworkcss")->get("check-circle", "icon-tag")
+	, "warning" => Cms::getInstance("frameworkcss")->get("exclamation-circle", "icon-tag")
+	, "error" => Cms::getInstance("frameworkcss")->get("times-circle", "icon-tag")
+	, "loading" => Cms::getInstance("frameworkcss")->get("spinner", "icon-tag", "spin")
 	, "standby" => ""
 
 );
-$tpl->set_var("icon_mini_menu", cm_getClassByFrameworkCss("chevron-left", "icon-tag", "2x"));
-$tpl->set_var("icon_helper", cm_getClassByFrameworkCss("help", "icon-tag"));
+$tpl->set_var("icon_mini_menu", Cms::getInstance("frameworkcss")->get("chevron-left", "icon-tag", "2x"));
+$tpl->set_var("icon_helper", Cms::getInstance("frameworkcss")->get("help", "icon-tag"));
 
 if(is_array($arrSeoAnalysis) && count($arrSeoAnalysis)) {
 	foreach($arrSeoAnalysis AS $panel => $arrFields) {
@@ -350,9 +350,9 @@ if(is_array($arrSeoAnalysis) && count($arrSeoAnalysis)) {
 				if(isset($field_value["importance"])) {
 					for($i = 1; $i<=3; $i++) {
 						if($field_value["importance"] >= $i)
-							$tpl->set_var("icon_importance", cm_getClassByFrameworkCss("dot-circle-o", "icon-tag"));
+							$tpl->set_var("icon_importance", Cms::getInstance("frameworkcss")->get("dot-circle-o", "icon-tag"));
 						else
-							$tpl->set_var("icon_importance", cm_getClassByFrameworkCss("circle-o", "icon-tag"));
+							$tpl->set_var("icon_importance", Cms::getInstance("frameworkcss")->get("circle-o", "icon-tag"));
 						
 						$tpl->parse("SezFieldImportance", true);
 					}
@@ -360,9 +360,9 @@ if(is_array($arrSeoAnalysis) && count($arrSeoAnalysis)) {
 				if(isset($field_value["resolution"])) {
 					for($i = 1; $i<=3; $i++) {
 						if($field_value["resolution"] >= $i)
-							$tpl->set_var("icon_resolution", cm_getClassByFrameworkCss("gear", "icon-tag"));
+							$tpl->set_var("icon_resolution", Cms::getInstance("frameworkcss")->get("gear", "icon-tag"));
 						else
-							$tpl->set_var("icon_resolution", cm_getClassByFrameworkCss("circle-o", "icon-tag"));
+							$tpl->set_var("icon_resolution", Cms::getInstance("frameworkcss")->get("circle-o", "icon-tag"));
 						
 						$tpl->parse("SezFieldResolution", true);
 					}

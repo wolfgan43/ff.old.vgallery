@@ -169,7 +169,7 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
             $tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . $struct["default"]["path"] . $tpl_email_path;
             $tpl_error = false;
         } elseif(strlen($struct["default"]["theme"])) {
-            $tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.tpl";
+            $tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.tpl";
             $tpl_error = true;
         } else {
             return ffTemplate::_get_word_by_code("mail_tpl_not_exist");
@@ -179,10 +179,10 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
             $tpl_email_txt_path = ffCommon_dirname($tpl_email_html_path) . "/" . ffGetFilename($tpl_email_html_path) . ".txt";
             $tpl_error = false;
         } else {
-            if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.txt")) {
-                $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.txt";
-            } elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.txt")) {
-                $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"]  . "/contents/mail/email.txt";
+            if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.txt")) {
+                $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.txt";
+            } elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.txt")) {
+                $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"]  . "/contents/email/email.txt";
             }
             $tpl_error = true;
         }
@@ -193,12 +193,12 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
             }
         }
     } else {
-        if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.tpl")) {
-            $tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.tpl";
-            $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.txt";
-        } elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.tpl")) {
-            $tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.tpl";
-            $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.txt";
+        if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.tpl")) {
+            $tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.tpl";
+            $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.txt";
+        } elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.tpl")) {
+            $tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.tpl";
+            $tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.txt";
         } else {
             return ffTemplate::_get_word_by_code("mail_default_tpl_not_exist");
         }
@@ -577,7 +577,7 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
 
 
         $tpl->set_var("site_path", FF_SITE_PATH);
-        $tpl->set_var("site_updir", SITE_UPDIR);
+        $tpl->set_var("FF_SITE_UPDIR", FF_SITE_UPDIR);
         $tpl->set_var("domain_inset", $struct["domain"]);
         $tpl->set_var("theme_inset", THEME_INSET);
         $tpl->set_var("theme", $struct["theme"]);
@@ -1058,7 +1058,7 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
             $arrEmailImages = glob(ffCommon_dirname($tpl_email_html_path) . "/images/*");
             if(is_array($arrEmailImages) && count($arrEmailImages)) {
                 foreach($arrEmailImages AS $email_image) {
-                    $mail->AddEmbeddedImage($email_image, basename($email_image), basename($email_image), 'base64',ffMimeContentType($email_image));
+                    $mail->AddEmbeddedImage($email_image, basename($email_image), basename($email_image), 'base64',ffMedia::getMimeTypeByFilename($email_image));
                 }
             }
         }
@@ -1078,8 +1078,8 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
         } else {
             if(is_array($attach) && count($attach)) {
                 foreach($attach AS $attach_key => $attach_value) {
-                    if(is_file(DISK_UPDIR . $attach_value))
-                        $mail->AddAttachment(DISK_UPDIR . $attach_value, $attach_key);
+                    if(is_file(FF_DISK_UPDIR . $attach_value))
+                        $mail->AddAttachment(FF_DISK_UPDIR . $attach_value, $attach_key);
                 }
             }
 
@@ -1202,129 +1202,6 @@ function email_system($email, $theme = null, $tpl_email_path = null)
 	                    )";
             $dbtemp->execute($sSql);
             $ID_mail = $dbtemp->getInsertID(true);
-
-            if(!verifyMailbox(CC_FROM_EMAIL)) {
-                $sSql = "SELECT * FROM `email_address` WHERE email = " . $dbtemp->toSql(CC_FROM_EMAIL, "Text");
-                $dbtemp->query($sSql);
-                if($dbtemp->nextRecord()) {
-                    $ID_CC = $dbtemp->getField("ID")->getValue();
-                    $default_cc = array(
-                        "name" => $dbtemp->getField("name", "Text", true)
-                    , "mail" => $dbtemp->getField("email", "Text", true)
-                    );
-                } else {
-                    $sSql = "INSERT 
-		                        INTO `email_address` 
-		                        (
-		                            ID
-		                            , name
-		                            , email
-		                            , uid
-		                        ) 
-		                        VALUES 
-		                        (
-		                            ''
-		                            , " . $dbtemp->toSql(CC_FROM_NAME, "Text") . "
-		                            , " . $dbtemp->toSql(CC_FROM_EMAIL, "Text") . "
-		                            , " . $dbtemp->toSql(0, "Number") . "
-		                        )";
-                    $dbtemp->execute($sSql);
-                    $ID_CC = $dbtemp->getInsertID(true);
-                    $default_cc = array(
-                        "name" => CC_FROM_NAME
-                    , "mail" => CC_FROM_EMAIL
-                    );
-                }
-
-                if($ID_CC) {
-                    $sSql = "SELECT * 
-			                FROM `email_rel_address` 
-			                WHERE 
-			                    ID_email = " . $dbtemp->toSql($ID_mail, "Number") . "
-			                    AND ID_address = " . $dbtemp->toSql($ID_CC, "Number") . "
-			                    AND type = " . $dbtemp->toSql("cc", "Text");
-                    $dbtemp->query($sSql);
-                    if(!$dbtemp->nextRecord()) {
-                        $sSql = "INSERT 
-			                        INTO `email_rel_address` 
-			                        (
-			                            ID
-			                            , ID_email
-			                            , ID_address
-			                            , type
-			                        ) 
-			                        VALUES 
-			                        (
-			                            ''
-			                            , " . $dbtemp->toSql($ID_mail, "Number") . "
-			                            , " . $dbtemp->toSql($ID_CC, "Number") . "
-			                            , " . $dbtemp->toSql("cc", "Text") . "
-			                        )";
-                        $dbtemp->execute($sSql);
-                    }
-                }
-            }
-            if(!verifyMailbox(BCC_FROM_EMAIL)) {
-                $sSql = "SELECT * FROM `email_address` WHERE email = " . $dbtemp->toSql(BCC_FROM_EMAIL, "Text");
-                $dbtemp->query($sSql);
-                if($dbtemp->nextRecord()) {
-                    $ID_BCC = $dbtemp->getField("ID")->getValue();
-                    $default_bcc = array(
-                        "name" => $dbtemp->getField("name", "Text", true)
-                    , "mail" => $dbtemp->getField("email", "Text", true)
-                    );
-                } else {
-                    $sSql = "INSERT 
-		                        INTO `email_address` 
-		                        (
-		                            ID
-		                            , name
-		                            , email
-		                            , uid
-		                        ) 
-		                        VALUES 
-		                        (
-		                            ''
-		                            , " . $dbtemp->toSql(BCC_FROM_NAME, "Text") . "
-		                            , " . $dbtemp->toSql(BCC_FROM_EMAIL, "Text") . "
-		                            , " . $dbtemp->toSql(0, "Number") . "
-		                        )";
-                    $dbtemp->execute($sSql);
-                    $ID_BCC = $dbtemp->getInsertID(true);
-                    $default_bcc = array(
-                        "name" => BCC_FROM_NAME
-                    , "mail" => BCC_FROM_EMAIL
-                    );
-                }
-
-                if($ID_BCC) {
-                    $sSql = "SELECT * 
-			                FROM `email_rel_address` 
-			                WHERE 
-			                    ID_email = " . $dbtemp->toSql($ID_mail, "Number") . "
-			                    AND ID_address = " . $dbtemp->toSql($ID_BCC, "Number") . "
-			                    AND type = " . $dbtemp->toSql("bcc", "Text");
-                    $dbtemp->query($sSql);
-                    if(!$dbtemp->nextRecord()) {
-                        $sSql = "INSERT 
-			                        INTO `email_rel_address` 
-			                        (
-			                            ID
-			                            , ID_email
-			                            , ID_address
-			                            , type
-			                        ) 
-			                        VALUES 
-			                        (
-			                            ''
-			                            , " . $dbtemp->toSql($ID_mail, "Number") . "
-			                            , " . $dbtemp->toSql($ID_BCC, "Number") . "
-			                            , " . $dbtemp->toSql("bcc", "Text") . "
-			                        )";
-                        $dbtemp->execute($sSql);
-                    }
-                }
-            }
         }
     }
 
@@ -1488,10 +1365,10 @@ function clone_template_mail($email_name) {
 
     if(!is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . $form_path) && check_function("fs_operation"))
     {
-        $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/mail/email.tpl"
+        $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/email/email.tpl"
                 , FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . $form_path . "/email.tpl"
             );
-        $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/mail/email.txt"
+        $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/email/email.txt"
                 , FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . $form_path . "/email.txt"
             );
 
@@ -1503,8 +1380,8 @@ function clone_template_mail($email_name) {
             $img_source = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.gif";
         } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.jpg")) {
             $img_source = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.jpg";
-        } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png")) {
-            $img_source = FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png";
+        } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/email/images/logo-mail.png")) {
+            $img_source = FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/email/images/logo-mail.png";
         }
 
         if($img_source) {

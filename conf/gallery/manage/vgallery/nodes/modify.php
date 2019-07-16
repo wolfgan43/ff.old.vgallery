@@ -48,12 +48,12 @@ if(!isset($_REQUEST["keys"]["ID"]) && isset($_REQUEST["fullpath"]) && strlen($_R
 
 $adv_params = (isset($_REQUEST["adv"])
                 ? $_REQUEST["adv"]
-                : AREA_VGALLERY_TYPE_SHOW_MODIFY);
+                : Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY"));
 
 /**
 * Check Owner
 */
-if (!(AREA_VGALLERY_SHOW_MODIFY)) { 
+if (!(Auth::env("AREA_VGALLERY_SHOW_MODIFY"))) {
     $sSQL = "SELECT 
                 CONCAT(IF(`" . $src["table"] . "`.`" . $src["field"]["parent"] . "` = '/', '', `" . $src["table"] . "`.`" . $src["field"]["parent"] . "`), '/', `" . $src["table"] . "`.`" . $src["field"]["name"] . "`) AS full_path
                 , users_rel_vgallery.cascading AS cascading
@@ -62,7 +62,7 @@ if (!(AREA_VGALLERY_SHOW_MODIFY)) {
                 , " . $src["sql"]["select"]["vgallery_name"] . " AS vgallery_name 
             FROM users_rel_vgallery
                 INNER JOIN `" . $src["table"] . "` ON `" . $src["table"] . "`.ID = users_rel_vgallery.ID_nodes
-            WHERE users_rel_vgallery.uid = " . $db_gallery->tosql(get_session("UserNID"), "Number") . "
+            WHERE users_rel_vgallery.uid = " . $db_gallery->tosql(Auth::get("user")->id, "Number") . "
                 AND '" . $db_gallery->tosql($cm->real_path_info, "Text", false) . "' LIKE CONCAT(IF(`" . $src["table"] . "`.`" . $src["field"]["parent"] . "` = '/', '', `" . $src["table"] . "`.`" . $src["field"]["parent"] . "`), '/', `" . $src["table"] . "`.`" . $src["field"]["name"] . "`, '%')
                 " . $src["sql"]["where"]["public"] . "
             ORDER BY `" . $src["table"] . "`.`order`, `" . $src["table"] . "`.`ID`
@@ -94,9 +94,9 @@ if (!(AREA_VGALLERY_SHOW_MODIFY)) {
                         WHERE `" . $src["table"] . "`.`" . $src["field"]["parent"] . "` LIKE '" . $db_gallery->tosql($db_gallery->getField("full_path"), "Text", false) . "%' 
                             AND 
                             (
-                                `" . $src["table"] . "`.`" . $src["field"]["name"] . "` = " . $db_gallery->toSql(ffCommon_url_rewrite(get_session("UserID"))) . "
+                                `" . $src["table"] . "`.`" . $src["field"]["name"] . "` = " . $db_gallery->toSql(ffCommon_url_rewrite(Auth::get("user")->username)) . "
                             OR    
-                                `" . $src["table"] . "`.owner = " . $db_gallery->toSql(get_session("UserNID"), "Number") . "
+                                `" . $src["table"] . "`.owner = " . $db_gallery->toSql(Auth::get("user")->id, "Number") . "
                             )
                             "; 
                 $db_gallery->query($sSQL);
@@ -104,7 +104,7 @@ if (!(AREA_VGALLERY_SHOW_MODIFY)) {
                     $_REQUEST["keys"]["ID"] = $db_gallery->getField("ID", "Number", true);
                 }
 
-                $vgallery_force_name = get_session("UserID");
+                $vgallery_force_name = Auth::get("user")->username;
             } 
         }
         $simple_interface = true;
@@ -115,7 +115,7 @@ if (!(AREA_VGALLERY_SHOW_MODIFY)) {
 
 if(!strlen($strError)) {
 	$js = "";
-    $user_permission = get_session("user_permission");
+    $user = Auth::get("user");
     $ID_vgallery_nodes = $_REQUEST["keys"]["ID"];
     $gallery_model = null;
     
@@ -231,7 +231,7 @@ if(!strlen($strError)) {
         		, "permalink_rule"						=> $tbl_supp[$src["settings"]]["smart_url"][$vgallery_name]["permalink_rule"]
         	);
 			if($tbl_supp[$src["settings"]]["smart_url"][$vgallery_name]["use_user_as_prefix_in_fs"])
-	            $src["settings"]["prefix_file_system"] = VG_SITE_USER . "/" . ffCommon_url_rewrite(get_session("UserID"));
+	            $src["settings"]["prefix_file_system"] = VG_SITE_USER . "/" . ffCommon_url_rewrite(Auth::get("user")->username);
 	            
 	        if($src["settings"]["enable_referer"] && $ID_vgallery_nodes > 0) {
 	        	$sSQL = "SELECT vgallery_nodes.ID
@@ -609,7 +609,7 @@ if(!strlen($strError)) {
         }
     }
 
-	if(AREA_VGALLERY_SHOW_VISIBLE && $ID_vgallery_nodes > 0 && isset($_REQUEST["frmAction"]) && isset($_REQUEST["setvisible"])) {
+	if(Auth::env("AREA_VGALLERY_SHOW_VISIBLE") && $ID_vgallery_nodes > 0 && isset($_REQUEST["frmAction"]) && isset($_REQUEST["setvisible"])) {
         if(check_function("get_locale")) 
 			$arrLang = get_locale("lang", true);
         
@@ -665,7 +665,7 @@ if(!strlen($strError)) {
 	if($path == "/" && $vgallery_name_old == $vgallery_name) {
 		$cm->oPage->addContent(ffTemplate::_get_word_by_code("vgallery_main"));
 	} else {
-		$framework_css = cm_getFrameworkCss();
+		$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 
 		//if(!($limit_level > 1)) {
 	        //$vgallery_parent_old = "/" . $vgallery_name;
@@ -699,7 +699,7 @@ if(!strlen($strError)) {
 					$page_group[$group_smart_url] = array(
 		                "ID" => null
 		                , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-		                , "column" => cm_getClassByFrameworkCss(array(12), "col")
+		                , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 		                /*, "class" => $group_smart_url*/
 		                , "optional" => false
 		                , "visible" => true
@@ -717,7 +717,7 @@ if(!strlen($strError)) {
 			            $page_group[$group_smart_url] = array(
 			                "ID" => null
 			                , "name" => $lang["description"]
-			                , "column" => cm_getClassByFrameworkCss(array(12), "col")
+			                , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 			                , "class" => ($src["settings"]["enable_tab"] ? "" : "mlang " . strtolower($lang_code))
 			                , "optional" => false
 			                , "visible" => true
@@ -731,7 +731,7 @@ if(!strlen($strError)) {
                         $page_group[$group_smart_url] = array(
                             "ID" => null
                             , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-                            , "column" => cm_getClassByFrameworkCss(array(12), "col")
+                            , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
                             , "optional" => false
                             , "visible" => true
                             , "tab" => ($src["settings"]["enable_tab"] ?  $group_smart_url : null)  
@@ -745,7 +745,7 @@ if(!strlen($strError)) {
 		            $page_group[$group_smart_url] = array(
 		                "ID" => null
 		                , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-		                , "column" => cm_getClassByFrameworkCss(array(12), "col")
+		                , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 		                /*, "class" => $group_smart_url*/
 		                , "optional" => false
 		                , "visible" => true
@@ -758,7 +758,7 @@ if(!strlen($strError)) {
                     $page_group[$group_smart_url] = array(
                         "ID" => null
                         , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-                        , "column" => cm_getClassByFrameworkCss(array(12), "col")
+                        , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
                         /*, "class" => $group_smart_url*/
                         , "optional" => false
                         , "visible" => true
@@ -789,8 +789,8 @@ if(!strlen($strError)) {
 		            $group_smart_url = "cats";
 		            $page_group[$group_smart_url] = array(
 		                "ID" => null
-		                , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url) //. '<a href="javascript:void(0);" class="' . cm_getClassByFrameworkCss("plus", "icon") . '" onclick="' . "ff.ffPage.dialog.doOpen('VGalleryDirModify', '/restricted/vgallery/benessere/modify?type=dir&vname=" . $vgallery_name . "&path=" . "/" . $vgallery_name . "&extype=vgallery_nodes&adv=1');" . '"></a>'
-		                , "column" => cm_getClassByFrameworkCss(array(12), "col")
+		                , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url) //. '<a href="javascript:void(0);" class="' . Cms::getInstance("frameworkcss")->get("plus", "icon") . '" onclick="' . "ff.ffPage.dialog.doOpen('VGalleryDirModify', '/restricted/vgallery/benessere/modify?type=dir&vname=" . $vgallery_name . "&path=" . "/" . $vgallery_name . "&extype=vgallery_nodes&adv=1');" . '"></a>'
+		                , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 		                /*, "class" => $group_smart_url*/
 		                , "optional" => false
 		                , "visible" => true
@@ -833,7 +833,7 @@ if(!strlen($strError)) {
 		            $page_group[$group_smart_url] = array(
 		                "ID" => null
 		                , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-		                , "column" => cm_getClassByFrameworkCss(array(12), "col")
+		                , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 		                /*, "class" => $group_smart_url*/
 		                , "optional" => false
 		                , "visible" => true
@@ -869,7 +869,7 @@ if(!strlen($strError)) {
 		            $page_group[$group_smart_url] = array(
 		                "ID" => null
 		                , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-		                , "column" => cm_getClassByFrameworkCss(array(12), "col")
+		                , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 		                /*, "class" => $group_smart_url*/
 		                , "optional" => false
 		                , "visible" => true
@@ -906,7 +906,7 @@ if(!strlen($strError)) {
 		            $page_group[$group_smart_url] = array(
 		                "ID" => null
 		                , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-		                , "column" => cm_getClassByFrameworkCss(array(12), "col")
+		                , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 		                /*, "class" => $group_smart_url*/
 		                , "optional" => false
 		                , "visible" => true
@@ -986,7 +986,7 @@ if(!strlen($strError)) {
 		        $page_group[$group_smart_url] = array(
 		            "ID" => null
 		            , "name" => ffTemplate::_get_word_by_code("vgallery_backoffice_" . $group_smart_url)
-		            , "column" => cm_getClassByFrameworkCss(array(12), "col")
+		            , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 		            /*, "class" => $group_smart_url*/
 		            , "optional" => false
 		            , "visible" => true
@@ -1038,7 +1038,7 @@ if(!strlen($strError)) {
 	                if(strlen($limit_by_groups)) {
 	                    $limit_by_groups = explode(",", $limit_by_groups);
 	                    
-	                    if(!count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+	                    if(array_search($user->acl, $limit_by_groups) === false) {
 	                        continue;
 	                    }
 	                }
@@ -1210,15 +1210,15 @@ if(!strlen($strError)) {
 			                $tmp_field["user_vars"]["prefix_file_system"] = $src["settings"]["prefix_file_system"];
 			                
 			                if(strlen($vgallery_name_old)) {
-			                    $tmp_field["file_storing_path"] = DISK_UPDIR . $src["settings"]["prefix_file_system"] . stripslash($vgallery_parent_old) . "/" . $vgallery_name_old  . (AREA_VGALLERY_ADD_ID_IN_REALNAME ? "-[ID_VALUE]" : "") . $gallery_sub_dir;
-			                    $tmp_field["file_temp_path"] = DISK_UPDIR . "/tmp" . $src["settings"]["prefix_file_system"] . stripslash($vgallery_parent_old) . "/" . $vgallery_name_old . $gallery_sub_dir;
+			                    $tmp_field["file_storing_path"] = FF_DISK_UPDIR . $src["settings"]["prefix_file_system"] . stripslash($vgallery_parent_old) . "/" . $vgallery_name_old  . (Auth::env("AREA_VGALLERY_ADD_ID_IN_REALNAME") ? "-[ID_VALUE]" : "") . $gallery_sub_dir;
+			                    $tmp_field["file_temp_path"] = FF_DISK_UPDIR . "/tmp" . $src["settings"]["prefix_file_system"] . stripslash($vgallery_parent_old) . "/" . $vgallery_name_old . $gallery_sub_dir;
 			                } else {
 			                    if($vgallery_parent_old) {
-			                        $tmp_field["file_storing_path"] = DISK_UPDIR . $src["settings"]["prefix_file_system"] . $vgallery_parent_old . (AREA_VGALLERY_ADD_ID_IN_REALNAME ? "-[ID_VALUE]" : "") . $gallery_sub_dir;
-			                        $tmp_field["file_temp_path"] = DISK_UPDIR . "/tmp" . $src["settings"]["prefix_file_system"] . $vgallery_parent_old . $gallery_sub_dir;
+			                        $tmp_field["file_storing_path"] = FF_DISK_UPDIR . $src["settings"]["prefix_file_system"] . $vgallery_parent_old . (Auth::env("AREA_VGALLERY_ADD_ID_IN_REALNAME") ? "-[ID_VALUE]" : "") . $gallery_sub_dir;
+			                        $tmp_field["file_temp_path"] = FF_DISK_UPDIR . "/tmp" . $src["settings"]["prefix_file_system"] . $vgallery_parent_old . $gallery_sub_dir;
 			                    } else {
-			                        $tmp_field["file_storing_path"] = DISK_UPDIR . $src["settings"]["prefix_file_system"] . "/" . $vgallery_name . $gallery_sub_dir;
-			                        $tmp_field["file_temp_path"] = DISK_UPDIR . "/tmp" . $src["settings"]["prefix_file_system"] . "/" . $vgallery_name . $gallery_sub_dir;
+			                        $tmp_field["file_storing_path"] = FF_DISK_UPDIR . $src["settings"]["prefix_file_system"] . "/" . $vgallery_name . $gallery_sub_dir;
+			                        $tmp_field["file_temp_path"] = FF_DISK_UPDIR . "/tmp" . $src["settings"]["prefix_file_system"] . "/" . $vgallery_name . $gallery_sub_dir;
 			                    }
 			                }  
 			                
@@ -1227,7 +1227,7 @@ if(!strlen($strError)) {
 					}
               
 	                $tmp_field["file_allowed_ext"]							= $allowed_ext;
-	                if($max_upload > 0 && $max_upload < MAX_UPLOAD)
+	                if($max_upload > 0 && $max_upload < Auth::env("MAX_UPLOAD"))
 	                    $tmp_field["file_max_upload"] 						= $max_upload;
 
 	                
@@ -1338,7 +1338,7 @@ if(!strlen($strError)) {
 			                                if($tmp_field["user_vars"]["smart_url"] && !$tmp_field["require"])
 			                                    $page_field[$group_smart_url]["field_" . $lang_code . "_" . $field_smart_url]["require"] = true;
 			                            } else {
-			                                if(!DISABLE_SMARTURL_CONTROL && $tmp_field["user_vars"]["smart_url"] && !$tmp_field["require"]) 
+			                                if(!Cms::env("DISABLE_SMARTURL_CONTROL") && $tmp_field["user_vars"]["smart_url"] && !$tmp_field["require"])
 			                                    $page_field[$group_smart_url]["field_" . $lang_code . "_" . $field_smart_url]["require"] = true;
 			                            }
 									}
@@ -1501,7 +1501,7 @@ if(!strlen($strError)) {
 	                        "ID_field" => null
 	                        , "ID" => "seo_" . $lang_code . "_smart_url"
 	                        , "name" => ""
-	                        , "column" => cm_getClassByFrameworkCss(array(6), "col")
+	                        , "column" => Cms::getInstance("frameworkcss")->get(array(6), "col")
 	                        , "class" => ($src["settings"]["enable_tab"] ? "" : "mlang " . strtolower($lang_code))
 	                        , "label" => ffCommon_url_rewrite("seo_smart_url") . " (" . ffCommon_dirname($lang_code == LANGUAGE_DEFAULT 
 	                        	? $vgallery_permalink 
@@ -1516,7 +1516,7 @@ if(!strlen($strError)) {
 	                        "ID_field" => null
 	                        , "ID" => "seo_" . $lang_code . "_robots"
 	                        , "name" => ""
-	                        , "column" => cm_getClassByFrameworkCss(array(6), "col")
+	                        , "column" => Cms::getInstance("frameworkcss")->get(array(6), "col")
 	                        , "class" => ($src["settings"]["enable_tab"] ? "" : "mlang " . strtolower($lang_code))
 	                        , "label" => ffCommon_url_rewrite("seo_meta_robots")
 	                        , "extended_type" => "Selection"
@@ -1547,7 +1547,7 @@ if(!strlen($strError)) {
 	                        "ID_field" => null
 	                        , "ID" => "seo_" . $lang_code . "_httpstatus"
 	                        , "name" => ""
-	                        , "column" => cm_getClassByFrameworkCss(array(6), "col")
+	                        , "column" => Cms::getInstance("frameworkcss")->get(array(6), "col")
 	                        , "class" => ($src["settings"]["enable_tab"] ? "" : "mlang " . strtolower($lang_code))
 	                        , "label" => ffCommon_url_rewrite("seo_meta_httpstatus")
 	                        , "extended_type" => "Selection"
@@ -1562,7 +1562,7 @@ if(!strlen($strError)) {
 	                        "ID_field" => null
 	                        , "ID" => "seo_" . $lang_code . "_canonical"
 	                        , "name" => ""
-	                        , "column" => cm_getClassByFrameworkCss(array(6), "col")
+	                        , "column" => Cms::getInstance("frameworkcss")->get(array(6), "col")
 	                        , "class" => ($src["settings"]["enable_tab"] ? "" : "mlang " . strtolower($lang_code))
 	                        , "label" => ffCommon_url_rewrite("seo_meta_canonical")
 	                        , "default_value" => ($lang_code == LANGUAGE_DEFAULT ? $vgallery_canonical : $arrSeo[$lang_code]["canonical"])
@@ -1575,7 +1575,7 @@ if(!strlen($strError)) {
 	        /******
 	        * Visible code
 	        */
-	        if(!ENABLE_STD_PERMISSION && ENABLE_ADV_PERMISSION && $src["settings"]["enable_adv_visible"] && !$simple_interface && $field_enable_multilang && $page_field_count > $disable_multilang_count && $adv_params) 
+	        if(!Cms::env("ENABLE_STD_PERMISSION") && Cms::env("ENABLE_ADV_PERMISSION") && $src["settings"]["enable_adv_visible"] && !$simple_interface && $field_enable_multilang && $page_field_count > $disable_multilang_count && $adv_params)
 	        {
 	            $visible_isset = true;
 
@@ -1635,7 +1635,7 @@ if(!strlen($strError)) {
 	    if($simple_interface)
 	        $oRecord->title = ffTemplate::_get_word_by_code("vgallery_" . $vgallery_name . "_title");
 	    else
-	        $oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content' . ($cm->isXHR() ? "" : " " . cm_getClassByFrameworkCss(12, "col")) . '">' . cm_getClassByFrameworkCss("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $vgallery_nodes_title . '</h1>';
+	        $oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content' . ($cm->isXHR() ? "" : " " . Cms::getInstance("frameworkcss")->get(12, "col")) . '">' . Cms::getInstance("frameworkcss")->get("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $vgallery_nodes_title . '</h1>';
 
 	    $oRecord->src_table = $src["table"];
 	    if($simple_interface) {
@@ -1645,7 +1645,7 @@ if(!strlen($strError)) {
 	        else
 	            $oRecord->buttons_options["delete"]["display"] = $ID_vgallery_nodes;
 	    } else {
-	        $oRecord->buttons_options["delete"]["display"] = AREA_VGALLERY_SHOW_DELETE;    
+	        $oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_VGALLERY_SHOW_DELETE");
 	    }
 	    $oRecord->addEvent("on_do_action", "VGalleryNodesModify_on_do_action");
 	    $oRecord->addEvent("on_done_action", "VGalleryNodesModify_on_done_action");
@@ -1677,7 +1677,7 @@ if(!strlen($strError)) {
 	    $oRecord->user_vars["ID_type"] = $vgallery_type;
 	    $oRecord->user_vars["force_name"] = $vgallery_force_name;
 	    $oRecord->user_vars["vgallery_visible"] = ($vgallery_force_visible === null
-	                                                ? AREA_VGALLERY_SHOW_VISIBLE
+	                                                ? Auth::env("AREA_VGALLERY_SHOW_VISIBLE")
 	                                                : $vgallery_force_visible
 	                                            );
 	    $oRecord->user_vars["lang"] = $arrLang;
@@ -1697,7 +1697,7 @@ if(!strlen($strError)) {
 	    	$oRecord->insert_additional_fields["ID_vgallery"] =  new ffData($src["settings"]["ID_vgallery"], "Number");
 
         if(!$src["settings"]["show_owner_by_categories"])
-	        $oRecord->insert_additional_fields["owner"] =  new ffData(get_session("UserNID"), "Number");
+	        $oRecord->insert_additional_fields["owner"] =  new ffData(Auth::get("user")->id, "Number");
 
 	    
 
@@ -2128,11 +2128,11 @@ if(!strlen($strError)) {
 										if($ID_vgallery_nodes > 0) {
 	                            			//ffErrorHandler::raise("ASD", E_USER_ERROR, null,get_defined_vars());
 	                            			$arrGallery = null;
-	                            			$arrMedia = glob(DISK_UPDIR . stripslash($field_value["vgallery_node_parent"]) . "/" . $field_value["vgallery_node_name"] . "/" . $field_value["smart_url"] . "/*");
+	                            			$arrMedia = glob(FF_DISK_UPDIR . stripslash($field_value["vgallery_node_parent"]) . "/" . $field_value["vgallery_node_name"] . "/" . $field_value["smart_url"] . "/*");
 	                            			if(is_array($arrMedia) && count($arrMedia)) {
 	                            				foreach($arrMedia AS $arrMedia_path) {
 													if(strpos(basename($arrMedia_path), "conversion") === false && is_file($arrMedia_path) ) {
-														$arrGallery[] = str_replace(DISK_UPDIR, "", $arrMedia_path);
+														$arrGallery[] = str_replace(FF_DISK_UPDIR, "", $arrMedia_path);
 													}
 	                            				}
 	                            			}
@@ -2491,7 +2491,7 @@ if(!strlen($strError)) {
 	                        $oField->required = true;
 	                    }
 
-	                    if(AREA_VGALLERY_TYPE_SHOW_MODIFY) {
+	                    if(Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY")) {
                     		$oField->widget = "actex";
                     		$oField->actex_update_from_db = true;
 						    $oField->actex_dialog_url = $cm->oPage->site_path . VG_SITE_ADMIN . "/content/vgallery/type/extra?src=" . $src["type"];
@@ -2611,7 +2611,7 @@ if(!strlen($strError)) {
                                                     anagraph.ID AS ID
                                                     , CONCAT(anagraph.name, ' ', anagraph.surname) AS full_name
                                                     , IF(anagraph.avatar = ''
-                                                    	, '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+                                                    	, '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
                                                     	, IF(LOCATE('.svg', anagraph.avatar)
                                                     		, CONCAT('<img src=\"', anagraph.avatar, '\" width=\"32\" height\"32\" />')  
                                                     		, CONCAT('<img src=\"" . CM_SHOWFILES . "/32x32', anagraph.avatar, '\" />')  
@@ -2723,8 +2723,8 @@ if(!strlen($strError)) {
 		    		$oRecord->framework_css["actions"]["col"] = array(4);
 
 		        $js .= '
-		            jQuery("FIELDSET.grp-sys").wrapAll(\'<div class="group-system' . ($framework_css ? " " . cm_getClassByFrameworkCss(array(4), "col") : "") . '" />\'); 
-		            jQuery("FIELDSET.grp-std").wrapAll(\'<div class="group-standard' . ($framework_css ? " " . cm_getClassByFrameworkCss(array(8), "col") : "") . '" />\');
+		            jQuery("FIELDSET.grp-sys").wrapAll(\'<div class="group-system' . ($framework_css ? " " . Cms::getInstance("frameworkcss")->get(array(4), "col") : "") . '" />\'); 
+		            jQuery("FIELDSET.grp-std").wrapAll(\'<div class="group-standard' . ($framework_css ? " " . Cms::getInstance("frameworkcss")->get(array(8), "col") : "") . '" />\');
 		        ';
 		    }
 
@@ -2922,7 +2922,7 @@ function VGalleryNodesModify_on_do_action($component, $action) {
 	                    $component->user_vars["name"] = $component->user_vars["name_old"];
 	                }
 	            } elseif($component->user_vars["enable_multilang"]) {
-	                if(!strlen($smart_url) && !DISABLE_SMARTURL_CONTROL) {
+	                if(!strlen($smart_url) && !Cms::env("DISABLE_SMARTURL_CONTROL")) {
 	                    $component->tplDisplayError(ffTemplate::_get_word_by_code("smart_url_empty") . ": " . $lang_code);
 	                    return true;
 	                }
@@ -3045,7 +3045,7 @@ function VGalleryNodesModify_on_do_action($component, $action) {
             }
         	if(is_array($component->form_fields) && count($component->form_fields)) {
         		foreach($component->form_fields AS $field_key => $field_value) {
-                    $field_value->file_storing_path = DISK_UPDIR . $field_value->user_vars["prefix_file_system"] . stripslash($actual_path) . "/" . $component->user_vars["name"] . $field_value->user_vars["gallery_sub_dir"];
+                    $field_value->file_storing_path = FF_DISK_UPDIR . $field_value->user_vars["prefix_file_system"] . stripslash($actual_path) . "/" . $component->user_vars["name"] . $field_value->user_vars["gallery_sub_dir"];
 
         		}
         	}
@@ -3197,7 +3197,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
             $not_unic = false;
         }
 
-        if(($not_unic || AREA_VGALLERY_ADD_ID_IN_REALNAME) && strpos($item_name, "-" . $ID_node) === false && !$is_dir) {
+        if(($not_unic || Auth::env("AREA_VGALLERY_ADD_ID_IN_REALNAME")) && strpos($item_name, "-" . $ID_node) === false && !$is_dir) {
         	$item_name = $item_name . "-" . $ID_node;
             $component->user_vars["name"] = $item_name;
         }*/
@@ -3236,16 +3236,12 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                     $owner = null;
 
 
-                if(ENABLE_ADV_PERMISSION && $component->user_vars["src"]["settings"]["enable_adv_group"] && $owner > 0) 
+                if(Cms::env("ENABLE_ADV_PERMISSION") && $component->user_vars["src"]["settings"]["enable_adv_group"] && $owner > 0)
                 {
                     $db_gid = ffDB_Sql::factory();
                     
-                    $user_permission = get_session("user_permission");
-                    $primary_gid = ($user_permission["primary_gid_default"] > 0
-                                        ? $user_permission["primary_gid_default"]
-                                        : $user_permission["primary_gid"]
-                                );
-                    if($primary_gid > 0) {
+                    $user = Auth::get("user");
+                    if($user->acl > 0) {
                         $sSQL = "INSERT INTO `vgallery_nodes_rel_groups` 
                                 ( 
                                     `ID_vgallery_nodes` 
@@ -3255,30 +3251,10 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                                 VALUES
                                 (
                                     " . $db_gid->toSql($ID_node, "Number") . "
-                                    , " . $db_gid->toSql($primary_gid, "Number") . "
+                                    , " . $db_gid->toSql($user->acl, "Number") . "
                                     , '3' 
                                 )";
                         $db_gid->execute($sSQL);
-                    }                
-                    if(is_array($user_permission["groups"]) && count($user_permission["groups"])) {
-                        foreach($user_permission["groups"] AS $gid) {
-                            if($primary_gid == $gid)
-                                continue;
-
-                            $sSQL = "INSERT INTO `vgallery_nodes_rel_groups` 
-                                    ( 
-                                        `ID_vgallery_nodes` 
-                                        , `gid`  
-                                        , `mod` 
-                                    )
-                                    VALUES
-                                    (
-                                        " . $db_gid->toSql($ID_node, "Number") . "
-                                        , " . $db_gid->toSql($gid, "Number") . "
-                                        , '1' 
-                                    )";
-                            $db_gid->execute($sSQL);
-                        }
                     }
                 }
                     
@@ -3292,7 +3268,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                     $fields["general"]["ID"] = $ID_node;
                     $fields["general"]["name"] = $item_name;
                     $fields["general"]["parent"] = $actual_path;
-                    $fields["general"]["owner"] = get_session("UserID");
+                    $fields["general"]["owner"] = Auth::get("user")->username;
                     
                     if($component->user_vars["src"]["settings"]["email_notify_show_detail"]) {
                         if(is_array($component->detail["VGalleryNodesModifyDetail"]->form_fields) && count($component->detail["VGalleryNodesModifyDetail"]->form_fields)) {
@@ -3303,7 +3279,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                                     if(($field_value->user_vars["extended_type"] == "Image"
                                         || $field_value->user_vars["extended_type"] == "Upload"
                                         || $field_value->user_vars["extended_type"] == "UploadImage"
-                                        ) && file_exists(DISK_UPDIR . $field_value->getValue())
+                                        ) && file_exists(FF_DISK_UPDIR . $field_value->getValue())
                                     ) {
                                         $real_data = '<img src="' . cm_showfiles_get_abs_url("/100x100" . $field_value->getValue()) . '" />';
                                     } elseif($field_value->user_vars["extended_type"] == "Link") {
@@ -3328,7 +3304,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_ID") . '</label>' . $ID_node . '</div>';
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_name") . '</label>' . $item_name . '</div>';
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_parent") . '</label>' . $actual_path . '</div>';
-                        $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_owner") . '</label>' . get_session("UserID") . '</div>';
+                        $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_owner") . '</label>' . Auth::get("user")->username . '</div>';
 
                         $strGroupField = '<div class="description">' . $strField . '</div>';
                         if($rc) {
@@ -3337,8 +3313,6 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                             $strGroupField .= '<div class="mail-status">' . ffTemplate::_get_word_by_code("mail_send_successfully") . '</div>';    
                         }
                     }
-                    if(check_function("write_notification"))
-                        write_notification("_notify_insert_" . $component->user_vars["src"]["type"] . "_" . $component->user_vars["src"]["settings"]["name"], $strGroupField, "information", "restricted", FF_SITE_PATH . VG_SITE_RESTRICTED . "/" . $component->user_vars["src"]["type"] . stripslash("/" . ffCommon_url_rewrite($component->user_vars["src"]["settings"]["name"])));
                 }
                 break;
             case "update":
@@ -3380,7 +3354,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                     $not_unic = false;
                 }
 
-                if($not_unic || (AREA_VGALLERY_ADD_ID_IN_REALNAME && strpos($item_name, "-" . $ID_node) === false && !$is_dir)) {
+                if($not_unic || (Auth::env("AREA_VGALLERY_ADD_ID_IN_REALNAME") && strpos($item_name, "-" . $ID_node) === false && !$is_dir)) {
                     $item_name = $item_name . "-" . $ID_node;
                     $db->execute("UPDATE `" . $component->user_vars["src"]["table"] . "` 
                                 SET `" . $component->user_vars["src"]["table"] . "`.`" . $component->user_vars["src"]["field"]["name"] . "` = " . $db->toSql($item_name) . "
@@ -3413,15 +3387,15 @@ function VGalleryNodesModify_on_done_action($component, $action) {
 	                                //$arrOldPath = array();
 	                                foreach($arrFile AS $file_path) {
 										if(strlen($file_path)) {
-				                            /*if(is_file(DISK_UPDIR . $new_parent . "/" . basename($file_path))) {   
+				                            /*if(is_file(FF_DISK_UPDIR . $new_parent . "/" . basename($file_path))) {
 				                                $arrFileOldNew[] = $new_parent . "/" . basename($file_path);
-				                            } elseif(is_file(DISK_UPDIR . $new_parent . $field_value->user_vars["gallery_sub_dir"] . "/" . basename($file_path))) {
+				                            } elseif(is_file(FF_DISK_UPDIR . $new_parent . $field_value->user_vars["gallery_sub_dir"] . "/" . basename($file_path))) {
 				                                $arrFileOldNew[] = $new_parent . $field_value->user_vars["gallery_sub_dir"] . "/" . basename($file_path);    
 				                            } else
 				                            */
 				                            
-				                            if(is_file(DISK_UPDIR . $file_path)) {
-				                                if($field_value->user_vars["gallery_sub_dir"] && is_dir(DISK_UPDIR . ffCommon_dirname(ffCommon_dirname($file_path)) . $field_value->user_vars["gallery_sub_dir"]))
+				                            if(is_file(FF_DISK_UPDIR . $file_path)) {
+				                                if($field_value->user_vars["gallery_sub_dir"] && is_dir(FF_DISK_UPDIR . ffCommon_dirname(ffCommon_dirname($file_path)) . $field_value->user_vars["gallery_sub_dir"]))
 				                                	$old_path = ffCommon_dirname(ffCommon_dirname($file_path));
 				                                else
 				                                	$old_path = ffCommon_dirname($file_path);
@@ -3442,7 +3416,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
 
  				if(is_array($arrOldPath) && count($arrOldPath) && check_function("fs_operation")) {
 	                foreach($arrOldPath AS $old_file => $new_file) {
-	                    full_copy(DISK_UPDIR . str_replace("//", "/", $old_file), DISK_UPDIR . $new_file, true);
+	                    full_copy(FF_DISK_UPDIR . str_replace("//", "/", $old_file), FF_DISK_UPDIR . $new_file, true);
 	                    //echo str_replace("//", "/", $old_file) . " ==> " . $new_file . "<br>";
 	                    
 						$arrTableUpdate[$component->user_vars["src"]["type"] . "_rel_nodes_fields" . $old_file] = "
@@ -3482,8 +3456,8 @@ function VGalleryNodesModify_on_done_action($component, $action) {
 	            }	            
 	            
                 if($old_parent != $new_parent) {
-                    if(is_dir(DISK_UPDIR . $old_parent) && check_function("fs_operation")) {
-                        full_copy(DISK_UPDIR . $old_parent, DISK_UPDIR . $new_parent, true);
+                    if(is_dir(FF_DISK_UPDIR . $old_parent) && check_function("fs_operation")) {
+                        full_copy(FF_DISK_UPDIR . $old_parent, FF_DISK_UPDIR . $new_parent, true);
 					}
 					
  					$arrTableUpdate["layout"] = "UPDATE layout 
@@ -3571,7 +3545,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                     $fields["general"]["ID"] = $ID_node;
                     $fields["general"]["name"] = $item_name;
                     $fields["general"]["parent"] = $actual_path;
-                    $fields["general"]["owner"] = get_session("UserID");
+                    $fields["general"]["owner"] = Auth::get("user")->username;
 
                     if($component->user_vars["src"]["settings"]["email_notify_show_detail"]) {
                         if(is_array($component->detail["VGalleryNodesModifyDetail"]->form_fields) && count($component->detail["VGalleryNodesModifyDetail"]->form_fields)) {
@@ -3582,7 +3556,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                                     if(($field_value->user_vars["extended_type"] == "Image"
                                         || $field_value->user_vars["extended_type"] == "Upload"
                                         || $field_value->user_vars["extended_type"] == "UploadImage"
-                                        ) && file_exists(DISK_UPDIR . $field_value->getValue())
+                                        ) && file_exists(FF_DISK_UPDIR . $field_value->getValue())
                                     ) {
                                         $real_data = '<img src="' . cm_showfiles_get_abs_url("/thumb" . $field_value->getValue()) . '" />';
                                     } elseif($field_value->user_vars["extended_type"] == "Link") {
@@ -3607,7 +3581,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_ID") . '</label>' . $ID_node . '</div>';
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_name") . '</label>' . $item_name . '</div>';
                         $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_parent") . '</label>' . $actual_path . '</div>';
-                        $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_owner") . '</label>' . get_session("UserID") . '</div>';
+                        $strField .= '<div class="row"><label>' . ffTemplate::_get_word_by_code("notify_" . preg_replace('/[^a-zA-Z0-9]/', '', $component->user_vars["src"]["settings"]["name"]) . "_owner") . '</label>' . Auth::get("user")->username . '</div>';
 
                         $strGroupField = '<div class="description">' . $strField . '</div>';
                         if($rc) {
@@ -3616,8 +3590,6 @@ function VGalleryNodesModify_on_done_action($component, $action) {
                             $strGroupField .= '<div class="mail-status">' . ffTemplate::_get_word_by_code("mail_send_successfully") . '</div>';    
                         }
                     }
-                    if(check_function("write_notification"))
-                        write_notification("_notify_update_" . $component->user_vars["src"]["type"] . "_" . $component->user_vars["src"]["settings"]["name"], $strGroupField, "information", "restricted", FF_SITE_PATH . VG_SITE_RESTRICTED . "/" . $component->user_vars["src"]["type"] . stripslash("/" . ffCommon_url_rewrite($component->user_vars["src"]["settings"]["name"])));
                 }
                 break;
             case "delete":
@@ -3646,7 +3618,7 @@ function VGalleryNodesModify_on_done_action($component, $action) {
 			);
 
        if(check_function("check_user_request"))
-           $request_vgallery = check_user_vgallery_request(array("name" => get_session("UserID"), "ID" => get_session("UserNID")), null, null, null, "rel");
+           $request_vgallery = check_user_vgallery_request(array("name" => Auth::get("user")->username, "ID" => Auth::get("user")->id), null, null, null, "rel");
         
         if($check_rel_user && is_array($request_vgallery) && count($request_vgallery)) {
             foreach($request_vgallery AS $request_vgallery_key => $request_vgallery_value) {

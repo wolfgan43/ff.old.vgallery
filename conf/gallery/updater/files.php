@@ -121,10 +121,10 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
         }        
         
         if($contest == "updater") {
-        	if(strpos(ffCommon_dirname(__FILE__), FF_DISK_PATH) === false) { 
+        	if(strpos(__DIR__, FF_DISK_PATH) === false) { 
         		$strContestPath = "/updater";
 			} else {
-            	$strContestPath = str_replace(FF_DISK_PATH, "", ffCommon_dirname(__FILE__));
+            	$strContestPath = str_replace(FF_DISK_PATH, "", __DIR__);
 			}
         } else {
             $strContestPath = $realPathInfo;
@@ -186,7 +186,7 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
                 $fs_exclude = array();
                 $fs_exclude_tree = array();
                 
-                require(ffCommon_dirname(__FILE__) . "/check/exclude_fs.php");
+                require(__DIR__ . "/check/exclude_fs.php");
                 
                 krsort($arr_slave);
                 foreach($arr_slave AS $file_key => $file_value) {
@@ -206,14 +206,14 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
 									continue;
 								}
 							}
-                    	} elseif(array_key_exists(ffCommon_dirname($file_key), $fs_exclude)
-							&& is_array($fs_exclude[ffCommon_dirname($file_key)])
-							&& array_key_exists(basename($file_key), $fs_exclude[ffCommon_dirname($file_key)])
+                    	} elseif(array_key_exists(dirname($file_key), $fs_exclude)
+							&& is_array($fs_exclude[dirname($file_key)])
+							&& array_key_exists(basename($file_key), $fs_exclude[dirname($file_key)])
 						) {
 							if(basename($file_key) 
-								&& is_array($fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-								&& array_key_exists("delete", $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-								&& $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)]["delete"] == true
+								&& is_array($fs_exclude[dirname($file_key)][basename($file_key)])
+								&& array_key_exists("delete", $fs_exclude[dirname($file_key)][basename($file_key)])
+								&& $fs_exclude[dirname($file_key)][basename($file_key)]["delete"] == true
 							) {
 								continue;
 							}
@@ -254,14 +254,14 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
 										continue;
 									}
 								}
-                    		} elseif(array_key_exists(ffCommon_dirname($file_key), $fs_exclude)
-								&& is_array($fs_exclude[ffCommon_dirname($file_key)])
-								&& array_key_exists(basename($file_key), $fs_exclude[ffCommon_dirname($file_key)])
+                    		} elseif(array_key_exists(dirname($file_key), $fs_exclude)
+								&& is_array($fs_exclude[dirname($file_key)])
+								&& array_key_exists(basename($file_key), $fs_exclude[dirname($file_key)])
 							) {
 								if(basename($file_key) 
-									&& is_array($fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-									&& array_key_exists("update", $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-									&& $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)]["update"] == true
+									&& is_array($fs_exclude[dirname($file_key)][basename($file_key)])
+									&& array_key_exists("update", $fs_exclude[dirname($file_key)][basename($file_key)])
+									&& $fs_exclude[dirname($file_key)][basename($file_key)]["update"] == true
 								) {
 									continue;
 								}
@@ -308,14 +308,14 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
 									continue;
 								}
 							}
-                    	} elseif(array_key_exists(ffCommon_dirname($file_key), $fs_exclude)
-							&& is_array($fs_exclude[ffCommon_dirname($file_key)])
-							&& array_key_exists(basename($file_key), $fs_exclude[ffCommon_dirname($file_key)])
+                    	} elseif(array_key_exists(dirname($file_key), $fs_exclude)
+							&& is_array($fs_exclude[dirname($file_key)])
+							&& array_key_exists(basename($file_key), $fs_exclude[dirname($file_key)])
 						) {
 							if(basename($file_key) 
-								&& is_array($fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-								&& array_key_exists("addnew", $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-								&& $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)]["addnew"] == true
+								&& is_array($fs_exclude[dirname($file_key)][basename($file_key)])
+								&& array_key_exists("addnew", $fs_exclude[dirname($file_key)][basename($file_key)])
+								&& $fs_exclude[dirname($file_key)][basename($file_key)]["addnew"] == true
 							) {
 								continue;
 							}
@@ -375,14 +375,14 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
 										continue;
 									}
 								}
-                    		} elseif(array_key_exists(ffCommon_dirname($file_key), $fs_exclude)
-								&& is_array($fs_exclude[ffCommon_dirname($file_key)])
-								&& array_key_exists(basename($file_key), $fs_exclude[ffCommon_dirname($file_key)])
+                    		} elseif(array_key_exists(dirname($file_key), $fs_exclude)
+								&& is_array($fs_exclude[dirname($file_key)])
+								&& array_key_exists(basename($file_key), $fs_exclude[dirname($file_key)])
 							) {
 								if(basename($file_key) 
-									&& is_array($fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-									&& array_key_exists("update", $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)])
-									&& $fs_exclude[ffCommon_dirname($file_key)][basename($file_key)]["update"] == true
+									&& is_array($fs_exclude[dirname($file_key)][basename($file_key)])
+									&& array_key_exists("update", $fs_exclude[dirname($file_key)][basename($file_key)])
+									&& $fs_exclude[dirname($file_key)][basename($file_key)]["update"] == true
 								) {
 									continue;
 								}
@@ -460,7 +460,7 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
                                             switch($operation[$key]["action"]) {
                                                 case "addnew":
                                                     $part_path = "";
-                                                    foreach(explode("/", ffCommon_dirname($operation[$key]["value"])) AS $tmp_path) {
+                                                    foreach(explode("/", dirname($operation[$key]["value"])) AS $tmp_path) {
                                                         if(strlen($tmp_path)) {
                                                             $part_path .= "/" . $tmp_path;
                                                             
@@ -726,7 +726,7 @@ function UpdaterCheck_on_do_action($component, $action) {
                         switch($operations[$value["ID"]]["action"]) {
                             case "addnew":
                                 $part_path = "";
-                                foreach(explode("/", ffCommon_dirname($operations[$value["ID"]]["value"])) AS $tmp_path) {
+                                foreach(explode("/", dirname($operations[$value["ID"]]["value"])) AS $tmp_path) {
                                     if(strlen($tmp_path)) {
                                         $part_path .= "/" . $tmp_path;
                                         

@@ -81,9 +81,8 @@ if($db_gallery->nextRecord()) {
     $limit_by_groups = $db_gallery->getField("limit_by_groups")->getValue();
 	if(strlen($limit_by_groups)) {
 		$limit_by_groups = explode(",", $limit_by_groups);
-		$user_permission = get_session("user_permission"); 			
-
-		if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+        $user = Auth::get("user");
+		if(array_search($user->acl, $limit_by_groups) !== false) {
 			$allow_form = true;
 		} else {
 			$allow_form = false;
@@ -532,9 +531,9 @@ if($db_gallery->nextRecord()) {
 	                $obj_page_field->base_type = "Text";
 	                $obj_page_field->extended_type = "File";
 
-                    $obj_page_field->file_storing_path = DISK_UPDIR . "/users/" . $uid . "/" . $form_name;
-                    $obj_page_field->file_temp_path = DISK_UPDIR . "/users";
-		            $obj_page_field->file_max_size = MAX_UPLOAD;
+                    $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/users/" . $uid . "/" . $form_name;
+                    $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/users";
+		            $obj_page_field->file_max_size = Auth::env("MAX_UPLOAD");
 
 					$obj_page_field->file_show_filename = true; 
 				    $obj_page_field->file_full_path = false;
@@ -542,10 +541,10 @@ if($db_gallery->nextRecord()) {
 				    $obj_page_field->file_normalize = true;
 				     
 				    $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
-                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[_FILENAME_]";
-                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
+                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/users/[_FILENAME_]";
+                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/users/[_FILENAME_]";
 
 			        if($writable) {
 			            $obj_page_field->control_type = "file";
@@ -576,9 +575,9 @@ if($db_gallery->nextRecord()) {
 	                $obj_page_field->base_type = "Text";
 	                $obj_page_field->extended_type = "File";
 
-                    $obj_page_field->file_storing_path = DISK_UPDIR . "/users/" . $uid . "/" . $form_name;
-                    $obj_page_field->file_temp_path = DISK_UPDIR . "/users";
-		            $obj_page_field->file_max_size = MAX_UPLOAD;
+                    $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/users/" . $uid . "/" . $form_name;
+                    $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/users";
+		            $obj_page_field->file_max_size = Auth::env("MAX_UPLOAD");
 
 					$obj_page_field->file_show_filename = true; 
 				    $obj_page_field->file_full_path = false;
@@ -586,10 +585,10 @@ if($db_gallery->nextRecord()) {
 				    $obj_page_field->file_normalize = true;
 				     
 				    $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
-                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[_FILENAME_]";
-                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
+                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/users/[_FILENAME_]";
+                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/users/[_FILENAME_]";
 
 			        if($writable) {
 			            $obj_page_field->control_type = "file";
@@ -620,9 +619,9 @@ if($db_gallery->nextRecord()) {
 	                $obj_page_field->base_type = "Text";
 	                $obj_page_field->extended_type = "File";
 
-                    $obj_page_field->file_storing_path = DISK_UPDIR . "/users/" . $uid . "/" . $form_name;
-                    $obj_page_field->file_temp_path = DISK_UPDIR . "/users";
-		            $obj_page_field->file_max_size = MAX_UPLOAD;
+                    $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/users/" . $uid . "/" . $form_name;
+                    $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/users";
+		            $obj_page_field->file_max_size = Auth::env("MAX_UPLOAD");
 
 					$obj_page_field->file_show_filename = true; 
 				    $obj_page_field->file_full_path = false;
@@ -630,10 +629,10 @@ if($db_gallery->nextRecord()) {
 				    $obj_page_field->file_normalize = true;
 				     
 				    $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
-                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[_FILENAME_]";
-                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/users/" . $uid . "/" . $form_name . "/[_FILENAME_]";
+                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/users/[_FILENAME_]";
+                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/users/[_FILENAME_]";
 
 			        if($writable) {
 			            $obj_page_field->control_type = "file";

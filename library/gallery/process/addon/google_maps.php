@@ -142,7 +142,8 @@ function process_addon_google_maps($vg_father, $ID_node, $layout) {
 					$tpl_data["result"] = get_template_cascading($vg_father["user_path"], $tpl_data, "/tpl/addon");
 
 					$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-					$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+					//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+                    $tpl->load_file($tpl_data["result"]["name"], "main");
                 
                    // $tpl = ffTemplate::factory(get_template_cascading($user_path, $filename, "/vgallery"));
                    // $tpl->load_file($filename, "main");

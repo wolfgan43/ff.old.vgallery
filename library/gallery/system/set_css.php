@@ -1,9 +1,9 @@
 <?php
-function system_set_css($oPage, $setting_path, $css_no_cascading = false, $include_ff = false) 
+function system_set_css($oPage, $setting_path, $include_ff = false)
 {
     $globals = ffGlobals::getInstance("gallery");
-	$framework_css = cm_getFrameworkCss();
-	$font_icon = cm_getFontIcon();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
+	$font_icon = Cms::getInstance("frameworkcss")->getFontIcon();
 
     if ($oPage->theme == FRONTEND_THEME && is_file($oPage->disk_path . FF_THEME_DIR . "/" . THEME_INSET . "/css/" . "main" . ".css")) {
         $oPage->tplAddCss("gallerydefault"
@@ -125,6 +125,15 @@ function system_set_css($oPage, $setting_path, $css_no_cascading = false, $inclu
     	}
 	}
 
+    if(is_array($globals->css["link"]) && count($globals->css["link"])) {
+        foreach($globals->css["link"] AS $css_name => $css_path) {
+            $oPage->tplAddCss($css_name, array(
+                "path" => ffCommon_dirname($css_path)
+            , "file" => basename($css_path)
+            ));
+        }
+    }
+
     if(is_array($globals->css["embed"]) && count($globals->css["embed"])) {
         foreach($globals->css["embed"] AS $css_name => $css_embed) {
             $oPage->tplAddCss($css_name, array(
@@ -134,12 +143,12 @@ function system_set_css($oPage, $setting_path, $css_no_cascading = false, $inclu
     }
 
     //css di livello
-    system_set_css_level($oPage, $setting_path, $css_no_cascading);
+    system_set_css_level($oPage, $setting_path);
     
    // $oPage->parse_css();  
 }
 
-function system_set_css_level($oPage, $setting_path, $css_no_cascading = false) {
+function system_set_css_level($oPage, $setting_path) {
 	$globals = ffGlobals::getInstance("gallery");
 
     $above_the_fold = "";
@@ -161,15 +170,11 @@ function system_set_css_level($oPage, $setting_path, $css_no_cascading = false) 
                         , "aural" => false
                         , "all" => false
                     );
-	$user_permission = get_session("user_permission");
-    if(isset($user_permission["primary_gid_name"]) && strlen($user_permission["primary_gid_name"]))
-    	$group_name = $user_permission["primary_gid_name"];
-	else 
-        $group_name = MOD_SEC_GUEST_GROUP_NAME;
 
-    if(($css_no_cascading && $setting_path == "/")
-        || (!$css_no_cascading)
-    ) {
+    $user = Auth::get("user");
+    $group_name = $user->acl_primary;
+
+    if(1) {
         $css_name = "root";
         if (file_exists($oPage->disk_path . FF_THEME_DIR . "/" . $oPage->theme . "/css/" . $css_name . "-" . strtolower(LANGUAGE_INSET) . ".css")) {
             //css root di lingua va gia in bottom
@@ -455,9 +460,6 @@ function system_set_css_level($oPage, $setting_path, $css_no_cascading = false) 
             if(!strlen($above_the_fold) && file_exists($oPage->disk_path . FF_THEME_DIR . "/" . $oPage->theme . "/css/" . "above-the-fold_" . $css_name . ".css")) {
                 $above_the_fold = "above-the-fold_" . $css_name;
             }
-
-            if ($css_no_cascading)
-                break;
         } while($setting_path != ffCommon_dirname($setting_path) && $setting_path = ffCommon_dirname($setting_path));
 
         krsort($arrCssCascading);

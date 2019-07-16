@@ -45,15 +45,15 @@
 	);
 	$schema["request"]["/login"] = array(
 		"get" => array(
-	        "sid"
-	        , "frmAction"
-	        , "username"
-	        , "desc"
-	        , "ret_url"
-			, "state"
+	        "username"
+	        //, "desc"
+	        , "redirect"
+            //, "frmAction"
+            //, "sid"
+			//, "state"
 	    )
 	    , "post" => true
-	    , "nocache" => true
+	    //, "nocache" => true
 	);
 	$schema["request"]["/login/social"] = array(
 		"get" => true
@@ -71,7 +71,17 @@
     $schema["request"]["/api"] = array(
 		"get" => true
 	);
-
+    $schema["request"]["/api/jobs/tools/exec"] = array(
+        "get" => array(
+            "kid"
+        )
+    );
+    $schema["request"]["/api/jobs/tools/ps"] = array(
+        "get" => array(
+            "status"
+            , "domain"
+        )
+    );
 
 	$schema["request"]["/OneSignalSDKUpdaterWorker.js"] = array(
 		"get" => true
@@ -214,6 +224,10 @@
 /**
 *  Frontend Path
 */
+
+    $schema["page"]["/sitemap"] = array(
+    );
+
   $schema["page"]["/user"] = array(
   	"name" => "user"
   	, "cache" => "user" 
@@ -480,6 +494,10 @@ $schema["page"]["/block"] = array(
   	, "restricted" => false 			
   	, "api" => false
   	, "type" => "html"
+    , "router" => array(
+          "source" => "^/install(.*)"
+        , "destination" => "/conf/gallery/install/$1"
+    )
   ); 
     
   $schema["page"]["/updater/check"] = array(

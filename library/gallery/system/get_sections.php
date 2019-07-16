@@ -58,66 +58,67 @@ function system_get_layers($selective = NULL) {
 	             `order`
 	             , layout_layer.ID
 	             , layout_layer_path.ID";
-	$db->query($sSQL);	
-	if($db->nextRecord()) {
-		$arrLayer = array();
-		do {
-			$path 															= $db->getField("path", "Text", true);
-			$layer_jolly 													= substr_count($path, "%");
-			//$layer_path 													= preg_replace('/\/+/', '/', str_replace("%", "", $path));
-			$layer_path 													= str_replace(array("//", "%"), array("/", ""), $path);
-			if(!$layer_path)
-				$layer_path 												= "/";
-		
-			$ID_layer 														= $db->getField("ID", "Number", true);
-			$layer_visible 													= $db->getField("visible", "Number", true);
-			$layer_relevance 												= ($layer_path == $settings_path
-																				? -999
-																				: substr_count($settings_path, "/") - substr_count($layer_path, "/")
-																			);			
-			$layer_diff 													= (strlen($settings_path) - strlen($layer_path));
-			if(!array_key_exists($ID_layer, $arrLayer)) {
-				$arrLayer[$ID_layer] = array(
-											"ID"							=> $ID_layer
-											, "name" 						=> $db->getField("name", "Text", true)
-											, "show_empty" 					=> $db->getField("show_empty", "Number", true)
-									);
-			}
-			if(!array_key_exists("relevance", $arrLayer[$ID_layer]) 
-				|| $arrLayer[$ID_layer]["relevance"] > $layer_relevance
-				|| ($arrLayer[$ID_layer]["relevance"] == $layer_relevance 
-					&& $arrLayer[$ID_layer]["diff"] > $layer_diff 
-				)
-				|| ($arrLayer[$ID_layer]["relevance"] == $layer_relevance 
-					&& $arrLayer[$ID_layer]["diff"] == $layer_diff 
-					&& $arrLayer[$ID_layer]["jolly"] > $layer_jolly 
-				)
-			) {
-				$arrLayer[$ID_layer] 										= get_class_layout_by_grid_system(
-																				"layer"
-																				, $db->getField("class", "Text", true)
-																				, $db->getField("fluid", "Number", true)
-																				, null
-																				, $db->getField("wrap", "Number", true)
-																				, $db->getField("width", "Text", true)
-																				, $arrLayer[$ID_layer]
-																			);					
-				$arrLayer[$ID_layer]["relevance"] 							= $layer_relevance;
-				$arrLayer[$ID_layer]["diff"] 								= $layer_diff;
-				$arrLayer[$ID_layer]["jolly"] 								= $layer_jolly;
-				$arrLayer[$ID_layer]["visible"] 							= $layer_visible;
+	$db->query($sSQL);
+    $arrLayer                                                               = array();
+	$recordset                                                              = $db->getRecordset();
+    if(is_array($recordset) && count($recordset)) {
+        foreach($recordset AS $record) {
+            $path 															= $record["path"];
+            $layer_jolly 													= substr_count($path, "%");
+            //$layer_path 													= preg_replace('/\/+/', '/', str_replace("%", "", $path));
+            $layer_path 													= str_replace(array("//", "%"), array("/", ""), $path);
+            if(!$layer_path)
+                $layer_path 												= "/";
 
-				//if($layer_relevance == -999)
-				//	break;
-			}
-		} while($db->nextRecord());
-		
-		$arrLayer = array_filter($arrLayer, function($layer) {
-			if($layer["visible"]) {
-				return true;
-			}
-		});			
-	}
+            $ID_layer 														= $record["ID"];
+            $layer_visible 													= $record["visible"];
+            $layer_relevance 												= ($layer_path == $settings_path
+                                                                                ? -999
+                                                                                : substr_count($settings_path, "/") - substr_count($layer_path, "/")
+                                                                            );
+            $layer_diff 													= (strlen($settings_path) - strlen($layer_path));
+            if(!array_key_exists($ID_layer, $arrLayer)) {
+                $arrLayer[$ID_layer] = array(
+                                            "ID"							=> $ID_layer
+                                            , "name" 						=> $record["name"]
+                                            , "show_empty" 					=> $record["show_empty"]
+                                    );
+            }
+            if(!array_key_exists("relevance", $arrLayer[$ID_layer])
+                || $arrLayer[$ID_layer]["relevance"] > $layer_relevance
+                || ($arrLayer[$ID_layer]["relevance"] == $layer_relevance
+                    && $arrLayer[$ID_layer]["diff"] > $layer_diff
+                )
+                || ($arrLayer[$ID_layer]["relevance"] == $layer_relevance
+                    && $arrLayer[$ID_layer]["diff"] == $layer_diff
+                    && $arrLayer[$ID_layer]["jolly"] > $layer_jolly
+                )
+            ) {
+                $arrLayer[$ID_layer] 										= get_class_layout_by_grid_system(
+                                                                                "layer"
+                                                                                , $record["class"]
+                                                                                , $record["fluid"]
+                                                                                , null
+                                                                                , $record["wrap"]
+                                                                                , $record["width"]
+                                                                                , $arrLayer[$ID_layer]
+                                                                            );
+                $arrLayer[$ID_layer]["relevance"] 							= $layer_relevance;
+                $arrLayer[$ID_layer]["diff"] 								= $layer_diff;
+                $arrLayer[$ID_layer]["jolly"] 								= $layer_jolly;
+                $arrLayer[$ID_layer]["visible"] 							= $layer_visible;
+
+                //if($layer_relevance == -999)
+                //	break;
+            }
+        }
+
+        $arrLayer = array_filter($arrLayer, function ($layer) {
+            if ($layer["visible"]) {
+                return true;
+            }
+        });
+    }
 
     return $arrLayer;
 }
@@ -181,75 +182,77 @@ function system_get_sections($selective = NULL, $process_blocks = false) {
 	            , layout_location_path.ID";
 	            
 	            //FIELD(layout_location.ID_layer, " . $layer_set . ")
-	$db->query($sSQL);	
-	if($db->nextRecord()) {
-		do {
-			$path 															= $db->getField("path", "Text", true);
-			$section_jolly 													= substr_count($path, "%");
-			//$section_path 													= preg_replace('/\/+/', '/', str_replace("%", "", $path));
-			$section_path 													= str_replace(array("//", "%"), array("/", ""), $path);
-			if(!$section_path)
-				$section_path 												= "/";
-		
-			$ID_layer 														= $db->getField("ID_layer", "Number", true);
-			$ID_section 													= $db->getField("ID", "Number", true);
-			$section_name													= $db->getField("name", "Text", true);
-			$section_is_main 												= $db->getField("is_main", "Number", true);
-			$section_visible 												= $db->getField("visible", "Number", true);
-			$section_relevance 												= ($section_path == $settings_path
-																				? -999
-																				: substr_count($settings_path, "/") - substr_count($section_path, "/")
-																			);
-			$section_diff 													= (strlen($settings_path) - strlen($section_path));
-			if(!array_key_exists($ID_section, $template["sections"])) {
-				$template["sections"][$ID_section] = array(	
-															"ID" 			=> $ID_section
-															, "name" 		=> $section_name
-															, "ID_layer" 	=> $ID_layer
-															, "layer"		=> ""
-															, "last_update"	=> $db->getField("last_update", "Number", true)
-															, "show_empty" 	=> $db->getField("show_empty", "Number", true)
-															, "is_main" 	=> $section_is_main
-															, "layouts"		=> array()
-														);
-			}
-			
-			if(!array_key_exists("relevance", $template["sections"][$ID_section]) 
-				|| $template["sections"][$ID_section]["relevance"] > $section_relevance
-				|| ($template["sections"][$ID_section]["relevance"] == $section_relevance 
-					&& $template["sections"][$ID_section]["diff"] > $section_diff 
-				)
-				|| ($template["sections"][$ID_section]["relevance"] == $section_relevance 
-					&& $template["sections"][$ID_section]["diff"] == $section_diff 
-					&& $template["sections"][$ID_section]["jolly"] > $section_jolly 
-				)
-			) {
-				$template["sections"][$ID_section] 							= get_class_layout_by_grid_system(
-																				"section"
-																				, $db->getField("class", "Text", true)
-																				, $db->getField("fluid", "Number", true)
-																				, array(
-																					$db->getField("grid_xs", "Number", true)
-																					, $db->getField("grid_sm", "Number", true)
-																					, $db->getField("grid_md", "Number", true)
-																					, $db->getField("default_grid", "Number", true)
-																				)
-																				, $db->getField("wrap", "Number", true)
-																				, $db->getField("width", "Text", true)
-																				, $template["sections"][$ID_section]
-																			);
-				$template["sections"][$ID_section]["relevance"] 			= $section_relevance;
-				$template["sections"][$ID_section]["diff"] 					= $section_diff;
-				$template["sections"][$ID_section]["jolly"] 				= $section_jolly;
-				$template["sections"][$ID_section]["visible"] 				= $section_visible;
-				//if($section_relevance == -999)
-				//	break;
-			}
-			if($selective)
-				$arrLayers[$ID_layer] 										= $ID_layer;
-			
-		} while($db->nextRecord());
-		
+	$db->query($sSQL);
+    $arrLayers                                                          = array();
+	$recordset                                                          = $db->getRecordset();
+
+    if(is_array($recordset) && count($recordset)) {
+        foreach($recordset AS $record) {
+            $path 															= $record["path"];
+            $section_jolly 													= substr_count($path, "%");
+            //$section_path 													= preg_replace('/\/+/', '/', str_replace("%", "", $path));
+            $section_path 													= str_replace(array("//", "%"), array("/", ""), $path);
+            if(!$section_path)
+                $section_path 												= "/";
+
+            $ID_layer 														= $record["ID_layer"];
+            $ID_section 													= $record["ID"];
+            $section_name													= $record["name"];
+            $section_is_main 												= $record["is_main"];
+            $section_visible 												= $record["visible"];
+            $section_relevance 												= ($section_path == $settings_path
+                                                                                ? -999
+                                                                                : substr_count($settings_path, "/") - substr_count($section_path, "/")
+                                                                            );
+            $section_diff 													= (strlen($settings_path) - strlen($section_path));
+            if(!array_key_exists($ID_section, $template["sections"])) {
+                $template["sections"][$ID_section] = array(
+                                                            "ID" 			=> $ID_section
+                                                            , "name" 		=> $section_name
+                                                            , "ID_layer" 	=> $ID_layer
+                                                            , "layer"		=> ""
+                                                            , "last_update"	=> $record["last_update"]
+                                                            , "show_empty" 	=> $record["show_empty"]
+                                                            , "is_main" 	=> $section_is_main
+                                                            , "layouts"		=> array()
+                                                        );
+            }
+
+            if(!array_key_exists("relevance", $template["sections"][$ID_section])
+                || $template["sections"][$ID_section]["relevance"] > $section_relevance
+                || ($template["sections"][$ID_section]["relevance"] == $section_relevance
+                    && $template["sections"][$ID_section]["diff"] > $section_diff
+                )
+                || ($template["sections"][$ID_section]["relevance"] == $section_relevance
+                    && $template["sections"][$ID_section]["diff"] == $section_diff
+                    && $template["sections"][$ID_section]["jolly"] > $section_jolly
+                )
+            ) {
+                $template["sections"][$ID_section] 							= get_class_layout_by_grid_system(
+                                                                                "section"
+                                                                                , $record["class"]
+                                                                                , $record["fluid"]
+                                                                                , array(
+                                                                                    $record["grid_xs"]
+                                                                                    , $record["grid_sm"]
+                                                                                    , $record["grid_md"]
+                                                                                    , $record["default_grid"]
+                                                                                )
+                                                                                , $record["wrap"]
+                                                                                , $record["width"]
+                                                                                , $template["sections"][$ID_section]
+                                                                            );
+                $template["sections"][$ID_section]["relevance"] 			= $section_relevance;
+                $template["sections"][$ID_section]["diff"] 					= $section_diff;
+                $template["sections"][$ID_section]["jolly"] 				= $section_jolly;
+                $template["sections"][$ID_section]["visible"] 				= $section_visible;
+                //if($section_relevance == -999)
+                //	break;
+            }
+            if($selective)
+                $arrLayers[$ID_layer] 										= $ID_layer;
+        }
+
 		if($selective)
 			$template["layers"] = system_get_layers($arrLayers);			
 
@@ -270,7 +273,7 @@ function system_get_sections($selective = NULL, $process_blocks = false) {
 		});				
 	}
 
-	$framework_css = cm_getFrameworkCss();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
     if(is_array($framework_css))
         $template["container"]["class"] = $framework_css["class"]["container"];
     else
@@ -280,7 +283,7 @@ function system_get_sections($selective = NULL, $process_blocks = false) {
     $template["container"]["sign"] = "px";
     $template["container"]["width"] = "1024";    
     
-    if(AREA_SHOW_NAVBAR_ADMIN)
+    if(Auth::env("AREA_SHOW_NAVBAR_ADMIN"))
     	$template["navadmin"] = $template["sections"];
 
 	if($process_blocks)
@@ -300,9 +303,9 @@ function system_get_blocks($template, $where = null) {
 
 	$shards 																	= array();
 	$query 																		= null;
-	$userNID 																	= get_session("UserNID");
+	$userNID 																	= Auth::get("user")->id;
 	$params = array(
-		"is_guest" 																=> (!$userNID || $userNID == MOD_SEC_GUEST_USER_ID) && $globals->page["cache"] != "guest"
+		"is_guest" 																=> Auth::isGuest() && $globals->page["cache"] != "guest"
 		, "flags" => array(
 			"ajax" 																=> false
 			, "path" 															=> false
@@ -419,20 +422,21 @@ function system_get_blocks($template, $where = null) {
 		        ORDER BY 
 		        	" . implode(", ", $query["order"]);
 		$db->query($sSQL);
-	    if($db->nextRecord()) {
+        $recordset                                                              = $db->getRecordset();
+        if(is_array($recordset) && count($recordset)) {
     		$template["blocks"] 												= array();
-	        $arrLayoutSettings 													= array();
-	        
-			do {
-				$block_prefix 													= "L";
-				$ID_block														= $db->getField("ID", "Number", true);
-				$block_name														= $db->getField("smart_url", "Text", true);
-				$ID_block_type													= $db->getField("ID_type", "Number", true);
+	        //$arrLayoutSettings 													= array();
+
+            foreach($recordset AS $record) {
+                $block_prefix 													= "L";
+				$ID_block														= $record["ID"];
+				$block_name														= $record["smart_url"];
+				$ID_block_type													= $record["ID_type"];
 				$block_type_smart_url 											= $block_type_loaded["rev"][$ID_block_type];
-				$ID_section 													= $db->getField("ID_location", "Number", true);
-	            $block_type 													= $block_type_loaded[$block_type_smart_url]["name"]; //$db->getField("type", "Text", true);
-				$block_value 													= $db->getField("value", "Text", true);
-				$block_params 													= $db->getField("params", "Text", true);
+				$ID_section 													= $record["ID_location"];
+	            $block_type 													= $block_type_loaded[$block_type_smart_url]["name"]; //$record["type"];
+				$block_value 													= $record["value"];
+				$block_params 													= $record["params"];
 				$block_smart_url												= ($block_name
 																					? $block_name
 																					: $block_prefix . $ID_block
@@ -442,13 +446,13 @@ function system_get_blocks($template, $where = null) {
 				//	continue;
 
 				if($params["flags"]["path"]) {
-					$path 														= $db->getField("path", "Text", true);
+					$path 														= $record["path"];
 					$block_jolly 												= substr_count($path, "%");
 					//$block_path 												= preg_replace('/\/+/', '/', str_replace("%", "", $path));
 					$block_path 												= str_replace(array("//", "%"), array("/", ""), $path);
 					if(!$block_path)
 						$block_path 											= "/";
-					$block_visible 												= $db->getField("visible", "Number", true);
+					$block_visible 												= $record["visible"];
 					$block_relevance 											= ($block_path == $settings_path
 																					? -999
 																					: substr_count($settings_path, "/") - substr_count($block_path, "/")
@@ -462,31 +466,32 @@ function system_get_blocks($template, $where = null) {
 						unset($globals->page["template"]["unknown"][$block_name]);
 					}
 
-					$arrLayoutSettings["ID_block"][] = $ID_block;
-	                $arrLayoutSettings["ID_type"][] = $ID_block_type;			
+					/*$arrLayoutSettings["ID_block"][] = $ID_block;
+	                $arrLayoutSettings["ID_type"][] = $ID_block_type;
+                    $arrLayoutSettings["packages"][strtolower($block_smart_url)] = strtolower($block_type);*/
 
-					$template["blocks"][$ID_block] 								= array(	
+					$template["blocks"][$ID_block] 								= array(
 																					"ID" 						=> $ID_block
 																					, "ID_type"					=> $ID_block_type
 																					, "ID_section"				=> $ID_section
 																					, "prefix" 					=> "L"
 																					, "smart_url" 				=> $block_smart_url
-																					, "title"					=> $db->getField("name", "Text", true)
+																					, "title"					=> $record["name"]
 																					, "type_class"				=> ($block_type_loaded[$block_type_smart_url]["class"]
 																													? $block_type_loaded[$block_type_smart_url]["class"]
 																													: $block_value
-																												) //$db->getField("type_class", "Text", true)
-																					, "type_group"				=> $block_type_loaded[$block_type_smart_url]["group"] //$db->getField("type_group", "Text", true)
-																					, "multi_id"				=> $block_type_loaded[$block_type_smart_url]["multi_id"] //$db->getField("multi_id", "Text", true)
+																												) //$record["type_class"]
+																					, "type_group"				=> $block_type_loaded[$block_type_smart_url]["group"] //$record["type_group"]
+																					, "multi_id"				=> $block_type_loaded[$block_type_smart_url]["multi_id"] //$record["multi_id"]
 																					, "type"					=> $block_type
 																					, "location"				=> $template["sections"][$ID_section]["name"]
-																					, "template"				=> $db->getField("template", "Text", true)
-																					, "tpl_path"				=> $block_type_loaded[$block_type_smart_url]["tpl_path"] //$db->getField("tpl_path", "Text", true)
+																					, "template"				=> $record["template"]
+																					, "tpl_path"				=> $block_type_loaded[$block_type_smart_url]["tpl_path"] //$record["tpl_path"]
 																					, "value"					=> $block_value
 																					, "params"					=> $block_params
-																					, "last_update"				=> $db->getField("last_update", "Number", true)
-																					, "frequency"				=> $block_type_loaded[$block_type_smart_url]["frequency"] //$db->getField("frequency", "Text", true)
-																					, "use_in_content"			=> $db->getField("use_in_content", "Number", true)
+																					, "last_update"				=> $record["last_update"]
+																					, "frequency"				=> $block_type_loaded[$block_type_smart_url]["frequency"] //$record["frequency"]
+																					, "use_in_content"			=> $record["use_in_content"]
 																					, "content"					=> ""
 																					, "settings"				=> null
 																					, "db" 						=> array(
@@ -495,29 +500,29 @@ function system_get_blocks($template, $where = null) {
 																												)
 																				);
 					if($params["flags"]["ajax"]) {
-						$template["blocks"][$ID_block]["ajax"]					= $db->getField("use_ajax", "Number", true);
-						$template["blocks"][$ID_block]["ajax_on_ready"]			= $db->getField("ajax_on_ready", "Text", true);
-						$template["blocks"][$ID_block]["ajax_on_event"]			= $db->getField("ajax_on_event", "Text", true);
+						$template["blocks"][$ID_block]["ajax"]					= $record["use_ajax"];
+						$template["blocks"][$ID_block]["ajax_on_ready"]			= $record["ajax_on_ready"];
+						$template["blocks"][$ID_block]["ajax_on_event"]			= $record["ajax_on_event"];
 					} else {
 						$template["blocks"][$ID_block]["ajax"] 					= false;
 					}
 
-					if($db->getField("js_lib", "Text", true)) {
-						$arrJsLibs 												= explode(",", $db->getField("js_lib", "Text", true));
+					if($record["js_lib"]) {
+						$arrJsLibs 												= explode(",", $record["js_lib"]);
 						foreach($arrJsLibs AS $js_name) {
 							$globals->js["request"][$js_name] 					= true;
 							//$template["resources"]["js"]["request"][$js_name] = true;
 						}
 					}
 					// Si presume che vengano caricati da file questi
-					if($db->getField("js", "Text", true)) {
-						$globals->js["embed"][$block_smart_url] 				= $db->getField("js", "Text", true);
-						//$template["resources"]["js"]["embed"][$block_smart_url] = $db->getField("js", "Text", true);
+					if($record["js"]) {
+						$globals->js["embed"][$block_smart_url] 				= $record["js"];
+						//$template["resources"]["js"]["embed"][$block_smart_url] = $record["js"];
 					}
 
-					if($db->getField("css", "Text", true)) {
-						$globals->css["embed"][$block_smart_url] 				= $db->getField("css", "Text", true);
-						//$template["resources"]["css"]["embed"][$block_smart_url] = $db->getField("css", "Text", true);
+					if($record["css"]) {
+						$globals->css["embed"][$block_smart_url] 				= $record["css"];
+						//$template["resources"]["css"]["embed"][$block_smart_url] = $record["css"];
 					}
 
 					if($block_type == "ECOMMERCE"
@@ -526,22 +531,22 @@ function system_get_blocks($template, $where = null) {
                         		||
                         		$block_type == "USER"
 	                        )
-	                    ) 
+	                    )
 	                ) {
 						$template["blocks"][$ID_block]["ajax"] = true;
 						if(!$template["blocks"][$ID_block]["ajax_on_ready"] || $template["blocks"][$ID_block]["ajax_on_ready"] == "preload")
 							$template["blocks"][$ID_block]["ajax_on_ready"] 	= "inview";
 						if(!$template["blocks"][$ID_block]["ajax_on_ready"])
 							$template["blocks"][$ID_block]["ajax_on_event"] 	= "load fadeIn";
-							
+
 		                if($block_type == "ECOMMERCE") {
 		                    $frame["sys"]["layouts"] = preg_replace('/[^a-zA-Z0-9]/', '', $ID_block);
 		                    //$frame["sys"]["ret_url"] = $_SERVER["REQUEST_URI"];
 		                    $serial_frame = json_encode($frame);
-		
+
 		                    $globals->ecommerce["sid"] 							= set_sid($serial_frame);
 		                    $globals->ecommerce["id"] 							= "cart" . $template["sections"][$ID_section]["name"] . $template["blocks"][$ID_block]["prefix"] . $ID_block;
-		                    $globals->ecommerce["unic_id"] 						= $template["blocks"][$ID_block]["prefix"] . $ID_block;								
+		                    $globals->ecommerce["unic_id"] 						= $template["blocks"][$ID_block]["prefix"] . $ID_block;
 						}
 	                }
 				}
@@ -558,15 +563,15 @@ function system_get_blocks($template, $where = null) {
 						)
 					) {
 						$template["blocks"][$ID_block] 							= get_class_layout_by_grid_system($template["blocks"][$ID_block]["type_class"]
-																					, $db->getField("block_class", "Text", true)
-																					, $db->getField("block_fluid", "Number", true)
+																					, $record["block_class"]
+																					, $record["block_fluid"]
 																					, array(
-																						$db->getField("block_grid_xs", "Number", true)
-																						, $db->getField("block_grid_sm", "Number", true)
-																						, $db->getField("block_grid_md", "Number", true)
-																						, $db->getField("block_default_grid", "Number", true)
+																					    $record["block_grid_xs"]
+																						, $record["block_grid_sm"]
+																						, $record["block_grid_md"]
+																						, $record["block_default_grid"]
 																					)
-																					, $db->getField("block_wrap", "Number", true)
+																					, $record["block_wrap"]
 																					, false
 																					, $template["blocks"][$ID_block]
 																				);
@@ -578,14 +583,14 @@ function system_get_blocks($template, $where = null) {
 
 					}
 				}
-	        } while($db->nextRecord());
+	        }
 
-	        if(check_function("get_layout_settings")) {
+	       /* if(check_function("get_layout_settings")) {
 	            $arrLayoutSettings["data"] = get_layout_settings($arrLayoutSettings["ID_block"], $arrLayoutSettings["ID_type"]);
-			}
+			}*/
 
 			if($params["flags"]["path"]) {
-				$template["blocks"] = array_filter($template["blocks"], function(&$block) use (&$template, $arrLayoutSettings) {
+				$template["blocks"] = array_filter($template["blocks"], function(&$block) use (&$template/*, $arrLayoutSettings*/) {
 					if($template["navadmin"])
 						$template["navadmin"][$block["ID_section"]]["layouts"][$block["ID"]] 				= $block;
 
@@ -606,10 +611,14 @@ function system_get_blocks($template, $where = null) {
 							$template["primary_section"] 													= $block["ID_section"];
 
 						$template["sections"][$block["ID_section"]]["layouts"][$block["ID"]] 				= null;
-						$block["settings"] 																	= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
+						$block["settings"]                                                                  = Cms::getPackage($block["smart_url"]);
+						if(!$block["settings"]) {
+                            $block["settings"]                                                              = Cms::getPackage($block["type"]);
+                        }
+                        /*$block["settings"] 																	= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
 																												? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
 																												: $arrLayoutSettings["data"][$block["type"] . "-0"]
-																											);
+																											);*/
 						return true;
 					}
 				});
@@ -625,10 +634,14 @@ function system_get_blocks($template, $where = null) {
 																												: $block["db"]["value"]
 																											);
 					}
-					$template["blocks"][$ID_block]["settings"] 												= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
+                    $template["blocks"][$ID_block]["settings"]                                              = Cms::getPackage($template["blocks"][$ID_block]["smart_url"]);
+                    if(!$template["blocks"][$ID_block]["settings"]) {
+                        $template["blocks"][$ID_block]["settings"]                                          = Cms::getPackage($template["blocks"][$ID_block]["type"]);
+                    }
+					/*$template["blocks"][$ID_block]["settings"] 												= (array_key_exists($block["type"] . "-" . $block["ID"], $arrLayoutSettings["data"])
 																												? $arrLayoutSettings["data"][$block["type"] . "-" . $block["ID"]]
 																												: $arrLayoutSettings["data"][$block["type"] . "-0"]
-																											);
+																											);*/
 				}
 			}
 	    }
@@ -648,7 +661,6 @@ function system_get_blocks($template, $where = null) {
 			, "navigation" 			=> $globals->navigation
 			, "xhr" 				=> $params["flags"]["xhr"]
 			, "prefix" 				=> $shards
-			, "user_path_shard" 	=> $globals->user_path_shard //non usata realmente ffl e page in path
 		);
 //$template["main_section"]
 
@@ -686,7 +698,7 @@ function system_block_parse($layout, $buffer, $xhr = false, $start = false, $err
 	}
 
 	if($start && DEBUG_PROFILING === true) {
-		$res["exTime"] = Stats::stopwatch($start);
+		$res["exTime"] = Debug::stopWatch($start);
 	}
 	return $res;
 }
@@ -695,7 +707,7 @@ function system_block_STATIC_PAGE_BY_DB($layouts, $params = array(), $data_stora
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
 		$res[($params["prefix"][$ID_layout]
 				? $params["prefix"][$ID_layout] . "/"
@@ -710,7 +722,7 @@ function system_block_STATIC_PAGE_BY_FILE($layouts, $params = array(), $data_sto
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = process_static_page($layout["type"], $layout["db"]["value"], $params["user_path"], $layout);
 		$res[($params["prefix"][$ID_layout]
 				? $params["prefix"][$ID_layout] . "/"
@@ -728,7 +740,7 @@ function system_block_GALLERY($layouts, $params = array(), $data_storage = null)
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = null;
 		$error = null;
 		if (strlen($layout["db"]["real_path"]) && $layout["db"]["real_path"] != "/") {
@@ -745,17 +757,17 @@ function system_block_GALLERY($layouts, $params = array(), $data_storage = null)
 			$available_path = $params["settings_path"];
 		}
 
-		$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+		$real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
 		if ((!$params["main_content"] || $layout["use_in_content"] == "-1") && $real_path === false && strlen($available_path) && $available_path != "/") {
 			do {
 				$available_path = ffCommon_dirname($available_path);
-				$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+				$real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
 				if ($real_path !== false)
 					break;
 			} while ($available_path != "/");
 		}
 
-		/*if(!$params["main_content"] || (strpos($params["settings_path"], stripslash($layout["db"]["value"]) . $available_path) === 0 && is_dir(DISK_UPDIR . $params["settings_path"]))
+		/*if(!$params["main_content"] || (strpos($params["settings_path"], stripslash($layout["db"]["value"]) . $available_path) === 0 && is_dir(FF_DISK_UPDIR . $params["settings_path"]))
 		) {
 			$valid_gallery_path = true;
 		} else {
@@ -765,7 +777,7 @@ function system_block_GALLERY($layouts, $params = array(), $data_storage = null)
 		if ($real_path) {
 			if (!is_dir($real_path)) {
 				$available_path = $layout["db"]["value"];
-				$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]));
+				$real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]));
 			} else {
 				if (strpos($available_path, $layout["db"]["value"]) === 0) {
 					$available_path = stripslash(substr($available_path, strlen($layout["db"]["value"])));
@@ -777,23 +789,23 @@ function system_block_GALLERY($layouts, $params = array(), $data_storage = null)
 			if ($available_path == "")
 				$available_path = "/";
 
-			if (ENABLE_STD_PERMISSION)
+			if (Cms::env("ENABLE_STD_PERMISSION"))
 				$file_permission = get_file_permission($available_path, "files", null, true);
 
 			//File permessi Cartella (controllo se l'utente ha diritti di lettura)
-			if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+			if (check_mod($file_permission, 1, true, Auth::env("AREA_GALLERY_SHOW_MODIFY"))) {
 				if (is_dir($real_path)) {
 					$rst_file = array();
 					$rst_dir = array();
 					$arr_real_path = glob($real_path . "/*");
 					if (is_array($arr_real_path) && count($arr_real_path)) {
 						foreach ($arr_real_path AS $real_file) {
-							$file = str_replace(DISK_UPDIR, "", $real_file);
+							$file = str_replace(FF_DISK_UPDIR, "", $real_file);
 							$description = "";
-							if ((is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH /*&& basename($real_file) != GALLERY_TPL_PATH*/) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
-								if (ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+							if ((is_dir($real_file) /* && basename($real_file) != ffMedia::STORING_BASE_NAME && basename($real_file) != GALLERY_TPL_PATH*/) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
+								if (Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 									$file_permission = get_file_permission($file);
-								if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+								if (check_mod($file_permission, 1, true, Auth::env("AREA_GALLERY_SHOW_MODIFY"))) {
 									$rst_dir[$file]["permission"] = $file_permission;
 								}
 							}
@@ -829,7 +841,7 @@ function system_block_MODULE($layouts, $params = array(), $data_storage = null) 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = null;
 		if (isset($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
 			if (is_array($cm->oPage->components_buffer["MD-" . $layout["location"] . "-" . str_replace("/", "", $layout["db"]["value"] . "-" . $layout["db"]["params"])])) {
@@ -867,7 +879,7 @@ function system_block_MODULE($layouts, $params = array(), $data_storage = null) 
 			/**
 			 * Admin Father Bar
 			 */
-			if (AREA_MODULES_SHOW_MODIFY) {
+			if (Auth::env("AREA_MODULES_SHOW_MODIFY")) {
 				$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
 				$admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
 				$admin_menu["admin"]["class"] = $layout["type_class"];
@@ -879,12 +891,12 @@ function system_block_MODULE($layouts, $params = array(), $data_storage = null) 
 				$admin_menu["admin"]["extra"] = "";
 
 				$admin_menu["admin"]["ecommerce"] = "";
-				if (AREA_LAYOUT_SHOW_MODIFY) {
+				if (Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 					$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
 					$admin_menu["admin"]["layout"]["type"] = $layout["type"];
 				}
 				$admin_menu["admin"]["setting"] = ""; //$layout["type"];
-				if (MODULE_SHOW_CONFIG) {
+				if (Auth::env("MODULE_SHOW_CONFIG")) {
 					$admin_menu["admin"]["module"]["value"] = $layout["db"]["value"];
 					$admin_menu["admin"]["module"]["params"] = $layout["db"]["params"];
 				}
@@ -928,7 +940,7 @@ function system_block_VIRTUAL_GALLERY($layouts, $params = array(), $data_storage
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach ($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = vgallery_init($params, $layout, $data_storage);
 		$res[($params["prefix"][$ID_layout]
 				? $params["prefix"][$ID_layout] . "/"
@@ -946,7 +958,7 @@ function system_block_PUBLISHING($layouts, $params = array(), $data_storage = nu
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = null;
 		$publish = explode("_", $layout["db"]["value"]);
 		if (is_array($publish) && count($publish) == 2) {
@@ -991,7 +1003,7 @@ function system_block_VGALLERY_MENU($layouts, $params = array(), $data_storage =
 
 	// @todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$part_virtual_path = explode("/", $layout["db"]["value"]);
 		$vgallery_name = $part_virtual_path[1];
 		unset($part_virtual_path[0]);
@@ -1025,7 +1037,7 @@ function system_block_GALLERY_MENU($layouts, $params = array(), $data_storage = 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		if ($layout["settings"]["AREA_DIRECTORIES_SHOW_ONLYHOME"]) {
 			$available_path = $layout["db"]["value"];
 			$source_user_path = $layout["db"]["params"]
@@ -1042,11 +1054,11 @@ function system_block_GALLERY_MENU($layouts, $params = array(), $data_storage = 
 				$available_path = $params["settings_path"];
 			}
 
-			$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+			$real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
 			if ($real_path === false && $available_path != "/") {
 				do {
 					$available_path = ffCommon_dirname($available_path);
-					$real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+					$real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
 					if ($real_path !== false)
 						break;
 				} while ($available_path != "/");
@@ -1085,7 +1097,7 @@ function system_block_STATIC_PAGES_MENU($layouts, $params = array(), $data_stora
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		if ($layout["db"]["value"] == "/home")
 			$layout["db"]["value"] = "/";
 
@@ -1123,7 +1135,7 @@ function system_block_VGALLERY_GROUP($layouts, $params = array(), $data_storage 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = null;
 		if($layout["db"]["real_path"] != "/") {
 			if($layout["db"]["real_path"] == $params["settings_path"]) {
@@ -1157,19 +1169,19 @@ function system_block_VGALLERY_GROUP($layouts, $params = array(), $data_storage 
 								ORDER BY LENGTH(CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name)) DESC
 								LIMIT 1";
 			$db->query($sSQL);
-			if($db->nextRecord()) {
-				$real_path = str_replace($db->getField("full_path", "Text", true), "", $virtual_path);
-				$real_user_path = $params["user_path"];
-				if(strlen($real_path)) {
-					do {
-						$real_user_path = ffcommon_dirname($params["user_path"]);
-						$real_path = ffcommon_dirname($real_path);
-					} while($real_path != "/");
+            $recordset                                                              = $db->getRecordset();
+            if(is_array($recordset) && count($recordset)) {
+                $real_path = str_replace($recordset[0]["full_path"], "", $virtual_path);
+                $real_user_path = $params["user_path"];
+                if(strlen($real_path)) {
+                    do {
+                        $real_user_path = ffcommon_dirname($params["user_path"]);
+                        $real_path = ffcommon_dirname($real_path);
+                    } while($real_path != "/");
+                }
 
-				}
-
-				$buffer = process_vgallery_menu_group($real_user_path, $layout["db"]["value"], null, $layout);
-			}
+                $buffer = process_vgallery_menu_group($real_user_path, $layout["db"]["value"], null, $layout);
+            }
 		}
 
 		$res[($params["prefix"][$ID_layout]
@@ -1187,7 +1199,7 @@ function system_block_WIDGET($layouts, $params = array(), $data_storage = null) 
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		switch ($layout["type"]) {
 			case "ECOMMERCE":
 				if (check_function("ecommerce_cart_widget"))
@@ -1230,9 +1242,9 @@ function system_block_COMMENT($layouts, $params = array(), $data_storage = null)
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
+		$start = Debug::startWatch();
 		$buffer = null;
-		if(AREA_COMMENT_SHOW_MODIFY) {
+		if(Auth::env("AREA_COMMENT_SHOW_MODIFY")) {
 			$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
 			$admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
 			$admin_menu["admin"]["class"] = $layout["type_class"];
@@ -1243,14 +1255,14 @@ function system_block_COMMENT($layouts, $params = array(), $data_storage = null)
 			$admin_menu["admin"]["delete"] = "";
 			$admin_menu["admin"]["extra"] = "";
 			$admin_menu["admin"]["ecommerce"] = "";
-			if(AREA_LAYOUT_SHOW_MODIFY) {
+			if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 				$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
 				$admin_menu["admin"]["layout"]["type"] = $layout["type"];
 			}
-			if(AREA_SETTINGS_SHOW_MODIFY) {
+			if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
 				$admin_menu["admin"]["setting"] = ""; //$layout["type"];
 			}
-			if(MODULE_SHOW_CONFIG) {
+			if(Auth::env("MODULE_SHOW_CONFIG")) {
 				$admin_menu["admin"]["module"]["value"] = $layout["db"]["value"];
 				$admin_menu["admin"]["module"]["params"] = $layout["db"]["params"];
 			}
@@ -1301,8 +1313,8 @@ function system_block_USER($layouts, $params = array(), $data_storage = null) {
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
-		$buffer = process_user_menu(null, null, AREA_SHOW_ECOMMERCE, $params["user_path"], $layout);
+		$start = Debug::startWatch();
+		$buffer = process_user_menu(null, null, Cms::env("AREA_SHOW_ECOMMERCE"), $params["user_path"], $layout);
 		$res[($params["prefix"][$ID_layout]
 				? $params["prefix"][$ID_layout] . "/"
 				: ""
@@ -1318,8 +1330,8 @@ function system_block_FORMS_FRAMEWORK($layouts, $params = array(), $data_storage
 
 	//todo:  multi blocks by type da togliere ciclo
 	foreach($layouts AS $ID_layout => $layout) {
-		$start = Stats::stopwatch();
-		if (AREA_FORMS_FRAMEWORK_SHOW_MODIFY) {
+		$start = Debug::startWatch();
+		if (Auth::env("AREA_FORMS_FRAMEWORK_SHOW_MODIFY")) {
 			$admin_menu["admin"]["unic_name"] = $layout["prefix"] . $layout["ID"];
 			$admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
 			$admin_menu["admin"]["class"] = $layout["type_class"];
@@ -1330,11 +1342,11 @@ function system_block_FORMS_FRAMEWORK($layouts, $params = array(), $data_storage
 			$admin_menu["admin"]["delete"] = "";
 			$admin_menu["admin"]["extra"] = "";
 			$admin_menu["admin"]["ecommerce"] = "";
-			if (AREA_LAYOUT_SHOW_MODIFY) {
+			if (Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 				$admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
 				$admin_menu["admin"]["layout"]["type"] = $layout["type"];
 			}
-			if (AREA_SETTINGS_SHOW_MODIFY) {
+			if (Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
 				$admin_menu["admin"]["setting"] = "";
 			}
 
@@ -1369,7 +1381,7 @@ function system_get_block_type($name = null)
     if(!$blocktype) {
         check_function("Filemanager");
 
-        $fs = new Filemanager("php", CM_CACHE_PATH . "/block-type", "blocktype");
+        $fs = new Filemanager("php", CM_CACHE_DISK_PATH . "/block-type", "blocktype");
 
         $blocktype = $fs->read();
         if(!$blocktype) {
@@ -1380,15 +1392,16 @@ function system_get_block_type($name = null)
 					WHERE 1
 					ORDER BY " . LAYOUT_TYPE_TABLE_NAME . ".ID";
             $db->query($sSQL);
-            if($db->nextRecord()) {
-                do {
-                    $layout_type 																= ffCommon_url_rewrite($db->getField("name", "Text", true));
-                    $smart_url 																	= $db->getField("smart_url", "Text", true);
-                    $group 																		= $db->getField("group", "Text", true);
-                    $allow_creation 															= $db->getField("allow_creation", "Number", true);
+            $recordset = $db->getRecordset();
+            if(is_array($recordset) && count($recordset)) {
+                foreach($recordset AS $record) {
+                    $layout_type 																= ffCommon_url_rewrite($record["name"]);
+                    $smart_url 																	= $record["smart_url"];
+                    $group 																		= $record["group"];
+                    $allow_creation 															= $record["allow_creation"];
 
-                    $blocktype[$layout_type] = $db->record;
-                    $blocktype["rev"][$db->getField("ID", "Number", true)] = $layout_type;
+                    $blocktype[$layout_type] = $record;
+                    $blocktype["rev"][$record["ID"]] = $layout_type;
                     if($smart_url) {
                         $blocktype["smart_url"][$smart_url] = $layout_type;
                         $blocktype["group"][$group][$smart_url] = $layout_type;
@@ -1396,7 +1409,7 @@ function system_get_block_type($name = null)
                             $blocktype["group-creation"][$group][$smart_url] = $layout_type;
                     }
 
-                } while($db->nextRecord());
+                };
 
                 if(!$blocktype["smart_url"])
                     $blocktype["smart_url"] = array();

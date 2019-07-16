@@ -63,7 +63,7 @@ return;
             $tpl->set_var("site_path", FF_SITE_PATH);
             $tpl->set_var("theme_inset", THEME_INSET);
             $tpl->set_var("theme", $oPage->theme);
-            $tpl->set_var("delete_icon", cm_getClassByFrameworkCss("cancel", "icon"));
+            $tpl->set_var("delete_icon", Cms::getInstance("frameworkcss")->get("cancel", "icon"));
             
             
             if($oPage->layer == ffGetFilename(VG_SITE_ADMIN))
@@ -185,10 +185,7 @@ return;
                 }
             }
             $tpl_layer->set_var("notify", $tpl->rpparse("main", false));
-        } else {
-            if(check_function("write_notification"))
-                write_notification("_error_layer_not_exist", "notify_" . $oPage->layer . ".html", "warning", "", "", true, -1, null, "file");
-        }    
+        }
     }
 }
 
@@ -209,32 +206,29 @@ function system_layer_quickpanel($oPage, $tpl_layer)
             $tpl->set_var("site_path", FF_SITE_PATH);
             $tpl->set_var("theme_inset", THEME_INSET);
             $tpl->set_var("theme", $oPage->theme);
-			$tpl->set_var("frontend_icon", cm_getClassByFrameworkCss("vg-fontend", "icon-tag"));
-			$tpl->set_var("logout_icon", cm_getClassByFrameworkCss("power-off", "icon-tag", "2x"));
+			$tpl->set_var("frontend_icon", Cms::getInstance("frameworkcss")->get("vg-fontend", "icon-tag"));
+			$tpl->set_var("logout_icon", Cms::getInstance("frameworkcss")->get("power-off", "icon-tag", "2x"));
             
-            if(AREA_ADMIN_SHOW_MODIFY) {
-            	$tpl->set_var("admin_icon", cm_getClassByFrameworkCss("vg-admin", "icon-tag"));
+            if(Auth::env("AREA_ADMIN_SHOW_MODIFY")) {
+            	$tpl->set_var("admin_icon", Cms::getInstance("frameworkcss")->get("vg-admin", "icon-tag"));
                 $tpl->parse("SezAdmin", false);
             } else {
                 $tpl->set_var("SezAdmin", "");
             }
-            if(AREA_RESTRICTED_SHOW_MODIFY) {
-            	$tpl->set_var("restricted_icon", cm_getClassByFrameworkCss("vg-restricted", "icon-tag"));
+            if(Auth::env("AREA_RESTRICTED_SHOW_MODIFY")) {
+            	$tpl->set_var("restricted_icon", Cms::getInstance("frameworkcss")->get("vg-restricted", "icon-tag"));
                 $tpl->parse("SezRestricted", false);
             } else {
                 $tpl->set_var("SezRestricted", "");
             }
-            if(AREA_ECOMMERCE_SHOW_MODIFY) {
-            	$tpl->set_var("manage_icon", cm_getClassByFrameworkCss("vg-manage", "icon-tag"));
+            if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
+            	$tpl->set_var("manage_icon", Cms::getInstance("frameworkcss")->get("vg-manage", "icon-tag"));
                 $tpl->parse("SezManage", false);
             } else {
                 $tpl->set_var("SezManage", "");
             }
             
             $tpl_layer->set_var("quickpanel", $tpl->rpparse("main", false));
-        } else {
-            if(check_function("write_notification"))
-                write_notification("_error_layer_not_exist", "quickpanel_" . $oPage->layer . ".html", "warning", "", "", true, -1, null, "file");
         }
     }
 }
@@ -297,9 +291,6 @@ function system_layer_languages($oPage, $tpl_layer)
             }
             
             $tpl_layer->set_var("languages", $tpl->rpparse("main", false));
-        } else {
-            if(check_function("write_notification"))
-                write_notification("_error_layer_not_exist", "languages_" . $oPage->layer . ".html", "warning", "", "", true, -1, null, "file");
         }
     }
 }
@@ -317,13 +308,11 @@ function system_layer_restricted($cm)
 	}
 
     check_function("set_generic_tags");
-    if(check_function("check_chron_job"))
-        check_chron_job(ffGetFilename(VG_SITE_RESTRICTED));
-    
-    if (!AREA_RESTRICTED_SHOW_MODIFY) {
+
+   /* if (!Auth::env("AREA_RESTRICTED_SHOW_MODIFY")) {
         prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_SITE_RESTRICTED) . "/login");
         //ffRedirect(FF_SITE_PATH . VG_SITE_RESTRICTED . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
-    }
+    }*/
     
     if(check_function("system_ffrecord_process_print_button")) {
         ffRecord::addEvent("on_before_process_interface", "system_ffrecord_process_print_button" , ffEvent::PRIORITY_DEFAULT);
@@ -333,19 +322,17 @@ function system_layer_restricted($cm)
     $menu_edit = array("modify" => "/modify");
 
     
-    if(AREA_VGALLERY_SHOW_SEO) {
+    if(Auth::env("AREA_VGALLERY_SHOW_SEO")) {
         $menu_edit["seo"] = "/seo";
     }
-    if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
+    if(Auth::env("AREA_VGALLERY_SHOW_PERMISSION") && Cms::env("ENABLE_STD_PERMISSION")) {
         $menu_edit["permission"] = "/permission";
     }
 
     $menu_structure = array();
-    if(AREA_PROPERTIES_SHOW_MODIFY) {
+    if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
         $menu_structure["properties"] = "/properties";
     }
-    
-    
     
     
     
@@ -368,7 +355,7 @@ function system_layer_restricted($cm)
         }
     }
 
-    if((AREA_VGALLERY_SHOW_MODIFY || AREA_VGALLERY_SHOW_ADDNEW || AREA_VGALLERY_SHOW_DELETE || AREA_VGALLERY_SHOW_SEO || AREA_VGALLERY_SHOW_PERMISSION || AREA_ECOMMERCE_SHOW_MODIFY)) {
+    if((Auth::env("AREA_VGALLERY_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_SHOW_ADDNEW") || Auth::env("AREA_VGALLERY_SHOW_DELETE") || Auth::env("AREA_VGALLERY_SHOW_SEO") || Auth::env("AREA_VGALLERY_SHOW_PERMISSION") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY"))) {
         $db_rescricted_detail = ffDB_Sql::factory();
 
         $db->query("SELECT vgallery.* 
@@ -383,14 +370,14 @@ function system_layer_restricted($cm)
             } while($db->nextRecord());    
 
             if(is_array($vg_data) && count($vg_data)) {
-                if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+                if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
                     get_file_permission(null, "vgallery_nodes", array_keys($vg_data));
 
                 if(!MOD_RES_FULLBAR && !array_key_exists("fullbar", $cm->modules["restricted"])) 
 	                mod_restricted_add_menu_child("vgallery", VG_SITE_RESTRICTED . "/vgallery", ffTemplate::_get_word_by_code("vgallery_menu_title"));
 
                 foreach($vg_data AS $vg_data_key => $vg_data_value) {
-                    if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+                    if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
                         $file_permission = get_file_permission($vg_data_value["full_path"], "vgallery_nodes");
 
                     if(!check_mod($file_permission, 1, false))
@@ -434,7 +421,7 @@ function system_layer_restricted($cm)
             }
         }
     }
-    if ((AREA_PUBLISHING_SHOW_ADDNEW || AREA_PUBLISHING_SHOW_MODIFY || AREA_PUBLISHING_SHOW_DELETE || AREA_PUBLISHING_SHOW_DETAIL || AREA_PUBLISHING_SHOW_PREVIEW)) {
+    if ((Auth::env("AREA_PUBLISHING_SHOW_ADDNEW") || Auth::env("AREA_PUBLISHING_SHOW_MODIFY") || Auth::env("AREA_PUBLISHING_SHOW_DELETE") || Auth::env("AREA_PUBLISHING_SHOW_DETAIL") || AREA_PUBLISHING_SHOW_PREVIEW)) {
         $db->query("SELECT 
                                     publishing.*
                                     , IF(ISNULL(layout.ID), 'not_visible', 'visible') AS visible
@@ -473,7 +460,7 @@ function system_layer_restricted($cm)
             }
         }
     }
-    if ((AREA_DRAFT_SHOW_MODIFY || AREA_DRAFT_SHOW_ADDNEW || AREA_DRAFT_SHOW_DELETE)) {
+    if ((Auth::env("AREA_DRAFT_SHOW_MODIFY") || Auth::env("AREA_DRAFT_SHOW_ADDNEW") || Auth::env("AREA_DRAFT_SHOW_DELETE"))) {
         $db->query("SELECT drafts.*
                                     , IF(ISNULL(layout.ID), 'not_visible', 'visible') AS visible
                                FROM drafts
@@ -496,7 +483,7 @@ function system_layer_restricted($cm)
             }
         }
     }
-    if ((AREA_GALLERY_SHOW_MODIFY || AREA_GALLERY_SHOW_ADDNEW || AREA_GALLERY_SHOW_DELETE || AREA_GALLERY_SHOW_RELATIONSHIP || AREA_GALLERY_SHOW_PERMISSION || AREA_GALLERY_SHOW_SEO || AREA_ECOMMERCE_SHOW_MODIFY)) {
+    if ((Auth::env("AREA_GALLERY_SHOW_MODIFY") || Auth::env("AREA_GALLERY_SHOW_ADDNEW") || Auth::env("AREA_GALLERY_SHOW_DELETE") || Auth::env("AREA_GALLERY_SHOW_PERMISSION") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY"))) {
         mod_restricted_add_menu_child("resources", VG_SITE_RESTRICTED . "/resources", ffTemplate::_get_word_by_code("resources"));
 
         if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
@@ -522,7 +509,7 @@ function system_layer_restricted($cm)
         }
     }
 
-    if((AREA_MODULES_SHOW_MODIFY || MODULE_SHOW_CONFIG)) {
+    if((Auth::env("AREA_MODULES_SHOW_MODIFY") || Auth::env("MODULE_SHOW_CONFIG"))) {
         $db->query("SELECT module_form.*
                                     , IF(ISNULL(layout.ID), 'not_visible', 'visible') AS visible
                                     , (SELECT count(*) FROM module_form_nodes WHERE module_form_nodes.ID_module = module_form.ID) AS count_nodes 
@@ -550,7 +537,7 @@ function system_layer_restricted($cm)
         }
     }
 
-    if(AREA_INTERNATIONAL_SHOW_MODIFY) {
+    if(Auth::env("AREA_INTERNATIONAL_SHOW_MODIFY")) {
         mod_restricted_add_menu_child("wordcode", VG_SITE_RESTRICTED . "/wordcode", ffTemplate::_get_word_by_code("wordcode"));
     }
 	 if(1) {
@@ -559,12 +546,12 @@ function system_layer_restricted($cm)
 	 if(1) {
         mod_restricted_add_menu_child("place", VG_SITE_RESTRICTED . "/place", ffTemplate::_get_word_by_code("place"));
     }
-    if(AREA_SITEMAP_SHOW_MODIFY) {
+    if(Auth::env("AREA_SITEMAP_SHOW_MODIFY")) {
         mod_restricted_add_menu_child("sitemap", VG_SITE_RESTRICTED . "/site-map", ffTemplate::_get_word_by_code("sitemap"));
     }
     
     //Users
-    if(AREA_USERS_SHOW_MODIFY) {
+    if(Auth::env("AREA_USERS_SHOW_MODIFY")) {
         mod_restricted_add_menu_child("users", VG_SITE_RESTRICTED . "/users", ffTemplate::_get_word_by_code("mn_users"));
         if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
             || strpos($cm->path_info, VG_SITE_RESTRICTED . "/users") === 0
@@ -596,7 +583,7 @@ function system_layer_restricted($cm)
         }
     }
 
-    if(AREA_GROUPS_SHOW_MODIFY) {
+    if(Auth::env("AREA_GROUPS_SHOW_MODIFY")) {
         mod_restricted_add_menu_child("groups", VG_SITE_RESTRICTED . "/groups", ffTemplate::_get_word_by_code("groups"));
     }
     
@@ -606,7 +593,7 @@ function system_layer_restricted($cm)
     $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_languages");
 
     if(check_function("system_set_css"))
-        system_set_css($cm->oPage, $globals->settings_path, false, true);
+        system_set_css($cm->oPage, $globals->settings_path, true);
     if(check_function("system_set_js"))
         system_set_js($cm->oPage, $globals->settings_path, false);
 
@@ -621,13 +608,10 @@ function system_layer_admin($cm)
 		set_header_page(null, false, false, false, false); 	
 	}
 
-    if(check_function("check_chron_job"))
-        check_chron_job(ffGetFilename(VG_SITE_ADMIN));
-
-    if (!AREA_ADMIN_SHOW_MODIFY) {
+    /*if (!Auth::env("AREA_ADMIN_SHOW_MODIFY")) {
         prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_SITE_ADMIN) . "/login");
         //ffRedirect(FF_SITE_PATH . VG_SITE_ADMIN . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
-    }
+    }*/
     
     if(MASTER_CONTROL) {
         $cm->modules["restricted"]["menu"]["config"]["elements"]["domain"]["hide"] = false;
@@ -672,14 +656,17 @@ function system_layer_admin($cm)
     $cm->oPage->addEvent("on_tpl_layer_process", "system_layer_languages");
               
     if(check_function("system_set_css"))
-        system_set_css($cm->oPage, $globals->settings_path, false, true);
+        system_set_css($cm->oPage, $globals->settings_path, true);
     if(check_function("system_set_js"))
         system_set_js($cm->oPage, $globals->settings_path, false);
-
 }
 
 function system_layer_manage($cm) 
 {
+    if(!Cms::env("AREA_SHOW_ECOMMERCE")) {
+        ffRedirect(FF_SITE_PATH, 301);
+    }
+
     $globals = ffGlobals::getInstance("gallery");
 	$db = ffDB_Sql::factory();
 
@@ -690,13 +677,11 @@ function system_layer_manage($cm)
 	}
 
 	check_function("set_generic_tags");
-	if(check_function("check_chron_job"))
-	    check_chron_job(ffGetFilename(VG_SITE_MANAGE));
 
-	if (!AREA_ECOMMERCE_SHOW_MODIFY) {
+	/*if (!Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
 	    prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_SITE_MANAGE) . "/login");
 	    //ffRedirect(FF_SITE_PATH . VG_SITE_MANAGE . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
-	}
+	}*/
 
 	if($cm->path_info == VG_SITE_MANAGE) 
 	    ffRedirect(FF_SITE_PATH . VG_SITE_MANAGE . "/operations/" . date("Y", time()));
@@ -711,7 +696,7 @@ function system_layer_manage($cm)
 	                            , "addstock" => "/addstock"
 	                        );
 	//Anagraph
-	if ((AREA_ANAGRAPH_SHOW_MODIFY || AREA_ANAGRAPH_SHOW_ADDNEW || AREA_ANAGRAPH_SHOW_DELETE)) {
+	if ((Auth::env("AREA_ANAGRAPH_SHOW_MODIFY") || Auth::env("AREA_ANAGRAPH_SHOW_ADDNEW") || Auth::env("AREA_ANAGRAPH_SHOW_DELETE"))) {
 	    mod_restricted_add_menu_child("anagraph", VG_SITE_MANAGE . "/anagraph", ffTemplate::_get_word_by_code("anagraph"), "", "", VG_SITE_MANAGE . "/anagraph/all");
 	    $db->query("
 	                        SELECT 'all' AS ID, 
@@ -748,7 +733,7 @@ function system_layer_manage($cm)
 	    }
 	}
 	//Products 
-	if((AREA_VGALLERY_SHOW_MODIFY || AREA_VGALLERY_SHOW_ADDNEW || AREA_VGALLERY_SHOW_DELETE || AREA_VGALLERY_SHOW_SEO || AREA_VGALLERY_SHOW_PERMISSION || AREA_ECOMMERCE_SHOW_MODIFY)) {
+	if((Auth::env("AREA_VGALLERY_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_SHOW_ADDNEW") || Auth::env("AREA_VGALLERY_SHOW_DELETE") || Auth::env("AREA_VGALLERY_SHOW_SEO") || Auth::env("AREA_VGALLERY_SHOW_PERMISSION") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY"))) {
 	    $db_manage_detail = ffDB_Sql::factory();
 	    $db->query("SELECT vgallery.* 
 	                           FROM vgallery
@@ -764,12 +749,12 @@ function system_layer_manage($cm)
 	        } while($db->nextRecord());    
 	        
 	        if(is_array($vg_data) && count($vg_data)) {
-	            if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	            if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 	                get_file_permission(null, "vgallery_nodes", array_keys($vg_data));
 
 				$sSQL_cond = "";
 	            foreach($vg_data AS $vg_data_key => $vg_data_value) {
-	                if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	                if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 	                    $file_permission = get_file_permission($vg_data_value["full_path"], "vgallery_nodes");
 	                if(!check_mod($file_permission, 1, false))
 	                    continue;
@@ -801,7 +786,7 @@ function system_layer_manage($cm)
 	                                    mod_restricted_add_menu_sub_element($vg_data_value["name"], "ecommerce_" . $structure_key, ffCommon_dirname($cm->path_info) . $structure_value, ffTemplate::_get_word_by_code("ecommerce_" . $structure_key), "[QUERY_STRING]");
 	                                }
 	                            }
-	                        } elseif(constant("AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY")) {
+	                        } elseif(Auth::env("AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY")) {
 	                            mod_restricted_add_menu_sub_element($vg_data_value["name"], "ecommerce_settings", ffCommon_dirname($cm->path_info) . "/settings", ffTemplate::_get_word_by_code("ecommerce_settings"), "[QUERY_STRING]");
 	                        } else {
 	                            ffRedirect($_REQUEST["ret_url"]);
@@ -816,7 +801,7 @@ function system_layer_manage($cm)
 	                            , "[QUERY_STRING]");
 	                        }*/
 
-	                        if(AREA_ECOMMERCE_SHOW_LOCATION && ECOMMERCE_CHARGE_METHOD) {
+	                        if(Cms::env("AREA_ECOMMERCE_SHOW_LOCATION") && Cms::env("ECOMMERCE_CHARGE_METHOD")) {
 	                            $location  = (strlen($_REQUEST["frmAction"]) ? $_REQUEST["location"] : null);
 	                        }
 	                        
@@ -857,7 +842,7 @@ function system_layer_manage($cm)
 	                                                                , vgallery_nodes.parent AS parent
 	                                                            FROM vgallery_nodes
 	                                                                  LEFT JOIN ecommerce_settings ON ecommerce_settings.ID_items = vgallery_nodes.ID"
-	                                                                . (AREA_ECOMMERCE_SHOW_LOCATION && ECOMMERCE_CHARGE_METHOD
+	                                                                . (Cms::env("AREA_ECOMMERCE_SHOW_LOCATION") && Cms::env("ECOMMERCE_CHARGE_METHOD")
 	                                                                    ? ($location > 0 
 	                                                                        ? " INNER JOIN ecommerce_settings_location ON ecommerce_settings_location.ID_items = vgallery_nodes.ID AND ecommerce_settings_location.ID_location = " . $db_manage_detail->toSql($location, "Number") . "
 	                                                                            INNER JOIN ecommerce_location ON ecommerce_location.ID = ecommerce_settings_location.ID_location"
@@ -886,7 +871,7 @@ function system_layer_manage($cm)
 	                                                                    , 1
 	                                                                    , 0
 	                                                                )
-	                                                                " . (AREA_ECOMMERCE_SHOW_LOCATION && ECOMMERCE_CHARGE_METHOD && $location === "0"
+	                                                                " . (Cms::env("AREA_ECOMMERCE_SHOW_LOCATION") && Cms::env("ECOMMERCE_CHARGE_METHOD") && $location === "0"
 	                                                                    ? " AND ISNULL(ecommerce_settings_location.ID) "
 	                                                                    : ""
 	                                                                ) . " 
@@ -922,10 +907,10 @@ function system_layer_manage($cm)
 	    }
 	}
 	//Discount
-	if(AREA_ECOMMERCE_USE_COUPON || AREA_ECOMMERCE_USE_PROMOTION) {
+	if(Cms::env("AREA_ECOMMERCE_USE_COUPON") || Cms::env("AREA_ECOMMERCE_USE_PROMOTION")) {
 	    mod_restricted_add_menu_child("discount", VG_SITE_MANAGE . "/discount", ffTemplate::_get_word_by_code("discount"));
 	        
-	    if(AREA_ECOMMERCE_USE_COUPON && AREA_COUPON_SHOW_MODIFY) {
+	    if(Cms::env("AREA_ECOMMERCE_USE_COUPON") && AREA_COUPON_SHOW_MODIFY) {
 	        mod_restricted_add_menu_sub_element("discount", "coupon", VG_SITE_MANAGE . "/discount/coupon", ffTemplate::_get_word_by_code("discount_coupon"));
 	    }
 	}
@@ -951,30 +936,30 @@ function system_layer_manage($cm)
 	    , $_SERVER["QUERY_STRING"]);
 	}
 	//Documents
-	if(AREA_ECOMMERCE_SHOW_DOCUMENT) {
+	if(Auth::env("AREA_ECOMMERCE_SHOW_DOCUMENT")) {
 	    mod_restricted_add_menu_child("documents", VG_SITE_MANAGE . "/documents", ffTemplate::_get_word_by_code("documents"));
 
-	    if(AREA_BILL_SHOW_MODIFY) {
-	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
+	    if(Auth::env("AREA_BILL_SHOW_MODIFY")) {
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_ACTIVITY"))
 	            mod_restricted_add_menu_sub_element("documents", "bill_sent", VG_SITE_MANAGE . "/documents/bill/sent", ffTemplate::_get_word_by_code("bill_sent"));
-	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_PASSIVITY"))
 	            mod_restricted_add_menu_sub_element("documents", "bill_received", VG_SITE_MANAGE . "/documents/bill/received", ffTemplate::_get_word_by_code("bill_received"));
 	    }
-	    if(AREA_PAYMENTS_SHOW_MODIFY) {
-	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
+	    if(Auth::env("AREA_PAYMENTS_SHOW_MODIFY")) {
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_PASSIVITY"))
 	            mod_restricted_add_menu_sub_element("documents", "payments_sent", VG_SITE_MANAGE . "/documents/payments/sent", ffTemplate::_get_word_by_code("payments_sent"));
-	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_ACTIVITY"))
 	        mod_restricted_add_menu_sub_element("documents", "payments_received", VG_SITE_MANAGE . "/documents/payments/received", ffTemplate::_get_word_by_code("payments_received"));
 	    }
 	    if(1) {
-	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_ACTIVITY"))
 	            mod_restricted_add_menu_sub_element("documents", "contracts_sent", VG_SITE_MANAGE . "/documents/contracts/sent", ffTemplate::_get_word_by_code("contracts_sent"));
-	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_PASSIVITY"))
 	            mod_restricted_add_menu_sub_element("documents", "contracts_received", VG_SITE_MANAGE . "/documents/contracts/received", ffTemplate::_get_word_by_code("contracts_received"));
 	    }
 	}
 	//Reports
-	if(AREA_ECOMMERCE_SHOW_REPORT && AREA_REPORT_SHOW_MODIFY) {
+	if(Cms::env("AREA_ECOMMERCE_SHOW_REPORT") && Auth::env("AREA_REPORT_SHOW_MODIFY")) {
 	    mod_restricted_add_menu_child("reports", VG_SITE_MANAGE . "/reports", ffTemplate::_get_word_by_code("reports"));
 	    
 	    if(is_dir(FF_DISK_PATH . "/conf" . GALLERY_PATH_ECOMMERCE . "/reports")) {
@@ -988,7 +973,7 @@ function system_layer_manage($cm)
 	    }
 	}
 	//Shipping
-	if(AREA_ECOMMERCE_USE_SHIPPING && AREA_ECOMMERCE_SHIPPINGPRICE_SHOW_MODIFY) {
+	if(Cms::env("AREA_ECOMMERCE_USE_SHIPPING") && Auth::env("AREA_ECOMMERCE_SHIPPINGPRICE_SHOW_MODIFY")) {
 	    mod_restricted_add_menu_child("shipping", VG_SITE_MANAGE . "/shipping", ffTemplate::_get_word_by_code("shipping"));
 	}
 
@@ -1000,7 +985,7 @@ function system_layer_manage($cm)
 	$cm->oPage->addEvent("on_tpl_layer_process", "system_layer_languages");
 
 	if(check_function("system_set_css"))
-	    system_set_css($cm->oPage, $globals->settings_path, false, true);
+	    system_set_css($cm->oPage, $globals->settings_path, true);
 	if(check_function("system_set_js"))
 	    system_set_js($cm->oPage, $globals->settings_path, false);
 

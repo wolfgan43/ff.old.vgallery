@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!(AREA_DRAFT_SHOW_MODIFY || AREA_DRAFT_SHOW_ADDNEW || AREA_DRAFT_SHOW_DELETE)) {
+if (!(Auth::env("AREA_DRAFT_SHOW_MODIFY") || Auth::env("AREA_DRAFT_SHOW_ADDNEW") || Auth::env("AREA_DRAFT_SHOW_DELETE"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 $db = ffDB_Sql::factory();
@@ -30,10 +30,10 @@ $oGrid->bt_insert_url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify
 $oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify/[name_VALUE]";
 $oGrid->record_id = "DraftModify";
 $oGrid->resources[] = $oGrid->record_id;
-$oGrid->display_new = AREA_DRAFT_SHOW_ADDNEW;
+$oGrid->display_new = Auth::env("AREA_DRAFT_SHOW_ADDNEW");
 $oGrid->display_edit_bt = false;
-$oGrid->display_edit_url = AREA_DRAFT_SHOW_MODIFY;
-$oGrid->display_delete_bt = AREA_DRAFT_SHOW_DELETE;
+$oGrid->display_edit_url = Auth::env("AREA_DRAFT_SHOW_MODIFY");
+$oGrid->display_delete_bt = Auth::env("AREA_DRAFT_SHOW_DELETE");
 
 // Campi chiave
 $oField = ffField::factory($cm->oPage);
@@ -62,7 +62,7 @@ $oGrid->addGridButton($oButton);
 $cm->oPage->addContent($oGrid, "rel", null, array("title" => ffTemplate::_get_word_by_code("drafts"))); 
 
 
-if ((AREA_HTML_SHOW_MODIFY || AREA_HTML_SHOW_ADDNEW || AREA_HTML_SHOW_DELETE)) {
+if ((Auth::env("AREA_HTML_SHOW_MODIFY") || Auth::env("AREA_HTML_SHOW_ADDNEW") || Auth::env("AREA_HTML_SHOW_DELETE"))) {
     $sSQL_file = "";
     $file_list = array();
 
@@ -137,10 +137,10 @@ if ((AREA_HTML_SHOW_MODIFY || AREA_HTML_SHOW_ADDNEW || AREA_HTML_SHOW_DELETE)) {
 		$oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/html/modify";
 		$oGrid->record_id = "HtmlModify";
 		$oGrid->resources[] = $oGrid->record_id;
-		$oGrid->display_new = AREA_HTML_SHOW_ADDNEW;
+		$oGrid->display_new = Auth::env("AREA_HTML_SHOW_ADDNEW");
 		$oGrid->display_edit_bt = false;
-		$oGrid->display_edit_url = AREA_HTML_SHOW_MODIFY;
-		$oGrid->display_delete_bt = AREA_HTML_SHOW_DELETE;
+		$oGrid->display_edit_url = Auth::env("AREA_HTML_SHOW_MODIFY");
+		$oGrid->display_delete_bt = Auth::env("AREA_HTML_SHOW_DELETE");
 
 		// Campi chiave
 		$oField = ffField::factory($cm->oPage);
@@ -187,10 +187,10 @@ if ((AREA_HTML_SHOW_MODIFY || AREA_HTML_SHOW_ADDNEW || AREA_HTML_SHOW_DELETE)) {
 					$oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/html/modify";
 					$oGrid->record_id = "HtmlModify_" . $lang;
 					$oGrid->resources[] = $oGrid->record_id;
-					$oGrid->display_new = AREA_HTML_SHOW_ADDNEW;
+					$oGrid->display_new = Auth::env("AREA_HTML_SHOW_ADDNEW");
 					$oGrid->display_edit_bt = false;
-					$oGrid->display_edit_url = AREA_HTML_SHOW_MODIFY;
-					$oGrid->display_delete_bt = AREA_HTML_SHOW_DELETE;
+					$oGrid->display_edit_url = Auth::env("AREA_HTML_SHOW_MODIFY");
+					$oGrid->display_delete_bt = Auth::env("AREA_HTML_SHOW_DELETE");
 
 					// Campi chiave
 					$oField = ffField::factory($cm->oPage);

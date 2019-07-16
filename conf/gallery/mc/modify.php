@@ -1,7 +1,7 @@
 <?php  
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_UPDATER_SHOW_MODIFY) {
+if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -163,12 +163,13 @@ $sSQL = "SELECT anagraph_categories.ID
 		ORDER BY anagraph_categories.name";
 $db_gallery->query($sSQL);
 if($db_gallery->nextRecord()) {
+    $user = Auth::get("user");
 	do {
 		$limit_by_groups = $db_gallery->getField("limit_by_groups")->getValue();
 		if(strlen($limit_by_groups)) {
 			$limit_by_groups = explode(",", $limit_by_groups);
 			
-			if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+			if(array_search($user->acl, $limit_by_groups) !== false) {
 				if(strlen($allowed_ana_cat))
 					$allowed_ana_cat .= ",";
 

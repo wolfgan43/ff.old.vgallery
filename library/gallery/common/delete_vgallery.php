@@ -89,6 +89,6 @@ function delete_vgallery($parent, $name, $vgallery_name) {
         $db->query($sSQL);
         $full_path = stripslash($parent) . "/" . $name;
         if($full_path && ffCommon_dirname($full_path) != $full_path && check_function("fs_operation")) {
-            purge_dir(DISK_UPDIR . $full_path, $full_path, true);
+            purge_dir(FF_DISK_UPDIR . $full_path, $full_path, true);
         }
 }

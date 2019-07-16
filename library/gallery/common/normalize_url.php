@@ -46,7 +46,7 @@ function normalize_url_by_current_lang_old($url, $prefix = true) {
 
 function normalize_url_by_current_lang($user_path, $prefix = true, $abs_url = false) {
 	$globals = ffGlobals::getInstance("gallery");
-	$schema = cache_get_settings();
+	$schema = Cms::getSchema();
 
 	if($prefix === true) {
 		$prefix = $globals->locale["prefix"];

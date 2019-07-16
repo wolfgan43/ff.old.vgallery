@@ -129,19 +129,19 @@ $oField->extended_type = "File";
 /**
  * Percorso in cui verrà salvato il file
  */
-$oField->file_storing_path = DISK_UPDIR . "/anagraph/[ID_VALUE]";
+$oField->file_storing_path = FF_DISK_UPDIR . "/anagraph/[ID_VALUE]";
 /**
  * Percorso in cui verrà salvato il file temporaneo
  */
-$oField->file_temp_path = DISK_UPDIR . "/anagraph";
+$oField->file_temp_path = FF_DISK_UPDIR . "/anagraph";
 $oField->file_full_path = true;
 $oField->file_check_exist = true;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
 $oField->uploadify_model = $avatar_model;
 $oField->uploadify_model_thumb = ($avatar_model == "default" ? "avatar" : "avatar" . $avatar_model);
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . $oField->uploadify_model_thumb . "/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/" . $oField->uploadify_model_thumb . "/[_FILENAME_]";
 $oField->control_type = "picture_no_link";
 $oGrid->addContent($oField);
 
@@ -188,16 +188,16 @@ $oField->display_label = false;
 $oField->label = ffTemplate::_get_word_by_code("utenti_avatar");
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/anagraph/[ID_VALUE]";
-$oField->file_temp_path = DISK_UPDIR . "/anagraph";
+$oField->file_storing_path = FF_DISK_UPDIR . "/anagraph/[ID_VALUE]";
+$oField->file_temp_path = FF_DISK_UPDIR . "/anagraph";
 $oField->file_full_path = true;
 $oField->file_check_exist = true;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
 $oField->uploadify_model = $avatar_model;
 $oField->uploadify_model_thumb = ($avatar_model == "default" ? "avatar" : "avatar" . $avatar_model);
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . $oField->uploadify_model_thumb . "/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/" . $oField->uploadify_model_thumb . "/[_FILENAME_]";
 $oField->control_type = "picture_no_link";
 $oGrid->addContent($oField);
 
@@ -252,16 +252,16 @@ $oField->display_label = false;
 $oField->label = ffTemplate::_get_word_by_code("utenti_avatar");
 $oField->base_type = "Text";
 $oField->extended_type = "File";
-$oField->file_storing_path = DISK_UPDIR . "/anagraph/[ID_VALUE]";
-$oField->file_temp_path = DISK_UPDIR . "/anagraph";
+$oField->file_storing_path = FF_DISK_UPDIR . "/anagraph/[ID_VALUE]";
+$oField->file_temp_path = FF_DISK_UPDIR . "/anagraph";
 $oField->file_full_path = true;
 $oField->file_check_exist = true;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
 $oField->uploadify_model = $avatar_model;
 $oField->uploadify_model_thumb = ($avatar_model == "default" ? "avatar" : "avatar" . $avatar_model);
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . $oField->uploadify_model_thumb . "/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/" . $oField->uploadify_model_thumb . "/[_FILENAME_]";
 $oField->control_type = "picture_no_link";
 $oGrid->addContent($oField);
 

@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!(AREA_HTML_SHOW_MODIFY || AREA_HTML_SHOW_ADDNEW || AREA_HTML_SHOW_DELETE)) {
+if (!(Auth::env("AREA_HTML_SHOW_MODIFY") || Auth::env("AREA_HTML_SHOW_ADDNEW") || Auth::env("AREA_HTML_SHOW_DELETE"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -74,10 +74,10 @@ if(defined("FTP_USERNAME") && strlen(FTP_USERNAME) && defined("FTP_PASSWORD") &&
 	$oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify";
 	$oGrid->record_id = "HtmlModify";
 	$oGrid->resources[] = $oGrid->record_id;
-	$oGrid->display_new = AREA_HTML_SHOW_ADDNEW;
+	$oGrid->display_new = Auth::env("AREA_HTML_SHOW_ADDNEW");
 	$oGrid->display_edit_bt = false;
-	$oGrid->display_edit_url = AREA_HTML_SHOW_MODIFY;
-	$oGrid->display_delete_bt = AREA_HTML_SHOW_DELETE;
+	$oGrid->display_edit_url = Auth::env("AREA_HTML_SHOW_MODIFY");
+	$oGrid->display_delete_bt = Auth::env("AREA_HTML_SHOW_DELETE");
 
 	// Campi chiave
 	$oField = ffField::factory($cm->oPage);

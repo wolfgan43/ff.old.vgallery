@@ -61,7 +61,7 @@ $sSQL = "SELECT module_search_fields.*
 $db_gallery->query($sSQL);
 if($db_gallery->nextRecord()) 
 {
-	$framework_css = cm_getFrameworkCss();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
     do { 
         $field_name = $db_gallery->getField("name")->getValue();
 
@@ -92,7 +92,7 @@ if($db_gallery->nextRecord())
         if(is_array($framework_css))
         {
             if(!array_key_exists("grid", $arrField[$field_name]["group"]["class"])) {
-                $arrField[$field_name]["group"]["class"]["grid"] = cm_getClassByFrameworkCss(array(
+                $arrField[$field_name]["group"]["class"]["grid"] = Cms::getInstance("frameworkcss")->get(array(
                         (int) $db_gallery->getField("group_grid_xs", "Number", true)
                         ,(int) $db_gallery->getField("group_grid_sm", "Number", true)
                         ,(int) $db_gallery->getField("group_grid_md", "Number", true)

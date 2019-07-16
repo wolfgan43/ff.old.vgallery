@@ -212,17 +212,6 @@ function get_global($type, $key = null) {
 	return $res;
 }
 
-function global_settings($key = null, $settings_path = null) {
-	$globals = ffGlobals::getInstance("gallery");
-	
-	if(!is_array($globals->settings) && !count($globals->settings) && check_function("system_init_settings")) 
-	{
-		system_init_settings($settings_path === null ? $globals->settings_path : $settings_path);
-	}
-	
-	return get_global("settings", $key);
-}
-
 //per rendere i percorsi senza doppi / dove serve
 function stripslash($temp) {
 	if (substr($temp,-1) == "/")
@@ -232,56 +221,54 @@ function stripslash($temp) {
 
 
 
-function check_mod($file_permission, $mod, $enable_lang = false, $skip_owner = false) {
-    if(!ENABLE_STD_PERMISSION)
-        return true;
+function check_mod($file_permission, $mod, $enable_lang = false, $skip_owner = false)
+{
+    if (!Cms::env("ENABLE_STD_PERMISSION")) {
+        $res = true;
+    } else {
+        $user = Auth::get("user");
+        if (!$skip_owner && $file_permission["owner"] > 0 && $file_permission["owner"] === $user->id) {
+            $res = true;
+        } else {
+            if (!is_array($file_permission["groups"])) {
+                $res = true;
+            } else {
+                if (Cms::env("ENABLE_ADV_PERMISSION")) {
+                    $groups = Auth::get("group", array("toArray" => true));
+                    foreach ($groups AS $group) {
+                        if (isset($file_permission["groups"][$group["name"]]) && $file_permission["groups"][$group["name"]] & $mod) {
+                            $res = ($file_permission["groups"][$group["name"]] & 4 ? false : true);
+                            break;
+                        }
+                    }
+                } else if ($file_permission["groups"][$user->acl_primary]) {
+                    if ($file_permission["groups"][$user->acl_primary] & $mod) {
+                        $res = ($file_permission["groups"][$user->acl_primary] & 4 ? false : true);
 
-	$user_permission = get_session("user_permission");
-	$return_val = false;
+                    }
+                } else {
+                    $res = false;
+                }
+            }
+        }
 
-	if(!$skip_owner && $file_permission["owner"] > 0 && $file_permission["owner"] === $user_permission["ID"]) {
-		return true;
-	}
-
-	if (is_array($file_permission["groups"])) {
-		if(ENABLE_ADV_PERMISSION
-			&& strlen($user_permission["primary_gid_default_name"]) 
-			&& array_key_exists($user_permission["primary_gid_default_name"], $file_permission["groups"])
-			&& $file_permission["groups"][$user_permission["primary_gid_default_name"]] > 0 
-		) {
-			if ($file_permission["groups"][$user_permission["primary_gid_default_name"]] & $mod) {
-				$return_val = true;
-			} else {
-				$return_val = false;
-			}
-			if ($file_permission["groups"][$user_permission["primary_gid_default_name"]] & 4) {
-				$return_val = !$return_val;
-			}
-		} else {
-			foreach ($file_permission["groups"] as $key => $value) {
-				if (isset($user_permission["groups"][$key])) {
-					if ($file_permission["groups"][$key] & $mod) {
-						$return_val = true;
-						break;
-					}
-				}
-			} 
-		}
-	}
-
-	if($enable_lang && $return_val && array_key_exists("visible", $file_permission)) {
-		if(is_array($file_permission["visible"]) && count($file_permission["visible"])) {
-			if(isset($file_permission["visible"][($enable_lang === true ? LANGUAGE_INSET : $enable_lang)])) { 
-				$return_val = $file_permission["visible"][($enable_lang === true ? LANGUAGE_INSET : $enable_lang)];
-			} else {
-				$return_val = false;
-			}
-		} else {
-			$return_val = $file_permission["visible"];
-		}
-	}
-	return $return_val;
+        if($enable_lang && $res && array_key_exists("visible", $file_permission)) {
+            if(is_array($file_permission["visible"]) && count($file_permission["visible"])) {
+                if(isset($file_permission["visible"][($enable_lang === true ? LANGUAGE_INSET : $enable_lang)])) {
+                    $res = $file_permission["visible"][($enable_lang === true ? LANGUAGE_INSET : $enable_lang)];
+                } else {
+                    $res = false;
+                }
+            } else {
+                $res = $file_permission["visible"];
+            }
+        }
+    }
+    return $res;
 }
+
+
+
 
 
 
@@ -362,6 +349,9 @@ function use_cache($value = NULL) {
         
     if($value !== NULL) {
 		$globals->cache["enabled"] = $value;
+        if(defined("DEBUG_MODE")) {
+            Cms::getInstance("debug")->dumpLog("use_cache");
+        }
 	}
     return $globals->cache["enabled"];
 }
@@ -392,15 +382,15 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
 		}
 	}
 
-	$uid = get_session("UserNID");
+	$uid = Auth::get("user")->id;
     if($reset) {
 		unset($cache["sid"][$key]);
 		
-		if(is_file(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/" . $key . ".html")) {
-			@unlink(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/" . $key . ".html");
+		if(is_file(CM_CACHE_DISK_PATH . "/sid/" . strtolower(Auth::get("user")->username) . "/" . $key . ".html")) {
+			@unlink(CM_CACHE_DISK_PATH . "/sid/" . strtolower(Auth::get("user")->username) . "/" . $key . ".html");
 		}
-		if(is_file(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/gzip/" . $key . ".html.gz")) {
-			@unlink(CM_CACHE_PATH . "/sid/" . strtolower(get_session("UserID")) . "/gzip/" . $key . ".html.gz");
+		if(is_file(CM_CACHE_DISK_PATH . "/sid/" . strtolower(Auth::get("user")->username) . "/gzip/" . $key . ".html.gz")) {
+			@unlink(CM_CACHE_DISK_PATH . "/sid/" . strtolower(Auth::get("user")->username) . "/gzip/" . $key . ".html.gz");
 		}
 	    $sSQL = "DELETE FROM cache_sid WHERE sid = " . $db->toSql($key) . " AND uid = " . $db->toSql($uid);
 		$db->query($sSQL);
@@ -461,7 +451,7 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
 	
 	
 /*	
-	$file = CM_CACHE_PATH . "/sid.php";
+	$file = CM_CACHE_DISK_PATH . "/sid.php";
     $sid_error = false;
 
     clearstatcache();
@@ -499,7 +489,7 @@ function set_sid($new_sid, $unic_key = null, $reset = false, $smart_url = null) 
 function get_sid($id, $smart_url = null, $return_key = false) {
 	$db = ffDB_Sql::factory();
 	
-	$uid = get_session("UserNID");
+	$uid = Auth::get("user")->id;
 	if(strlen($smart_url)) {
 		$sSQL = "SELECT sid, value FROM cache_sid WHERE smart_url = " . $db->toSql($smart_url) . " AND uid = " . $db->toSql($uid);
 	} else {
@@ -538,7 +528,7 @@ function get_sid($id, $smart_url = null, $return_key = false) {
 	
 	
 	/*
-	$file = CM_CACHE_PATH . "/sid.php";
+	$file = CM_CACHE_DISK_PATH . "/sid.php";
 	
 	if(is_file($file)) {
     	require($file);	

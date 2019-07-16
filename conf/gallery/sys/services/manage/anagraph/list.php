@@ -69,7 +69,7 @@ if($db->nextRecord()) {
     
     $sSQL_field = "";
     if(is_array($arrFormField) && count($arrFormField)) {
-        foreach($arrFormField AS $$arrFormField_key => $arrFormField_value) {
+        foreach($arrFormField AS $arrFormField_key => $arrFormField_value) {
             $sSQL_field .= ", (SELECT 
                                 GROUP_CONCAT(IF(anagraph_rel_nodes_fields.description_text = ''
                                                 , anagraph_rel_nodes_fields.description
@@ -87,7 +87,7 @@ if($db->nextRecord()) {
     }
 }
 
-$user_permission = get_session("user_permission");
+$user = Auth::get("user");
 $sSQL = "SELECT anagraph_categories.ID
                 , anagraph_categories.name
                 , anagraph_categories.limit_by_groups 
@@ -95,15 +95,16 @@ $sSQL = "SELECT anagraph_categories.ID
         ORDER BY anagraph_categories.name";
 $db->query($sSQL);
 if($db->nextRecord()) {
+    $allowed_ana_cat = "";
     do {
         $limit_by_groups = $db->getField("limit_by_groups")->getValue();
         if(strlen($limit_by_groups)) {
             $limit_by_groups = explode(",", $limit_by_groups);
             
-            if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
-                if(strlen($allowed_ana_cat))
+            if(array_search($user->acl, $limit_by_groups) !== false) {
+                if(strlen($allowed_ana_cat)) {
                     $allowed_ana_cat .= ",";
-
+                }
                 $allowed_ana_cat .= $db->getField("ID", "Number", true);
             }
         } else {
@@ -123,7 +124,7 @@ $sSQL = "SELECT anagraph.*
                 , " . CM_TABLE_PREFIX . "mod_security_users.avatar
                 , anagraph.avatar
             ) AS anagraph_avatar
-            " . (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0
+            " . (Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0
                 ? ""
                 : " , (
                         SELECT
@@ -194,7 +195,7 @@ if ($db->nextRecord())
         $php_array[$i]["billcap"] = $db->getField("billcap", "Text", true);
         $php_array[$i]["billtown"] = $db->getField("billtown", "Text", true);
         $php_array[$i]["billprovince"] = $db->getField("billprovince", "Text", true);
-        if(!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0))
+        if(!(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0))
             $php_array[$i]["billstate"] = $db->getField("billstate_label", "Text", true);
             
         $php_array[$i]["shippingreference"] = $db->getField("shippingreference", "Text", true);
@@ -202,13 +203,11 @@ if ($db->nextRecord())
         $php_array[$i]["shippingcap"] = $db->getField("shippingcap", "Text", true);
         $php_array[$i]["shippingtown"] = $db->getField("shippingtown", "Text", true);
         $php_array[$i]["shippingprovince"] = $db->getField("shippingprovince", "Text", true);
-        if(!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0))
+        if(!(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0))
             $php_array[$i]["shippingstate"] = $db->getField("shippingstate", "Text", true);
 
         $php_array[$i]["email"] = $db->getField("anagraph_email", "Text", true);
-        if(check_function("get_user_avatar")) {
-			$php_array[$i]["avatar"] = get_user_avatar($db->getField("anagraph_avatar", "Text", true), false, $php_array[$i]["email"], cm_showfiles_get_abs_url("/avatar"));
-        }
+        $php_array[$i]["avatar"] = Auth::getUserAvatar(null, $db->getField("anagraph_avatar", "Text", true));
 
 
         if(strlen($db->getField("categories", "Text", true)))
@@ -240,7 +239,7 @@ if ($db->nextRecord())
                         , ecommerce_documents_bill.total_bill
                         , 0
                     ) AS revenue
-                    " . (AREA_ECOMMERCE_USE_SHIPPING
+                    " . (Cms::env("AREA_ECOMMERCE_USE_SHIPPING")
                         ? "
                             , '' AS shippingstate
                             , ecommerce_order.ID_ecommerce_shipping AS ID_shipping
@@ -278,7 +277,7 @@ if ($db->nextRecord())
                     LEFT JOIN ecommerce_documents_payments ON ecommerce_documents_payments.ID_bill = ecommerce_documents_bill.ID
                     LEFT JOIN ecommerce_mpay ON ecommerce_mpay.ID = ecommerce_documents_payments.ID_ecommerce_mpay
 					LEFT JOIN ecommerce_order ON ecommerce_order.ID_bill = ecommerce_documents_bill.ID
-                    " . (AREA_ECOMMERCE_USE_SHIPPING
+                    " . (Cms::env("AREA_ECOMMERCE_USE_SHIPPING")
                         ? "
                             LEFT JOIN ecommerce_shipping ON ecommerce_shipping.ID = ecommerce_order.ID_ecommerce_shipping
                         "

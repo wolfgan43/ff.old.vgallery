@@ -32,11 +32,12 @@ if(!$params["invalid"]) {
 	if($params["user_path"] != "" && is_file(FF_DISK_PATH . $params["user_path"])) {
 		ini_set('auto_detect_line_endings',true);
 
-		if(function_exists("output_header"))
-			output_header(FF_DISK_PATH . $params["user_path"], "inline", $params["user_path"], "text/plain", null, null, "text/");
-		//header("Content-type: text/plain");
-		//header("Content-Disposition: inline filename=" . rawurlencode(basename($params["user_path"])));
-		//header("Content-Length: " . filesize(FF_DISK_PATH . $params["user_path"]));
+		//ffMedia::sendHeaders(FF_DISK_PATH . $params["user_path"]);
+        header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
+        header("Pragma: no-cache");
+		header("Content-type: text/plain");
+		header("Content-Disposition: inline filename=" . rawurlencode(basename($params["user_path"])));
+		header("Content-Length: " . filesize(FF_DISK_PATH . $params["user_path"]));
 		readfile(FF_DISK_PATH . $params["user_path"]);
 		exit;
 	} else {
@@ -44,14 +45,14 @@ if(!$params["invalid"]) {
 		$mode 					= $_REQUEST["mode"];
 		require(__DIR__ . "/exclude_fs.php");
 
-		if(strpos(ffCommon_dirname(ffCommon_dirname(__FILE__)), FF_DISK_PATH) === false) {
-			die("File Config Path Corrupted: Wrong[" . FF_DISK_PATH . "] => ChangeIn[" . ffCommon_dirname(ffCommon_dirname(ffCommon_dirname(ffCommon_dirname(ffCommon_dirname(__FILE__))))) . "]");
+		if(strpos(dirname(__DIR__), FF_DISK_PATH) === false) {
+			die("File Config Path Corrupted: Wrong[" . FF_DISK_PATH . "] => ChangeIn[" . dirname(dirname(dirname(dirname(__DIR__)))) . "]");
 		} else {
-			if($params["user_path"] != "" && $params["user_path"] == str_replace(FF_DISK_PATH, "", ffCommon_dirname(ffCommon_dirname(__FILE__)))) {
-				$str_root_path = ffCommon_dirname(ffCommon_dirname(__FILE__));
+			if($params["user_path"] != "" && $params["user_path"] == str_replace(FF_DISK_PATH, "", dirname(__DIR__))) {
+				$str_root_path = dirname(__DIR__);
 			} else {
 				$str_root_path = FF_DISK_PATH . $params["user_path"];
-				$fs_exclude[str_replace(FF_DISK_PATH, "", ffCommon_dirname(ffCommon_dirname(__FILE__)))] = true;
+				$fs_exclude[str_replace(FF_DISK_PATH, "", dirname(__DIR__))] = true;
 			}
 		}
 

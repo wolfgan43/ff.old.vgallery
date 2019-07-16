@@ -32,7 +32,7 @@ function write_array2MongoDB($source, $tbl_name, $db_name = TRACE_MONGO_DATABASE
 function write_array2JSONfile($source, $dest = null)
 {
 	if(!$dest)
-		$dest = CM_CACHE_PATH . "/" . "default" . ".json";
+		$dest = CM_CACHE_DISK_PATH . "/" . "default" . ".json";
 
 	write_data2file(ffCommon_jsonenc($source, false), $dest);
 }
@@ -40,7 +40,7 @@ function write_array2JSONfile($source, $dest = null)
 function write_array2PHPfile($source, $dest = null, $var_name = null)
 {
 	if(!$dest)
-		$dest = CM_CACHE_PATH . "/" . ($var_name ? $var_name : "default") . ".php";
+		$dest = CM_CACHE_DISK_PATH . "/" . ($var_name ? $var_name : "default") . ".php";
 	elseif(!$var_name)
 		$var_name = "default";
 

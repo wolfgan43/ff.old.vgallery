@@ -43,22 +43,11 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 
 	$cached_path = check_file_permission($cache, $user_path, $type);
 	if($cached_path === null) {
-		$user_permission = get_session("user_permission");
-        if(is_array($user_permission) && count($user_permission) && is_array($user_permission["groups"]) && count($user_permission["groups"])) {
-        	if(strlen($user_permission["primary_gid_default_name"]) && !array_key_exists($user_permission["primary_gid_default_name"], $user_permission["groups"])) {
-				$user_permission["groups"][$user_permission["primary_gid_default_name"]] = $user_permission["primary_gid_default"];
-        	}
-        	if(strlen($user_permission["primary_gid_name"]) && !array_key_exists($user_permission["primary_gid_name"], $user_permission["groups"])) {
-				$user_permission["groups"][$user_permission["primary_gid_name"]] = $user_permission["primary_gid"];
-        	}        	
-		    $user_groups = implode(", ", $user_permission["groups"]);
-			if(array_search(MOD_SEC_GUEST_GROUP_ID, $user_permission["groups"]) === false) {
-		    	$user_groups .= ", " . MOD_SEC_GUEST_GROUP_ID;
-		    	$is_guest = false;
-		    } else {
-		    	$is_guest = true;
-		    }
-		    
+	    $user = Auth::get("user");
+        $is_guest = Auth::isGuest();
+
+
+        if($user) {
 		    switch($type) {
 		    	case "vgallery_nodes":
                     if(OLD_VGALLERY) {
@@ -115,7 +104,7 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 					    INNER JOIN `" . $type . "_rel_groups` ON `" . $type . "`.ID = `" . $type . "_rel_groups`.`ID_" . $type . "`
 					    INNER JOIN " . CM_TABLE_PREFIX . "mod_security_groups ON " . CM_TABLE_PREFIX . "mod_security_groups.gid = `" . $type . "_rel_groups`.gid
 				    WHERE 
-					    `" . $type . "_rel_groups`.gid IN (" . $db->toSql($user_groups, "Text", false) . ")
+					    `" . $type . "_rel_groups`.gid IN (" . $db->toSql($user->acl, "Text", false) . ")
 				    ORDER  BY 
 					    LENGTH(full_path) ASC
 					    , " . CM_TABLE_PREFIX . "mod_security_groups.level DESC
@@ -132,9 +121,9 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 					    continue;
 
 			    	$ID_item = $db->getField("ID_item", "Number", true);
-					if($db->getField("gid", "Number", true) == MOD_SEC_GUEST_GROUP_ID && !$is_guest) {
-						if(!isset($cache["auth"][$type][$full_path]["groups"][$user_permission["primary_gid_default_name"]]))
-							$cache["auth"][$type][$full_path]["groups"][$user_permission["primary_gid_default_name"]] = $db->getField("mod")->getValue();
+					if($db->getField("gid", "Number", true) == Cms::env("MOD_AUTH_GUEST_GROUP_ID") && !$is_guest) {
+						if(!isset($cache["auth"][$type][$full_path]["groups"][$user->acl_primary]))
+							$cache["auth"][$type][$full_path]["groups"][$user->acl_primary] = $db->getField("mod")->getValue();
 					} else {
 						$cache["auth"][$type][$full_path]["groups"][$db->getField("group_name")->getValue()] = $db->getField("mod")->getValue();
 					}
@@ -164,9 +153,9 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 					    $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = TRUE;
 
 					if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
-						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
+						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
 							unset($arrCheckReturn[$ID_item]);
-						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
+						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
 							$arrCheckReturn[$ID_item]["is_admin"] = true;
 					}
 			    } while($db->nextRecord());	
@@ -265,9 +254,9 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 					}
 					
 					if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
-						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
+						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
 							unset($arrCheckReturn[$ID_item]);
-						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
+						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
 							$arrCheckReturn[$ID_item]["is_admin"] = true;
 					}							
 				} while($db->nextRecord());
@@ -335,9 +324,9 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 					}
 
 					if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
-						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
+						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
 							unset($arrCheckReturn[$ID_item]);
-						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
+						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
 							$arrCheckReturn[$ID_item]["is_admin"] = true;
 					}							
 				} while($db->nextRecord());

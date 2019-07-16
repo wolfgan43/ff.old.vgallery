@@ -231,23 +231,13 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="{row_class} col-xs-6" id="field_cc_email">
-                        <label class="spanlabel">CC Default Email</label>
-                        <input class="input form-control" type="text" name="CC_FROM_EMAIL" value="{cc_address}" />
+                    <div class="{row_class} col-xs-6" id="field_email_debug">
+                        <label class="spanlabel">Email Debug</label>
+                        <input class="input form-control" type="text" name="EMAIL_DEBUG" value="{email_debug}" />
                     </div>
-                    <div class="{row_class} col-xs-6" id="field_cc_name">
-                        <label class="spanlabel">CC Default Name</label>
-                        <input class="input form-control" type="text" name="CC_FROM_NAME" value="{cc_name}" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="{row_class} col-xs-6" id="field_bcc_email">
+                    <div class="{row_class} col-xs-6" id="field_email_bcc">
                         <label class="spanlabel">BCC Default Email</label>
-                        <input class="input form-control" type="text" name="BCC_FROM_EMAIL" value="{bcc_address}" />
-                    </div>
-                    <div class="{row_class} col-xs-6" id="field_bcc_name">
-                        <label class="spanlabel">BCC Default Name</label>
-                        <input class="input form-control" type="text" name="BCC_FROM_NAME" value="{bcc_name}" />
+                        <input class="input form-control" type="text" name="EMAIL_BCC" value="{email_bcc}" />
                     </div>
                 </div>
                 <fieldset title="SMTP" class="options smtp" id="fieldset_smtp_conf">
@@ -309,13 +299,9 @@
                 </div>
                 <fieldset class="options">
                     <legend><input type="checkbox" id="field_cdn_static" name="CDN_STATIC" value="1" {cdn_static} /> <label class="spanlabel" for="field_cdn_static">CDN Media</label></legend>
-                    <div class="{row_class}" id="field_cdn_static_showfiles">
-                        <label class="spanlabel">Static Media</label>
-                        <input class="input form-control required" readonly="readonly" type="text" name="CM_MEDIACACHE_SHOWPATH" value="{domain_protocol}://media.{domain_primary}.{domain_ext}" />
-                    </div>
                     <div class="{row_class}" id="field_cdn_cm_showfiles">
                         <label class="spanlabel">Render Media</label>
-                        <input class="input form-control required" readonly="readonly" type="text" name="CM_SHOWFILES" value="{domain_protocol}://static.{domain_primary}.{domain_ext}" />
+                        <input class="input form-control required" readonly="readonly" type="text" name="CM_SHOWFILES" value="{domain_protocol}://media.{domain_primary}.{domain_ext}" />
                     </div>
                 </fieldset>
                 <fieldset class="options">
@@ -355,21 +341,23 @@
                     <label class="spanlabel">Memory limit</label>
                     <input class="input form-control required" type="text" name="MEMORY_LIMIT" value="{memory_limit}" />
                 </div>
+                <div class="{row_class}" id="field_cache_adapter">
+                    <label class="spanlabel">Cache Adapter</label>
+                    <select class="combo form-control" name="FF_CACHE_ADAPTER">
+                        <!--BeginSezCacheAdapterItem-->
+                        <option {cache_adapter_current} value="{cache_adapter}">{cache_adapter_label}</option>
+                        <!--EndSezCacheAdapterItem-->
+                    </select>
+                </div>
+                <div class="{row_class}" id="field_composer_path">
+                    <label class="spanlabel">Composer</label>
+                    <input class="input form-control" type="text" name="COMPOSER_PATH" value="{composer_path}" />
+                </div>
                 <div class="{row_class}" id="field_module_security">
                     <input type="checkbox" id="field_module_security_check" name="SECURITY_SHIELD" value="1" {security_shield} />
                     <label class="spanlabel" for="field_module_security_check">Enable Security Shield</label>
                 </div>
                 <hr />
-                <div class="{row_class} server-cnf">
-                    <label class="spanlabel">MemCached:</label>
-                    <input type="hidden" value="{php_ext_memcache}" />
-                    <span class="{php_ext_memcache_class}">{php_ext_memcache_label}</span>
-                </div>
-                <div class="{row_class} server-cnf">
-                    <label class="spanlabel">APC:</label>
-                    <input type="hidden" value="{php_ext_apc}" />
-                    <span class="{php_ext_apc_class}">{php_ext_apc_label}</span>
-                </div>
                 <div class="{row_class} server-cnf">
                     <label class="spanlabel">JSON:</label>
                     <input type="hidden" value="{php_ext_json}" />
@@ -387,8 +375,8 @@
                 </div>
                 <div class="{row_class} server-cnf">
                     <label class="spanlabel">Mysqli Extensions:</label>
-                    <input type="hidden" value="{mysqli_extensions}" />
-                    <span class="{mysqli_extensions_class}">{mysqli_extensions_label}</span>
+                    <input type="hidden" value="{ff_db_interface}" />
+                    <span class="{ff_db_interface_class}">{ff_db_interface_label}</span>
                 </div>
 
                 <div class="helpP">
@@ -709,11 +697,11 @@
                 </div>
                 <div class="{row_class}" id="field_disk_updir">
                     <label class="spanlabel">Disk updir</label>
-                    <input class="input form-control" type="text" name="DISK_UPDIR" value="{disk_updir}" />
+                    <input class="input form-control" type="text" name="FF_DISK_UPDIR" value="{disk_updir}" />
                 </div>
                 <div class="{row_class}" id="field_site_updir">
                     <label class="spanlabel">Site updir</label>
-                    <input class="input form-control" type="text" name="SITE_UPDIR" value="{site_updir}" />
+                    <input class="input form-control" type="text" name="FF_SITE_UPDIR" value="{site_updir}" />
                 </div>
             </fieldset>
             <fieldset title="Session" class="default session hidden" id="fieldset_session_conf">
@@ -727,7 +715,7 @@
                     <input class="input form-control" type="text" name="SESSION_NAME" value="{session_name}" />
                 </div>
                 <div class="{row_class}" id="field_session_permanent">
-                    <input type="checkbox" id="field_session_permanent_check" name="MOD_SECURITY_SESSION_PERMANENT" value="1" {session_permanent} />
+                    <input type="checkbox" id="field_session_permanent_check" name="MOD_AUTH_SESSION_PERMANENT" value="1" {session_permanent} />
                     <label class="spanlabel" for="field_session_permanent_check">Session Permanent</label>
                 </div>
                 <div class="{row_class}" id="field_app_id">

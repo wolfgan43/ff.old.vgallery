@@ -159,18 +159,17 @@ function MD_form_on_do_action($component, $action) {
 function MD_form_on_done_action($component, $action) {
 	$cm = cm::getInstance();
     $db = ffDB_Sql::factory();
-   
-    $user_permission = get_session("user_permission");
-    $uid = $user_permission["ID"];
+
+    $user = Auth::get("user");
 
     switch ($action) {
         case "insert":
             $last_update = time();
-            $UserNID = get_session("UserNID");
-			$UserID = get_session("UserID");
-            
-            if(AREA_SHOW_ECOMMERCE && $component->user_vars["enable_ecommerce"]) {
-            	$ID_node = set_form_node($component, $uid, $component->user_vars["ID_form_node"], false);
+            $UserNID = $user->id;
+			$UserID = $user->username;
+
+            if(Cms::env("AREA_SHOW_ECOMMERCE") && $component->user_vars["enable_ecommerce"]) {
+            	$ID_node = set_form_node($component, $user->id, $component->user_vars["ID_form_node"], false);
 				
 				$cart_item = resolve_ecommerce_detail($component, $ID_node);
 
@@ -179,7 +178,7 @@ function MD_form_on_done_action($component, $action) {
                     $tmp_username = $UserID;
 
                     $force_data = null;
-                    if($UserID == MOD_SEC_GUEST_USER_NAME) {
+                    if(Auth::isGuest()) {
                         foreach($component->form_fields as $form_key => $form_value) {
                             if($form_value->user_vars["name"] == "name") 
                                 $force_data["name"] = $component->form_fields[$form_key]->getValue();
@@ -241,7 +240,7 @@ function MD_form_on_done_action($component, $action) {
 				}
 			} else {
 				$check_mail_function = check_function("process_mail");
-				$res = set_form_node($component, $uid, $component->user_vars["ID_form_node"], $check_mail_function);
+				$res = set_form_node($component, $user->id, $component->user_vars["ID_form_node"], $check_mail_function);
 				if(is_array($res) && count($res)) {
 					$fields = $res["mail"]["fields"];
 					$to = $res["mail"]["to"];
@@ -262,19 +261,20 @@ function MD_form_on_done_action($component, $action) {
                         }
 
                 		if($component->user_vars["force_to_with_user"]) {
-                			$user_email = get_session("UserEmail");
+                			$user_email = $user->email;
                 			if(strlen($user_email)) {
                 				$to[] = $user_email;
-                				
-                				$owner_data = array(
-                					"username" => $UserID
-                					, "name" => $user_permission["name"]
-                					, "surname" => $user_permission["surname"]
-                					, "tel" => $user_permission["tel"]
-                					, "email" => $user_email
-                				);
+
+                                $owner_data = array(
+                                    "username" => $user->username
+                                    , "name" => $user->name
+                                    , "surname" => $user->surname
+                                    , "tel" => $user->tel
+                                    , "email" => $user_email
+                                );
 							}
 						}
+                        $rc = "";
 	                    if($component->user_vars["ID_email"]) {
 	                    	if($check_mail_function) {
 				                $rc .= process_mail(
@@ -335,14 +335,14 @@ function MD_form_on_done_action($component, $action) {
                                 $sSQL = "UPDATE 
                                             users_rel_module_form 
                                         SET 
-                                            users_rel_module_form.ID_form_node = " . $db->toSql($ID_nodes, "Number") . " 
+                                            users_rel_module_form.ID_form_node = " . $db->toSql($component->user_vars["ID_form_node"], "Number") . " 
                                         WHERE
                                             users_rel_module_form.uid = " . $db->toSql($component->user_vars["uid"], "Number") . "
                                             AND users_rel_module_form.ID_module = " . $db->toSql($component->key_fields["form-ID"]->default_value, "Number");
                                 $db->execute($sSQL);
                             } else {
 	                    	if(check_function("check_user_request"))
-	                        	check_user_form_request(array("ID" => $uid));
+	                        	check_user_form_request(array("ID" => $user->id));
                             }
 	                } elseif(is_array($component->user_vars["node"])) {
 	                    $sSQL = "INSERT INTO comment_rel_module_form 
@@ -372,9 +372,9 @@ function MD_form_on_done_action($component, $action) {
                             		, " . $db->toSql($component->user_vars["node"]["ID"], "Number") . "
                             		, " . $db->toSql($component->key_fields["form-ID"]->default_value, "Number") . "
 									, " . $db->toSql($component->user_vars["node"]["tbl_src"], "Text") . "
-                            		, " . $db->toSql($ID_nodes, "Number") . "
+                            		, " . $db->toSql($component->user_vars["ID_form_node"], "Number") . "
                             		, " . $db->toSql($component->user_vars["node"]["path"], "Text") . "
-                            		, " . $db->toSql($uid, "Number") . "
+                            		, " . $db->toSql($user->id, "Number") . "
                     				" . ($component->user_vars["anonymous"]
                     					? "
                             				, " . $db->toSql($component->form_fields["anonymous_nick"]->value) . "
@@ -403,7 +403,7 @@ function MD_form_on_done_action($component, $action) {
             		if(!$_REQUEST["XHR_DIALOG_ID"]) {
 						if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
 				            if($component->ret_url) {
-				                $component->json_result["url"] = $component->ret_url;
+				                $component->json_result["url"] = $component->ret_url . (($component->user_vars["send_mail"] && strlen($rc)) ? "&mc=" . urlencode($rc) : "");
 				            } else {
 			            		if($component->user_vars["report"]) {
 			                		$component->json_result["url"] = FF_SITE_PATH . VG_SITE_NOTIFY . "/form/end" . "?keys[ID]=" . $last_update . (($component->user_vars["send_mail"] && strlen($rc)) ? "&mc=" . urlencode($rc) : "");
@@ -424,7 +424,7 @@ function MD_form_on_done_action($component, $action) {
 							die(ffCommon_jsonenc($component->json_result, true));
 						} else {
 			                if($component->ret_url)
-			                     $component->redirect($component->ret_url);
+			                     $component->redirect($component->ret_url . (($component->user_vars["send_mail"] && strlen($rc)) ? "&mc=" . urlencode($rc) : ""));
 			                else {
 		                		if($component->user_vars["report"]) {
 		                    		$component->redirect(FF_SITE_PATH . VG_SITE_NOTIFY . "/form/end" . "?keys[ID]=" . $last_update . (($component->user_vars["send_mail"] && strlen($rc)) ? "&mc=" . urlencode($rc) : ""));
@@ -477,13 +477,13 @@ function MD_form_on_done_action($component, $action) {
 
 			$ID_node = $component->user_vars["ID_form_node"];
 
-			$res = set_form_node($component, $uid, $ID_node);
+			$res = set_form_node($component, $user->id, $ID_node);
 			if(is_array($res) && count($res)) {
 				$fields = $res["mail"]["fields"];
 				$to = $res["mail"]["to"];
 			}	
 
-            if(AREA_SHOW_ECOMMERCE && $component->user_vars["enable_ecommerce"]) {
+            if(Cms::env("AREA_SHOW_ECOMMERCE") && $component->user_vars["enable_ecommerce"]) {
 				$cart_item = resolve_ecommerce_detail($component, $ID_node);
 				if(is_array($cart_item) && count($cart_item)) {
 					foreach($cart_item AS $order_detail) {
@@ -612,7 +612,7 @@ function set_form_node($component, $uid, $ID_node = 0, $check_mail = true) {
 		            , " . $db->toSql((isset($component->user_vars["hide_on_insert"]) ? $component->user_vars["hide_on_insert"] : 0), "Text") . "
 		            , " . $db->toSql("0", "Number") . "
 		            , " . $db->toSql($last_update, "Number") . "
-		            , " . $db->toSql(get_session("UserNID"), "Number") . "
+		            , " . $db->toSql(Auth::get("user")->id, "Number") . "
 		            , " . $db->toSql("1", "Number") . "
 			    )" ;
 		$db->execute($sSQL);
@@ -638,7 +638,7 @@ function set_form_node($component, $uid, $ID_node = 0, $check_mail = true) {
 		    (
 		        null
 		        , " . $db->toSql($last_update, "Number") . "
-		        , " . $db->toSql(get_session("UserNID"), "Number") . "
+		        , " . $db->toSql(Auth::get("user")->id, "Number") . "
 		        , " . $db->toSql($component->form_fields["tag"]->value, "Text") . "
 	            , " . $db->toSql($component->form_fields["status"]->value, "Number") . "
 		    )" ;
@@ -663,8 +663,8 @@ function set_form_node($component, $uid, $ID_node = 0, $check_mail = true) {
 				        if(!array_key_exists($component->id . "_" . $form_key, $_REQUEST))
 							continue;
 				        
-				        if($component->form_fields[$form_key]->user_vars["is_image"] && is_file(DISK_UPDIR . $form_value->getValue())) {
-							$fields[$component->form_fields[$form_key]->user_vars["group_field"]][$component->form_fields[$form_key]->user_vars["name"]] = cm_showfiles_get_abs_url(str_replace(DISK_UPDIR, "", $form_value->getValue()));
+				        if($component->form_fields[$form_key]->user_vars["is_image"] && is_file(FF_DISK_UPDIR . $form_value->getValue())) {
+							$fields[$component->form_fields[$form_key]->user_vars["group_field"]][$component->form_fields[$form_key]->user_vars["name"]] = cm_showfiles_get_abs_url(str_replace(FF_DISK_UPDIR, "", $form_value->getValue()));
 				        } else {
 				            $fields[$component->form_fields[$form_key]->user_vars["group_field"]][$component->form_fields[$form_key]->user_vars["name"]] = str_replace("<input ", '<input readonly="readonly" ', $form_value->getValue());
 						}
@@ -1085,7 +1085,7 @@ function MD_form_clone($ID_form, $form_new_name = "") {
             }
 			MD_form_clone_dep($ID_form, $ID_new_form, $arrFormField, $arrFormFieldSelectionValue);            			
 
-            MD_form_clone_field_selection($arrFormField, $form_new_smart_url);
+            MD_form_clone_field_selection($arrFormField, $ID_new_form, $form_new_smart_url);
         }  
     }
     
@@ -1214,7 +1214,7 @@ function MD_form_clone_dep($ID_form, $ID_new_form, $arrFormField, $arrFormFieldS
         }
     }
 }
-function MD_form_clone_field_selection($arrNewFormFieldsID, $smart_url = "")
+function MD_form_clone_field_selection($arrNewFormFieldsID, $ID_new_form, $smart_url = "")
 {
 	$db = ffDB_Sql::factory();
 

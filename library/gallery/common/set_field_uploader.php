@@ -25,43 +25,24 @@
  */
 	function set_field_uploader($component) {
 		$cm = cm::getInstance();
-		$html5_enabled = global_settings("ENABLE_HTML5");
-		
+
 		static $dialog_loaded = false;
-		
-		switch($component->widget) {
-			case "uploadify":
-				if($html5_enabled) {
-					$component->widget = "uploadifive";
-				}
-				break;
-			case "kcuploadify":
-				if($html5_enabled) {
-					$component->widget = "kcuploadifive";
-				}
-				break;
-			case "ckuploadify":
-				if($html5_enabled) {
-					$component->widget = "ckuploadifive";
-				}
-				break;
-			case "uploadifive":
-				if(!$html5_enabled) {
-					$component->widget = "uploadify";
-				}
-				break;
-			case "kcuploadifive":
-				if(!$html5_enabled) {
-					$component->widget = "kcuploadify";
-				}
-				break;
-			case "ckuploadifive":
-				if(!$html5_enabled) {
-					$component->widget = "ckuploadify";
-				}
-				break;
-			default:				
-		}
+
+        switch($component->widget) {
+            case "uploadifive":
+            case "uploadify":
+                $component->widget = "uploadifive";
+                break;
+            case "kcuploadifive":
+            case "kcuploadify":
+                $component->widget = "kcuploadifive";
+                break;
+            case "ckuploadifive":
+            case "ckuploadify":
+                $component->widget = "ckuploadifive";
+                break;
+            default:
+        }
 		
 		$component->file_show_edit = true; 
         if(strpos($component->widget, "five") !== false) {

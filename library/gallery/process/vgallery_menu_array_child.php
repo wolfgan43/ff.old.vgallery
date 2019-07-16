@@ -36,14 +36,16 @@ function process_vgallery_menu_array_child($menu_item, $user_path, $source_user_
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"], $layout_settings["AREA_STATIC_MENU_FOLLOW_FRAMEWORK_CSS"], true);
 
-	$tpl_data["custom"] = $vgallery_name . "_menu_child.html";
+    $tpl_data["id"] = $unic_id;
+    $tpl_data["custom"] = $vgallery_name . "_menu_child.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 	
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
     $tpl->set_var("site_path", FF_SITE_PATH);
     $tpl->set_var("theme_inset", THEME_INSET);
@@ -99,13 +101,7 @@ function process_vgallery_menu_array_child($menu_item, $user_path, $source_user_
             if(!$layout_settings["AREA_VGALLERY_SHOW_FULLTREE_ITEM"] && !$item["is_dir"]) {
 				continue;
 			}
-			
-			/*if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
-				$file_permission = get_file_permission($full_path, "vgallery_nodes");
-            if (!check_mod($file_permission, 1, ($enable_multilang_visible ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY)) {  
-                continue;
-            }*/
-            
+
             set_cache_data("V", $item["ID"], $item["ID_vgallery"]);
 			//$globals->cache["data_blocks"]["V" . $item["ID_vgallery"] . "-" . $item["ID"]] = $item["ID"];
             
@@ -115,7 +111,7 @@ function process_vgallery_menu_array_child($menu_item, $user_path, $source_user_
 
 			$image_cover = "";
 			if($layout_settings["AREA_VGALLERY_SHOW_COVER"]) {
-				if(is_file(DISK_UPDIR . $item["cover"])) {
+				if(is_file(FF_DISK_UPDIR . $item["cover"])) {
 					$image_cover = '<img src="' .  FF_SITE_PATH . constant("CM_SHOWFILES") . (strlen($layout_settings["AREA_VGALLERY_SHOW_COVER_MODE"]) ? "/" . $layout_settings["AREA_VGALLERY_SHOW_COVER_MODE"] : "") . $item["cover"] . '" />';
 				}
 			}            

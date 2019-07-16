@@ -1,5 +1,5 @@
 <?php
-function get_resource_cascading($oPage, $setting_path, $name, $no_cascading = false, $base_path = null) {
+function get_resource_cascading($oPage, $setting_path, $name, $base_path = null) {
     $real_name = ffGetFilename($name);
 
     if($base_path === null)
@@ -29,9 +29,6 @@ function get_resource_cascading($oPage, $setting_path, $name, $no_cascading = fa
                 $res = $destination_path . "/" . $cascading_name . "_" . $name;
                 break;
             }
-
-            if ($no_cascading)
-                break;
         } while($setting_path != ffCommon_dirname($setting_path) && $setting_path = ffCommon_dirname($setting_path));
     } 
     

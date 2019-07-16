@@ -59,7 +59,7 @@ function api_get_operation($limit_data = null, $params = null, $sort_field = nul
 	                     ORDER BY ecommerce_documents_payments.date DESC) 
 	                ) AS paymentsmethod"
     ));
-    if(AREA_ECOMMERCE_USE_SHIPPING) {
+    if(Cms::env("AREA_ECOMMERCE_USE_SHIPPING")) {
 		$schema["add_field"]["shippingstate"] = "'' AS shippingstate";
 		$schema["add_field"]["ID_shipping"] = "ecommerce_order.ID_ecommerce_shipping AS ID_shipping";
 		$schema["add_field"]["shipping_method"] = "ecommerce_order.shipping_method AS shipping_method";
@@ -149,7 +149,7 @@ function api_get_operation($limit_data = null, $params = null, $sort_field = nul
                 LEFT JOIN ecommerce_documents_payments ON ecommerce_documents_payments.ID_bill = ecommerce_documents_bill.ID
                 LEFT JOIN ecommerce_mpay ON ecommerce_mpay.ID = ecommerce_documents_payments.ID_ecommerce_mpay
                 LEFT JOIN ecommerce_order ON ecommerce_order.ID_bill = ecommerce_documents_bill.ID
-                " . (AREA_ECOMMERCE_USE_SHIPPING
+                " . (Cms::env("AREA_ECOMMERCE_USE_SHIPPING")
                     ? "
                         LEFT JOIN ecommerce_shipping ON ecommerce_shipping.ID = ecommerce_order.ID_ecommerce_shipping
                     "

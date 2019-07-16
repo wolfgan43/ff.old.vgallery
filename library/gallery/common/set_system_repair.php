@@ -108,35 +108,35 @@ function set_system_repair() {
         @chmod(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/template", 0777);
     }
 
-    if(!@is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . CM_SHOWFILES_THUMB_PATH)) {
-        $arrFtpMkDir[] = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . CM_SHOWFILES_THUMB_PATH;
-        $strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " " . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . CM_SHOWFILES_THUMB_PATH . "<br>";
+    if(!@is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images")) {
+        $arrFtpMkDir[] = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images";
+        $strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " " . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images" . "<br>";
     } else {
-        @chmod(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . CM_SHOWFILES_THUMB_PATH, 0755);
+        @chmod(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images", 0755);
     }    
     
     $strError .= set_fs(FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH, "chmod", array(FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH => true), $arrFtpMkDir, "0777");
 
-    if(!@is_dir(DISK_UPDIR . "/users")) {
-        /*if(@mkdir(DISK_UPDIR . "/users")) {
-            @chmod(DISK_UPDIR . "/users", 0777);
+    if(!@is_dir(FF_DISK_UPDIR . "/users")) {
+        /*if(@mkdir(FF_DISK_UPDIR . "/users")) {
+            @chmod(FF_DISK_UPDIR . "/users", 0777);
         } else {*/
-            $arrFtpMkDirUpload[] = "/" . basename(DISK_UPDIR) . "/users";
-            $strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /" . basename(DISK_UPDIR) . "/users" . "<br>";
+            $arrFtpMkDirUpload[] = "/" . basename(FF_DISK_UPDIR) . "/users";
+            $strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /" . basename(FF_DISK_UPDIR) . "/users" . "<br>";
         //}
     } else {
-        @chmod(DISK_UPDIR . "/users", 0777);
+        @chmod(FF_DISK_UPDIR . "/users", 0777);
     }
 
-    $strError .= set_fs("/" . basename(DISK_UPDIR) . "/users", "chmod", null, $arrFtpMkDirUpload, "0777");
+    $strError .= set_fs("/" . basename(FF_DISK_UPDIR) . "/users", "chmod", null, $arrFtpMkDirUpload, "0777");
     
     if(!$strError) {
-        if(is_dir(DISK_UPDIR . "/_sys")) {
-            $strError = set_fs("/" . basename(DISK_UPDIR) . "/_sys", "chmod", NULL, NULL, "0777");
+        if(is_dir(FF_DISK_UPDIR . "/_sys")) {
+            $strError = set_fs("/" . basename(FF_DISK_UPDIR) . "/_sys", "chmod", NULL, NULL, "0777");
             if(check_function("fs_operation")) {
-                full_copy(DISK_UPDIR . "/_sys", FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH, true);
+                full_copy(FF_DISK_UPDIR . "/_sys", FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH, true);
                 if(is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/users")) {
-                     full_copy(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/users", DISK_UPDIR . "/users", true);
+                     full_copy(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/users", FF_DISK_UPDIR . "/users", true);
                 }
 
                 if(is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/email"))

@@ -24,15 +24,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @link https://github.com/wolfgan43/vgallery
  */
  if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
- 	 ffDB_Sql::addEvent("on_factory_done", "ffDB_Sql_on_factory_done");	 
+ 	// ffDB_Sql::addEvent("on_factory_done", "ffDB_Sql_on_factory_done");
 
-     cm::getInstance()->addEvent("mod_security_on_check_session", "request_info", ffEvent::PRIORITY_DEFAULT);
+     Auth::addEvent("on_check_session", "request_info");
+
+     //cm::getInstance()->addEvent("mod_security_on_check_session", "request_info", ffEvent::PRIORITY_DEFAULT);
 
 	/* if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/routing_table.xml")) {
 		 if(check_function("system_gallery_redirect"))
 		    cm::getInstance()->addEvent("on_before_init", "system_gallery_redirect", ffEvent::PRIORITY_HIGH);
 	 }*/
-	    
+
      if(check_function("system_init"))     
         cm::getInstance()->addEvent("on_after_init", "system_init", ffEvent::PRIORITY_HIGH);
 
@@ -44,8 +46,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   	//$globals->is_restricted_page        = false;
 	$globals->user_path                 = null;
 	$globals->request          			= null;
-	$globals->user_path_params          = "";
-	$globals->user_path_shard           = ""; //non usata realmente ffl e page in path
     //$globals->frame_path                = null;
     //$globals->error_path                = null;
     //$globals->services_path             = null;
@@ -105,7 +105,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 											"menu" => null
 											, "pages" => null
 										);
-	$globals->settings                  = array();
 	$globals->fixed_pre                 = array(
                                             "body" => null
                                             , "content" => null
@@ -154,27 +153,57 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		 }
 	 };
 	 $globals->setAuthor = function($id, $params = null) {
-		 $globals = ffGlobals::getInstance("gallery");
+        $globals = ffGlobals::getInstance("gallery");
+        $author = array();
 
-		 if(!$params) {
-			 //todo: da implementare la classe anagraph
-			 check_function("get_user_data");
-			 $params 							= user2anagraph($id, "anagraph");
+        if(!$params) {
+            $anagraph                                                   = Anagraph::getInstanceNoStrict()->read(
+                                                                            array(
+                                                                                "anagraph.ID"
+                                                                                , "anagraph.avatar"
+                                                                                , "anagraph.name"
+                                                                                , "anagraph.email"
+                                                                                , "anagraph.tel"
+                                                                                , "anagraph_seo.visible"
+                                                                                , "anagraph_seo.permalink"
+                                                                                , "anagraph.tags"
+                                                                                , "anagraph.ID_user"
+                                                                                , "anagraph_role.name" => "role"
+                                                                            )
+                                                                            , array(
+                                                                                "anagraph.ID" => $id
+                                                                            )
+                                                                        );
 
-		 }
-		 $globals->author = array(
-			 "id" 								=> (int) $id
-			 , "avatar"							=> $params["avatar"]
-			 , "name" 							=> ($params["role"] ? $params["role"] . " " : "") . $params["name"] . " " . $params["surname"]
-			 , "src" 							=> ($params["visible"] ? $params["permalink"] : "")
-			 , "url" 							=> ($params["visible"] ? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $params["permalink"] : "")
-			 , "tags" 							=> explode(",", $params["tags"])
-			 , "uid" 							=> (int) $params["uid"]
-		 );
-	 };
-	 $globals->setPage = function($user_vars) {
+            if(is_array($anagraph) && count($anagraph)) {
+                $author = array(
+                    "id" 												=> $anagraph["ID"]
+                    , "avatar"											=> $anagraph["avatar"]
+                    , "name" 											=> ($anagraph["role"] ? $anagraph["role"] . " " : "") . $anagraph["name"]
+                    , "smart_url" 										=> ffCommon_url_rewrite($anagraph["name"])
+                    , "email"											=> $anagraph["email"]
+                    , "tel"												=> $anagraph["tel"]
+                    , "src" 											=> ($anagraph["visible"] ? $anagraph["permalink"] : "")
+                    , "url" 											=> ($anagraph["visible"] ? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $_SERVER["HTTP_HOST"] . $anagraph["permalink"] : "")
+                    , "tags" 											=> explode(",", $anagraph["tags"])
+                    , "uid" 											=> $anagraph["ID_user"]
+                    , "user_vars"										=> array()
+                );
+            }
+        }
+
+        $globals->author = array_replace(
+            (array) $globals->author
+            , (array) $author
+            , (array) $params
+        );
+
+        return $globals->author;
+    };
+
+    $globals->setPage = function($user_vars) {
 		 $globals = ffGlobals::getInstance("gallery");
 
 		 $globals->user_vars = array_replace($globals->user_vars, $user_vars);
-	 };
+    };
 }

@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -104,7 +104,7 @@ if(check_function("MD_general_on_done_action"))
 	$oRecord->addEvent("on_done_action", "MD_general_on_done_action");
 if(isset($_REQUEST["keys"]["formcnf-ID"]))
 	$oRecord->addEvent("on_done_action", "FormConfigField_on_done_action");
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
 
 $oField = ffField::factory($cm->oPage);
 $oField->id = "formcnf-ID";
@@ -209,6 +209,27 @@ $oField->base_type = "Number";
 $oField->control_type = "checkbox";
 $oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
 $oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oField->properties["onclick"] = "jQuery('#" . $oRecord->id . "_ID_email').closest('.emailbox').toggleClass('hidden');";
+$oRecord->addContent($oField, "Email");
+
+$send_email = $db_gallery->lookup("module_form", "ID", $_REQUEST["keys"]["formcnf-ID"], false, "send_mail");
+
+
+$oField = ffField::factory($cm->oPage);
+$oField->id = "ID_email";
+$oField->label = ffTemplate::_get_word_by_code("form_fields_email");
+$oField->base_type = "Number";
+$oField->widget = "activecomboex";
+$oField->actex_update_from_db = true;
+$oField->source_SQL = "SELECT  ID, name FROM email ORDER BY name";
+$oField->actex_dialog_url = $cm->oPage->site_path . VG_SITE_ADMINGALLERY . "/utility/email/modify";
+$oField->actex_dialog_edit_params = array("keys[email-ID]" => $oRecord->id . "_" . $oField->id);
+$oField->actex_dialog_delete_url = $oField->actex_dialog_url . "?frmAction=EmailModify_confirmdelete";
+$oField->resources[] = "EmailModify";
+$oField->container_class = "emailbox";
+if(!$send_email) {
+    $oField->container_class .= " hidden";
+}
 $oRecord->addContent($oField, "Email");
 
 $oField = ffField::factory($cm->oPage);
@@ -234,19 +255,6 @@ $oField->base_type = "Number";
 $oField->control_type = "checkbox";
 $oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
 $oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-$oRecord->addContent($oField, "Email");
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "ID_email";
-$oField->label = ffTemplate::_get_word_by_code("form_fields_email");
-$oField->base_type = "Number";
-$oField->widget = "activecomboex";
-$oField->actex_update_from_db = true;
-$oField->source_SQL = "SELECT  ID, name FROM email";
-$oField->actex_dialog_url = $cm->oPage->site_path . VG_SITE_ADMINGALLERY . "/utility/email/modify";
-$oField->actex_dialog_edit_params = array("keys[email-ID]" => $oRecord->id . "_" . $oField->id);
-$oField->actex_dialog_delete_url = $oField->actex_dialog_url . "?frmAction=EmailModify_confirmdelete";
-$oField->resources[] = "EmailModify";
 $oRecord->addContent($oField, "Email");
 
 $oRecord->addTab("Report");
@@ -280,7 +288,7 @@ $oField->class = "input advanced";
 $oField->label = ffTemplate::_get_word_by_code("form_config_action");
 $oRecord->addContent($oField, "Report");
 
-if(AREA_SHOW_ECOMMERCE) {
+if(Cms::env("AREA_SHOW_ECOMMERCE")) {
     $oRecord->addTab("Ecommerce");
     $oRecord->setTabTitle("Ecommerce", ffTemplate::_get_word_by_code("form_config_ecommerce"));
 
@@ -488,7 +496,7 @@ $oField->id = "limit_by_groups";
 $oField->label = ffTemplate::_get_word_by_code("form_config_groups");
 $oField->base_type = "Text";
 $oField->extended_type = "Selection";
-$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . MOD_SEC_GUEST_GROUP_NAME . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
+$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
 $oField->control_type = "input";
 $oField->widget = "checkgroup";
 $oField->grouping_separator = ",";

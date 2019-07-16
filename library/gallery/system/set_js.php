@@ -1,5 +1,5 @@
 <?php
-function system_set_js($oPage, $setting_path, $reset = true, $destination_path = null, $use_admin_ajax = false, $js_no_cascading = false, $use_ff_event = true) 
+function system_set_js($oPage, $setting_path, $reset = true, $destination_path = null, $use_admin_ajax = false, $use_ff_event = true)
 {
     $db = ffDB_Sql::factory();
     $cm = cm::getInstance();
@@ -71,9 +71,9 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
 
 	if(is_array($globals->js["link"]) && count($globals->js["link"])) {
 		foreach($globals->js["link"] AS $js_name => $js_path) {
-			$cm->oPage->tplAddJs($js_name, array(
+            $oPage->tplAddJs($js_name, array(
 				"path" => ffCommon_dirname($js_path)
-			, "file" => basename($js_path)
+			    , "file" => basename($js_path)
 			));
 		}
 	}
@@ -84,15 +84,6 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
                 $oPage->tplAddJs($js_name, $js_name . ".js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools", false, $cm->isXHR()); 
         }
     }
-
-	if(is_array($globals->css["link"]) && count($globals->css["link"])) {
-		foreach($globals->css["link"] AS $css_name => $css_path) {
-			$cm->oPage->tplAddJs($css_name, array(
-				"path" => ffCommon_dirname($css_path)
-			, "file" => basename($css_path)
-			));
-		}
-	}
 
     if(is_array($globals->js["embed"]) && count($globals->js["embed"])) {
         foreach($globals->js["embed"] AS $js_name => $js_embed) {
@@ -140,7 +131,7 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
 
 
     //js di livello
-    system_set_js_level($oPage, $setting_path, $js_no_cascading, $destination_path, $use_ff_event);
+    system_set_js_level($oPage, $setting_path, $destination_path, $use_ff_event);
     
     if($reset) {
         $oPage->parse_css();
@@ -148,7 +139,7 @@ function system_set_js($oPage, $setting_path, $reset = true, $destination_path =
     }
 }
 
-function system_set_js_level($oPage, $setting_path, $js_no_cascading = false, $destination_path = null, $use_ff_event = true) {
+function system_set_js_level($oPage, $setting_path, $destination_path = null, $use_ff_event = true) {
     $globals = ffGlobals::getInstance("gallery");
 
     $js_cascading = array();
@@ -200,9 +191,6 @@ function system_set_js_level($oPage, $setting_path, $js_no_cascading = false, $d
             if (strlen($js_name) && file_exists($oPage->disk_path . $destination_path . "/events/" . $js_name . ".js")) {
                 $js_events_cascading[] = $oPage->disk_path . $destination_path . "/events/" . $js_name . ".js";
             }
-
-            if ($js_no_cascading)
-                break;
         } while($setting_path != ffCommon_dirname($setting_path) && $setting_path = ffCommon_dirname($setting_path));
         
         if(count($js_cascading)) {

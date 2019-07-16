@@ -51,10 +51,10 @@ function get_file_properties($user_path, $table, $display, $ID_layout = null) {
 		if($thumb_properties)
 			$user_path = "/" . $arrUserPath[2];
     }
-    	
+
     if(!$thumb_properties)
         $thumb_properties = get_file_properties_default($table, $display);
-            
+
     $thumb_properties["source"] = $user_path;
 
     return $thumb_properties;
@@ -63,88 +63,88 @@ function get_file_properties($user_path, $table, $display, $ID_layout = null) {
 function load_settings_social($ID = null) 
 {
 	static $loaded_properties = null;
-	
+
 	if(!is_array($loaded_properties)) {
-		$db = ffDB_Sql::factory();
+        $loaded_properties = array();
+
+        $db = ffDB_Sql::factory();
 
 		$sSQL = "SELECT settings_thumb_social.*
 				FROM settings_thumb_social
 				WHERE 1
 				ORDER BY ID";
 		$db->query($sSQL);
-		if($db->nextRecord()) {
-			$loaded_properties = array();
-			do {
-				$ID_social = $db->getField("ID", "Number", true);
-				$loaded_properties[$ID_social]["ID"] 													= $ID_social;
-				//Facebook Admin
-				$social_tag 																			= $db->getField("fb:admins", "Text", true);
-				if($social_tag)
-					$loaded_properties[$ID_social]["done"]["fb:admins"]          						= array("content" => $db->getField($social_tag, "Text", true), "type" => "property");
+		$recordset                                                                                      = $db->getRecordset();
+		foreach($recordset AS $record) {
+		    $ID_social                                                                                  = $record["ID"];
+            $loaded_properties[$ID_social]["ID"] 													    = $ID_social;
+            //Facebook Admin
+            $social_tag 																			    = $record["fb:admins"];
+            if($social_tag)
+                $loaded_properties[$ID_social]["done"]["fb:admins"]          						    = array("content" => $record[$social_tag], "type" => "property");
 
-				//Facebook AppId
-				$social_tag 																			= $db->getField("fb:app_id", "Text", true);
-				if($social_tag)
-					$loaded_properties[$ID_social]["done"]["fb:app_id"]           						= array("content" => $social_tag, "type" => "property");
+            //Facebook AppId
+            $social_tag 																			    = $record["fb:app_id"];
+            if($social_tag)
+                $loaded_properties[$ID_social]["done"]["fb:app_id"]           						    = array("content" => $social_tag, "type" => "property");
 
-				//Facebook ProfileId
-				$social_tag 																			= $db->getField("fb:profile_id", "Text", true);
-				if($social_tag)
-					$loaded_properties[$ID_social]["done"]["fb:profile_id"]       						= array("content" => $social_tag, "type" => "property");
+            //Facebook ProfileId
+            $social_tag 																			    = $record["fb:profile_id"];
+            if($social_tag)
+                $loaded_properties[$ID_social]["done"]["fb:profile_id"]       						    = array("content" => $social_tag, "type" => "property");
 
-				//Facebook Type
-				$social_tag 																			= $db->getField("og:type", "Text", true);
-				if($social_tag) {
-					$loaded_properties[$ID_social]["done"]["og:type"]            						= array("content" => $social_tag, "type" => "property");
-					switch($social_tag) {
-						case "";
-							break;
-						default:
-					}
-				}				
-				//Facebook Image
-				$social_tag 																			= $db->getField("og:image:mode", "Text", true);
-				if($social_tag) {
-					$loaded_properties[$ID_social]["todo"]["og:image"]["fields"]    					= $db->getField("og:image", "Text", true);
-					$loaded_properties[$ID_social]["todo"]["og:image"]["mode"]      					= $social_tag;
-				}
-				//Facebook Video
-				$social_tag 																			= $db->getField("og:video", "Text", true);
-				if($social_tag) {
-					$loaded_properties[$ID_social]["todo"]["og:video"]["fields"]    					= $social_tag;
-					$loaded_properties[$ID_social]["todo"]["og:video"]["child"]["og:video:height"]		= array("content" => $db->getField("og:video:height", "Text", true), "type" => "property");
-					$loaded_properties[$ID_social]["todo"]["og:video"]["child"]["og:video:width"]		= array("content" => $db->getField("og:video:width", "Text", true), "type" => "property");
-					$loaded_properties[$ID_social]["todo"]["og:video"]["child"]["og:video:type"]		= array("content" => "video/mp4", "type" => "property");
-				}
-				//Facebook Audio
-				$social_tag 																			= $db->getField("og:audio", "Text", true);
-				if($social_tag) {
-					$loaded_properties[$ID_social]["todo"]["og:audio"]["fields"]           				= $social_tag;
-					$loaded_properties[$ID_social]["todo"]["og:audio"]["child"]["og:audio:type"]		= array("content" => "audio/vnd.facebook.bridge", "type" => "property");
-				}
-				//Twitter Card
-				$social_tag 																			= $db->getField("twitter:card", "Text", true);
-				if($social_tag)
-					$loaded_properties[$ID_social]["done"]["twitter:card"]     							= array("content" => $social_tag, "type" => "name");
+            //Facebook Type
+            $social_tag 																			    = $record["og:type"];
+            if($social_tag) {
+                $loaded_properties[$ID_social]["done"]["og:type"]            						    = array("content" => $social_tag, "type" => "property");
+                switch($social_tag) {
+                    case "";
+                        break;
+                    default:
+                }
+            }
+            //Facebook Image
+            $social_tag 																			    = $record["og:image:mode"];
+            if($social_tag) {
+                $loaded_properties[$ID_social]["todo"]["og:image"]["fields"]    					    = $record["og:image"];
+                $loaded_properties[$ID_social]["todo"]["og:image"]["mode"]      					    = $social_tag;
+            }
+            //Facebook Video
+            $social_tag 																			    = $record["og:video"];
+            if($social_tag) {
+                $loaded_properties[$ID_social]["todo"]["og:video"]["fields"]    					    = $social_tag;
+                $loaded_properties[$ID_social]["todo"]["og:video"]["child"]["og:video:height"]		    = array("content" => $record["og:video:height"], "type" => "property");
+                $loaded_properties[$ID_social]["todo"]["og:video"]["child"]["og:video:width"]		    = array("content" => $record["og:video:width"], "type" => "property");
+                $loaded_properties[$ID_social]["todo"]["og:video"]["child"]["og:video:type"]		    = array("content" => "video/mp4", "type" => "property");
+            }
+            //Facebook Audio
+            $social_tag 																			    = $record["og:audio"];
+            if($social_tag) {
+                $loaded_properties[$ID_social]["todo"]["og:audio"]["fields"]           				    = $social_tag;
+                $loaded_properties[$ID_social]["todo"]["og:audio"]["child"]["og:audio:type"]		    = array("content" => "audio/vnd.facebook.bridge", "type" => "property");
+            }
+            //Twitter Card
+            $social_tag 																			    = $record["twitter:card"];
+            if($social_tag)
+                $loaded_properties[$ID_social]["done"]["twitter:card"]     							    = array("content" => $social_tag, "type" => "name");
 
-				//Twitter Site
-				$social_tag 																			= $db->getField("twitter:site", "Text", true);
-				if($social_tag)
-					$loaded_properties[$ID_social]["done"]["twitter:site"]     							= array("content" => "@" . $social_tag, "type" => "name");
-					
-				//Twitter Creator
-				$social_tag 																			= $db->getField("twitter:creator", "Text", true);
-				if($social_tag)
-					$loaded_properties[$ID_social]["done"]["twitter:creator"]     						= array("content" => "@" . $social_tag, "type" => "name");
+            //Twitter Site
+            $social_tag 																			    = $record["twitter:site"];
+            if($social_tag)
+                $loaded_properties[$ID_social]["done"]["twitter:site"]     							    = array("content" => "@" . $social_tag, "type" => "name");
 
-				//Twitter Image
-				$social_tag 																			= $db->getField("twitter:image:mode", "Text", true);
-				if($social_tag) {
-					$loaded_properties[$ID_social]["todo"]["twitter:image"]["fields"]					= $db->getField("twitter:image", "Text", true);
-					$loaded_properties[$ID_social]["todo"]["twitter:image"]["mode"] 					= $social_tag;
-				}
-			} while($db->nextRecord());
-		}
+            //Twitter Creator
+            $social_tag 																			    = $record["twitter:creator"];
+            if($social_tag)
+                $loaded_properties[$ID_social]["done"]["twitter:creator"]     						    = array("content" => "@" . $social_tag, "type" => "name");
+
+            //Twitter Image
+            $social_tag 																			    = $record["twitter:image:mode"];
+            if($social_tag) {
+                $loaded_properties[$ID_social]["todo"]["twitter:image"]["fields"]					    = $record["twitter:image"];
+                $loaded_properties[$ID_social]["todo"]["twitter:image"]["mode"] 					    = $social_tag;
+            }
+        }
 	}
 	
 	if($ID) 
@@ -159,15 +159,10 @@ function load_settings_thumb()
 	
 	if(!is_array($loaded_properties))
 	{
-		$ffcache_modes_success = false;
-		if (FF_ENABLE_MEM_SHOWFILES_CACHING)
-		{
-			$cache = ffCache::getInstance(CM_CACHE_ADAPTER);
-			
-			if(!(defined("DISABLE_CACHE") && isset($_REQUEST["__nocache__"]) && !isset($_REQUEST["__debug__"]) && !isset($_REQUEST["__query__"])))
-				$loaded_properties = $cache->get("__vgallery_settings_thumb__", $ffcache_modes_success);
-		}
-		if (!$ffcache_modes_success)
+        $cache = ffCache::getInstance();
+        $loaded_properties = $cache->get("/vg/thumbs");
+
+        if (!$loaded_properties)
 		{
 			$loaded_properties = array();
 
@@ -249,121 +244,122 @@ function load_settings_thumb()
 					WHERE 1
 					ORDER BY items";
 			$db->query($sSQL);
-			if($db->nextRecord()) {
-				do {
-					$tbl_src 																					= $db->getField("tbl_src", "Text", true);
-					$item 																						= $db->getField("items", "Text", true);
-					$ID_layout 																					= $db->getField("ID_layout", "Number", true);
-					$ID_thumb_social 																			= $db->getField("thumb_ID_social", "Number", true);
-					$ID_detail_social 																			= $db->getField("preview_ID_social", "Number", true);
+			$recordset                                                                                          = $db->getRecordset();
+			foreach ($recordset AS $record) {
+                $tbl_src 																					    = $record["tbl_src"];
+                $item 																						    = $record["items"];
+                $ID_layout 																					    = $record["ID_layout"];
+                $ID_thumb_social 																			    = $record["thumb_ID_social"];
+                $ID_detail_social 																			    = $record["preview_ID_social"];
 
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["ID"]                  		= $db->getField("ID", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["tblsrc"]                  	= $tbl_src;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["item"]                  	= $item;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["ID_layout"]                 = $ID_layout;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["sort"]          			= $db->getField("sort", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["sort_method"]          		= $db->getField("sort_method", "Text", true);
-		            //$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["last_update"]              	= $db->getField("last_update", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["max_upload"]                = $db->getField("max_upload", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["max_items"]                 = $db->getField("max_items", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["allow_insert_dir"]          = $db->getField("allow_insert_dir", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["allow_insert_file"]         = $db->getField("allow_insert_file", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["hide_dir"]                  = $db->getField("hide_dir", "Text", true);
-		            
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]								= $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"];
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_ID_mode"]        = $db->getField("thumb_container_ID_mode", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["hide"]          			= $db->getField("thumb_hide", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_mode"]           = preg_replace('/[^a-zA-Z0-9\_]/', '', $db->getField("thumb_container_mode", "Text", true));
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["item_size"]                = (strlen($db->getField("thumb_item", "Text", true)) ? explode(",", $db->getField("thumb_item", "Text", true)) : "");
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["wrap"]						= (strlen($db->getField("thumb_wrap", "Text", true)) ? explode(",", $db->getField("thumb_wrap", "Text", true)) : "");
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["fluid"]                    = $db->getField("thumb_fluid", "Number", true);
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_grid"]             = (strlen($db->getField("thumb_grid", "Text", true)) ? explode(",", $db->getField("thumb_grid", "Text", true)) : "");
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_extra"]            = (strlen($db->getField("thumb_extra", "Text", true)) ? explode(",", $db->getField("thumb_extra", "Text", true)) : "");
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_extra_class"]   	= array(
-		            																								"left" => $db->getField("thumb_extra_class_left", "Text", true)
-		            																								, "right" => $db->getField("thumb_extra_class_right", "Text", true)
-		            																							);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_extra_location"]   = $db->getField("thumb_extra_location", "Number", true);
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_class"]			= $db->getField("thumb_class", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["rec_per_page"]             = $db->getField("thumb_rec_per_page", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["rec_per_page_all"]         = $db->getField("thumb_rec_per_page_all", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["npage_per_frame"]          = $db->getField("thumb_npage_per_frame", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["direction_arrow"]          = $db->getField("thumb_direction_arrow", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["frame_arrow"]              = $db->getField("thumb_frame_arrow", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["custom_page"]              = $db->getField("thumb_custom_page", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["tot_elem"]                 = $db->getField("thumb_tot_elem", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["frame_per_page"]           = $db->getField("thumb_frame_per_page", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["pagenav_location"]         = $db->getField("thumb_pagenav_location", "Text", true);
-                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["infinite"]                 = $db->getField("thumb_pagenav_infinite", "Number", true);
-                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["alphanum"]                 = $db->getField("thumb_pagenav_alphanum", "Text", true);
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["ID"]                  		    = $record["ID"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["tblsrc"]                  	    = $tbl_src;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["item"]                  	    = $item;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["ID_layout"]                     = $ID_layout;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["sort"]          			    = $record["sort"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["sort_method"]          		    = $record["sort_method"];
+                //$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["last_update"]              	= $record["last_update"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["max_upload"]                    = $record["max_upload"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["max_items"]                     = $record["max_items"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["allow_insert_dir"]              = $record["allow_insert_dir"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["allow_insert_file"]             = $record["allow_insert_file"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"]["hide_dir"]                      = $record["hide_dir"];
 
-					//Image Thumb Settings
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["fields"]       	= (strlen($db->getField("thumb_image", "Text", true)) ? explode(",", $db->getField("thumb_image", "Text", true)) : "");
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["link_to"]         = $db->getField("thumb_image_detail", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]        	= $db->getField("thumb_display_view_mode", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["class"]    		= preg_replace('/[^a-zA-Z0-9\-]/', '', $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]);
-		            
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["src"] = get_image_properties_by_grid_system(
-		            	$db->getField("thumb_ID_image", "Number", true)
-		            	, $db->getField("thumb_ID_image_md", "Number", true)
-		            	, $db->getField("thumb_ID_image_sm", "Number", true)
-		            	, $db->getField("thumb_ID_image_xs", "Number", true)
-		            );
-		            
-					if($ID_thumb_social)
-						$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["social"] 				= load_settings_social($ID_thumb_social);
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]								    = $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_ID_mode"]            = $record["thumb_container_ID_mode"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["hide"]          			    = $record["thumb_hide"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["container_mode"]               = preg_replace('/[^a-zA-Z0-9\_]/', '', $record["thumb_container_mode"]);
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["item_size"]                    = (strlen($record["thumb_item"]) ? explode(",", $record["thumb_item"]) : "");
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["wrap"]						    = (strlen($record["thumb_wrap"]) ? explode(",", $record["thumb_wrap"]) : "");
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["fluid"]                        = $record["thumb_fluid"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_grid"]                 = (strlen($record["thumb_grid"]) ? explode(",", $record["thumb_grid"]) : "");
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_extra"]                = (strlen($record["thumb_extra"]) ? explode(",", $record["thumb_extra"]) : "");
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_extra_class"]   	    = array(
+                                                                                                                    "left" => $record["thumb_extra_class_left"]
+                                                                                                                    , "right" => $record["thumb_extra_class_right"]
+                                                                                                                );
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_extra_location"]       = $record["thumb_extra_location"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["default_class"]			    = $record["thumb_class"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["rec_per_page"]                 = $record["thumb_rec_per_page"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["rec_per_page_all"]             = $record["thumb_rec_per_page_all"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["npage_per_frame"]              = $record["thumb_npage_per_frame"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["direction_arrow"]              = $record["thumb_direction_arrow"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["frame_arrow"]                  = $record["thumb_frame_arrow"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["custom_page"]                  = $record["thumb_custom_page"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["tot_elem"]                     = $record["thumb_tot_elem"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["frame_per_page"]               = $record["thumb_frame_per_page"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["pagenav_location"]             = $record["thumb_pagenav_location"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["infinite"]                     = $record["thumb_pagenav_infinite"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["alphanum"]                     = $record["thumb_pagenav_alphanum"];
 
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]							= $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"];
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_ID_mode"]    	= $db->getField("preview_container_ID_mode", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["hide"]          			= $db->getField("preview_hide", "Number", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_mode"]         	= preg_replace('/[^a-zA-Z0-9\_]/', '', $db->getField("preview_container_mode", "Text", true));
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["item_size"]              	= 1;
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["wrap"]					= "";
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["fluid"]                  	= $db->getField("preview_fluid", "Number", true);
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_grid"]           	= (strlen($db->getField("preview_grid", "Text", true)) ? explode(",", $db->getField("preview_grid", "Text", true)) : "");
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_extra"]          	= (strlen($db->getField("preview_extra", "Text", true)) ? explode(",", $db->getField("preview_extra", "Text", true)) : "");
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_extra_class"]   	= array(
-		            																								"left" => $db->getField("preview_extra_class_left", "Text", true)
-		            																								, "right" => $db->getField("preview_extra_class_right", "Text", true)
-		            																							);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_extra_location"] 	= $db->getField("preview_extra_location", "Number", true);
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_class"]			= $db->getField("preview_class", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["rec_per_page"]           	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["rec_per_page_all"]       	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["npage_per_frame"]        	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["direction_arrow"]        	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["frame_arrow"]            	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["custom_page"]            	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["tot_elem"]               	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["frame_per_page"]         	= 0;
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["pagenav_location"]       	= "";
-                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["infinite"]                = false;
-                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["alphanum"]       			= "";
+                //Image Thumb Settings
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["fields"]       	    = (strlen($record["thumb_image"]) ? explode(",", $record["thumb_image"]) : "");
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["link_to"]             = $record["thumb_image_detail"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]        	    = $record["thumb_display_view_mode"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["class"]    		    = preg_replace('/[^a-zA-Z0-9\-]/', '', $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["plugin"]["name"]);
 
-					//Image Detail Settings
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["fields"]    		= (strlen($db->getField("preview_image", "Text", true)) ? explode(",", $db->getField("preview_image", "Text", true)) : "");
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["link_to"]       	= $db->getField("preview_image_detail", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]        	= $db->getField("preview_display_view_mode", "Text", true);
-		            $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["class"]   = preg_replace('/[^a-zA-Z0-9\-]/', '', $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]);
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["image"]["src"]                 = get_image_properties_by_grid_system(
+                    $record["thumb_ID_image"]
+                                                                                                                    , $record["thumb_ID_image_md"]
+                                                                                                                    , $record["thumb_ID_image_sm"]
+                                                                                                                    , $record["thumb_ID_image_xs"]
+                                                                                                                );
 
-					$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["src"] = get_image_properties_by_grid_system(
-		            	$db->getField("preview_ID_image", "Number", true)
-		            	, $db->getField("preview_ID_image_md", "Number", true)
-		            	, $db->getField("preview_ID_image_sm", "Number", true)
-		            	, $db->getField("preview_ID_image_xs", "Number", true)
-		            );	
-									
-					if($ID_detail_social)
-						$loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["social"] 			= load_settings_social($ID_detail_social);
+                if($ID_thumb_social)
+                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["thumb"]["social"] 				    = load_settings_social($ID_thumb_social);
 
-					if(!isset($loaded_properties[$tbl_src][$item . "-0"]))
-						$loaded_properties[$tbl_src][$item . "-0"] = $loaded_properties[$tbl_src][$item . "-" . $ID_layout];
-				} while($db->nextRecord());
-			}	
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]							    = $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["base"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_ID_mode"]    	    = $record["preview_container_ID_mode"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["hide"]          			    = $record["preview_hide"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["container_mode"]         	    = preg_replace('/[^a-zA-Z0-9\_]/', '', $record["preview_container_mode"]);
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["item_size"]              	    = 1;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["wrap"]					    = "";
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["fluid"]                  	    = $record["preview_fluid"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_grid"]           	    = (strlen($record["preview_grid"]) ? explode(",", $record["preview_grid"]) : "");
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_extra"]          	    = (strlen($record["preview_extra"]) ? explode(",", $record["preview_extra"]) : "");
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_extra_class"]   	    = array(
+                                                                                                                    "left" => $record["preview_extra_class_left"]
+                                                                                                                    , "right" => $record["preview_extra_class_right"]
+                                                                                                                );
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_extra_location"] 	    = $record["preview_extra_location"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["default_class"]			    = $record["preview_class"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["rec_per_page"]           	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["rec_per_page_all"]       	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["npage_per_frame"]        	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["direction_arrow"]        	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["frame_arrow"]            	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["custom_page"]            	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["tot_elem"]               	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["frame_per_page"]         	    = 0;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["pagenav_location"]       	    = "";
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["infinite"]                    = false;
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["alphanum"]       			    = "";
 
-			if (FF_ENABLE_MEM_SHOWFILES_CACHING)
-				$cache->set("__vgallery_settings_thumb__", null, $loaded_properties);
-		}
+                //Image Detail Settings
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["fields"]    		    = (strlen($record["preview_image"])
+                                                                                                                    ? explode(",", $record["preview_image"])
+                                                                                                                    : ""
+                                                                                                                );
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["link_to"]       	    = $record["preview_image_detail"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]        	    = $record["preview_display_view_mode"];
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["class"]             = preg_replace('/[^a-zA-Z0-9\-]/', '', $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["plugin"]["name"]);
+
+                $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["image"]["src"]                = get_image_properties_by_grid_system(
+                                                                                                                    $record["preview_ID_image"]
+                                                                                                                    , $record["preview_ID_image_md"]
+                                                                                                                    , $record["preview_ID_image_sm"]
+                                                                                                                    , $record["preview_ID_image_xs"]
+                                                                                                                );
+
+                if($ID_detail_social)
+                    $loaded_properties[$tbl_src][$item . "-" . $ID_layout]["detail"]["social"] 			        = load_settings_social($ID_detail_social);
+
+                if(!isset($loaded_properties[$tbl_src][$item . "-0"]))
+                    $loaded_properties[$tbl_src][$item . "-0"]                                                  = $loaded_properties[$tbl_src][$item . "-" . $ID_layout];
+            }
+
+            $cache->set("/vg/thumbs", $loaded_properties);
+        }
 	}
 	
 	return $loaded_properties;
@@ -466,7 +462,6 @@ function get_image_default() {
 	$default_image["max_y"] 						= 0;
     $default_image["bgcolor"]               		= "FFFFFF";
 	$default_image["format"]              			= "jpg";
-	$default_image["format_jpg_quality"]            = 77; 
     $default_image["transparent"]              		= false;
     $default_image["alpha"]                    		= 0;
     $default_image["alignment"]                    	= "center";
@@ -499,18 +494,19 @@ function get_image_default() {
 }
 
 function get_image_properties_by_grid_system($image_default, $image_md, $image_sm, $image_xs) {
-	$resolution = cm_getResolution();
+	$resolution = Cms::getInstance("frameworkcss")->getResolution();
 	$keys = array();
 
 	if($image_default) {
-		$arrImageMode = ffCommon_get_image_params($image_default);
+		$arrImageMode = ffMedia::getModes($image_default);
+
 		$res["default"]["ID"] 			= $image_default;
 		$res["default"]["name"] 		= $arrImageMode["name"];
 		$res["default"]["width"] 		= $arrImageMode["dim_x"];
 		$res["default"]["height"]		= $arrImageMode["dim_y"];
 		$res["default"]["format"]		= $arrImageMode["format"];
 		$res["default"]["force_icon"]	= $arrImageMode["force_icon"];
-		
+
 		$keys[$image_default] = $image_default;
 	}
 	
@@ -524,7 +520,7 @@ function get_image_properties_by_grid_system($image_default, $image_md, $image_s
 			$count_resolution = 0;
 			if(isset($resolution[$count_resolution])) {
 				if($image_md) {
-					$arrImageMode = ffCommon_get_image_params($image_md);
+					$arrImageMode = ffMedia::getModes($image_md);
 					$res[$resolution[$count_resolution]]["ID"] 			= $image_md;
 					$res[$resolution[$count_resolution]]["name"] 		= $arrImageMode["name"];
 					$res[$resolution[$count_resolution]]["width"] 		= $arrImageMode["dim_x"];
@@ -540,7 +536,7 @@ function get_image_properties_by_grid_system($image_default, $image_md, $image_s
 			$count_resolution++;
 			if(isset($resolution[$count_resolution])) {
 				if($image_sm) {
-					$arrImageMode = ffCommon_get_image_params($image_sm);
+					$arrImageMode = ffMedia::getModes($image_sm);
 					$res[$resolution[$count_resolution]]["ID"] 			= $image_sm;
 					$res[$resolution[$count_resolution]]["name"] 		= $arrImageMode["name"];
 					$res[$resolution[$count_resolution]]["width"] 		= $arrImageMode["dim_x"];
@@ -556,7 +552,7 @@ function get_image_properties_by_grid_system($image_default, $image_md, $image_s
 			$count_resolution++;
 			if(isset($resolution[$count_resolution])) {
 				if($image_xs) {
-					$arrImageMode = ffCommon_get_image_params($image_xs);
+					$arrImageMode = ffMedia::getModes($image_xs);
 					$res[$resolution[$count_resolution]]["ID"] 			= $image_xs;
 					$res[$resolution[$count_resolution]]["name"] 		= $arrImageMode["name"];
 					$res[$resolution[$count_resolution]]["width"] 		= $arrImageMode["dim_x"];

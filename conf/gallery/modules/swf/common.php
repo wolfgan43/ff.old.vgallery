@@ -16,7 +16,7 @@ function MD_swf_on_load_template($component) {
     $tpl->set_var("language_inset", $selected_lang);
     $tpl->set_var("settings_path", $settings_path);
     $tpl->set_var("title", $oPage->title);
-    $tpl->set_var("swf_url", FF_SITE_PATH . constant("CM_SHOWFILES") . $component->user_vars["swf_url"]);
+    $tpl->set_var("swf_url", CM_SHOWFILES . $component->user_vars["swf_url"]);
     
     if(strlen($component->user_vars["xml_url"]) && $component->user_vars["xml_varname"]) {
 	    $tpl->set_var("xml_url", $component->user_vars["xml_url"]);

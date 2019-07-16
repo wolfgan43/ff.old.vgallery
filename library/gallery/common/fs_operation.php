@@ -60,7 +60,7 @@
 	}  
 
 	function full_copy( $source, $target, $delete_source = false ) {
-		if(!$source || !$target || stripslash($source) == DISK_UPDIR || stripslash($target) == DISK_UPDIR || $source == $target)    
+		if(!$source || !$target || stripslash($source) == FF_DISK_UPDIR || stripslash($target) == FF_DISK_UPDIR || $source == $target)    
 			return;
 
 	    if (file_exists($source) && is_dir( $source ) ) {
@@ -331,19 +331,19 @@
 	    
 	    if($res) {
 	        
-	        if(!is_dir(DISK_UPDIR . "/tmp"))
-	            $res = @mkdir(DISK_UPDIR . "/tmp", 0777);
-	        elseif(substr(sprintf('%o', fileperms(DISK_UPDIR . "/tmp")), -4) != "0777")
-	            $res = @chmod(DISK_UPDIR . "/tmp", 0777);
+	        if(!is_dir(FF_DISK_UPDIR . "/tmp"))
+	            $res = @mkdir(FF_DISK_UPDIR . "/tmp", 0777);
+	        elseif(substr(sprintf('%o', fileperms(FF_DISK_UPDIR . "/tmp")), -4) != "0777")
+	            $res = @chmod(FF_DISK_UPDIR . "/tmp", 0777);
 
 	        if($res) {
-		        $res = ftp_get($conn_id, DISK_UPDIR . "/tmp/" . basename($dest), $ftp_disk_path . $source, FTP_BINARY); 
+		        $res = ftp_get($conn_id, FF_DISK_UPDIR . "/tmp/" . basename($dest), $ftp_disk_path . $source, FTP_BINARY); 
 		        if($res) {
-	    		    $res = $res && ftp_put($conn_id, $ftp_disk_path . $dest, DISK_UPDIR . "/tmp/" . basename($dest), FTP_BINARY);  
+	    		    $res = $res && ftp_put($conn_id, $ftp_disk_path . $dest, FF_DISK_UPDIR . "/tmp/" . basename($dest), FTP_BINARY);  
 
 	    		    $res = $res && @ftp_chmod($conn_id, 0644, $ftp_disk_path . $dest);
 
-	    		    @unlink(DISK_UPDIR . "/tmp/" . basename($dest));
+	    		    @unlink(FF_DISK_UPDIR . "/tmp/" . basename($dest));
 			    }
 	        }
 		    if(!$res && $local_disk_path && !is_file($local_disk_path . $dest)) {

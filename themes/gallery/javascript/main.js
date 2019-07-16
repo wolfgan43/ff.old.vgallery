@@ -93,7 +93,7 @@ ff.cms = (function () {
 					console.info("ff.cms.e." + callback + " is not a function");
 			}
 
-			if(isCallback) {
+			if(0 && isCallback) {
 				if(ff.ajax === undefined) {
 					ff.pluginLoad("ff.ajax", "/themes/library/ff/ajax.js", function() {
 						doEventFF(callback, item);
@@ -1089,7 +1089,7 @@ ff.cms = (function () {
                     });
                 });
             },
-            "login" : {
+            /*"login" : {
                 "social" : function(name, title) {
                         ff.modules.security.social.requestLogin(title, '/login/social/' + name);
                 },
@@ -1111,12 +1111,11 @@ ff.cms = (function () {
                         case "logout":
                             default:
                     }
-
-                    ff.modules.security.submit(action, component, elem, url, containerSuccess);
+                    hCore.auth.login(url, component, elem);
 
                     return false;
                 }
-            },
+            },*/
             "load" : function(link, elem, effect, mode, onClickCallback, blockUI, jumpUI) {
                 loadAjax(link, elem, effect, mode, onClickCallback, blockUI, jumpUI);
             },
@@ -1249,7 +1248,7 @@ ff.cms = (function () {
                     var ajaxOnEvent = elem.attr("data-event") || "";
 
                     var link = (params["url"]) || elem.attr("data-src") || (window.location.pathname + (window.location.hash.indexOf("_") >= 0 ? "" : window.location.hash.replace("#", "/")));
-                                    var effect = (params["effect"]) || ajaxOnEvent.split(" ")[1] || "";
+                    var effect = (params["effect"]) || ajaxOnEvent.split(" ")[1] || "";
                     var mode = (params["mode"]) || "replace";
                     var blockUI = (params["blockUI"] !== undefined ? params["blockUI"] : true);
                     var jumpUI = (params["jumpUI"] !== undefined ? params["jumpUI"] : elem);
@@ -1258,6 +1257,12 @@ ff.cms = (function () {
                         mode = "append";
                         jumpUI = false;
                     }
+
+                    if(link) {
+                        ff.cms.get(link);
+                        return false;
+					}
+                    /*
                     if(link) {
                         var linkHistory = window.location.href;
                         var linkParams = [];
@@ -1297,13 +1302,13 @@ ff.cms = (function () {
 
                         loadAjax(link + (linkParams.length ? "?" + linkParams.join("&") : ""), elem, effect, mode, callback, blockUI, jumpUI);
                         return false;
-                    }
+                    }*/
                 }
             }
 	};
 
-    if(!debug) //todo: bug genera 2 request fantarmi....
-        history.pushState(null, null, window.location.pathname.replace('//', '/') + window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "") + window.location.hash);
+    //if(!debug) //todo: bug genera 2 request fantarmi....
+        //history.pushState(null, null, window.location.pathname.replace('//', '/') + window.location.search.replace("&__nocache__", "").replace("?__nocache__&", "?").replace("?__nocache__", "").replace("&__debug__", "").replace("?__debug__&", "?").replace("?__debug__", "") + window.location.hash);
 
     jQuery(function() {
         ff.cms.initCMS();

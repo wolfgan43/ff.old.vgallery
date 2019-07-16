@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort = null, $sort_dir = null, $search = null) {
+function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort_field = null, $sort_dir = null, $search = null) {
     $db = ffDB_Sql::factory();
     $schema = array();
     
@@ -31,7 +31,9 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
 
 	$sSQL_add_field = "";
     $sSQL_add_field_empty = "";
+    $sort = "";
 	if(is_array($schema["add_field"]) && count($schema["add_field"])) {
+        $sSQL_having = "";
 		foreach($schema["add_field"] AS $add_field_key => $add_field_value) {
 			$sSQL_add_field .= ", " . $add_field_value;
 			$sSQL_add_field_empty .= ", '' AS " . $add_field_key;
@@ -64,6 +66,7 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
         $db->query($sSQL);
         if(is_array($db->fields) && count($db->fields)) {
 		    if(is_array($params) && count($params)) {
+                $sSQL_Where_params = "";
     			foreach($params AS $param_key => $param_value) {
     				if(array_key_exists($param_key, $db->fields)) {
     					$sSQL_Where_params .= " AND `" . $param_key . "` = " . $db->toSql($param_value);
@@ -143,14 +146,14 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
             $arrFormField[$key_field]["extended_type"] = $db->getField("extended_type", "Text")->getValue();
             $arrFormField[$key_field]["ff_extended_type"] = $db->getField("ff_extended_type", "Text")->getValue();
             
-			api_extend_field_schema(&$schema["custom"], $arrFormField[$key_field]["extended_type"], $arrFormField[$key_field]["name"]);
+			api_extend_field_schema($schema["custom"], $arrFormField[$key_field]["extended_type"], $arrFormField[$key_field]["name"]);
 
           } while($db->nextRecord());
 
         
         $sSQL_field = "";  
         if(is_array($arrFormField) && count($arrFormField)) {
-            foreach($arrFormField AS $$arrFormField_key => $arrFormField_value) {
+            foreach($arrFormField AS $arrFormField_key => $arrFormField_value) {
                 $sSQL_field .= ", (SELECT 
                                     GROUP_CONCAT(IF(anagraph_rel_nodes_fields.`description_text` = ''
                                             , anagraph_rel_nodes_fields.`description`
@@ -175,7 +178,7 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
         }
     }
 
-    $user_permission = get_session("user_permission");
+    $user = Auth::get("user");
     $sSQL = "SELECT anagraph_categories.ID
                     , anagraph_categories.name
                     , anagraph_categories.limit_by_groups 
@@ -183,12 +186,13 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
             ORDER BY anagraph_categories.name";
     $db->query($sSQL);
     if($db->nextRecord()) {
+        $allowed_ana_cat = "";
         do {
             $limit_by_groups = $db->getField("limit_by_groups")->getValue();
             if(strlen($limit_by_groups)) {
                 $limit_by_groups = explode(",", $limit_by_groups);
                 
-                if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+                if(array_search($user->acl, $limit_by_groups) !== false) {
                     if(strlen($allowed_ana_cat))
                         $allowed_ana_cat .= ",";
 
@@ -210,7 +214,7 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
                 , " . CM_TABLE_PREFIX . "mod_security_users.avatar
                 , anagraph.avatar
             ) AS avatar
-            , (" . (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0
+            , (" . (Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0
                 ? "''"
                 : "IF(anagraph.billstate > 0
                             , (SELECT

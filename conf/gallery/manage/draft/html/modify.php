@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_HTML_SHOW_MODIFY) {
+if (!Auth::env("AREA_HTML_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 $db = ffDB_Sql::factory();
@@ -108,11 +108,11 @@ if(defined("FTP_USERNAME") && strlen(FTP_USERNAME) && defined("FTP_PASSWORD") &&
 		$oRecord->src_table = "";
 		$oRecord->skip_action = true;
 		$oRecord->user_vars["arrLang"] = $enabled_lang;
-		$oRecord->buttons_options["delete"]["display"] = AREA_HTML_SHOW_DELETE;
+		$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_HTML_SHOW_DELETE");
 		$oRecord->addEvent("on_do_action", "HtmlModify_on_do_action");
 		$oRecord->addEvent("on_process_template", "HtmlModify_on_process_template");
 		/* Title Block */
-		$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . cm_getClassByFrameworkCss("vg-file", "icon-tag", array("2x", "content")) . $file_title . '</h1>';
+		$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . Cms::getInstance("frameworkcss")->get("vg-file", "icon-tag", array("2x", "content")) . $file_title . '</h1>';
 		
 		if(is_array($draft_content) && count($draft_content))
 			$oRecord->user_vars["draftContent"] = $draft_content;

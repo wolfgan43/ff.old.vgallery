@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ VGallery: CMS based on FormsFramework
+  ~ Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~  @package VGallery
+  ~  @subpackage core
+  ~  @author Alessandro Stucchi <wolfgan@gmail.com>
+  ~  @copyright Copyright (c) 2004, Alessandro Stucchi
+  ~  @license http://opensource.org/licenses/gpl-3.0.html
+  ~  @link https://github.com/wolfgan43/vgallery
+  -->
+
+<configdata>
+    <env>
+        <MOD_SHARE_ENABLE_INTERNAL_LIKE extended_type="Boolean" label="Enable internal like" default="0" value="1"/>
+        <MOD_SHARE_ENABLE_GUEST_LIKE extended_type="Boolean" label="Enable guest like" default="0" value=""/>
+        <MOD_SHARE_ENABLE_INTERNAL_LIKE_COUNTER extended_type="Boolean" label="Enable thumb like counter" default="0" value=""/>
+        <MOD_SHARE_ENABLE_INTERNAL_DETAIL_LIKE_COUNTER extended_type="Boolean" label="Enable detail like counter" default="0" value="1"/>
+
+        <MOD_SHARE_ENABLE_DETAIL_TOTAL_SHARE_COUNT extended_type="Boolean" label="Enable total count share detail" default="0" value="1"/>
+
+        <MOD_SHARE_ENABLE_FACEBOOK_SHARE extended_type="Boolean" label="Enable facebook share" default="0" value="1"/>
+        <MOD_SHARE_ENABLE_FACEBOOK_SHARE_COUNT extended_type="Boolean" label="Enable facebook share count" default="0" value=""/>
+
+        <MOD_SHARE_ENABLE_TWITTER_SHARE extended_type="Boolean" label="Enable twitter share" default="0" value="1"/>
+        <MOD_SHARE_ENABLE_TWITTER_SHARE_COUNT extended_type="Boolean" label="Enable twitter share count" default="0" value=""/>
+        <MOD_SHARE_ENABLE_SHORT_LINK extended_type="Boolean" label="Enable twitter share short link" default="0" value="1"/>
+        <MOD_SHARE_ENABLE_SHORT_LINK_API extended_type="String" label="Short link API KEY" default="0" value="R_6666312b46d243faba80522e1933a0cf"/>
+        <MOD_SHARE_ENABLE_SHORT_LINK_LOGIN extended_type="String" label="Short link login" default="0" value="paginemediche16"/>
+
+        <MOD_SHARE_ENABLE_LINKEDIN_SHARE extended_type="Boolean" label="Enable linkedin share" default="0" value="1"/>
+        <MOD_SHARE_ENABLE_LINKEDIN_SHARE_COUNT extended_type="Boolean" label="Enable linkedin share count" default="0" value=""/>
+
+        <MOD_SHARE_ENABLE_GPLUS_SHARE extended_type="Boolean" label="Enable gplus share" default="0" value="1"/>
+        <MOD_SHARE_ENABLE_GPLUS_SHARE_COUNT extended_type="Boolean" label="Enable gplus share count" default="0" value=""/>
+
+        <MOD_SHARE_ENABLE_VIEW_COUNTER extended_type="Boolean" label="Enable view counter" default="0" value=""/>
+        <MOD_SHARE_ENABLE_DETAIL_VIEW_COUNTER extended_type="Boolean" label="Enable detail view counter" default="0" value=""/>
+
+        <MOD_SHARE_ENABLE_COMMENT extended_type="Boolean" label="Enable comment" default="0" value="1"/>
+        <MOD_SHARE_ENABLE_COMMENT_COUNTER extended_type="Boolean" label="Enable comment counter" default="0" value=""/>
+        <MOD_SHARE_ENABLE_DETAIL_COMMENT_COUNTER extended_type="Boolean" label="Enable detail comment counter" default="0" value="1"/>
+    </env>
+</configdata>

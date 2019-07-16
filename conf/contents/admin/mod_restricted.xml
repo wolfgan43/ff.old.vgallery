@@ -22,10 +22,10 @@
 	    <vgallery label="_advanced_data" path="/admin/content/vgallery" />
 	    <resources label="_manage_file" path="/admin/content/resources" />
 	    <publishing label="_publishing" path="/admin/content/publishing" />
-	    
+
 	    <modules label="_modules" path="/admin/content/modules" />
 	</content>
-	
+
 	<utility label="_utility" path="/admin/utility">
 	    <routing label="_routing" path="/admin/utility/routing" />
         <sitemap label="_sitemap" path="/admin/utility/sitemap" />
@@ -62,7 +62,7 @@
 
 	    <import label="_import" path="/admin/configuration/import" />
 	    <services label="_services" path="/admin/configuration/services" />
-	    
+
 	    <layout path="/admin/configuration/cm/layout" label="_cmff_layout" />
 	    <settings path="/admin/configuration/cm/settings" label="_cmff_settings" />
 	    <!--<ds path="/admin/configuration/ds" redir="/admin/ds" label="Data Storage" />-->

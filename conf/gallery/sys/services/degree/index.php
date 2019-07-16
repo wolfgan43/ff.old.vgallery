@@ -25,8 +25,6 @@ if (!$cm->isXHR()/* && strpos(strtolower($_SERVER["HTTP_USER_AGENT"]), "googlebo
 //require_once("../../../../../../ff/main.php");
 //require_once("../../../../../../modules/security/common.php");
 //if ($plgCfg_ActiveComboEX_UseOwnSession)
-//else
-//    mod_security_check_session();
 
 $php_array = array();
 

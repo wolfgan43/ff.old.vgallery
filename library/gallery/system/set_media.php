@@ -47,7 +47,7 @@ function system_set_media($oPage, $setting_path, $admin = false, $include_media 
 	                , "doredirects" => true
 	                , "responsive" => true
 	                , "unic" => true
-	                , "dialogClass" => cm_getClassByFrameworkCss("window-large", "dialog")
+	                , "dialogClass" => Cms::getInstance("frameworkcss")->get("window-large", "dialog")
 	            )
 	            , $oPage
 	        );

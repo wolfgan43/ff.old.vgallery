@@ -374,10 +374,7 @@ function get_international_settings_path($settings_path, $language = NULL, $bloc
 	        $new_settings_path = normalize_url($real_settings_path, HIDE_EXT, false, $language, false);
 
 	        if($new_settings_path != $settings_path) {
-	            if(!function_exists("write_notification") && check_function("write_notification"))
-	                write_notification("_error_invalid_path_redirect", $real_settings_path, "warning", "", $settings_path, true, -1, null, "url");
-
-	                ffRedirect($new_settings_path, 301);
+                ffRedirect($new_settings_path, 301);
 	        }
 	    }
 	}   
@@ -386,52 +383,5 @@ function get_international_settings_path($settings_path, $language = NULL, $bloc
 		, "url" => $real_settings_path
 		, "lang" => $arrRealLangAlt
 		, "lang_alt" => $arrLangAlt
-	);	
-
-	/*     
-    if($invalid_path && $enable_redirect) {
-    	if($invalid_path == $processed_path) {
-			return array("source" => $source_settings_path
-						, "url" => $real_settings_path
-						, "lang" => $target_lang
-						, "lang_alt" => $str_lang_alt
-					);
-    	} else {
-    		if($target_lang == $language && $real_settings_path != $settings_path && !$block_redirect) {
-				if(check_function("normalize_url")) {
-					$new_settings_path = normalize_url($real_settings_path, HIDE_EXT, false, $language);
-					if($new_settings_path == $settings_path) {
-						
-						if(!function_exists("process_html_page_error") && check_function("process_html_page_error"))
-							process_html_page_error(404);
-					} else {
-                        if(!function_exists("write_notification") && check_function("write_notification"))
-						    write_notification("_error_invalid_path_redirect", $real_settings_path, "warning", "", $settings_path, true, -1, null, "url");
-                            
-                            ffRedirect($new_settings_path, 301);
-					}
-				}
-			} else {
-				return array("source" => $source_settings_path
-							, "url" => ($max_lang >= $processed_path ?  $source_settings_path : $real_settings_path)
-							, "lang" => $target_lang
-							, "lang_alt" => $str_lang_alt
-						);			
-			}
-		}
-    } else {
-    	if($target_lang == $language) {
-			return array(
-				"url" => $real_settings_path
-				, "lang_alt" => $str_lang_alt
-			);
-		} else {
-		//echo $source_settings_path . "   " . $real_settings_path . "   " . $processed_path;
-    		return array("source" => $source_settings_path
-						, "url" => $real_settings_path
-						, "lang" => $target_lang
-						, "lang_alt" => $str_lang_alt
-					);		
-		}
-	}*/
+	);
 }

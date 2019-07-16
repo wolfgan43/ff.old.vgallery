@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_LAYER_SHOW_MODIFY) {
+if (!Auth::env("AREA_LAYER_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -10,7 +10,7 @@ $sSQL = "SELECT cm_layout.*
         WHERE cm_layout.path = " . $db_gallery->toSql("/");
 $db_gallery->query($sSQL);
 if($db_gallery->nextRecord()) {
-    $framework_css = cm_getFrameworkCss($db_gallery->getField("framework_css", "Text", true));
+    $framework_css = Cms::getInstance("frameworkcss")->getFramework($db_gallery->getField("framework_css", "Text", true));
     $template_framework = $framework_css["name"];
 }
 

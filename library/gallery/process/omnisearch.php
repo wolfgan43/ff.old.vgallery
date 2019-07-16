@@ -41,7 +41,8 @@ function process_omnisearch($user_path, &$layout)
     					? $layout["template"]
     					: "default"
     				) . ".html";
-    
+
+    $tpl_data["id"] = $unic_id;
     $tpl_data["custom"] = "omnisearch.html";
     $tpl_data["base"] = $template_name;
     $tpl_data["path"] = $layout["tpl_path"];
@@ -49,7 +50,8 @@ function process_omnisearch($user_path, &$layout)
     $tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
     
     $tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");        
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
     $tpl->set_var("real_father", $unic_id);
     

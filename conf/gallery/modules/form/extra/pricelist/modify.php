@@ -48,7 +48,7 @@ $oRecord->insert_additional_fields["ID_module"] = $_REQUEST["keys"]["formcnf-ID"
 $oRecord->addEvent("on_done_action", "FormExtraPricelist_on_done_action");
 $oRecord->user_vars["ID_pricelist"] = $arrPricelist;
 $oRecord->buttons_options["print"]["display"] = false;
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
 
 
 $oField = ffField::factory($cm->oPage);

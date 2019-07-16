@@ -2,13 +2,13 @@
 require(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
 $simple_interface = false;
-if (!(AREA_VGALLERY_SHOW_MODIFY || AREA_VGALLERY_SHOW_ADDNEW || AREA_VGALLERY_SHOW_DELETE || AREA_VGALLERY_SHOW_RELATIONSHIP || AREA_VGALLERY_SHOW_SEO || AREA_VGALLERY_SHOW_PERMISSION || AREA_ECOMMERCE_SHOW_MODIFY)) {
+if (!(Auth::env("AREA_VGALLERY_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_SHOW_ADDNEW") || Auth::env("AREA_VGALLERY_SHOW_DELETE") || Auth::env("AREA_VGALLERY_SHOW_SEO") || Auth::env("AREA_VGALLERY_SHOW_PERMISSION") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY"))) {
 	$sSQL = "SELECT 
 		CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name) AS full_path
 			FROM users_rel_vgallery
 				INNER JOIN vgallery_nodes ON vgallery_nodes.ID = users_rel_vgallery.ID_nodes
 				INNER JOIN vgallery ON vgallery.ID = vgallery_nodes.ID_vgallery
-			WHERE users_rel_vgallery.uid = " . $db_gallery->tosql(get_session("UserNID"), "Number") . "
+			WHERE users_rel_vgallery.uid = " . $db_gallery->tosql(Auth::get("user")->id, "Number") . "
 				AND CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name) LIKE '" . $db_gallery->tosql($cm->real_path_info, "Text", false) . "%'
 				AND users_rel_vgallery.cascading > 0
 			ORDER BY vgallery_nodes.`order`, vgallery_nodes.`ID`
@@ -192,11 +192,11 @@ if(strlen($cm->real_path_info)) {
 		&& 
 			(
 				(strpos($cm->path_info, VG_SITE_MANAGE) === 0 
-					&& AREA_ECOMMERCE_SHOW_MODIFY && AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY
+					&& Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && Auth::env("AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY")
 				)
 				||
 				(strpos($cm->path_info, VG_SITE_RESTRICTED) === 0
-					&& (AREA_VGALLERY_DIR_SHOW_MODIFY || AREA_VGALLERY_DIR_SHOW_DELETE)
+					&& (Auth::env("AREA_VGALLERY_DIR_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_DIR_SHOW_DELETE"))
 				)
 				||
 				(strpos($cm->path_info, VG_SITE_RESTRICTED) !== 0 && strpos($cm->path_info, VG_SITE_MANAGE) !== 0 
@@ -467,7 +467,7 @@ if(strlen($cm->real_path_info)) {
 	        
 	    	if($is_dir) {
 	    		$arrFormField["dir"][$key] = $tmpField;
-	    		if(AREA_SHOW_ECOMMERCE && $enable_ecommerce && $enable_ecommerce_all_level) {
+	    		if(Cms::env("AREA_SHOW_ECOMMERCE") && $enable_ecommerce && $enable_ecommerce_all_level) {
 	    			$arrFormField["node"][$key] = $tmpField;
 	    		}
 			} else {
@@ -584,7 +584,7 @@ if(strlen($cm->real_path_info)) {
 		$arrSQL[$sql_type]["field"]["owner"] 				= "'' AS anagraph";
 
 	if($simple_interface)
-		$arrSQL[$sql_type]["where"]["owner"] 				= "vgallery_nodes.owner = " . $db_gallery->toSql(get_session("UserNID"), "Number");
+		$arrSQL[$sql_type]["where"]["owner"] 				= "vgallery_nodes.owner = " . $db_gallery->toSql(Auth::get("user")->id, "Number");
 
 	$arrSQL["node"]["where"]["is_dir"] 					= "NOT(vgallery_nodes.is_dir > 0)";
 	
@@ -749,9 +749,9 @@ if(strlen($cm->real_path_info)) {
 	} else {
 		$oGrid_node->use_search = true;
 		$oGrid_node->display_edit_bt = false;
-		$oGrid_node->display_edit_url = AREA_VGALLERY_SHOW_MODIFY && $allow_insert_nodes;
-		$oGrid_node->display_new = AREA_VGALLERY_SHOW_ADDNEW && $allow_insert_nodes;
-		$oGrid_node->display_delete_bt = AREA_VGALLERY_SHOW_DELETE && $allow_insert_nodes;
+		$oGrid_node->display_edit_url = Auth::env("AREA_VGALLERY_SHOW_MODIFY") && $allow_insert_nodes;
+		$oGrid_node->display_new = Auth::env("AREA_VGALLERY_SHOW_ADDNEW") && $allow_insert_nodes;
+		$oGrid_node->display_delete_bt = Auth::env("AREA_VGALLERY_SHOW_DELETE") && $allow_insert_nodes;
 
 		if(check_function("system_ffgrid_process_customize_field_button")) {
 			system_ffgrid_process_customize_field_button($oGrid_node, "vgallery_node_fields", array("real_path_info" => $cm->real_path_info
@@ -981,11 +981,11 @@ if(strlen($cm->real_path_info)) {
 		        $oField->file_storing_path = null;
 		        $oField->file_show_delete = false;
 
-		        $oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
+		        $oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
 				if($force_picture_ico_spacer) {
-		            $oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/spacer.gif";
+		            $oField->file_saved_preview_url = CM_SHOWFILES . "/" . THEME_INSET . "/images/spacer.gif";
 				} else {
-				    $oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb[real_parent_VALUEPATH]/[name_VALUE]/[_FILENAME_]";
+				    $oField->file_saved_preview_url = CM_SHOWFILES . "/thumb[real_parent_VALUEPATH]/[name_VALUE]/[_FILENAME_]";
 				}	        
 		    }
 		    $oField->base_type = $field_value["ff_extended_type"];
@@ -1018,21 +1018,6 @@ if(strlen($cm->real_path_info)) {
 	}	
 	// Visualizzazione   
 	if(strpos($cm->path_info, VG_SITE_RESTRICTED) === 0) {
-	   /* if(AREA_VGALLERY_SHOW_RELATIONSHIP) {
-	        $oButton = ffButton::factory($cm->oPage);
-	        $oButton->id = "relationships";
-	        if(0 || $_REQUEST["XHR_DIALOG_ID"]) {
-	            $oButton->form_action_url = ""; //impostato nell'evento
-	            $oButton->jsaction = "";
-	        } else {
-		        $oButton->action_type = "gotourl";
-		        $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . $cm->real_path_info . "/relationship?[KEYS]" . $oGrid_node->addit_record_param . "ret_url=" . urlencode($cm->oPage->getRequestUri());
-			}
-	        $oButton->aspect = "link";
-			//$oButton->image = "relationships.png";
-			$oButton->label = ffTemplate::_get_word_by_code("relationships");
-	        $oGrid_node->addGridButton($oButton);
-	    } */
 	    if(AREA_SEO_SHOW_MODIFY) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "seo";
@@ -1044,7 +1029,7 @@ if(strlen($cm->real_path_info)) {
 			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton);
 	    }
-	    if(ENABLE_STD_PERMISSION) {
+	    if(Cms::env("ENABLE_STD_PERMISSION")) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "permissions"; 
 	        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1055,7 +1040,7 @@ if(strlen($cm->real_path_info)) {
 			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }
-	    if(AREA_PROPERTIES_SHOW_MODIFY) {
+	    if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "properties"; 
 	        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1069,17 +1054,7 @@ if(strlen($cm->real_path_info)) {
 	} elseif(strpos($cm->path_info, VG_SITE_MANAGE) === 0) {
 		ecommerce_ffGrid_product($oGrid_node, "node");    
 	} else {
-	   /* if(AREA_VGALLERY_SHOW_RELATIONSHIP) {
-	        $oButton = ffButton::factory($cm->oPage);
-	        $oButton->id = "relationships";
-	        $oButton->form_action_url = ""; //impostato nell'evento
-	        $oButton->jsaction = "";
-	        $oButton->aspect = "link";
-	        $oButton->label = ffTemplate::_get_word_by_code("relationships");
-	        //$oButton->image = "relationships.png";
-	        $oGrid_node->addGridButton($oButton);
-	    } */
-	    if(AREA_VGALLERY_SHOW_SEO) {
+	    if(Auth::env("AREA_VGALLERY_SHOW_SEO")) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "seo";
 	        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1090,7 +1065,7 @@ if(strlen($cm->real_path_info)) {
 			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton);
 	    }
-	    if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
+	    if(Auth::env("AREA_VGALLERY_SHOW_PERMISSION") && Cms::env("ENABLE_STD_PERMISSION")) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "permissions";
 	        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1101,7 +1076,7 @@ if(strlen($cm->real_path_info)) {
 			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }
-	    if(AREA_PROPERTIES_SHOW_MODIFY) {
+	    if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "properties";
 	        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1112,10 +1087,10 @@ if(strlen($cm->real_path_info)) {
 			$oButton->display_label = false;
 	        $oGrid_node->addGridButton($oButton, "last");
 	    }    
-	    if(AREA_ECOMMERCE_SHOW_MODIFY && $enable_ecommerce) {
+	    if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && $enable_ecommerce) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "ecommerce"; 
-	        $oButton->class = cm_getClassByFrameworkCss("cog", "icon");
+	        $oButton->class = Cms::getInstance("frameworkcss")->get("cog", "icon");
 	        $oButton->form_action_url = ""; //impostato nell'evento
 	        $oButton->jsaction = "";
 	        $oButton->aspect = "link";
@@ -1135,7 +1110,7 @@ if(strlen($cm->real_path_info)) {
 	$oButton->display_label = false;
 	$oGrid_node->addGridButton($oButton);
 	
-	if(AREA_VGALLERY_SHOW_VISIBLE) {
+	if(Auth::env("AREA_VGALLERY_SHOW_VISIBLE")) {
 	    $oButton = ffButton::factory($cm->oPage);
 	    $oButton->id = "visible";
 	    $oButton->action_type = "gotourl";
@@ -1270,9 +1245,9 @@ if(strlen($cm->real_path_info)) {
 	        $oGrid_dir->display_new = false;
 	    } else {
 	        $oGrid_dir->display_edit_bt = false;
-	        $oGrid_dir->display_edit_url = AREA_VGALLERY_DIR_SHOW_MODIFY;
-	        $oGrid_dir->display_delete_bt = AREA_VGALLERY_DIR_SHOW_DELETE;
-	        $oGrid_dir->display_new = AREA_VGALLERY_DIR_SHOW_ADDNEW && $allow_insert;
+	        $oGrid_dir->display_edit_url = Auth::env("AREA_VGALLERY_DIR_SHOW_MODIFY");
+	        $oGrid_dir->display_delete_bt = Auth::env("AREA_VGALLERY_DIR_SHOW_DELETE");
+	        $oGrid_dir->display_new = Auth::env("AREA_VGALLERY_DIR_SHOW_ADDNEW") && $allow_insert;
 
 			if(check_function("system_ffgrid_process_customize_field_button")) {
 				system_ffgrid_process_customize_field_button($oGrid_dir, "vgallery_dir_fields", array("real_path_info" => $cm->real_path_info
@@ -1324,17 +1299,17 @@ if(strlen($cm->real_path_info)) {
 			    ) {
 			        $oField->control_type = "picture_no_link";
 			        $oField->extended_type = "File";
-			        $oField->file_storing_path = DISK_UPDIR;
+			        $oField->file_storing_path = FF_DISK_UPDIR;
 			        $oField->file_show_delete = false;
 
-			        $oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]"; 
-			        $oField->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
+			        $oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+			        $oField->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
 					if($force_picture_ico_spacer) {
-			            $oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/spacer.gif";
-			            $oField->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/spacer.gif";
+			            $oField->file_saved_preview_url = CM_SHOWFILES . "/" . THEME_INSET . "/images/spacer.gif";
+			            $oField->file_temp_preview_url = CM_SHOWFILES . "/" . THEME_INSET . "/images/spacer.gif";
 					} else {
-					    $oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb[real_parent_VALUEPATH]/[name_VALUE]/[_FILENAME_]";
-					    $oField->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb[real_parent_VALUEPATH]/[name_VALUE]/[_FILENAME_]";
+					    $oField->file_saved_preview_url = CM_SHOWFILES . "/thumb[real_parent_VALUEPATH]/[name_VALUE]/[_FILENAME_]";
+					    $oField->file_temp_preview_url = CM_SHOWFILES . "/thumb[real_parent_VALUEPATH]/[name_VALUE]/[_FILENAME_]";
 					}	        
 			    }
 			    $oField->base_type = $field_value["ff_extended_type"];
@@ -1360,17 +1335,7 @@ if(strlen($cm->real_path_info)) {
 	    }
 	     // Visualizzazione
 	    if(strpos($cm->path_info, VG_SITE_RESTRICTED) === 0) {
-	     /*   if(AREA_VGALLERY_SHOW_RELATIONSHIP) {
-	            $oButton = ffButton::factory($cm->oPage);
-	            $oButton->id = "relationships"; 
-		        $oButton->form_action_url = ""; //impostato nell'evento
-		        $oButton->jsaction = "";
-	            $oButton->aspect = "link";
-	            //$oButton->image = "relationships.png";
-				$oButton->label = ffTemplate::_get_word_by_code("relationships");
-	            $oGrid_dir->addGridButton($oButton);
-	        }  */
-	        if(AREA_VGALLERY_SHOW_SEO) {
+	        if(Auth::env("AREA_VGALLERY_SHOW_SEO")) {
 	            $oButton = ffButton::factory($cm->oPage);
 	            $oButton->id = "seo"; 
 		        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1381,7 +1346,7 @@ if(strlen($cm->real_path_info)) {
 				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton);
 	        }
-	        if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
+	        if(Auth::env("AREA_VGALLERY_SHOW_PERMISSION") && Cms::env("ENABLE_STD_PERMISSION")) {
 	            $oButton = ffButton::factory($cm->oPage);
 	            $oButton->id = "permissions"; 
 		        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1392,7 +1357,7 @@ if(strlen($cm->real_path_info)) {
 				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }
-	        if(AREA_PROPERTIES_SHOW_MODIFY) {
+	        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 	            $oButton = ffButton::factory($cm->oPage);
 	            $oButton->id = "properties"; 
 		        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1406,17 +1371,7 @@ if(strlen($cm->real_path_info)) {
 	    } elseif(strpos($cm->path_info, VG_SITE_MANAGE) === 0) { 
 			ecommerce_ffGrid_product($oGrid_dir, "dir");
 	    } else {
-	      /*  if(AREA_VGALLERY_SHOW_RELATIONSHIP) {
-	            $oButton = ffButton::factory($cm->oPage);
-	            $oButton->id = "relationships"; 
-		        $oButton->form_action_url = ""; //impostato nell'evento
-		        $oButton->jsaction = "";
-	            $oButton->aspect = "link";
-	            //$oButton->image = "relationships.png";
-				$oButton->label = ffTemplate::_get_word_by_code("relationships");
-	            $oGrid_dir->addGridButton($oButton);
-	        }  */
-	        if(AREA_VGALLERY_SHOW_SEO) {
+	        if(Auth::env("AREA_VGALLERY_SHOW_SEO")) {
 	            $oButton = ffButton::factory($cm->oPage);
 	            $oButton->id = "seo";
 		        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1427,7 +1382,7 @@ if(strlen($cm->real_path_info)) {
 				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton);
 	        }
-	        if(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION) {
+	        if(Auth::env("AREA_VGALLERY_SHOW_PERMISSION") && Cms::env("ENABLE_STD_PERMISSION")) {
 	            $oButton = ffButton::factory($cm->oPage);
 	            $oButton->id = "permissions"; 
 		        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1438,7 +1393,7 @@ if(strlen($cm->real_path_info)) {
 				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }
-	        if(AREA_PROPERTIES_SHOW_MODIFY) {
+	        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 	            $oButton = ffButton::factory($cm->oPage);
 	            $oButton->id = "properties";
 		        $oButton->form_action_url = ""; //impostato nell'evento
@@ -1449,7 +1404,7 @@ if(strlen($cm->real_path_info)) {
 				$oButton->display_label = false;
 	            $oGrid_dir->addGridButton($oButton, "last");
 	        }    
-	        if(AREA_ECOMMERCE_SHOW_MODIFY && $enable_ecommerce) {
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && $enable_ecommerce) {
 	            $oButton = ffButton::factory($cm->oPage);
 	            $oButton->id = "ecommerce";
 	            $oButton->class = "shopping-cart-all";
@@ -1472,7 +1427,7 @@ if(strlen($cm->real_path_info)) {
 		$oButton->display_label = false;
 	    $oGrid_dir->addGridButton($oButton);
 	    
-	    if(AREA_VGALLERY_SHOW_VISIBLE) {
+	    if(Auth::env("AREA_VGALLERY_SHOW_VISIBLE")) {
 	        $oButton = ffButton::factory($cm->oPage);
 	        $oButton->id = "visible";
 	        $oButton->action_type = "gotourl";
@@ -1514,7 +1469,7 @@ function VGalleryDirModify_on_before_parse_row($component) {
 	
     if(isset($component->grid_buttons["visible"])) {
 	    if($component->db[0]->getField("visible", "Number", true)) {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["visible"]->icon = null;
             $component->grid_buttons["visible"]->action_type = "submit"; 
             $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0";
@@ -1526,7 +1481,7 @@ function VGalleryDirModify_on_before_parse_row($component) {
                 //$component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0&frmAction=setvisible";
             }   
 	    } else {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["visible"]->icon = null;
             $component->grid_buttons["visible"]->action_type = "submit";     
             $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=1";
@@ -1543,7 +1498,7 @@ function VGalleryDirModify_on_before_parse_row($component) {
     if(isset($component->grid_buttons["public"])) {
 	    if($component->db[0]->getField("public", "Number", true)) {
 	        //$component->grid_buttons["public"]->image = "visible.png";
-            $component->grid_buttons["public"]->class = cm_getClassByFrameworkCss("globe", "icon");
+            $component->grid_buttons["public"]->class = Cms::getInstance("frameworkcss")->get("globe", "icon");
             $component->grid_buttons["public"]->label = ffTemplate::_get_word_by_code("set_no_public");
             $component->grid_buttons["public"]->action_type = "submit"; 
             $component->grid_buttons["public"]->form_action_url = $component->grid_buttons["public"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["public"]->parent[0]->addit_record_param . "setpublic=0";
@@ -1556,7 +1511,7 @@ function VGalleryDirModify_on_before_parse_row($component) {
             }   
 	    } else {
             //$component->grid_buttons["public"]->image = "notvisible.png";
-            $component->grid_buttons["public"]->class = cm_getClassByFrameworkCss("globe", "icon", array("transparent"));
+            $component->grid_buttons["public"]->class = Cms::getInstance("frameworkcss")->get("globe", "icon", array("transparent"));
             $component->grid_buttons["public"]->label = ffTemplate::_get_word_by_code("set_public");
             $component->grid_buttons["public"]->action_type = "submit";     
             $component->grid_buttons["public"]->form_action_url = $component->grid_buttons["public"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["public"]->parent[0]->addit_record_param . "setpublic=1";
@@ -1570,7 +1525,7 @@ function VGalleryDirModify_on_before_parse_row($component) {
 	    }
 	}	
 	
-	if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 		$file_permission = get_file_permission($component->db[0]->getField("full_path")->getValue(), "vgallery_nodes");
 	if(!check_mod($file_permission, 2, false)) {
 		$component->display_edit_bt = false;
@@ -1863,21 +1818,21 @@ function VGalleryNodesModify_on_before_parse_row($component) {
 	$ID_node = $component->key_fields["ID"]->getValue();
 	$full_path = $component->db[0]->getField("full_path", "Text", true);
 
-	if(strpos($full_path, "-" . $ID_node) === false && is_dir(DISK_UPDIR . $full_path . "-" . $ID_node)) {
+	if(strpos($full_path, "-" . $ID_node) === false && is_dir(FF_DISK_UPDIR . $full_path . "-" . $ID_node)) {
 		$img_path = $full_path . "-" . $ID_node;
 	} else {
 		$img_path = $full_path;
 	}
 
-	if(is_file(DISK_UPDIR . $img_path . ".jpg")) {
+	if(is_file(FF_DISK_UPDIR . $img_path . ".jpg")) {
 		$cover = $img_path . ".jpg";
 	} else {
-		$tmp_img = glob(DISK_UPDIR . $img_path . "/*");
+		$tmp_img = glob(FF_DISK_UPDIR . $img_path . "/*");
 		if(is_array($tmp_img) && count($tmp_img)) {
 			sort($tmp_img);
 			foreach($tmp_img AS $tmp_img_key => $tmp_img_value) {
 				if(is_file($tmp_img_value)) {
-					$mime = ffMimeType(DISK_UPDIR . $img_path  . "/" . basename($tmp_img_value));
+					$mime = ffMedia::getMimeTypeByFilename(FF_DISK_UPDIR . $img_path  . "/" . basename($tmp_img_value));
 					if(strpos($mime, "image") !== false) {
 						$cover = $img_path  . "/". basename($tmp_img_value);
 						break;
@@ -1887,12 +1842,12 @@ function VGalleryNodesModify_on_before_parse_row($component) {
 		}
 	}		
 	/*
-	$tmp_img = glob(DISK_UPDIR . $component->db[0]->getField("full_path", "Text", true)  . "/*");
+	$tmp_img = glob(FF_DISK_UPDIR . $component->db[0]->getField("full_path", "Text", true)  . "/*");
 	if(is_array($tmp_img) && count($tmp_img)) {
 		sort($tmp_img);
 		foreach($tmp_img AS $tmp_img_key => $tmp_img_value) {
 			if(is_file($tmp_img_value)) {
-				$mime = ffMimeType(DISK_UPDIR . $component->db[0]->getField("full_path", "Text", true)  . "/" . basename($tmp_img_value));
+				$mime = ffMedia::getMimeTypeByFilename(FF_DISK_UPDIR . $component->db[0]->getField("full_path", "Text", true)  . "/" . basename($tmp_img_value));
 	            if(strpos($mime, "image") !== false) {
 					$cover = $component->db[0]->getField("full_path", "Text", true)  . "/". basename($tmp_img_value);
 					break;
@@ -1919,7 +1874,7 @@ function VGalleryNodesModify_on_before_parse_row($component) {
 			$image_path = $grid_value->getValue();
 
 			if($first_picture) {
-				if((!(strlen($image_path) && is_file(realpath(DISK_UPDIR . $image_path))))) {
+				if((!(strlen($image_path) && is_file(realpath(FF_DISK_UPDIR . $image_path))))) {
 					$image_path = $cover;
 				}
 				
@@ -1936,11 +1891,11 @@ function VGalleryNodesModify_on_before_parse_row($component) {
 			if(strlen($image_path)) {
 	        	$component->grid_fields[$grid_key]->setValue($image_path);
 	        	if($component->user_vars["force_picture_ico_spacer"]) {
-	                $component->grid_fields[$grid_key]->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/spacer.gif";
-	                $component->grid_fields[$grid_key]->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/spacer.gif";
+	                $component->grid_fields[$grid_key]->file_saved_preview_url = CM_SHOWFILES . "/" . THEME_INSET . "/images/spacer.gif";
+	                $component->grid_fields[$grid_key]->file_temp_preview_url = CM_SHOWFILES . "/" . THEME_INSET . "/images/spacer.gif";
 				} else {
-	        		$component->grid_fields[$grid_key]->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb" . ffCommon_dirname($image_path) . "/[_FILENAME_]";
-	        		$component->grid_fields[$grid_key]->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb" . ffCommon_dirname($image_path) . "/[_FILENAME_]";
+	        		$component->grid_fields[$grid_key]->file_saved_preview_url = CM_SHOWFILES . "/thumb" . ffCommon_dirname($image_path) . "/[_FILENAME_]";
+	        		$component->grid_fields[$grid_key]->file_temp_preview_url = CM_SHOWFILES . "/thumb" . ffCommon_dirname($image_path) . "/[_FILENAME_]";
 				}
 			} else {
 				$component->grid_fields[$grid_key]->setValue("");
@@ -1998,7 +1953,7 @@ function VGalleryNodesModify_on_before_parse_row($component) {
          */
     if(isset($component->grid_buttons["visible"])) {
 	    if($component->db[0]->getField("visible", "Number", true)) {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["visible"]->icon = null;
 	        $component->grid_buttons["visible"]->action_type = "submit"; 
 	        $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0";
@@ -2010,7 +1965,7 @@ function VGalleryNodesModify_on_before_parse_row($component) {
 	            //$component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0&frmAction=setvisible";
 			}   
 	    } else {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["visible"]->icon = null;
 	        $component->grid_buttons["visible"]->action_type = "submit";     
 	        $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=1";
@@ -2027,7 +1982,7 @@ function VGalleryNodesModify_on_before_parse_row($component) {
     if(isset($component->grid_buttons["public"])) {
 	    if($component->db[0]->getField("public", "Number", true)) {
 	        //$component->grid_buttons["public"]->image = "visible.png";
-            $component->grid_buttons["public"]->class = cm_getClassByFrameworkCss("globe", "icon");
+            $component->grid_buttons["public"]->class = Cms::getInstance("frameworkcss")->get("globe", "icon");
             $component->grid_buttons["public"]->label = ffTemplate::_get_word_by_code("set_no_public");
             $component->grid_buttons["public"]->action_type = "submit"; 
             $component->grid_buttons["public"]->form_action_url = $component->grid_buttons["public"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["public"]->parent[0]->addit_record_param . "setpublic=0";
@@ -2040,7 +1995,7 @@ function VGalleryNodesModify_on_before_parse_row($component) {
             }   
 	    } else {
             //$component->grid_buttons["public"]->image = "notvisible.png";
-            $component->grid_buttons["public"]->class = cm_getClassByFrameworkCss("globe", "icon", array("transparent"));
+            $component->grid_buttons["public"]->class = Cms::getInstance("frameworkcss")->get("globe", "icon", array("transparent"));
             $component->grid_buttons["public"]->label = ffTemplate::_get_word_by_code("set_public");
             $component->grid_buttons["public"]->action_type = "submit";     
             $component->grid_buttons["public"]->form_action_url = $component->grid_buttons["public"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["public"]->parent[0]->addit_record_param . "setpublic=1";
@@ -2054,7 +2009,7 @@ function VGalleryNodesModify_on_before_parse_row($component) {
 	    }
 	}
 	
-	if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 		$file_permission = get_file_permission($component->db[0]->getField("full_path")->getValue(), "vgallery_nodes");
 	if(!check_mod($file_permission, 2, false)) {
 		$component->display_edit_bt = false;

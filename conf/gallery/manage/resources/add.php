@@ -27,10 +27,10 @@
 
     $operation = basename($cm->real_path_info);
     
-	 $base_path = SITE_UPDIR;
+	 $base_path = FF_SITE_UPDIR;
 
 	if($_REQUEST["basepath"])
-    	$base_path = realpath(DISK_UPDIR . $_REQUEST["basepath"]);
+    	$base_path = realpath(FF_DISK_UPDIR . $_REQUEST["basepath"]);
 
     if($base_path) {
 		$path = stripslash(urldecode($_REQUEST["path"]));
@@ -42,12 +42,12 @@
 	
 		
 		$is_owner = false;
-		if (!AREA_GALLERY_SHOW_ADDNEW) {
-    		if(is_dir(DISK_UPDIR . $path)) {
-    			if(ENABLE_STD_PERMISSION) {
+		if (!Auth::env("AREA_GALLERY_SHOW_ADDNEW")) {
+    		if(is_dir(FF_DISK_UPDIR . $path)) {
+    			if(Cms::env("ENABLE_STD_PERMISSION")) {
     				if(check_function("get_file_permission"))
     					$file_permission = get_file_permission($path);
-    				if($file_permission["owner"] > 0 && $file_permission["owner"] === get_session("UserNID")) {
+    				if($file_permission["owner"] > 0 && $file_permission["owner"] === Auth::get("user")->id) {
 						use_cache(false);
     					$is_owner = true;
 					} else {
@@ -55,7 +55,7 @@
 					}
 				} else {
 					$owner = $_REQUEST["owner"];
-					if($owner == get_session("UserNID")) {
+					if($owner == Auth::get("user")->id) {
     					use_cache(false);
     					$is_owner = true;
 					} else {
@@ -67,16 +67,16 @@
 			}
 		}  
 
-		if(!is_dir(DISK_UPDIR . $path)) {
-			if(@mkdir(DISK_UPDIR . $path)) {
-				@chmod(DISK_UPDIR . $path, 0777);
+		if(!is_dir(FF_DISK_UPDIR . $path)) {
+			if(@mkdir(FF_DISK_UPDIR . $path)) {
+				@chmod(FF_DISK_UPDIR . $path, 0777);
 			}		
 		}
-		if(!is_writable(DISK_UPDIR . $path))
+		if(!is_writable(FF_DISK_UPDIR . $path))
 			$strError = ffTemplate::_get_word_by_code("gallery_unable_to_write");	
 
 		if(!$strError && check_function("check_fs"))
-		    check_fs(DISK_UPDIR . $path, $path);    
+		    check_fs(FF_DISK_UPDIR . $path, $path);
 	
 	
 	    $title_gallery = $path;
@@ -94,7 +94,7 @@
 
 		$oRecord->addEvent("on_done_action", "GalleryModify_on_done_action");
 		/* Title Block */
-		//$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . cm_getClassByFrameworkCss("vg-gallery", "icon-tag", array("2x", "content")) . $title_gallery . '<span class="smart-url"></span>' . '</h1>';
+		//$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . Cms::getInstance("frameworkcss")->get("vg-gallery", "icon-tag", array("2x", "content")) . $title_gallery . '<span class="smart-url"></span>' . '</h1>';
 		if(check_function("system_ffcomponent_set_title"))
 			$oRecord->setTitle(system_ffcomponent_set_title(
 				$title_gallery
@@ -104,7 +104,7 @@
 				)
 				, true
 			), 'admin-title vg-content');
-		//$oRecord->setTitle(cm_getClassByFrameworkCss("vg-gallery", "icon-tag", array("2x", "content")) . $title_gallery . '<span class="smart-url"></span>', 'admin-title vg-content');
+		//$oRecord->setTitle(Cms::getInstance("frameworkcss")->get("vg-gallery", "icon-tag", array("2x", "content")) . $title_gallery . '<span class="smart-url"></span>', 'admin-title vg-content');
 		
 
 		$oField = ffField::factory($cm->oPage);
@@ -132,8 +132,8 @@
 			$oField->base_type = "Text";
 			$oField->control_type = "file";
 			$oField->extended_type = "File";
-			$oField->file_storing_path = DISK_UPDIR . $path . "/[directory_VALUE]";
-			$oField->file_temp_path = DISK_UPDIR . "/tmp" . $path;
+			$oField->file_storing_path = FF_DISK_UPDIR . $path . "/[directory_VALUE]";
+			$oField->file_temp_path = FF_DISK_UPDIR . "/tmp" . $path;
 			$oField->file_full_path = true;
 			$oField->file_check_exist = true;
 			$oField->file_show_filename = true; 
@@ -152,7 +152,7 @@
 	    {
 			$oRecord->buttons_options["insert"]["display"] = false;
 
-			$it = new FilesystemIterator(DISK_UPDIR . $path);
+			$it = new FilesystemIterator(FF_DISK_UPDIR . $path);
 			foreach ($it as $fileinfo) {
 				$arrPath[] = stripslash($path) . "/" . $fileinfo->getFilename();
 			}
@@ -165,8 +165,8 @@
 			$oField->base_type = "Text";
 			$oField->control_type = "file";
 			$oField->extended_type = "File";
-			$oField->file_storing_path = DISK_UPDIR . $path;
-			$oField->file_temp_path = DISK_UPDIR . $path;
+			$oField->file_storing_path = FF_DISK_UPDIR . $path;
+			$oField->file_temp_path = FF_DISK_UPDIR . $path;
 			$oField->file_full_path = true;
 			$oField->file_check_exist = true;
 			$oField->file_show_filename = true; 
@@ -201,10 +201,10 @@
  	if($action == "insert" && $component->user_vars["operation"] == "dir") { 
  		$directory = $component->form_fields["directory"]->getValue();
  	
-	  if(@mkdir(DISK_UPDIR . $component->user_vars["path"] . "/" . $directory)) {
-	        @chmod(DISK_UPDIR . $component->user_vars["path"] . "/" . $directory, 0777);
+	  if(@mkdir(FF_DISK_UPDIR . $component->user_vars["path"] . "/" . $directory)) {
+	        @chmod(FF_DISK_UPDIR . $component->user_vars["path"] . "/" . $directory, 0777);
 	        if(check_function("check_fs"))
-	            check_fs(DISK_UPDIR . $component->user_vars["path"] . "/" . $directory, $component->user_vars["path"] . "/" . $directory);
+	            check_fs(FF_DISK_UPDIR . $component->user_vars["path"] . "/" . $directory, $component->user_vars["path"] . "/" . $directory);
 	        //ffRedirect($ret_url);
 	    } else {
 	        $component->tplDisplayError(ffTemplate::_get_word_by_code("gallery_unable_create_dir"));

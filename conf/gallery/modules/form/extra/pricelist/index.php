@@ -59,7 +59,7 @@ $oGrid->addEvent("on_do_action", "FormPricelist_on_do_action");
 $oGrid->addEvent("on_before_parse_row", "FormPricelist_on_before_parse_row");
 $oGrid->user_vars["formcnf-ID"] = $_REQUEST["keys"]["formcnf-ID"];
 
-$oGrid->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
+$oGrid->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
 
 /*if(strlen($_REQUEST["XHR_DIALOG_ID"]))
 {

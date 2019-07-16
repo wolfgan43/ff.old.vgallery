@@ -2,9 +2,9 @@
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
 $is_owner = false;
-if (!AREA_STATIC_SHOW_MODIFY) {
+if (!Auth::env("AREA_STATIC_SHOW_MODIFY")) {
 $owner = $_REQUEST["owner"];
-	if($owner == get_session("UserNID")) {
+	if($owner == Auth::get("user")->id) {
     	use_cache(false);
     	$is_owner = true;
 	} else {
@@ -167,7 +167,7 @@ if($is_owner) {
 				, CONCAT(IF(static_pages.parent = '/', '', static_pages.parent), '/', static_pages.name) AS full_path
 				, static_pages.location AS location
 			FROM static_pages 
-			WHERE static_pages.owner = " . $db_gallery->toSql(get_session("UserNID"), "Number") . "
+			WHERE static_pages.owner = " . $db_gallery->toSql(Auth::get("user")->id, "Number") . "
 				AND static_pages.ID_domain = " . $db_gallery->toSql($globals->ID_domain, "Number") . "
 			ORDER BY LENGTH(full_path)";
 	$db_gallery->query($sSQL);
@@ -186,7 +186,7 @@ $oRecord->id = "StaticModify";
 $oRecord->resources[] = $oRecord->id;
 //$oRecord->title = ffTemplate::_get_word_by_code("static_page_title");
 $oRecord->src_table = "static_pages";
-$oRecord->buttons_options["delete"]["display"] = AREA_STATIC_SHOW_DELETE;
+$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_STATIC_SHOW_DELETE");
 $oRecord->addEvent("on_do_action", "StaticModify_on_do_action");
 $oRecord->addEvent("on_done_action", "StaticModify_on_done_action");
 $oRecord->user_vars["user_path"] = $user_path;
@@ -197,7 +197,7 @@ $oRecord->insert_additional_fields["visible"] = new ffData("1", "Number");
 
 /* Title Block */
 
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-menu">' . cm_getClassByFrameworkCss("vg-static-menu", "icon-tag", array("2x", "menu")) . $static_menu_title . '<span class="smart-url">' . $static_menu_title_url . '</span>' . '<a class="slug-gotourl" href="javascript:void(0);" target="_blank">' . ffTemplate::_get_word_by_code("goto_url") . '</a>' .'</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-menu">' . Cms::getInstance("frameworkcss")->get("vg-static-menu", "icon-tag", array("2x", "menu")) . $static_menu_title . '<span class="smart-url">' . $static_menu_title_url . '</span>' . '<a class="slug-gotourl" href="javascript:void(0);" target="_blank">' . ffTemplate::_get_word_by_code("goto_url") . '</a>' .'</h1>';
 
 if($is_home) {
     $oRecord->allow_delete     = false;
@@ -268,7 +268,7 @@ $oField->source_SQL = " SELECT
 							: ""
 						) . "
                         " . ($is_owner
-                        	? "AND static_pages.owner = " . $db_gallery->toSql(get_session("UserNID"), "Number")
+                        	? "AND static_pages.owner = " . $db_gallery->toSql(Auth::get("user")->id, "Number")
                         	: ""
                         ) . "
                         " . (isset($_REQUEST["keys"]["ID"]) && $_REQUEST["keys"]["ID"] > 0
@@ -363,7 +363,7 @@ if(!$simple_interface) {
 	$oRecord->insert_additional_fields["location"] =  new ffData($location);
 }
 
-if(!ENABLE_STD_PERMISSION  && !ENABLE_ADV_PERMISSION) {
+if(!Cms::env("ENABLE_STD_PERMISSION") && !Cms::env("ENABLE_ADV_PERMISSION")) {
 	$oField = ffField::factory($cm->oPage);
 	$oField->id = "permission";
 	$oField->label = ffTemplate::_get_word_by_code("static_page_permission");
@@ -420,179 +420,178 @@ $oField->default_value = new ffData("load fadeIn");
 $oField->multi_select_one = false;
 $oRecord->addContent($oField);
 
-$oRecord->insert_additional_fields["owner"] =  new ffData(get_session("UserNID"), "Number");
+$oRecord->insert_additional_fields["owner"] =  new ffData(Auth::get("user")->id, "Number");
 $oRecord->additional_fields = array("last_update" =>  new ffData(time(), "Number"));
 
 $cm->oPage->addContent($oRecord);
 
-$sSQL = "SELECT COUNT(" . FF_PREFIX . "languages.ID) AS count_lang FROM " . FF_PREFIX . "languages WHERE " . FF_PREFIX . "languages.status = '1'";
-$db_gallery->query($sSQL);
-if($db_gallery->nextRecord()) {
-    $count_lang = $db_gallery->getField("count_lang", "Number", true);
+if(!$is_home) {
+    $sSQL = "SELECT COUNT(" . FF_PREFIX . "languages.ID) AS count_lang FROM " . FF_PREFIX . "languages WHERE " . FF_PREFIX . "languages.status = '1'";
+    $db_gallery->query($sSQL);
+    if ($db_gallery->nextRecord()) {
+        $count_lang = $db_gallery->getField("count_lang", "Number", true);
+    }
+
+    $oDetail_languages = ffDetails::factory($cm->oPage);
+    if ($count_lang > 1) {
+        $oDetail_languages->tab = true;
+        $oDetail_languages->tab_label = "language";
+    }
+    $oDetail_languages->id = "StaticModifyLanguages";
+    $oDetail_languages->title = ""; //ffTemplate::_get_word_by_code("static_page_title");
+    $oDetail_languages->src_table = "static_pages_rel_languages";
+    $oDetail_languages->order_default = "ID";
+    $oDetail_languages->addEvent("on_do_action", "StaticModifyLanguages_on_do_action");
+    $oDetail_languages->fields_relationship = array("ID_static_pages" => "ID");
+    $oDetail_languages->display_new = false;
+    $oDetail_languages->display_delete = false;
+    $oDetail_languages->auto_populate_insert = true;
+    $oDetail_languages->populate_insert_SQL = "SELECT 
+                                                    " . FF_PREFIX . "languages.ID AS ID_languages
+                                                    , " . FF_PREFIX . "languages.description AS language 
+                                                    , " . FF_PREFIX . "languages.code AS code_lang
+                                                    , '' AS value 
+                                                FROM " . FF_PREFIX . "languages 
+                                                WHERE " . FF_PREFIX . "languages.status = '1'";
+    $oDetail_languages->auto_populate_edit = true;
+    $oDetail_languages->populate_edit_SQL = "SELECT 
+                                        static_pages_rel_languages.ID AS ID
+                                        , " . FF_PREFIX . "languages.ID AS ID_languages
+                                        , " . FF_PREFIX . "languages.description AS language
+                                        , " . FF_PREFIX . "languages.code AS code_lang 
+                                        , static_pages_rel_languages.meta_title AS title
+                                        , static_pages_rel_languages.meta_description AS description
+                                        , static_pages_rel_languages.visible AS visible
+                                        , static_pages_rel_languages.alt_url AS alt_url
+                                        , static_pages_rel_languages.meta_title AS meta_title
+                                        , static_pages_rel_languages.smart_url AS smart_url
+                                        , (SELECT drafts_rel_languages.value 
+                                            FROM drafts_rel_languages 
+                                            WHERE drafts_rel_languages.ID_languages = " . FF_PREFIX . "languages.ID
+                                                AND drafts_rel_languages.ID_drafts = (SELECT static_pages.ID_drafts FROM static_pages WHERE static_pages.ID = " . $db_gallery->toSql($_REQUEST["keys"]["ID"], "Number") . ")
+                                        ) AS value
+                                    FROM " . FF_PREFIX . "languages
+                                        LEFT JOIN static_pages_rel_languages ON  static_pages_rel_languages.ID_languages = " . FF_PREFIX . "languages.ID AND static_pages_rel_languages.ID_static_pages = [ID_FATHER]
+                                    WHERE
+                                        " . FF_PREFIX . "languages.status = '1'";
+
+
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "IDr";
+    $oField->data_source = "ID";
+    $oField->base_type = "Number";
+    $oDetail_languages->addKeyField($oField);
+
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "language";
+    $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_languages");
+    $oField->store_in_db = false;
+    $oDetail_languages->addHiddenField($oField);
+
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "code_lang";
+    $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_code");
+    $oField->store_in_db = false;
+    $oDetail_languages->addHiddenField($oField);
+
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "ID_languages";
+    $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_ID_languages");
+    $oField->base_type = "Number";
+    //$oField->required = true;
+    $oDetail_languages->addHiddenField($oField);
+
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "smart_url";
+    $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_smart_url");
+    $oDetail_languages->addHiddenField($oField);
+
+    if (!Cms::env("ENABLE_STD_PERMISSION") && Cms::env("ENABLE_ADV_PERMISSION")) {
+        if (!$simple_interface) {
+            $oField = ffField::factory($cm->oPage);
+            $oField->id = "visible";
+            $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_visible");
+            $oField->base_type = "Number";
+            $oField->control_type = "checkbox";
+            $oField->extended_type = "Boolean";
+            $oField->checked_value = new ffData("1", "Number");
+            $oField->unchecked_value = new ffData("0", "Number");
+            $oField->default_value = $oField->checked_value;
+            $oDetail_languages->addContent($oField);
+        } else {
+            $oField = ffField::factory($cm->oPage);
+            $oField->id = "visible";
+            $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_ID_languages");
+            $oField->base_type = "Number";
+            $oField->default_value = new ffData("1", "Number");
+            $oDetail_languages->addHiddenField($oField);
+        }
+    } else {
+        $oDetail_languages->insert_additional_fields["visible"] = new ffData("1", "Number");
+    }
+    /*
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "meta_title";
+    $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_meta_title");
+    $oDetail_languages->addHiddenField($oField);*/
+
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "meta_title";
+    $oField->class = "input title-page";
+    $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_title");
+    $oField->properties["onkeyup"] = "javascript:ff.cms.admin.makeNewUrl();";
+    $oField->required = true;
+    $oDetail_languages->addContent($oField);
+
+    $oField = ffField::factory($cm->oPage);
+    $oField->id = "alt_url";
+    $oField->class = "input alt-url";
+    $oField->label = ffTemplate::_get_word_by_code("static_page_alt_url");
+    $oField->properties["onkeyup"] = "javascript:ff.cms.admin.makeNewUrl();";
+    $oDetail_languages->addContent($oField);
+
+    if (!$simple_interface) {
+        $oField = ffField::factory($cm->oPage);
+        $oField->id = "meta_description";
+        $oField->class = "text optional hidden";
+        $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_description");
+        $oField->display_label = false;
+        /*$oField->control_type = "textarea";
+        if(file_exists(FF_DISK_PATH . FF_THEME_DIR . "/library/ckeditor/ckeditor.js")) {
+            $oField->widget = "ckeditor";
+        } else {
+            $oField->widget = "";
+        }*/
+        $oField->ckeditor_group_by_auth = true;
+        $oField->extended_type = "Text";
+        $oField->base_type = "Text";
+        $oField->fixed_pre_content = '<a href="javascript:void(0);" class="optional-action" onclick="if(jQuery(\'TEXTAREA.optional\').hasClass(\'hidden\')) { jQuery(\'TEXTAREA.optional\').removeClass(\'hidden\'); } else { jQuery(\'TEXTAREA.optional\').addClass(\'hidden\'); }">' . ffTemplate::_get_word_by_code("rel_static_pages_description_action") . '</a>';
+        $oDetail_languages->addContent($oField);
+    }
+
+    if (1) {
+        $oField = ffField::factory($cm->oPage);
+        $oField->id = "value";
+        $oField->container_class = "draft";
+        $oField->label = ffTemplate::_get_word_by_code("rel_static_pages_value");
+        $oField->display_label = false;
+        $oField->control_type = "textarea";
+        if (file_exists(FF_DISK_PATH . FF_THEME_DIR . "/library/ckeditor/ckeditor.js")) {
+            $oField->widget = "ckeditor";
+        } else {
+            $oField->widget = "";
+        }
+        $oField->ckeditor_group_by_auth = true;
+        $oField->extended_type = "Text";
+        $oField->base_type = "Text";
+        $oField->store_in_db = false;
+        $oDetail_languages->addContent($oField);
+    }
+
+
+    $oRecord->addContent($oDetail_languages);
+    $cm->oPage->addContent($oDetail_languages);
 }
-
-$oDetail_languages = ffDetails::factory($cm->oPage);
-if($count_lang > 1) {
-    $oDetail_languages->tab = true;
-    $oDetail_languages->tab_label = "language";
-}
-$oDetail_languages->id = "StaticModifyLanguages";
-$oDetail_languages->title = ""; //ffTemplate::_get_word_by_code("static_page_title");
-$oDetail_languages->src_table = "static_pages_rel_languages";
-$oDetail_languages->order_default = "ID";
-$oDetail_languages->addEvent("on_do_action", "StaticModifyLanguages_on_do_action");
-$oDetail_languages->fields_relationship = array ("ID_static_pages" => "ID");
-$oDetail_languages->display_new = false;
-$oDetail_languages->display_delete = false;
-$oDetail_languages->auto_populate_insert = true;
-$oDetail_languages->populate_insert_SQL = "SELECT 
-			                                    " . FF_PREFIX . "languages.ID AS ID_languages
-			                                    , " . FF_PREFIX . "languages.description AS language 
-			                                    , " . FF_PREFIX . "languages.code AS code_lang
-			                                    , '' AS value 
-			                                FROM " . FF_PREFIX . "languages 
-			                                WHERE " . FF_PREFIX . "languages.status = '1'";
-$oDetail_languages->auto_populate_edit = true;
-$oDetail_languages->populate_edit_SQL = "SELECT 
-									static_pages_rel_languages.ID AS ID
-									, " . FF_PREFIX . "languages.ID AS ID_languages
-                                    , " . FF_PREFIX . "languages.description AS language
-                                    , " . FF_PREFIX . "languages.code AS code_lang 
-									, static_pages_rel_languages.meta_title AS title
-									, static_pages_rel_languages.meta_description AS description
-									, static_pages_rel_languages.visible AS visible
-									, static_pages_rel_languages.alt_url AS alt_url
-                                    , static_pages_rel_languages.meta_title AS meta_title
-                                    , static_pages_rel_languages.smart_url AS smart_url
-                                    , (SELECT drafts_rel_languages.value 
-	                                    FROM drafts_rel_languages 
-	                                    WHERE drafts_rel_languages.ID_languages = " . FF_PREFIX . "languages.ID
-	                                    	AND drafts_rel_languages.ID_drafts = (SELECT static_pages.ID_drafts FROM static_pages WHERE static_pages.ID = " . $db_gallery->toSql($_REQUEST["keys"]["ID"], "Number") . ")
-                                    ) AS value
-								FROM " . FF_PREFIX . "languages
-									LEFT JOIN static_pages_rel_languages ON  static_pages_rel_languages.ID_languages = " . FF_PREFIX . "languages.ID AND static_pages_rel_languages.ID_static_pages = [ID_FATHER]
-                                WHERE
-                                    " . FF_PREFIX . "languages.status = '1'";
-
-                              
-                                    
-$oField = ffField::factory($cm->oPage);
-$oField->id = "IDr";
-$oField->data_source = "ID";
-$oField->base_type = "Number";
-$oDetail_languages->addKeyField($oField);
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "language";
-$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_languages");
-$oField->store_in_db = false;
-$oDetail_languages->addHiddenField($oField);
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "code_lang";
-$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_code");
-$oField->store_in_db = false;
-$oDetail_languages->addHiddenField($oField);
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "ID_languages";
-$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_ID_languages");
-$oField->base_type = "Number";
-//$oField->required = true;
-$oDetail_languages->addHiddenField($oField);
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "smart_url";
-$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_smart_url");
-$oDetail_languages->addHiddenField($oField);
-
-if(!ENABLE_STD_PERMISSION && ENABLE_ADV_PERMISSION) {
-	if(!$simple_interface) {
-		$oField = ffField::factory($cm->oPage);
-		$oField->id = "visible";
-		$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_visible");
-		$oField->base_type = "Number";
-		$oField->control_type = "checkbox";
-		$oField->extended_type = "Boolean";
-		$oField->checked_value = new ffData("1", "Number");
-		$oField->unchecked_value = new ffData("0", "Number");
-		$oField->default_value = $oField->checked_value;
-		$oDetail_languages->addContent($oField);
-	} else {
-		$oField = ffField::factory($cm->oPage);
-		$oField->id = "visible";
-		$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_ID_languages");
-		$oField->base_type = "Number";
-		$oField->default_value = new ffData("1", "Number");
-		$oDetail_languages->addHiddenField($oField);
-	}
-} else {
-	$oDetail_languages->insert_additional_fields["visible"] = new ffData("1", "Number");
-}
-/*
-$oField = ffField::factory($cm->oPage);
-$oField->id = "meta_title";
-$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_meta_title");
-$oDetail_languages->addHiddenField($oField);*/
-           
-$oField = ffField::factory($cm->oPage);
-$oField->id = "meta_title";
-$oField->class = "input title-page";
-$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_title");
-$oField->properties["onkeyup"] = "javascript:ff.cms.admin.makeNewUrl();";
-$oField->required = true;
-$oDetail_languages->addContent($oField);
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "alt_url";
-$oField->class = "input alt-url";
-$oField->label = ffTemplate::_get_word_by_code("static_page_alt_url");
-$oField->properties["onkeyup"] = "javascript:ff.cms.admin.makeNewUrl();";
-$oDetail_languages->addContent($oField);
-
-if(!$simple_interface) {
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "meta_description";
-	$oField->class = "text optional hidden";
-	$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_description");
-	$oField->display_label = false;
-	/*$oField->control_type = "textarea";
-	if(file_exists(FF_DISK_PATH . FF_THEME_DIR . "/library/ckeditor/ckeditor.js")) {
-	    $oField->widget = "ckeditor";
-	} else {
-	    $oField->widget = "";
-	}*/
-	$oField->ckeditor_group_by_auth = true;
-	$oField->extended_type = "Text";
-	$oField->base_type = "Text";
-	$oField->fixed_pre_content = '<a href="javascript:void(0);" class="optional-action" onclick="if(jQuery(\'TEXTAREA.optional\').hasClass(\'hidden\')) { jQuery(\'TEXTAREA.optional\').removeClass(\'hidden\'); } else { jQuery(\'TEXTAREA.optional\').addClass(\'hidden\'); }">' . ffTemplate::_get_word_by_code("rel_static_pages_description_action") . '</a>';
-	$oDetail_languages->addContent($oField);
-}
-
-if(1) {
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "value";
-	$oField->container_class = "draft";
-	$oField->label = ffTemplate::_get_word_by_code("rel_static_pages_value");
-	$oField->display_label = false;
-	$oField->control_type = "textarea";
-	if(file_exists(FF_DISK_PATH . FF_THEME_DIR . "/library/ckeditor/ckeditor.js")) {
-	    $oField->widget = "ckeditor";
-	} else {
-	    $oField->widget = "";
-	}
-	$oField->ckeditor_group_by_auth = true;
-	$oField->extended_type = "Text";
-	$oField->base_type = "Text";
-	$oField->store_in_db = false;
-	$oDetail_languages->addContent($oField);
-}
-
-
-
-$oRecord->addContent($oDetail_languages);
-$cm->oPage->addContent($oDetail_languages);
-
 
 $cm->oPage->tplAddJs("ff.cms.admin", "ff.cms.admin.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools");
 
@@ -830,7 +829,7 @@ function StaticModifyLanguages_on_do_action($component, $action) {
 												null
 												, " . $db->toSql($draft_name) . "
 												, " . $db->toSql(time(), "Number") . "
-												, " . $db->toSql(get_session("UserNID"), "Number") . "
+												, " . $db->toSql(Auth::get("user")->id, "Number") . "
 												, " . $db->toSql($ID_domain, "Number") . "
 											)";
 									$db->execute($sSQL);
@@ -920,7 +919,7 @@ function StaticModifyLanguages_on_do_action($component, $action) {
 		            		array(
 		            			"smart_url" => ($src["seo"]["smart_url"] && isset($rst_value["smart_url"]) && !$component->main_record[0]->user_vars["is_home"]
 		            				? $component->recordset[$rst_key]["smart_url"]->getValue()
-		            				: null
+		            				: false
 		            			)
 		            			, "title" => ($src["seo"]["title"] && isset($rst_value["meta_title"])
 		            				? $rst_value["meta_title"]->getValue()

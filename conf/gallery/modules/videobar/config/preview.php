@@ -1,7 +1,7 @@
 <?php
     require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
     
-	if (!MODULE_SHOW_CONFIG) {
+	if (!Auth::env("MODULE_SHOW_CONFIG")) {
 	    ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 	}
 
@@ -35,7 +35,7 @@
 	    $videobar_channel_list = $db_gallery->getField("channel_list")->getValue();
 	    $videobar_search_list = $db_gallery->getField("search_list")->getValue();
 
-	    $tpl = ffTemplate::factory(ffCommon_dirname(ffCommon_dirname(__FILE__)));
+	    $tpl = ffTemplate::factory(ffCommon_dirname(__DIR__));
 	    $tpl->load_file("videobar.html", "main");
 
 	    $tpl->set_var("site_path", FF_SITE_PATH);

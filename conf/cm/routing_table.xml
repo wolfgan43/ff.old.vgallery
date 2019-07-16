@@ -45,37 +45,14 @@
 		<index>999</index>
 		<reverse>/dialog</reverse>
 	</rule>
-	<rule>
-		<priority>NORMAL</priority>
-		<source>^/admin/configuration/cm/layout(.*)</source>
-		<destination>
-			<url>/cm/contents/layout$1</url>
-		</destination>
-	</rule>
-	<rule>
-		<priority>NORMAL</priority>
-		<source>^/admin/layout/cm/showfiles(.*)</source>
-		<destination>
-			<url>/cm/contents/showfiles$1</url>
-		</destination>
-	</rule>
+
 	<rule id="getlibs">
         <source>^/services/getlibs$</source>
         <destination>
             <url>/cm/contents/getlibs</url>
         </destination>
         <reverse>/services/getlibs</reverse>
-    </rule>		
-	<rule id="ds">
-		<priority>NORMAL</priority>
-		<source>^/admin/ds(.*)</source>
-		<destination>
-			<url>/cm/contents/ds$1</url>
-		</destination>
-		<accept_path_info />
-		<reverse>/admin/ds</reverse>
-		<index>999</index>
-	</rule>
+    </rule>	
 	<rule>
 		<priority>BOTTOM</priority>
 		<source>(.*)</source>

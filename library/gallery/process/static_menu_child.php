@@ -38,15 +38,17 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 	
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"], $layout_settings["AREA_STATIC_MENU_FOLLOW_FRAMEWORK_CSS"], true);
-    
-	$tpl_data["custom"] = "menu_child.html";
+
+    $tpl_data["id"] = $unic_id;
+    $tpl_data["custom"] = "menu_child.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 	
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   	
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
     $tpl->set_var("site_path", FF_SITE_PATH);
     $tpl->set_var("theme_inset", THEME_INSET);
@@ -219,24 +221,24 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
                 $tpl->parse("SezItemDescription", false);
             }
 
-        	if($item["owner"] == get_session("UserNID")) {
+        	if($item["owner"] == Auth::get("user")->id) {
 				$is_owner = true;
         	} else {
 				$is_owner = false;
         	}
 
 	        if (
-	            AREA_STATIC_SHOW_MODIFY
-	            || AREA_STATIC_SHOW_ADDNEW
-	            || AREA_STATIC_SHOW_DELETE 
-	            || AREA_PROPERTIES_SHOW_MODIFY 
-	            || AREA_ECOMMERCE_SHOW_MODIFY 
-	            || AREA_SETTINGS_SHOW_MODIFY
+                Auth::env("AREA_STATIC_SHOW_MODIFY")
+	            || Auth::env("AREA_STATIC_SHOW_ADDNEW")
+	            || Auth::env("AREA_STATIC_SHOW_DELETE")
+	            || Auth::env("AREA_PROPERTIES_SHOW_MODIFY")
+	            || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")
+	            || Auth::env("AREA_SETTINGS_SHOW_MODIFY")
 	            || $is_owner
 	        ) {
                 $popup["admin"]["unic_name"] = $unic_id . stripslash($item["parent"]) . "/" . $item["name"] . "-" . $is_owner;
 
-				if($is_owner && !AREA_SHOW_NAVBAR_ADMIN)
+				if($is_owner && !Auth::env("AREA_SHOW_NAVBAR_ADMIN"))
         			$popup["admin"]["title"] = ffTemplate::_get_word_by_code("static_menu_owner") . ": " . $item["title"];
 				else
 	                $popup["admin"]["title"] = $layout["title"] . ": " . stripslash($item["parent"]) . "/" . $item["name"];
@@ -244,7 +246,7 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 	            $popup["admin"]["class"] = $layout["type_class"];
 	            $popup["admin"]["group"] = $layout["type_group"];
 	            
-				if($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
+				if($is_owner && !Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
                     $popup["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_MENU . "/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]) . "&owner=" . $item["owner"];
                 	$popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_MENU . "/modify" . stripslash($item["parent"]) . "/" . $item["name"] . "?owner=" . $item["owner"];
 	                $popup["admin"]["delete"] = ffDialog(TRUE,
@@ -255,15 +257,15 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 	                                                    FF_SITE_PATH . VG_SITE_MENU . "/modify" . stripslash($item["parent"]) . "/" . $item["name"] . "?ret_url=" . "--encodereturl--" . "&frmAction=StaticModify_confirmdelete" . "&owner=" . $item["owner"], 
 	                                                    FF_SITE_PATH . VG_SITE_MENU . "/dialog");
 				} else {
-	                if(AREA_STATIC_SHOW_ADDNEW) {
+	                if(Auth::env("AREA_STATIC_SHOW_ADDNEW")) {
 	                    $popup["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]);
 	                } else {
 	                    $popup["admin"]["addnew"] = "";
 	                }
-	                if (AREA_STATIC_SHOW_MODIFY) {
+	                if (Auth::env("AREA_STATIC_SHOW_MODIFY")) {
                 		$popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static/modify" . stripslash($item["parent"]) . "/" . $item["name"];
 					}
-	                if(AREA_STATIC_SHOW_DELETE) {
+	                if(Auth::env("AREA_STATIC_SHOW_DELETE")) {
 	                    $popup["admin"]["delete"] = ffDialog(TRUE,
 	                                                    "yesno",
 	                                                    ffTemplate::_get_word_by_code("vgallery_erase_title"),
@@ -273,13 +275,13 @@ function process_static_menu_child($menu_item, $settings_path, $user_path, $sear
 	                                                    FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/content/static" . "/dialog");
 	                }
 				}
-                if(AREA_PROPERTIES_SHOW_MODIFY) {
+                if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
                     $popup["admin"]["extra"] = "";
                 }
-                if(AREA_ECOMMERCE_SHOW_MODIFY) {
+                if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
                     $popup["admin"]["ecommerce"] = "";
                 }
-                if(AREA_SETTINGS_SHOW_MODIFY) {
+                if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
                     $popup["admin"]["setting"] = "";
                 }
 

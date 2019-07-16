@@ -86,7 +86,7 @@ $oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify";
 $oGrid->record_id = "CriteriaModify";
 $oGrid->resources[] = $oGrid->record_id;
 $oGrid->buttons_options["export"]["display"] = false;
-$oGrid->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "form")) . ffTemplate::_get_word_by_code("modify_module_form_dep") . '</h1>';
+$oGrid->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "form")) . ffTemplate::_get_word_by_code("modify_module_form_dep") . '</h1>';
 
 if(strlen($_REQUEST["XHR_DIALOG_ID"]))
 {

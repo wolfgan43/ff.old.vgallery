@@ -26,12 +26,13 @@
 function system_adv_permission($settings_path) {
     $globals = ffGlobals::getInstance("gallery");
 
-    $user_permission = get_session("user_permission");
-    if(is_array($user_permission) && count($user_permission)) {
+    $user = Auth::get("user");
+    if($user) {
         if(basename($settings_path) != "login") {
             $db_gallery = ffDB_Sql::factory();
 
             $src_path = $settings_path;
+            $sWhere = "";
             do {
                 $src_folder_name = basename($src_path);
                 $src_folder_path = ffCommon_dirname($src_path);
@@ -44,7 +45,7 @@ function system_adv_permission($settings_path) {
                     FROM static_pages 
                         INNER JOIN static_pages_rel_groups ON static_pages.ID = static_pages_rel_groups.ID_static_pages
                     WHERE 
-                        static_pages_rel_groups.gid IN (" . implode("," , $user_permission["groups"]) . ")
+                        static_pages_rel_groups.gid IN (" . implode("," , $user->acl) . ")
                         " . ($globals->ID_domain > 0
                             ? " AND static_pages.ID_domain = " . $db_gallery->toSql($globals->ID_domain, "Number")
                             : ""

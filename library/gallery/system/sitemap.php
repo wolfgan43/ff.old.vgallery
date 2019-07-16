@@ -39,12 +39,12 @@ function system_get_sitemap_index($ext = "xml", $strip_user_path = null, $module
 			break;
 		case "json":
 			$template = false;
-			$mime = ffMimeTypeByExtension($ext);
+			$mime = ffMedia::getMimeTypeByExtension($ext);
 			break;
 		case "xml":
 			$date_type = DATE_ATOM;
 			$template = "sitemapindex.xml";
-			$mime = ffMimeTypeByExtension($ext);
+			$mime = ffMedia::getMimeTypeByExtension($ext);
 			break;
 		default:	
 		
@@ -304,30 +304,30 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 	switch($ext) {
 		case "html":
 			$template 		= "sitemap.html";
-			$mime 			= ffMimeTypeByExtension($ext);
+			$mime 			= ffMedia::getMimeTypeByExtension($ext);
 			break;
 		case "rss":
 		case "mrss":
 			$date_type 		= "D, d M Y H:i:s O";
 			$template 		= "siterss2.xml";
-			//$mime 			= ffMimeTypeByExtension($ext);
-            $mime 			= ffMimeTypeByExtension("xml");
+			//$mime 			= ffMedia::getMimeTypeByExtension($ext);
+            $mime 			= ffMedia::getMimeTypeByExtension("xml");
             $default_limit	= FEED_LIMIT;
             
             $skip_dir 		= true;
 			break;
 		case "json":
 			$template 		= false;
-			$mime 			= ffMimeTypeByExtension($ext);
+			$mime 			= ffMedia::getMimeTypeByExtension($ext);
 			break;
 		case "xml":
 			$date_type 		= DATE_ATOM;
 			$template 		= "sitemap.xml";
-			$mime 			= ffMimeTypeByExtension($ext);
+			$mime 			= ffMedia::getMimeTypeByExtension($ext);
 			break;
 		default:	
 			return false;
-		
+
 	}
 	
 	$file = $base_path . $user_path . "/" . ($target ? $target : "index") . "." . $ext;
@@ -777,7 +777,7 @@ function system_get_sitemap($target, $ext = "xml", $user_path = null, $lang = nu
 							$tpl->set_var("cover_tag"		, '<img src="' . $page["cover"] . '" />');
 						} elseif($ext == "mrss") {
 						
-							$tpl->set_var("cover_mime"		, ffMimeTypeByFilename($page["cover"], "image/jpeg"));
+							$tpl->set_var("cover_mime"		, ffMedia::getMimeTypeByFilename($page["cover"], "image/jpeg"));
 							$tpl->set_var("cover_url"		, $page["cover"]);
 							$tpl->parse("SezCover", false);
 						}

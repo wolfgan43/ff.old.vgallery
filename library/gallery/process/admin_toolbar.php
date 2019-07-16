@@ -39,7 +39,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 	define("VG_SITE_INTERNATIONAL", "/restricted/wordcode");
 
 
-	$fonticon = cm_getFontIcon();
+	$fonticon = Cms::getInstance("frameworkcss")->getFontIcon();
 
 	$cm->oPage->tplAddJs("jquery.fn.helperborder", "jquery.helperborder.js", FF_THEME_DIR . "/library/plugins/jquery.helperborder");
 	$cm->oPage->tplAddCss("jquery.helperborder", "jquery.helperborder.css", FF_THEME_DIR . "/library/plugins/jquery.helperborder");
@@ -49,14 +49,14 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 	$cm->oPage->tplAddCss("ff.cms.block", "toolbar.css", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 	$cm->oPage->tplAddJs("ff.cms.block", "toolbar.js", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 
-	if(AREA_SHOW_NAVBAR_ADMIN) {
+	if(Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
 		$cm->oPage->tplAddJs("jquery-ui", "jquery-ui.js", FF_THEME_DIR ."/library/jquery-ui");
 		$cm->oPage->tplAddJs("jquery.fn.hoverIntent", "jquery.hoverintent.js", FF_THEME_DIR . "/library/plugins/jquery.hoverintent");
 
 		$cm->oPage->tplAddCss("ff.cms.bar", "admin.css", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 		$cm->oPage->tplAddJs("ff.cms.bar", "admin.js", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 
-		if(AREA_SECTION_SHOW_MODIFY) {
+		if(Auth::env("AREA_SECTION_SHOW_MODIFY")) {
 			$cm->oPage->tplAddCss("ff.cms.editor", "editor.css", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 			$cm->oPage->tplAddJs("ff.cms.editor", "editor.js", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 			$cm->oPage->tplAddJs("jquery.fn.ColorPicker", "jquery.colorpicker.js", FF_THEME_DIR . "/library/plugins/jquery.colorpicker");
@@ -64,7 +64,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 
 			$option["editor"] = array();
 
-			if(AREA_SEO_SHOW_MODIFY) {
+			if(Auth::env("AREA_SEO_SHOW_MODIFY")) {
 				$cm->oPage->tplAddCss("ff.cms.seo", "seo.css", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.seo");
 				$cm->oPage->tplAddJs("ff.cms.seo", "seo.js", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.seo");
 
@@ -73,23 +73,23 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 				}
 				$option["editor"]["seo"] = true;
 			}
-			if(AREA_SITEMAP_SHOW_MODIFY && 0) {
+			if(Auth::env("AREA_SITEMAP_SHOW_MODIFY") && 0) {
 				$cm->oPage->tplAddJs("ff.cms.sitemap", "sitemap.js", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 
 				$option["editor"]["sitemap"] = array(
 					"menu" => array("class" => "cms-editor-menu sitemap"
-					, "icon" => cm_getClassByFrameworkCss("sitemap", "icon-tag", "2x")
+					, "icon" => Cms::getInstance("frameworkcss")->get("sitemap", "icon-tag", "2x")
 					, "rel" => "add"
 					)
 				);
 			}
-			if(AREA_LAYOUT_SHOW_MODIFY && 0) {
+			if(Auth::env("AREA_LAYOUT_SHOW_MODIFY") && 0) {
 				$cm->oPage->tplAddCss("ff.cms.layout", "layout.css", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 				$cm->oPage->tplAddJs("ff.cms.layout", "layout.js", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/tools/ff.cms.bar");
 
 				$option["editor"]["sitemap"] = array(
 					"menu" => array("class" => "cms-editor-menu"
-					, "icon" => cm_getClassByFrameworkCss("addnew", "icon-tag", "2x")
+					, "icon" => Cms::getInstance("frameworkcss")->get("addnew", "icon-tag", "2x")
 					, "rel" => "add"
 					)
 				);
@@ -105,12 +105,12 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 
 
 	$check_class = "checked";
-    $check_icon = cm_getClassByFrameworkCss($check_class, "icon-tag");
+    $check_icon = Cms::getInstance("frameworkcss")->get($check_class, "icon-tag");
     $uncheck_class = "unchecked";
-    $uncheck_icon = cm_getClassByFrameworkCss($uncheck_class, "icon-tag");
+    $uncheck_icon = Cms::getInstance("frameworkcss")->get($uncheck_class, "icon-tag");
 
-    if(check_function("get_layout_settings"))
-    	$layout_settings = get_layout_settings(NULL, "ADMIN");
+    //if(check_function("get_layout_settings"))
+    	$layout_settings = Cms::getPackage("admin"); //get_layout_settings(NULL, "ADMIN");
 
 	$cancel_dialog_url = "[CLOSEDIALOG]";
 
@@ -119,42 +119,42 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 
     $tpl->set_var("site_path", FF_SITE_PATH);
 
-    $tpl->set_var("info_icon", cm_getClassByFrameworkCss("info", "icon-tag", "2x"));
-    $tpl->set_var("logout_icon", cm_getClassByFrameworkCss("power-off", "icon-tag", "2x"));
-    $tpl->set_var("hide_icon", cm_getClassByFrameworkCss("bars", "icon-tag", "2x"));
-    $tpl->set_var("refresh_icon", cm_getClassByFrameworkCss("refresh", "icon-tag"));
+    $tpl->set_var("info_icon", Cms::getInstance("frameworkcss")->get("info", "icon-tag", "2x"));
+    $tpl->set_var("logout_icon", Cms::getInstance("frameworkcss")->get("power-off", "icon-tag", "2x"));
+    $tpl->set_var("hide_icon", Cms::getInstance("frameworkcss")->get("bars", "icon-tag", "2x"));
+    $tpl->set_var("refresh_icon", Cms::getInstance("frameworkcss")->get("refresh", "icon-tag"));
 
     if($layout_settings["AREA_NAVADMIN_SHOW_TITLE"])
         $tpl->parse("SezTitle", false);
     else
         $tpl->set_var("SezTitle", "");
 
-    if(AREA_ADMIN_SHOW_MODIFY) {
+    if(Auth::env("AREA_ADMIN_SHOW_MODIFY")) {
         $tpl->set_var("path", VG_SITE_ADMIN);
-        $tpl->set_var("admin_icon", cm_getClassByFrameworkCss("vg-admin", "icon-tag"));
+        $tpl->set_var("admin_icon", Cms::getInstance("frameworkcss")->get("vg-admin", "icon-tag"));
         $tpl->parse("SezAdmin", false);
     }
 
-    if(AREA_RESTRICTED_SHOW_MODIFY) {
+    if(Auth::env("AREA_RESTRICTED_SHOW_MODIFY")) {
         $tpl->set_var("path", VG_SITE_RESTRICTED);
-        $tpl->set_var("restricted_icon", cm_getClassByFrameworkCss("vg-restricted", "icon-tag"));
+        $tpl->set_var("restricted_icon", Cms::getInstance("frameworkcss")->get("vg-restricted", "icon-tag"));
         $tpl->parse("SezRestricted", false);
     }
 
-    if(AREA_ECOMMERCE_SHOW_MODIFY) {
+    if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
         $tpl->set_var("path", VG_SITE_MANAGE);
-        $tpl->set_var("manage_icon", cm_getClassByFrameworkCss("vg-manage", "icon-tag"));
+        $tpl->set_var("manage_icon", Cms::getInstance("frameworkcss")->get("vg-manage", "icon-tag"));
         $tpl->parse("SezManage", false);
     }
 
 
     if($layout_settings["AREA_NAVADMIN_SHOW_TOOLS"] || 1) {
         $tpl->set_var("tools_class", "");
-        $tpl->set_var("tools_icon", cm_getClassByFrameworkCss("eraser", "icon-tag", "2x"));
+        $tpl->set_var("tools_icon", Cms::getInstance("frameworkcss")->get("eraser", "icon-tag", "2x"));
 
-        if(AREA_CHECKER_SHOW_MODIFY) {
+        if(Auth::env("AREA_CHECKER_SHOW_MODIFY")) {
             $tpl->set_var("cache_class", "");
-            $tpl->set_var("cache_icon", cm_getClassByFrameworkCss("eraser", "icon-tag"));
+            $tpl->set_var("cache_icon", Cms::getInstance("frameworkcss")->get("eraser", "icon-tag"));
 
         	$tpl->parse("SezAdminPanelToolsCache", false);
 		} else {
@@ -165,25 +165,25 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
         $tpl->set_var("SezAdminPanelTools", "");
     }
     //ffErrorHandler::raise("ad", E_USER_ERROR, null, get_defined_vars());
-	if(AREA_THEME_SHOW_MODIFY) {
+	if(Auth::env("AREA_THEME_SHOW_MODIFY")) {
         $tpl->set_var("tpl_class", "");
-        $tpl->set_var("tpl_icon", cm_getClassByFrameworkCss("building-o", "icon-tag", "2x"));
+        $tpl->set_var("tpl_icon", Cms::getInstance("frameworkcss")->get("building-o", "icon-tag", "2x"));
         $tpl->set_var("css_class", "");
-        $tpl->set_var("css_icon", cm_getClassByFrameworkCss("css", "icon-tag", "2x"));
+        $tpl->set_var("css_icon", Cms::getInstance("frameworkcss")->get("css", "icon-tag", "2x"));
 
-        $tpl->set_var("more_class", cm_getClassByFrameworkCss("retracted", "icon"));
-        $tpl->set_var("more_reverse_class", cm_getClassByFrameworkCss("exanded", "icon"));
+        $tpl->set_var("more_class", Cms::getInstance("frameworkcss")->get("retracted", "icon"));
+        $tpl->set_var("more_reverse_class", Cms::getInstance("frameworkcss")->get("exanded", "icon"));
 
-        $tpl->set_var("css_addnew_class", cm_getClassByFrameworkCss("addnew", "icon"));
-        $tpl->set_var("css_preview_class", cm_getClassByFrameworkCss("preview", "icon"));
-        $tpl->set_var("css_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
-        $tpl->set_var("css_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
+        $tpl->set_var("css_addnew_class", Cms::getInstance("frameworkcss")->get("addnew", "icon"));
+        $tpl->set_var("css_preview_class", Cms::getInstance("frameworkcss")->get("preview", "icon"));
+        $tpl->set_var("css_edit_class", Cms::getInstance("frameworkcss")->get("editrow", "icon"));
+        $tpl->set_var("css_delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon"));
         $tpl->set_var("js_class", "");
-        $tpl->set_var("js_icon", cm_getClassByFrameworkCss("js", "icon-tag", "2x"));
-        $tpl->set_var("js_addnew_class", cm_getClassByFrameworkCss("addnew", "icon"));
-        $tpl->set_var("js_preview_class", cm_getClassByFrameworkCss("preview", "icon"));
-        $tpl->set_var("js_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
-        $tpl->set_var("js_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
+        $tpl->set_var("js_icon", Cms::getInstance("frameworkcss")->get("js", "icon-tag", "2x"));
+        $tpl->set_var("js_addnew_class", Cms::getInstance("frameworkcss")->get("addnew", "icon"));
+        $tpl->set_var("js_preview_class", Cms::getInstance("frameworkcss")->get("preview", "icon"));
+        $tpl->set_var("js_edit_class", Cms::getInstance("frameworkcss")->get("editrow", "icon"));
+        $tpl->set_var("js_delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon"));
 
 		$tpl->set_var("layout_manage_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/section/cm_modify." . FF_PHP_EXT . "?path=" . urlencode($user_path));
 
@@ -380,22 +380,22 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 		$tpl->set_var("SezAdminPanelTheme", "");
 	}
 
-	if(AREA_INTERNATIONAL_SHOW_MODIFY) {
+	if(Auth::env("AREA_INTERNATIONAL_SHOW_MODIFY")) {
         $tpl->set_var("lang_class", "");
-        $tpl->set_var("lang_icon", cm_getClassByFrameworkCss("language", "icon-tag", "2x"));
+        $tpl->set_var("lang_icon", Cms::getInstance("frameworkcss")->get("language", "icon-tag", "2x"));
         $tpl->set_var("lang_check_icon", $check_icon);
         $tpl->set_var("lang_check_class", $check_class);
         $tpl->set_var("lang_uncheck_icon", $uncheck_icon);
         $tpl->set_var("lang_uncheck_class", $uncheck_class);
 
-        $tpl->set_var("lang_addnew_class", cm_getClassByFrameworkCss("addnew", "icon"));
-        $tpl->set_var("lang_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
-        $tpl->set_var("lang_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
+        $tpl->set_var("lang_addnew_class", Cms::getInstance("frameworkcss")->get("addnew", "icon"));
+        $tpl->set_var("lang_edit_class", Cms::getInstance("frameworkcss")->get("editrow", "icon"));
+        $tpl->set_var("lang_delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon"));
 
 		if(is_array($international))
-			$international = array_merge($international, ffTemplate::_get_word_by_code("", null, null, true));
+			$international = array_merge($international, ffTranslator::dump());
 		else
-			$international = ffTemplate::_get_word_by_code("", null, null, true);
+			$international = ffTranslator::dump();
 
 		uksort($international, "strnatcasecmp");
 	    foreach($international AS $international_key => $international_value) {
@@ -434,7 +434,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 
 		$tpl->set_var("seo_url", $seo_url);
 		$tpl->set_var("seo_class", "");
-        $tpl->set_var("seo_icon", cm_getClassByFrameworkCss("seo", "icon-tag", "2x"));
+        $tpl->set_var("seo_icon", Cms::getInstance("frameworkcss")->get("seo", "icon-tag", "2x"));
 
 		if($option["editor"]["seo"]) {
 	        $tpl->parse("SezCmsSeo", false);
@@ -444,12 +444,12 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 		$tpl->set_var("SezAdminPanelSeo", "");
 	}
 
-    if(AREA_SECTION_SHOW_MODIFY && is_array($sections) && count($sections)) {
+    if(Auth::env("AREA_SECTION_SHOW_MODIFY") && is_array($sections) && count($sections)) {
 		$last_layer = "";
 		$count_item = 0;
 
         $tpl->set_var("section_addnew_class", "");
-        $tpl->set_var("section_addnew_icon", cm_getClassByFrameworkCss("lay-addnew", "icon-tag", "2x"));
+        $tpl->set_var("section_addnew_icon", Cms::getInstance("frameworkcss")->get("lay-addnew", "icon-tag", "2x"));
         $tpl->set_var("section_add_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/manage/section/modify." . FF_PHP_EXT);
         foreach($sections AS $sections_key => $sections_value) {
 			$tpl->set_var("section_dialog_pre", ffCommon_specialchars('<h1 class="admin-title section">'));
@@ -462,7 +462,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
             $tpl->set_var("section_id", $sections_value["ID"]);
 
             //if($sections_value["visible"]) {
-                if(AREA_LAYOUT_SHOW_MODIFY) {
+                if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
                     if(is_array($sections_value["layouts"]) && count($sections_value["layouts"])) {
                         //print_r($sections_value["layouts"]);
 
@@ -473,7 +473,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 						        //$tpl->set_var("layout_type_group", "ico-" . $layout_value["type_group"]);
 							}
 					        if(isset($layout_value["type_class"]) && strlen($layout_value["type_class"])) {
-                                $tpl->set_var("layout_icon", cm_getClassByFrameworkCss("vg-" . $layout_value["type_class"], "icon-tag", $layout_value["type_group"]));
+                                $tpl->set_var("layout_icon", Cms::getInstance("frameworkcss")->get("vg-" . $layout_value["type_class"], "icon-tag", $layout_value["type_group"]));
 							}
 
 							if(isset($layout_value["title"]) && strlen($layout_value["title"])) {
@@ -531,7 +531,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 								$tpl->set_var("block_layout_ajax_on_document_ready", ffTemplate::_get_word_by_code("na"));
 								$tpl->set_var("block_layout_ajax_on_load_event", ffTemplate::_get_word_by_code("na"));
 							}
-                            if($layout_value["type"] == "MODULE") {
+                            /*if($layout_value["type"] == "MODULE") {
                                 //ffErrorHandler::raise("asd", E_USER_ERROR, null, get_defined_vars());
                                 $tpl->set_var("module_edit_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules/" . $layout_value["value"] . "/config/modify." . FF_PHP_EXT . "/" . $layout_value["params"]);
 								$tpl->set_var("module_delete_path", urlencode(ffDialog(TRUE,
@@ -544,13 +544,13 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 																));
                                 $tpl->set_var("module_delete_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/modules/" . $layout_value["value"] . "/config/modify." . FF_PHP_EXT . "/" . $layout_value["params"]);
 
-                                $tpl->set_var("module_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
-                                $tpl->set_var("module_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
+                                $tpl->set_var("module_edit_class", Cms::getInstance("frameworkcss")->get("editrow", "icon"));
+                                $tpl->set_var("module_delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon"));
 
                                 $tpl->parse("SezModule", false);
                             } else {
                                 $tpl->set_var("SezModule", "");
-                            }
+                            }*/
 
                             if($layout_value["visible"] !== NULL) {
                                 $tpl->set_var("layout_edit_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block/modify." . FF_PHP_EXT . "?keys[ID]=" . $layout_value["ID"] . "&location=" . $sections_value["ID"] . "&path=" . $user_path);
@@ -570,17 +570,17 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
                                     $tpl->set_var("SezLayoutAdmin", "");
                                 }
 
-                                $tpl->set_var("layout_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
-                                $tpl->set_var("layout_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
+                                $tpl->set_var("layout_edit_class", Cms::getInstance("frameworkcss")->get("editrow", "icon"));
+                                $tpl->set_var("layout_delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon"));
 
-                                //$tpl->set_var("layout_js_class", cm_getClassByFrameworkCss("js", "icon"));
-                                //$tpl->set_var("layout_css_class", cm_getClassByFrameworkCss("css", "icon"));
-                                $tpl->set_var("layout_js_icon", cm_getClassByFrameworkCss("js", "icon-tag", "2x"));
-                                $tpl->set_var("layout_css_icon", cm_getClassByFrameworkCss("css", "icon-tag", "2x"));
+                                //$tpl->set_var("layout_js_class", Cms::getInstance("frameworkcss")->get("js", "icon"));
+                                //$tpl->set_var("layout_css_class", Cms::getInstance("frameworkcss")->get("css", "icon"));
+                                $tpl->set_var("layout_js_icon", Cms::getInstance("frameworkcss")->get("js", "icon-tag", "2x"));
+                                $tpl->set_var("layout_css_icon", Cms::getInstance("frameworkcss")->get("css", "icon-tag", "2x"));
 
                                 $tpl->parse("SezLayout", true);
                             } else {
-                                $tpl->set_var("setting_class", cm_getClassByFrameworkCss("cog", "icon"));
+                                $tpl->set_var("setting_class", Cms::getInstance("frameworkcss")->get("cog", "icon"));
 
                                 if($layout_value["type"] == "FORMS_FRAMEWORK") {
                                     //DA CONCORDARE CON SAMUELE PRIMA O POI
@@ -624,8 +624,8 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 																FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/manage/section/modify." . FF_PHP_EXT . "?keys[ID]=" . $sections_value["ID"] . "&SectionModify_frmAction=confirmdelete",
 																FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/manage/section" . "/dialog")
 													));
-                    $tpl->set_var("section_edit_class", cm_getClassByFrameworkCss("editrow", "icon"));
-                    $tpl->set_var("section_delete_class", cm_getClassByFrameworkCss("deleterow", "icon"));
+                    $tpl->set_var("section_edit_class", Cms::getInstance("frameworkcss")->get("editrow", "icon"));
+                    $tpl->set_var("section_delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon"));
 
 					$tpl->set_var("layout_dialog_pre", ffCommon_specialchars('<h1 class="admin-title layout">'));
 					$tpl->set_var("layout_dialog_post", ffCommon_specialchars('</h1>'));
@@ -634,32 +634,32 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 					switch (ffCommon_url_rewrite($sections_value["name"])) {
 						case "top":
 							$tpl->set_var("layout_addnew_class", "");
-							$tpl->set_var("layout_addnew_icon", cm_getClassByFrameworkCss("lay-31", "icon-tag", "2x"));
+							$tpl->set_var("layout_addnew_icon", Cms::getInstance("frameworkcss")->get("lay-31", "icon-tag", "2x"));
 							break;
 						case "bottom":
 						case "footer":
 							$tpl->set_var("layout_addnew_class", "");
-							$tpl->set_var("layout_addnew_icon", cm_getClassByFrameworkCss("lay-1333", "icon-tag", "2x"));
+							$tpl->set_var("layout_addnew_icon", Cms::getInstance("frameworkcss")->get("lay-1333", "icon-tag", "2x"));
 							break;
 						case "left":
 							$tpl->set_var("layout_addnew_class", "");
-							$tpl->set_var("layout_addnew_icon", cm_getClassByFrameworkCss("lay-13", "icon-tag", "2x"));
+							$tpl->set_var("layout_addnew_icon", Cms::getInstance("frameworkcss")->get("lay-13", "icon-tag", "2x"));
 							break;
 						case "right":
 							$tpl->set_var("layout_addnew_class", "");
-							$tpl->set_var("layout_addnew_icon", cm_getClassByFrameworkCss("lay-3133", "icon-tag", "2x"));
+							$tpl->set_var("layout_addnew_icon", Cms::getInstance("frameworkcss")->get("lay-3133", "icon-tag", "2x"));
 							break;
 						case "content":
 							$tpl->set_var("layout_addnew_class", "");
-							$tpl->set_var("layout_addnew_icon", cm_getClassByFrameworkCss("lay-2233", "icon-tag", "2x"));
+							$tpl->set_var("layout_addnew_icon", Cms::getInstance("frameworkcss")->get("lay-2233", "icon-tag", "2x"));
 							break;
 						default:
 							$tpl->set_var("layout_addnew_class", "");
-							$tpl->set_var("layout_addnew_icon", cm_getClassByFrameworkCss("lay", "icon-tag", "2x"));
+							$tpl->set_var("layout_addnew_icon", Cms::getInstance("frameworkcss")->get("lay", "icon-tag", "2x"));
 							break;
 					}
 
-                    $tpl->set_var("layout_addnew_bottom_class", cm_getClassByFrameworkCss("addnew", "icon", array("2x")));
+                    $tpl->set_var("layout_addnew_bottom_class", Cms::getInstance("frameworkcss")->get("addnew", "icon", array("2x")));
                     $tpl->set_var("layout_add_path", FF_SITE_PATH . VG_SITE_ADMINGALLERY . "/layout/block/modify." . FF_PHP_EXT . "?location=" . $sections_value["ID"] . "&path=" . $user_path);
 
                     $tpl->parse("SezLayouts", false);
@@ -701,7 +701,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
         $tpl->parse("SezCmsEditor", false);
     }
 
-	if(strlen($layout_settings["ADMIN_INTERFACE_MENU_PLUGIN"])) {
+/*	if(strlen($layout_settings["ADMIN_INTERFACE_MENU_PLUGIN"])) {
 	    $tpl->set_var("class_plugin", preg_replace('/[^a-zA-Z0-9\-]/', '', $layout_settings["ADMIN_INTERFACE_MENU_PLUGIN"]));
 	    $tpl->set_var("class_name", preg_replace('/[^a-zA-Z0-9\-]/', '', $layout_settings["ADMIN_INTERFACE_PLUGIN"]));
 	    //setJsRequest($layout_settings["ADMIN_INTERFACE_MENU_PLUGIN"]);
@@ -710,7 +710,7 @@ function process_admin_toolbar($user_path = "/", $theme, $sections, $css = array
 	    $tpl->set_var("class_plugin", "admin_menu");
 	    $tpl->set_var("class_name", "admin_menu");
 	}
-
+*/
     $buffer = $tpl->rpparse("main", false);
 
     return $buffer;

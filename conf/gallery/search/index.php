@@ -356,16 +356,16 @@ if($cm->isXHR()) {
 	    $layout["type"] = "SEARCH";
 	    $layout["location"] = "Content";
 	    $layout["visible"] = NULL;
-	    if(check_function("get_layout_settings"))
-		    $layout["settings"] = get_layout_settings(NULL, "SEARCH");
+	    //if(check_function("get_layout_settings"))
+		    $layout["settings"] = Cms::getPackage("search"); //get_layout_settings(NULL, "SEARCH");
 
         if(count($arrUserPath) <= 2) {
             $term = $arrUserPath[0];
             $group = $arrUserPath[1];
 
 	        if($term && check_function("process_landing_page")) {
-		        $cm->oPage->addContent(process_landing_search("/" . $term, $group), null, "SEARCH");
-	        } else {
+                $cm->oPage->addContent(process_landing_search("/" . $term, $group), null, "SEARCH");
+		    } else {
 	        	http_response_code(404);
 	        }
         }
@@ -388,8 +388,8 @@ function vg_search_add_result($db, $params, $res = array()) {
 		$html_title 																							= preg_replace("/(" . preg_quote(str_replace("%", " ", $params["term"])) . ")/i", "<mark>\${1}</mark>", $html_title);
 	
 	if(!$params["noimg"]) {
-		if(is_dir(DISK_UPDIR . $permalink)) {
-			foreach(new DirectoryIterator(DISK_UPDIR . $permalink) as $item)
+		if(is_dir(FF_DISK_UPDIR . $permalink)) {
+			foreach(new DirectoryIterator(FF_DISK_UPDIR . $permalink) as $item)
 			{
 			   if (!$item->isDot() && $item->isFile())
 			   {

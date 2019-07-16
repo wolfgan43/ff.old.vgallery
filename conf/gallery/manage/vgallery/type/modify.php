@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_VGALLERY_TYPE_SHOW_MODIFY) {
+if (!Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -224,7 +224,7 @@ $oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_rule_meta_de
 $oRecord->addContent($oField);
 
 $sSQL_file = "";
-if(AREA_SHOW_ECOMMERCE) {
+if(Cms::env("AREA_SHOW_ECOMMERCE")) {
 	$sSQL_file = "
 				) UNION ( 
 					SELECT 
@@ -486,7 +486,7 @@ $oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_enable_in_ma
 $oField->base_type = "Number";
 $oDetail->addContent($oField, "settings");
 
-if(AREA_SHOW_ECOMMERCE) {
+if(Cms::env("AREA_SHOW_ECOMMERCE")) {
 	$oField = ffField::factory($cm->oPage);
 	$oField->id = "enable_in_cart";
 	$oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_enable_in_cart");
@@ -993,7 +993,7 @@ $oField->id = "limit_by_groups";
 $oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_limit_groups");
 $oField->base_type = "Text";
 $oField->extended_type = "Selection";
-$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . MOD_SEC_GUEST_GROUP_NAME . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
+$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
 $oField->control_type = "input";
 $oField->widget = "checkgroup";
 $oField->grouping_separator = ",";
@@ -1004,7 +1004,7 @@ $oField->id = "limit_by_groups_frontend";
 $oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_limit_groups_frontend");
 $oField->base_type = "Text";
 $oField->extended_type = "Selection";
-$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . MOD_SEC_GUEST_GROUP_NAME . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
+$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
 $oField->control_type = "input";
 $oField->widget = "checkgroup";
 $oField->grouping_separator = ",";

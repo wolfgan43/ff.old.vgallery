@@ -15,17 +15,9 @@ function analytics($type, $params) {
 
 function analytics_set_event($user_path, $title, $code = null, $domain = null) {
     $cm = cm::getInstance();
-    
-    if(!$code && check_function("get_webservices")) {
-		$service = get_webservices();
-		if($service["analytics.google"]["enable"] && $service["analytics.google"]["code"]) {
-            $code = $service["analytics.google"]["code"];
-		} elseif($service["analytics.google.universal"]["enable"] && $service["analytics.google.universal"]["code"]) {
-            $code = $service["analytics.google.universal"]["code"];
-        } elseif($service["google.tagmanager"]["enable"] && $service["google.tagmanager"]["analytics.code"]) {
-            $code = $service["google.tagmanager"]["analytics.code"];
-        }
-	}
+
+    if(!$code)
+        $code = analytics_get_code_by_webservices();
 
     if($code) {
         if(!$domain)
@@ -35,6 +27,74 @@ function analytics_set_event($user_path, $title, $code = null, $domain = null) {
     }  
 
     $cm->doEvent("vg_on_analytics_event", array($domain, $user_path, $title, $code));
+}
+
+function analytics_get_code_by_webservices() {
+    if(check_function("get_webservices")) {
+        $service = get_webservices();
+        if($service["analytics.google"]["enable"] && $service["analytics.google"]["code"]) {
+            $code = $service["analytics.google"]["code"];
+        } elseif($service["analytics.google.universal"]["enable"] && $service["analytics.google.universal"]["code"]) {
+            $code = $service["analytics.google.universal"]["code"];
+        } elseif($service["google.tagmanager"]["enable"] && $service["google.tagmanager"]["analytics.code"]) {
+            $code = $service["google.tagmanager"]["analytics.code"];
+        }
+    }
+
+    return $code;
+}
+
+function analytics_parse_ecommerce_tracking($trans, $items= null, $code = null) {
+    if(!$code) {
+        $code = analytics_get_code_by_webservices();
+    }
+
+    if($code) {
+        if($trans) {
+            $js = "ga('require', 'ecommerce');";
+            $js .= analytics_parse_ecommerce_transaction($trans);
+            if(is_array($items) && count($items)) {
+                foreach ($items as &$item) {
+                    $js .= analytics_parse_ecommerce_transaction_item($trans['id'], $item);
+                }
+            }
+
+            $js .= "ga('ecommerce:send');";
+
+            return '<script type="text/javascript">' . $js . '</script>';
+        }
+    }
+}
+
+// Function to return the JavaScript representation of a TransactionData object.
+function analytics_parse_ecommerce_transaction(&$trans) {
+  return <<<HTML
+  
+ga('ecommerce:addTransaction', {
+  'id': '{$trans['id']}',
+  'affiliation': '{$trans['affiliation']}',
+  'revenue': '{$trans['revenue']}',
+  'shipping': '{$trans['shipping']}',
+  'tax': '{$trans['tax']}'
+});
+
+HTML;
+}
+
+// Function to return the JavaScript representation of an ItemData object.
+function analytics_parse_ecommerce_transaction_item(&$transId, &$item) {
+  return <<<HTML
+  
+ga('ecommerce:addItem', {
+  'id': '$transId',
+  'name': '{$item['name']}',
+  'sku': '{$item['sku']}',
+  'category': '{$item['category']}',
+  'price': '{$item['price']}',
+  'quantity': '{$item['quantity']}'
+});
+
+HTML;
 }
 
 function gaParseCookie() {

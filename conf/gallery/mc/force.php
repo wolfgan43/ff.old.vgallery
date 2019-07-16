@@ -1,7 +1,7 @@
 <?php
 //require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_UPDATER_SHOW_MODIFY) {
+if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -274,7 +274,7 @@ if($valid_domain) {
         $cm->oPage->tplAddJs("ff.ajax", "ajax.js", "/themes/library/ff", false, false, null, true);
         $cm->oPage->tplAddJs("jquery.tree", "jstree.js", "/themes/library/plugins/jquery.jstree", false, false, null, true);
 
-        $tpl = ffTemplate::factory(ffCommon_dirname(__FILE__));
+        $tpl = ffTemplate::factory(__DIR__);
         $tpl->load_file("tree.html", "main");
         $tpl->set_var("site_path", FF_SITE_PATH);
         $tpl->set_var("json_path", $cm->oPage->page_path . $cm->real_path_info);
@@ -494,7 +494,7 @@ function get_mc_items($ID_domain, $manifesto, $cat_key) {
 
                     $tree[$count_field]["id"]           	= $manifesto_key;
 					$tree[$count_field]["text"]         	= ucwords(str_replace(array("_", "ff ", "cms", "vgallery"), array(" ", "FF ", "CMS", ""), $manifesto_title));
-					$tree[$count_field]["icon"]         	= cm_getClassByFrameworkCss("file-o", "icon", "lg");
+					$tree[$count_field]["icon"]         	= Cms::getInstance("frameworkcss")->get("file-o", "icon", "lg");
 					$tree[$count_field]["a_attr"]["class"] 	= "manifesto-file";
                     $tree[$count_field]["children"] = array();
 
@@ -529,9 +529,9 @@ function get_tree_cat($ID_domain, $schema, $manifesto) {
                 $tree[$count_tree]["state"]["opened"] 				= (is_array($schema_value) && count($schema_value) ? true : false);
                 $tree[$count_tree]["children"] 						= $children;
                 if(array_key_exists($schema_key, $manifesto)) {
-					$tree[$count_tree]["icon"] 						= cm_getClassByFrameworkCss("folder-o", "icon", "lg");
+					$tree[$count_tree]["icon"] 						= Cms::getInstance("frameworkcss")->get("folder-o", "icon", "lg");
                 } else {
-					$tree[$count_tree]["icon"] 						= cm_getClassByFrameworkCss("folder-o", "icon", "lg");
+					$tree[$count_tree]["icon"] 						= Cms::getInstance("frameworkcss")->get("folder-o", "icon", "lg");
 
 				}
             } else {
@@ -541,7 +541,7 @@ function get_tree_cat($ID_domain, $schema, $manifesto) {
                     continue;
                 } else {
                     $tree[$count_tree]["children"] 					= array();
-                    $tree[$count_tree]["icon"] 						= cm_getClassByFrameworkCss("file-o", "icon", "lg");
+                    $tree[$count_tree]["icon"] 						= Cms::getInstance("frameworkcss")->get("file-o", "icon", "lg");
 					$tree[$count_tree]["a_attr"]["class"] 			= "manifesto-file";
                     if($res)
                         $tree[$count_tree]["state"]["selected"]  	= true;

@@ -28,7 +28,7 @@
 	In this file take place all extra stuff defined by user, site relative.
 	Forms not define any code in this file, only manage it.
 */
-
+/*
 function ffDB_Sql_on_factory_done($db) {
 	if(defined("DB_CHARACTER_SET") && strlen(constant("DB_CHARACTER_SET")) 
 		&& defined("DB_COLLATION") && strlen(constant("DB_COLLATION"))) {
@@ -37,7 +37,8 @@ function ffDB_Sql_on_factory_done($db) {
 		$db->charset_names = DB_CHARACTER_SET;
 		$db->charset_collation = DB_COLLATION;
 	}
-}
+}*/
+
 
 function ffGrid_export_on_factory_export($page, $disk_path, $theme, $variant) {
 	//ffErrorHandler::raise("ASD", E_USER_ERROR, null, get_defined_vars());
@@ -58,7 +59,7 @@ function ffGrid_on_before_process_interface_export($component) {
 	}
 }
 
-
+/*
 function cache_set($ID, $tbl = null) {
 	$globals = ffGlobals::getInstance("gallery");
 	
@@ -80,9 +81,11 @@ function cache_set($ID, $tbl = null) {
 	}
 
 	$globals->cache["data_blocks"][$tbl][$ID] = str_replace(",", "", $ID);
-}
+}*/
 
 function set_cache_data($tbl, $ID, $modal = null, $value = null) {
+    Cache::set($ID, $tbl);
+
     $globals = ffGlobals::getInstance("gallery");
 /*
             V = Virtual Gallery
@@ -93,7 +96,7 @@ function set_cache_data($tbl, $ID, $modal = null, $value = null) {
             M = Module
 * 
 */
-	if(1) {
+	/*if(1) {
 	    cache_set($ID, $tbl);
 	} else {
 	    switch($tbl) {
@@ -102,11 +105,11 @@ function set_cache_data($tbl, $ID, $modal = null, $value = null) {
 	    }
 	    
 	    $globals->cache["data_blocks"][$prefix . $modal . "-" . $ID] = $value;
-	}
+	}*/
 }
 
 
-function request_info($cm) {
+function request_info() {
     $globals = ffGlobals::getInstance("gallery");
     
 	$request = get_session("request_info");
@@ -184,8 +187,6 @@ function ffRecord_gallery_on_factory_done($oRecord) {
 
 function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_path = null, $location = "") 
 {
-    $cm = cm::getInstance();
-    
     $tmp_path = $path;
     $real_path = NULL;
 
@@ -194,7 +195,8 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 	
 	if(is_array($tpl_data))
 	{
-		$tpl_prefix 		= $tpl_data["prefix"];
+        $tpl_id 		    = $tpl_data["id"];
+        $tpl_prefix 		= $tpl_data["prefix"];
 		$tpl_custom_name 	= $tpl_data["custom"];
 		$tpl_base_name 		= $tpl_data["base"];
 		
@@ -209,36 +211,46 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 	}
 
 	if(strlen($tpl_custom_name)) {
-		if($tpl_prefix) {
-			if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents/" . $tpl_prefix . "_" . $tpl_custom_name)) {
-				$real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents";
+        if($tpl_id) {
+            if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents/" . $tpl_id . ".html")) {
+                $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents";
+                $real_prefix = $tpl_prefix . "_";
+
+                $tpl_name = $tpl_id . ".html";
+            }
+        } elseif($tpl_prefix) {
+			if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents/" . $tpl_prefix . "_" . $tpl_custom_name)) {
+				$real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents";
 				$real_prefix = $tpl_prefix . "_";
-			}
+
+                $tpl_name = $tpl_prefix . "_" . $tpl_custom_name;
+            }
 		}
 		if($real_path === NULL) {
 			do {
 
-		         if($location && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . $location . "/" . $tpl_custom_name)) {
-		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . $location;
-		         } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . "/" . $tpl_custom_name)) {
-		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path);
-		         } elseif($cm->oPage->theme != FRONTEND_THEME && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path) . "/" . $tpl_custom_name)) {
+		         if($location && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path) . $location . "/" . $tpl_custom_name)) {
+		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path) . $location;
+                     $tpl_name = $tpl_custom_name;
+		         } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path) . "/" . $tpl_custom_name)) {
 		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path);
+                     $tpl_name = $tpl_custom_name;
 				 }
-				
 		     } while($tmp_path != ffCommon_dirname($tmp_path) && $real_path === NULL && $tmp_path = ffCommon_dirname($tmp_path));
 		}
 	}
 
     if($real_path === NULL) {
-
-    	if(strlen($tpl_base_name)) 
+    	if(strlen($tpl_base_name))
     	{
     	    if(is_file(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path) . "/" . $tpl_base_name)) {
     	        $real_path = __CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
+                $tpl_name = $tpl_base_name;
 			} elseif(strlen($force_base_path) && is_file($force_base_path . "/" . $tpl_base_name)) {
 			    $real_path = $force_base_path;
-			}
+                $tpl_name = $tpl_base_name;
+            }
+
 			$tpl_type = "base";
 		}
     }
@@ -247,7 +259,9 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
     	return array("path" => $real_path
     				, "type" => $tpl_type
     				, "prefix" => $real_prefix
-    			);
+                    , "name" => ($tpl_name ? $tpl_name : $tpl_base_name )
+
+        );
 	else 
     	return $real_path;
 }

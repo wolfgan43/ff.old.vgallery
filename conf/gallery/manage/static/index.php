@@ -1,19 +1,19 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_STATIC_SHOW_MODIFY) {
+if (!Auth::env("AREA_STATIC_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 if(isset($_REQUEST["repair"])) {
 	$db = ffDB_Sql::factory();
 
-	$sSQL = "SELECT static_pages.* 
+    $sSQL = "SELECT static_pages.* 
 			FROM static_pages
 			WHERE static_pages.name = ''
 				AND static_pages.parent = '/'";
-	$db->query($sSQL);
-	if(!$db->nextRecord()) {
-		$sSQL = "INSERT INTO static_pages
+    $db->query($sSQL);
+    if(!$db->nextRecord()) {
+        $sSQL = "INSERT INTO static_pages
 				(
 					ID
 					, name
@@ -21,8 +21,9 @@ if(isset($_REQUEST["repair"])) {
 					, owner
 					, ID_domain
 					, visible
-					, meta_title
 					, permalink
+					, meta_title
+					, meta_title_alt
 				)
 				VALUES
 				(
@@ -32,11 +33,39 @@ if(isset($_REQUEST["repair"])) {
 					, '-1'
 					, '0'
 					, '1'
-					, ''
 					, '/'				
+					, 'Home'				
+					, 'Home'				
 				)";
-		$db->execute($sSQL);
-	}
+        $db->execute($sSQL);
+        /* $ID_static_page = $db->getInsertID(true);
+         $sSQL = "INSERT INTO static_pages_rel_languages
+                 (
+                     ID
+                     , ID_languages
+                     , ID_static_pages
+                     , meta_title
+                     , meta_title_alt
+                     , permalink_parent
+                     , smart_url
+                     , permalink
+                     , visible
+                 )
+                 VALUES
+                 (
+                     null
+                     , " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
+                     , " . $db->toSql($ID_static_page, "Number") . "
+                     , 'Home'
+                     , 'Home'
+                     , '/'
+                     , ''
+                     , '/'
+                     , '1'
+                 )";
+         $db->execute($sSQL);*/
+
+    }
 }
 
 $oGrid = ffGrid::factory($cm->oPage);
@@ -66,10 +95,10 @@ $oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify";
 $oGrid->record_id = "StaticModify";
 $oGrid->resources[] = $oGrid->record_id;
 $oGrid->addEvent("on_before_parse_row", "static_on_before_parse_row");
-$oGrid->display_new = AREA_STATIC_SHOW_ADDNEW;
+$oGrid->display_new = Auth::env("AREA_STATIC_SHOW_ADDNEW");
 $oGrid->display_edit_bt = false;
-$oGrid->display_edit_url = AREA_STATIC_SHOW_MODIFY;
-$oGrid->display_delete_bt = AREA_STATIC_SHOW_DELETE;
+$oGrid->display_edit_url = Auth::env("AREA_STATIC_SHOW_MODIFY");
+$oGrid->display_delete_bt = Auth::env("AREA_STATIC_SHOW_DELETE");
 $oGrid->widget_deps[] = array(
 	"name" => "labelsort"
 	, "options" => array(
@@ -137,7 +166,7 @@ if(AREA_SEO_SHOW_MODIFY) {
 	$oButton->display_label = false;
     $oGrid->addGridButton($oButton);
 }
-if(ENABLE_STD_PERMISSION) {
+if(Cms::env("ENABLE_STD_PERMISSION")) {
     $oButton = ffButton::factory($cm->oPage);
     $oButton->id = "permissions"; 
     $oButton->form_action_url = ""; //impostato nell'evento
@@ -163,7 +192,7 @@ function static_on_before_parse_row($component) {
 	
 	if(isset($component->grid_buttons["visible"])) {
 	    if($component->db[0]->getField("visible", "Number", true)) {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["visible"]->icon = null;
             $component->grid_buttons["visible"]->action_type = "submit"; 
             $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0";
@@ -175,7 +204,7 @@ function static_on_before_parse_row($component) {
                 //$component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0&frmAction=setvisible";
             }   
 	    } else {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["visible"]->icon = null;
             $component->grid_buttons["visible"]->action_type = "submit";     
             $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=1";

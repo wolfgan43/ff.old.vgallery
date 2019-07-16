@@ -30,10 +30,10 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 
 	$tiny_lang_code = strtolower(substr(FF_LOCALE, 0, 2));
 
-	$mod_sec_login = $cm->router->getRuleById("mod_sec_login");
-	$mod_sec_activation = ($cm->router->getRuleById("mod_sec_activation_" . $tiny_lang_code) 
-	                        ? $cm->router->getRuleById("mod_sec_activation_" . $tiny_lang_code)
-	                        : $cm->router->getRuleById("mod_sec_activation")
+	$mod_auth_login = $cm->router->getRuleById("mod_auth_login");
+	$mod_auth_activation = ($cm->router->getRuleById("mod_auth_activation_" . $tiny_lang_code)
+	                        ? $cm->router->getRuleById("mod_auth_activation_" . $tiny_lang_code)
+	                        : $cm->router->getRuleById("mod_auth_activation")
 	                    ); 
 
     if(!defined("LIB_FACEBOOK")) {
@@ -50,26 +50,28 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 		return;
 	}	
 	
-	if($selected_lang)
-		ffTemplate::$_MultiLang_default = $selected_lang;
-
 	$globals->services["facebook"] = new Facebook(array(
-		"appId" => global_settings("MOD_SEC_SOCIAL_FACEBOOK_APPID")
-		, "secret" => global_settings("MOD_SEC_SOCIAL_FACEBOOK_SECRET")
-		, 'scope' => global_settings("MOD_SEC_SOCIAL_FACEBOOK_APPSCOPE")
+		"appId" => Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_ID")
+		, "secret" => Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_SECRET")
+		, 'scope' => Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_SCOPE")
 		, "fileUpload" => false
 	));	
 	$app_token = $globals->services["facebook"]->getAccessToken();
 
-	$user_permission = get_session("user_permission");
-	if(is_array($user_permission)
-		&& array_key_exists("token", $user_permission) 
-		&& array_key_exists("Facebook", $user_permission["token"]) 
-		&& strlen($user_permission["token"]["Facebook"])
-	) {
-		$is_valid_token = true;
-		$globals->services["facebook"]->setAccessToken($user_permission["token"]["Facebook"]);
-	}
+    $tokens = Auth::get("token", array("toArray" => true));
+    if(is_array($tokens) && count($tokens)) {
+        foreach($tokens AS $token) {
+            if($token["type"] == "Facebook") {
+                $token_facebook = $token["name"];
+                break;
+            }
+        }
+
+        if($token_facebook) {
+            $is_valid_token = true;
+            $globals->services["facebook"]->setAccessToken($token_facebook);
+        }
+    }
 
 	// Get User ID
 	$user = $globals->services["facebook"]->getUser();
@@ -84,11 +86,11 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 
 		try {
 			// Proceed knowing you have a logged in user who's authenticated.
-			$user_permissions = $globals->services["facebook"]->api('/me/permissions');
-			$app_permission = explode(",", global_settings("MOD_SEC_SOCIAL_FACEBOOK_APPSCOPE"));
+            $user_perm = $globals->services["facebook"]->api('/me/permissions');
+			$app_permission = explode(",", Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_SCOPE"));
 			if(is_array($app_permission) && count($app_permission)) {
 				foreach($app_permission AS $permission_value) {
-					if (!array_key_exists($permission_value, $user_permissions['data'][0])) {
+					if (!array_key_exists($permission_value, $user_perm['data'][0])) {
 						$is_valid_permission = false;
 						break;
 					}
@@ -120,10 +122,6 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 								, "token" => $globals->services["facebook"]->getAccessToken()
 							);
 							
-			if(check_function("set_user_permission_by_settings")) {
-			    $cm->modules["security"]["events"]->addEvent("fb_done_user_create", "set_user_permission_by_settings", ffEvent::PRIORITY_DEFAULT);
-			}
-
 			$res = mod_security_set_user_by_social("fb", $arrUserParams, $arrUserField, $arrUserToken, 0, false, true);
 			$ffUserParams = $res["user"];
 			$sError = $res["error"];
@@ -133,14 +131,14 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 					$to_active[0]["name"] = $arrUserParams["name"] . " " . $arrUserParams["surname"];
 	                $to_active[0]["mail"] = $arrUserParams["email"];
 
-		            $rnd_active = mod_sec_createRandomPassword();
+		            $rnd_active = Auth::password();
 		            
 		            $sSQL = "UPDATE " . CM_TABLE_PREFIX . "mod_security_users SET active_sid = PASSWORD(" . $db->toSql($rnd_active, "Text") . ") WHERE ID = " . $db->toSql($arrUserParams["ID"], "Number");
 		            $db->execute($sSQL);
 		            
 		            $fields_activation["activation"]["username"] = $arrUserParams["name"] . " " . $arrUserParams["surname"];
 		            $fields_activation["activation"]["email"] = $arrUserParams["email"];
-	                $fields_activation["activation"]["link"] = "http://" . DOMAIN_INSET . FF_SITE_PATH .  $mod_sec_activation . "?frmAction=activation&sid=" . urlencode($rnd_active);
+	                $fields_activation["activation"]["link"] = "http://" . DOMAIN_INSET . FF_SITE_PATH .  $mod_auth_activation . "?frmAction=activation&sid=" . urlencode($rnd_active);
 		            
 		            if(check_function("process_mail")) {
                 		$rc_activation = process_mail(email_system("account activation"), $to_active, NULL, NULL, $fields_activation);
@@ -169,9 +167,9 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 
 		if(!$sError) {
 			if($inner_facebook) {
-				if(strlen(global_settings("MOD_SEC_SOCIAL_FACEBOOK_PAGENAME"))) {
+				if(strlen(Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGENAME"))) {
 					$current_page_fan = "";
-					$arrPageFan = explode(",", global_settings("MOD_SEC_SOCIAL_FACEBOOK_PAGENAME"));
+					$arrPageFan = explode(",", Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGE_NAME"));
 					if(is_array($arrPageFan) && count($arrPageFan)) {
 						foreach($arrPageFan AS $arrPageFan_value) {
 							if(strpos($_SERVER["HTTP_REFERER"], "https://apps.facebook.com/" . $arrPageFan_value) === 0) {
@@ -182,7 +180,7 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 					}
 
 					if($current_page_fan) {
-						if(global_settings("MOD_SEC_SOCIAL_FACEBOOK_REQUIRE_LIKE_APP_UNDER_PAGENAME")) {
+						if(Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGE_REQUIRE_LIKE")) {
 							try {
 								$page_fan_like = $globals->services["facebook"]->api(array(
 									 'method' => 'fql.query',
@@ -204,7 +202,7 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 							}
 						}
 					} else {
-						if(global_settings("MOD_SEC_SOCIAL_FACEBOOK_DISPLAY_APP_ONLY_IN_PAGENAME")) {
+						if(Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGE_DISPLAY_ONLY_IN")) {
 							$tpl = ffTemplate::factory(get_template_cascading($globals->user_path, "redirect.html", "/social/facebook"));
 							$tpl->load_file("redirect.html", "main");
 							$tpl->set_var("domain_inset", DOMAIN_INSET);
@@ -226,7 +224,7 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 				$tpl->set_var("site_path", FF_SITE_PATH);
 				$tpl->set_var("theme_inset", THEME_INSET);
 				$tpl->set_var("theme", FRONTEND_THEME);
-				$tpl->set_var("fb_app_id", global_settings("MOD_SEC_SOCIAL_FACEBOOK_APPID"));
+				$tpl->set_var("fb_app_id", Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_ID"));
 				$tpl->set_var("fb_lang", strtolower(substr(FF_LOCALE, 0, 2)) . "_" . strtoupper(substr(FF_LOCALE, 0, 2)));
 
 				$globals->media_exception["css"]["normalize"] = false;
@@ -240,7 +238,7 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 		}
 	} else {
 		if($is_valid_token) {
-			mod_security_set_accesstoken(get_session("UserNID"), "", "Facebook");
+			mod_security_set_accesstoken(Auth::get("user")->id, "", "Facebook");
 			$globals->services["facebook"]->setAccessToken($app_token);
 		}
 
@@ -253,13 +251,13 @@ function system_lib_facebook($selected_lang, $ignore_referer = false) {
 
 			$loginConfig["display"] = "page"; 
 
-			if(strlen(global_settings("MOD_SEC_SOCIAL_FACEBOOK_PAGENAME")) && strpos($_SERVER["HTTP_REFERER"], "https://apps.facebook.com/" . global_settings("MOD_SEC_SOCIAL_FACEBOOK_PAGENAME")) === 0) {
-				$loginConfig["redirect_uri"] = "https://www.facebook.com/" . global_settings("MOD_SEC_SOCIAL_FACEBOOK_PAGENAME") . "/app_" . $globals->services["facebook"]->getAppId();
+			if(strlen(Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGE_NAME")) && strpos($_SERVER["HTTP_REFERER"], "https://apps.facebook.com/" . Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGE_NAME")) === 0) {
+				$loginConfig["redirect_uri"] = "https://www.facebook.com/" . Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGE_NAME") . "/app_" . $globals->services["facebook"]->getAppId();
 			} else {
 				$loginConfig["redirect_uri"] = "https://apps.facebook.com/" . $app["namespace"];
 			}
-			if(global_settings("MOD_SEC_SOCIAL_FACEBOOK_APPSCOPE")) {
-				$loginConfig["scope"] = global_settings("MOD_SEC_SOCIAL_FACEBOOK_APPSCOPE");
+			if(Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_SCOPE")) {
+				$loginConfig["scope"] = Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_SCOPE");
 			}
 		} else {
 			$loginConfig["redirect_uri"] = "http://" . DOMAIN_INSET;
@@ -321,7 +319,7 @@ function facebook_api($type, $params, $target = null) {
 
 function facebook_publish($message, $link, $picture = "", $name = "", $caption = "", $description = "", $actions = array(), $place = "", $tags = "", $privacy = "", $object_attachment = "", $target = null) {
 	if(!$place)
-		$place = global_settings("MOD_SEC_SOCIAL_FACEBOOK_PAGENAME");
+		$place = Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_PAGE_NAME");
 	
 	$params['message'] = $message; //Post message required
 	$params['link'] = $link; //Post URL required

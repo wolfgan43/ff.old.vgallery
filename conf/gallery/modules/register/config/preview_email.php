@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -66,7 +66,7 @@ if($db_gallery->nextRecord()) {
 	
     
 	if($enable_general_data) {
-	    if(ENABLE_AVATAR_SYSTEM) {
+	    if(Cms::env("ENABLE_AVATAR_SYSTEM")) {
 			$fields["account"]["avatar"] = 'avatar_example';
 		}
 		$fields["account"]["name"] = "name_example";
@@ -84,7 +84,7 @@ if($db_gallery->nextRecord()) {
         $fields["account"]["billcap"] = "billcap_example";
         $fields["account"]["billtown"] = "billtown_example";
         $fields["account"]["billprovince"] = "billprovince_example";
-        if(!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0)) {
+        if(!(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0)) {
             $fields["account"]["billstate"] = "billstate_example";
         }
     }
@@ -94,7 +94,7 @@ if($db_gallery->nextRecord()) {
 	    $fields["account"]["shippingcap"] = "shippingcap_example";
 	    $fields["account"]["shippingtown"] = "shippingtown_example";
 	    $fields["account"]["shippingprovince"] = "shippingprovince_example";
-        if(!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0)) {
+        if(!(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0)) {
 	        $fields["account"]["shippingstate"] = "shippingstate_example";
         }
 	}
@@ -121,7 +121,7 @@ if($db_gallery->nextRecord()) {
 	    $to[0]["name"] = "username_example";
 	    $to[0]["mail"] = "email@example.ex";        
         
-        $rnd_active = mod_sec_createRandomPassword();
+        $rnd_active = Auth::password();
         
 		if(check_function("process_mail")) {
 			$cm->oPage->addContent(process_mail($ID_email_activation, $to, null, null, $fields_activation, NULL, NULL, NULL, true, false), null , "AccountActivation");

@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_MODULES_SHOW_MODIFY) {
+if (!Auth::env("AREA_MODULES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -67,7 +67,7 @@ if(isset($_REQUEST["keys"]["formcnf-ID"])) {
     {
         $module_form_title .= ": " . $db_gallery->getField("name", "Text", true);
     }
-    $oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
+    $oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "form")) . $module_form_title . '</h1>';
 
 	$oField = ffField::factory($cm->oPage);
 	$oField->id = "display_name";
@@ -76,7 +76,7 @@ if(isset($_REQUEST["keys"]["formcnf-ID"])) {
 	$oRecord->addContent($oField);
 
 	$sSQL = "SELECT module_form.*
-				, " . (AREA_SHOW_ECOMMERCE
+				, " . (Cms::env("AREA_SHOW_ECOMMERCE")
 					? "IF(field_enable_pricelist
 						, (SELECT COUNT(module_form_fields.ID) AS count_pricelist
 			                FROM module_form_fields
@@ -95,7 +95,7 @@ if(isset($_REQUEST["keys"]["formcnf-ID"])) {
 	    $enable_pricelist = $db_gallery->getField("enable_pricelist", "Number", true);
 	    $enable_ecommerce = $db_gallery->getField("enable_ecommerce", "Number", true);
 	}
-	if(AREA_SHOW_ECOMMERCE && $enable_ecommerce) {
+	if(Cms::env("AREA_SHOW_ECOMMERCE") && $enable_ecommerce) {
 		$oField = ffField::factory($cm->oPage);
 		$oField->id = "skip_vat_by_anagraph_type";
 		$oField->label = ffTemplate::_get_word_by_code("form_config_skip_vat_by_anagraph_type");
@@ -281,7 +281,7 @@ if(isset($_REQUEST["keys"]["formcnf-ID"])) {
             
     }
     
-    if(AREA_SHOW_ECOMMERCE && $enable_pricelist)
+    if(Cms::env("AREA_SHOW_ECOMMERCE") && $enable_pricelist)
     {
         $oButton = ffButton::factory($cm->oPage);
         $oButton->id = "module_form_pricelist";
@@ -334,7 +334,7 @@ $cm->oPage->addContent($oRecord);
 
 function FormConfigField_on_before_parse_row($component) {
     if(isset($component->grid_buttons["module_form_dep"])) {
-        $component->grid_buttons["module_form_dep"]->class = cm_getClassByFrameworkCss("chain", "icon");
+        $component->grid_buttons["module_form_dep"]->class = Cms::getInstance("frameworkcss")->get("chain", "icon");
         $component->grid_buttons["module_form_dep"]->action_type = "submit"; 
         $component->grid_buttons["module_form_dep"]->label = ffTemplate::_get_word_by_code("module_form_dep");
         $component->grid_buttons["module_form_dep"]->form_action_url = $component->grid_buttons["module_form_dep"]->parent[0]->page_path . "/dep?[KEYS]" . $component->grid_buttons["module_form_dep"]->parent[0]->addit_record_param . "setcv=1&ret_url=" . urlencode($component->parent[0]->getRequestUri());

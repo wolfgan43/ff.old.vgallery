@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_VGALLERY_GROUP_SHOW_MODIFY) {
+if (!Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -23,9 +23,9 @@ $oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify";
 $oGrid->record_id = "VGalleryGroupMenuModify";
 $oGrid->resources[] = $oGrid->record_id;
 $oGrid->display_edit_bt = false;
-$oGrid->display_edit_url = AREA_VGALLERY_GROUP_SHOW_MODIFY;
-$oGrid->display_delete_bt = AREA_VGALLERY_GROUP_SHOW_MODIFY;
-$oGrid->display_new = AREA_VGALLERY_GROUP_SHOW_MODIFY;
+$oGrid->display_edit_url = Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY");
+$oGrid->display_delete_bt = Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY");
+$oGrid->display_new = Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY");
 
 // Chiave
 $oField = ffField::factory($cm->oPage);

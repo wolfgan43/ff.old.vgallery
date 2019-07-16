@@ -4,15 +4,15 @@
  */
 define("FF_DISK_PATH"                               , '[FF_DISK_PATH]');
 define("FF_SITE_PATH"                               , '[FF_SITE_PATH]');
-define("SITE_UPDIR"                                 , '[SITE_UPDIR]');
-define("DISK_UPDIR"                                 , '[DISK_UPDIR]');
+define("FF_SITE_UPDIR"                              , '[FF_SITE_UPDIR]');
+define("FF_DISK_UPDIR"                              , '[FF_DISK_UPDIR]');
 
 /**
  * Session
  */
 define("SESSION_SAVE_PATH"                          , '[SESSION_SAVE_PATH]');
 define("SESSION_NAME"                               , '[SESSION_NAME]');
-define("MOD_SECURITY_SESSION_PERMANENT"             , [MOD_SECURITY_SESSION_PERMANENT]);
+define("MOD_AUTH_SESSION_PERMANENT"                 , [MOD_AUTH_SESSION_PERMANENT]);
 
 /**
  * Database
@@ -133,10 +133,8 @@ define("A_SMTP_SECURE"                              , '[A_SMTP_SECURE]');
  */
 define("A_FROM_EMAIL"                               , '[A_FROM_EMAIL]');
 define("A_FROM_NAME"                                , '[A_FROM_NAME]');
-define("CC_FROM_EMAIL"                              , '[CC_FROM_EMAIL]');
-define("CC_FROM_NAME"                               , '[CC_FROM_NAME]');
-define("BCC_FROM_EMAIL"                             , '[BCC_FROM_EMAIL]');
-define("BCC_FROM_NAME"                              , '[BCC_FROM_NAME]');
+define("EMAIL_DEBUG"                                , '[EMAIL_DEBUG]');
+define("EMAIL_BCC"                                  , '[EMAIL_BCC]');
 
 /**
  * Superadmin
@@ -208,8 +206,7 @@ define("LOGO_DOCS"			                        , '[LOGO_DOCS]');
 /**
  * CDN
  */
-[CDN_STATIC_ESCAPE] define("CM_SHOWFILES"                               , '[DOMAIN_PROTOCOL]://static.[DOMAIN_NAME].[DOMAIN_EXT]');
-[CDN_STATIC_ESCAPE] define("CM_MEDIACACHE_SHOWPATH"                     , '[DOMAIN_PROTOCOL]://media.[DOMAIN_NAME].[DOMAIN_EXT]');
+[CDN_STATIC_ESCAPE] define("CM_SHOWFILES"                               , '[DOMAIN_PROTOCOL]://media.[DOMAIN_NAME].[DOMAIN_EXT]');
 
 [CDN_SERVICES_ESCAPE] define("CMS_API_PATH"                             , '[DOMAIN_PROTOCOL]://api.[DOMAIN_NAME].[DOMAIN_EXT]');
 [CDN_SERVICES_ESCAPE] define("CMS_REQUEST_PATH"                         , '[DOMAIN_PROTOCOL]://request.[DOMAIN_NAME].[DOMAIN_EXT]');
@@ -221,10 +218,12 @@ define("MEMORY_LIMIT"                               , '[MEMORY_LIMIT]');
 define("SERVICE_TIME_LIMIT"                         , '[SERVICE_TIME_LIMIT]');
 define("TIMEZONE"                                   , '[TIMEZONE]');
 define("SECURITY_SHIELD"                            , [SECURITY_SHIELD]);
+define("COMPOSER_PATH"                              , '[COMPOSER_PATH]');
 
-define("PHP_EXT_MEMCACHE"                           , [PHP_EXT_MEMCACHE]);
-define("PHP_EXT_APC"                                , [PHP_EXT_APC]);
+define("FF_DB_INTERFACE"                            , '[FF_DB_INTERFACE]');
+define("FF_CACHE_ADAPTER"                           , [FF_CACHE_ADAPTER]);
+
 define("PHP_EXT_JSON"                               , [PHP_EXT_JSON]);
 define("PHP_EXT_GD"                                 , [PHP_EXT_GD]);
 define("APACHE_MODULE_EXPIRES"                      , [APACHE_MODULE_EXPIRES]);
-define("MYSQLI_EXTENSIONS"                          , [MYSQLI_EXTENSIONS]);
+

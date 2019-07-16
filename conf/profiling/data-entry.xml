@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configdata>
+    <rules>
+        <rule path="/restricted" view_own="true" modify_own="true" insert_own="true" delete_own="true" view_others="true" modify_others="true" insert_others="true" delete_others="true" />
+        <rule path="/admin" view_own="true" modify_own="true" insert_own="true" delete_own="true" view_others="true" modify_others="true" insert_others="true" delete_others="true" />
+        <rule path="/manage" view_own="true" modify_own="true" insert_own="true" delete_own="true" view_others="true" modify_others="true" insert_others="true" delete_others="true" />
+    </rules>
+    <env>
+        <AREA_SHOW_NAVBAR_ADMIN value="true" type="Functional" value_type="Boolean" />
+        <AREA_ANAGRAPH_CATEGORIES_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ANAGRAPH_ROLE_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ANAGRAPH_SHOW_ADDNEW value="true" type="Functional" value_type="Boolean" />
+        <AREA_ANAGRAPH_SHOW_DELETE value="true" type="Functional" value_type="Boolean" />
+        <AREA_ANAGRAPH_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ANAGRAPH_TYPE_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_COMMENT_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_CHECKER_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_IMPORT_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_INSTALLATION_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_SERVICES_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_SITEMAP_SHOW_ADDNEW value="false" type="Functional" value_type="Boolean" />
+        <AREA_SITEMAP_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_UPDATER_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_BILL_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_DOCTYPE_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_ACCOUNT_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_BASIC_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_COUPON_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_DISCOUNT_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_LOCATION_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_PRICELIST_BYQTA_SHOW_DELETE value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_PRICELIST_BYQTA_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_PRICELIST_BYTIME_SHOW_DELETE value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_PRICELIST_BYTIME_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_QTAMIN_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHIPPING_APPARENCE_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHIPPING_METHOD_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHIPPING_REASON_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHIPPINGPRICE_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHOW_ACTIVITY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHOW_BUY_PRICE value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHOW_CART value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SHOW_PASSIVITY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SPECIALSUPPORT_SHOW_DELETE value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_SPECIALSUPPORT_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ECOMMERCE_STOCK_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_ORDERS_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_PAYMENTS_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_REPORT_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_PROPERTIES_DESIGN_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_PROPERTIES_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_GALLERY_SHOW_ADDNEW value="true" type="Functional" value_type="Boolean" />
+        <AREA_GALLERY_SHOW_DELETE value="true" type="Functional" value_type="Boolean" />
+        <AREA_GALLERY_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_GALLERY_SHOW_PERMISSION value="false" type="Functional" value_type="Boolean" />
+        <AREA_CHARSET_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_INTERNATIONAL_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_LANGUAGES_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_LAYOUT_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_THEME_SHOW_ADDNEW value="false" type="Functional" value_type="Boolean" />
+        <AREA_THEME_SHOW_DELETE value="false" type="Functional" value_type="Boolean" />
+        <AREA_THEME_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_LOGIN_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_ADMIN_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_NOTIFY_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_RESTRICTED_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_SCHEDULE_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_FORMS_FRAMEWORK_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_MODULES_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <MODULE_SHOW_CONFIG value="false" type="Functional" value_type="Boolean" />
+        <AREA_BREADCRUMB_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_PUBLISHING_SHOW_ADDNEW value="false" type="Functional" value_type="Boolean" />
+        <AREA_PUBLISHING_SHOW_DELETE value="false" type="Functional" value_type="Boolean" />
+        <AREA_PUBLISHING_SHOW_DETAIL value="true" type="Functional" value_type="Boolean" />
+        <AREA_PUBLISHING_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_SEARCH_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_LAYER_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_SECTION_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_DRAFT_SHOW_ADDNEW value="true" type="Functional" value_type="Boolean" />
+        <AREA_DRAFT_SHOW_DELETE value="false" type="Functional" value_type="Boolean" />
+        <AREA_DRAFT_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_EMAIL_ADDRESS_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_EMAIL_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_HTML_SHOW_ADDNEW value="false" type="Functional" value_type="Boolean" />
+        <AREA_HTML_SHOW_DELETE value="false" type="Functional" value_type="Boolean" />
+        <AREA_HTML_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_STATIC_SHOW_ADDNEW value="false" type="Functional" value_type="Boolean" />
+        <AREA_STATIC_SHOW_DELETE value="false" type="Functional" value_type="Boolean" />
+        <AREA_STATIC_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_GROUPS_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_SETTINGS_CUSTOM_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_SETTINGS_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_USERS_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_ADD_ID_IN_REALNAME value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_DIR_SHOW_ADDNEW value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_DIR_SHOW_DELETE value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_DIR_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_GROUP_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_SHOW_ADDNEW value="true" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_SHOW_DELETE value="true" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_SHOW_MODIFY value="true" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_SHOW_PERMISSION value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_SHOW_SEO value="false" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_SHOW_VISIBLE value="true" type="Functional" value_type="Boolean" />
+        <AREA_VGALLERY_TYPE_SHOW_MODIFY value="false" type="Functional" value_type="Boolean" />
+        <LANGUAGE_INSET value="ITA" type="Settings" value_type="String" />
+        <MAX_UPLOAD value="1000000" type="Settings" value_type="Integer" />
+    </env>
+</configdata>

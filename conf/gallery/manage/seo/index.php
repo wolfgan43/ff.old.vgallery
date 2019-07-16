@@ -64,7 +64,7 @@ $oGrid->source_SQL = "SELECT *
 							, lang
 						) AS languages
 						FROM cache_page 
-						WHERE ID_group = " . $db_gallery->toSql(MOD_SEC_GUEST_USER_ID, "Number") . "
+						WHERE ID_group = " . $db_gallery->toSql(Auth::GUEST_GROUP_ID, "Number") . "
 						[AND] [WHERE] [HAVING] [ORDER], languages";
 $oGrid->order_default = "user_path";
 $oGrid->buttons_options["export"]["display"] = false;
@@ -200,81 +200,4 @@ $oField->label = ffTemplate::_get_word_by_code("cache_page_seo_group");
 $oField->base_type = "Text";
 $oGrid_seo->addContent($oField); 
 
-$cm->oPage->addContent($oGrid_seo, "rel", null, array("title" => ffTemplate::_get_word_by_code("cache_page_seo"))); 
-
-/*
-function cached_site_map($user_path, $user = null, $language = null) {
-    $globals = ffGlobals::getInstance("gallery");
-
-    $db = ffDB_Sql::factory();  
-    $arrItem = array();
-    $arrFrequency = array("always" => 10
-                            , "hourly" => 9
-                            , "daily" => 8
-                            , "weekly" => 7
-                            , "monthly" => 6
-                            , "yearly" => 5
-                            , "never" => 4
-                        );
-	if($user === null)
-		$user = MOD_SEC_GUEST_USER_NAME;
-
-
-    $sSQL = "SELECT (" . (strlen($globals->strip_user_path)
-	                    ? "IF(user_path = " . $db->toSql($globals->strip_user_path) . "
-	                            , '/'
-	                            , SUBSTRING(user_path, " . strlen($globals->strip_user_path) . " + 1)
-	                        )"
-	                    : " user_path "
-	                ) . ") AS user_path
-                    , frequency
-                    , last_update
-                    , section_blocks
-                    , layout_blocks
-                    , data_blocks
-                    , ff_blocks
-            FROM cache_page 
-            WHERE cache_page.ID_domain = " . $db->toSql($globals->ID_domain, "Number") 
-                . (strlen($globals->strip_user_path)
-                    ? " AND user_path LIKE '" . $db->toSql($globals->strip_user_path, "Text", false) . "%'"
-                    : ""
-                )
-                . ($language === null
-                    ? ""
-                    : " AND (lang = " . $db->toSql($language) . " OR (lang = '' AND force_visualization > 0))"
-                ) . "
-                AND (force_visualization > 0 OR use_in_sitemap > 0)
-            ORDER BY (LENGTH(user_path) - LENGTH(REPLACE(user_path, '/', ''))) ASC, user_path";
-	$db->query($sSQL);
-	if($db->nextRecord()) {
-		do {
-			$path = $db->getField("user_path", "Text", true);
-			if(strlen($path)) {
-				$check_data_path = md5($db->getField("section_blocks", "Text", true)
-												. $db->getField("layout_blocks", "Text", true) 
-												. $db->getField("data_blocks", "Text", true) 
-												. $db->getField("ff_blocks", "Text", true) 
-											);
-
-				if(is_array($arrItem[$path]) && array_key_exists($check_data_path, $arrItem[$path])) {
-					continue;
-				} 
-					
-				$arrItem[$path] = array();
-				//$arrItem[$path][$check_data_path] = true;
-				$arrItem[$path]["cached"] =  false;
-				if($path == "/")
-					$arrItem[$path]["priority"] = "1.00";
-				else
-					$arrItem[$path]["priority"] = round((100 * (pow(0.8, (count(explode("/", $path)	) - 1)))) / 100, 2);
-
-				if(strlen($arrItem[$path]["priority"]) < 4)
-					$arrItem[$path]["priority"] = $arrItem[$path]["priority"] . str_repeat("0", 4 - strlen($arrItem[$path]["priority"]));
-				$arrItem[$path]["frequency"] = $db->getField("frequency", "Text", true);
-				$arrItem[$path]["last_update"] = date("Y-m-d", $db->getField("last_update", "Text", true));
-				$arrItem[$path]["page_speed"] = $db->getField("page_speed", "Number", true);
-			}
-		} while($db->nextRecord());
-	}
-	return $arrItem;
-}*/
+$cm->oPage->addContent($oGrid_seo, "rel", null, array("title" => ffTemplate::_get_word_by_code("cache_page_seo")));

@@ -23,37 +23,36 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function system_layer_gallery($oPage, $tpl_layer, $limit_section = null) 
+function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 {
-	//ffErrorHandler::raise("ciao stoocks :) ", E_USER_ERROR, null, get_defined_vars());
+
+    	//ffErrorHandler::raise("ciao stoocks :) ", E_USER_ERROR, null, get_defined_vars());
     $cm = cm::getInstance();
     //$settings_path =& $oPage->user_vars["settings_path"];
+
     $ret_url = $_SERVER["REQUEST_URI"];
     //$content_full_size =& $oPage->user_vars["content_full_size"];
     $globals = ffGlobals::getInstance("gallery");
     $user_path = $globals->user_path;
-	$framework_css = cm_getFrameworkCss();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 
     $settings_path = $globals->settings_path;
     $selected_lang = $globals->selected_lang;
 
     $db_gallery = ffDB_Sql::factory();
 
-    $userNID = get_session("UserNID");
-    $is_guest = (!$userNID || $userNID == MOD_SEC_GUEST_USER_ID); 
-
     /*
     if(!$ret_url)
         $ret_url = $_SERVER["REQUEST_URI"];
       */
-    
+
     $template = Array();
     $frame_buffer = "";
     //$cache_page_contents = 0; // x cache_page
    // $globals->cache["layout_blocks"] = array(); // x cache_page
   //  $globals->cache["section_blocks"] = array(); // x cache_page
    // $globals->cache["ff_blocks"] = array(); // x cache_page
-	
+
     if(check_function("system_get_sections")) {
         $template = system_get_sections($limit_section);
        // $template = $structure["template"];
@@ -66,12 +65,12 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
         $services_params = get_webservices(null, $oPage);
     } */
     
-    if(ENABLE_STD_PERMISSION && check_function("get_file_permission")) {
+    if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission")) {
 	    $file_permission = get_file_permission($settings_path, "static_pages");
 	    if (is_array($file_permission) && !check_mod($file_permission, 1, true)) {
 	    	if(!defined("SKIP_MAIN_CONTENT")) define("SKIP_MAIN_CONTENT", true);
 		}
-	}    
+	}
 
     if(!defined("SKIP_VG_CONTENT")) {
     	/*****
@@ -88,6 +87,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
         if($globals->fixed_pre["body"]) {
             $ff_unic_id = "PREBODY";
             $globals->cache["ff_blocks"][] = $ff_unic_id;
+            Cache::set($ff_unic_id, "ff");
 
             if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
                 $tpl_layer->set_var("fixed_pre_body", implode("", $globals->fixed_pre["body"]));
@@ -104,6 +104,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
         if(strlen($oPage->fixed_pre_content)) {
             $ff_unic_id = "FFPRE";
             $globals->cache["ff_blocks"][] = $ff_unic_id;
+            Cache::set($ff_unic_id, "ff");
 
             if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate")
                 $tpl_layer->set_var("fixed_pre_content", $oPage->fixed_pre_content);
@@ -127,6 +128,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
         if(strlen($oPage->fixed_post_content)) {
             $ff_unic_id = "FFPOST";
             $globals->cache["ff_blocks"][] = $ff_unic_id;
+            Cache::set($ff_unic_id, "ff");
 
             if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate")
                 $tpl_layer->set_var("fixed_post_content", $oPage->fixed_post_content);
@@ -147,6 +149,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
         if($globals->fixed_post["body"]) {
             $ff_unic_id = "POSTBODY";
             $globals->cache["ff_blocks"][] = $ff_unic_id;
+            Cache::set($ff_unic_id, "ff");
 
             if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
                 $tpl_layer->set_var("fixed_post_body", implode("", $globals->fixed_post["body"]));
@@ -201,8 +204,8 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 	                        $content_layout[$content_unic_id]["location"] = "Content";
 	                        //$content_layout[$content_unic_id]["width"] = $sections[$primary_main_section]["width"];
 	                        $content_layout[$content_unic_id]["visible"] = NULL;
-	                        if(check_function("get_layout_settings"))
-	                            $content_layout[$content_unic_id]["settings"] = get_layout_settings(NULL, "SEARCH");
+	                        //if(check_function("get_layout_settings"))
+	                            $content_layout[$content_unic_id]["settings"] = Cms::getPackage("search"); //get_layout_settings(NULL, "SEARCH");
 	                        $content_layout_sort = $content_layout[$content_unic_id]["settings"]["AREA_SEARCH_DEFAULT_SORT"];
 	                        
 	                        $count_vg++;
@@ -224,8 +227,8 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 	                        $content_layout[$content_unic_id]["location"] = "Content";
 	                        //$content_layout[$content_unic_id]["width"] = $sections[$primary_main_section]["width"];
 	                        $content_layout[$content_unic_id]["visible"] = NULL;
-	                        if(check_function("get_layout_settings"))
-	                            $content_layout[$content_unic_id]["settings"] = get_layout_settings(NULL, "FORMS_FRAMEWORK");
+	                        //if(check_function("get_layout_settings"))
+	                            $content_layout[$content_unic_id]["settings"] = Cms::getPackage("applets"); //get_layout_settings(NULL, "FORMS_FRAMEWORK");
 	                        $content_layout_sort = $content_layout[$content_unic_id]["settings"]["AREA_FF_DEFAULT_SORT"];
 	                        
 	                        $content_layout_sort = $content_layout_sort + $count_ff;
@@ -233,7 +236,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 	                $tmp_content_layout = $content_layout[$content_unic_id];
 	                $tmp_content_layout["settings"] = md5(serialize($tmp_content_layout["settings"]));
 
-	                if(AREA_SHOW_NAVBAR_ADMIN /*&& is_array($navadmin_sections) && array_key_exists($section_name, $navadmin_sections)*/) {
+	                if(Auth::env("AREA_SHOW_NAVBAR_ADMIN") /*&& is_array($navadmin_sections) && array_key_exists($section_name, $navadmin_sections)*/) {
 	                    //array_splice($template["navadmin"][$template["primary_section"]]["layouts"], $content_layout_sort, 0, array($content_unic_id => $tmp_content_layout));
 	                    $template["navadmin"][$template["primary_section"]]["layouts"] = 
 							array_slice($template["navadmin"][$template["primary_section"]]["layouts"], 0, $content_layout_sort, true)
@@ -245,11 +248,13 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 	                    case is_array($contents_value["data"]):
 	                        $content_layout[$content_unic_id]["content"] = print_r($contents_value["data"], true);
 	                        $globals->cache["ff_blocks"][] = md5($content_layout[$content_unic_id]["content"]); //array X cache_page
+                            Cache::set(md5($content_layout[$content_unic_id]["content"]), "ff");
 	                        break;
 	                    case is_object($contents_value["data"]):
 	                        if(get_class($contents_value["data"]) == "ffTemplate") {
 	                             $content_layout[$content_unic_id]["content"] = $contents_value["data"]->rpparse("main", false);
-	                             $globals->cache["ff_blocks"][] = md5($content_layout[$content_unic_id]["content"]); 
+	                             $globals->cache["ff_blocks"][] = md5($content_layout[$content_unic_id]["content"]);
+	                             Cache::set(md5($content_layout[$content_unic_id]["content"]), "ff");
 	                        } elseif(isset($contents_value["data"]->id) && isset($oPage->components_buffer[$contents_value["data"]->id])) {
 	                            if(is_array($oPage->components_buffer[$contents_value["data"]->id])) {
 	                                $content_layout[$content_unic_id]["content"] = /*$oPage->components_buffer[$contents_value["data"]->id]["headers"] .*/ $oPage->components_buffer[$contents_value["data"]->id]["html"] /*. $oPage->components_buffer[$contents_value["data"]->id]["footers"]*/;
@@ -257,12 +262,14 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 	                                $content_layout[$content_unic_id]["content"] = $oPage->components_buffer[$contents_value["data"]->id];
 	                            }
 	                            $globals->cache["ff_blocks"][] = $contents_value["data"]->id; //array X cache_page
+                                Cache::set($contents_value["data"]->id, "ff");
 	                        }
 	                        break;
 	                    
 	                    default:
 	                        $content_layout[$content_unic_id]["content"] = $contents_value["data"];
 	                        $globals->cache["ff_blocks"][] = md5($contents_value["data"]); //array X cache_page
+                            Cache::set(md5($contents_value["data"]), "ff");
 	                }
 	                
 	                //array_splice($template["sections"][$template["primary_section"]]["layouts"], $content_layout_sort, 0, array($content_unic_id => $content_layout[$content_unic_id]));
@@ -275,10 +282,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 		}
     }
 
-    //if(check_function("get_layout_settings"))
-       // $layout_settings_popup = get_layout_settings(NULL, "ADMIN"); 
 
-  
     if(is_array($template["layers"]) && count($template["layers"])) {
         $count_main_content                     = 0;
         $count_notfound                         = 0;
@@ -300,6 +304,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
         foreach($template["layers"] AS $layer_key => $layer_value) 
         {
 			$globals->cache["layer_blocks"][] = $template["layers"][$layer_key]["ID"]; //array X cache_page
+            Cache::set($template["layers"][$layer_key]["ID"], "layers");
 
             if(is_array($layer_value["sections"]) && count($layer_value["sections"])) 
             {
@@ -314,6 +319,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 //                        if($sections[$section_key]["visible"]) 
  //                       {
                             $globals->cache["section_blocks"][] = $template["sections"][$section_key]["ID"]; //array X cache_page
+                            Cache::set($template["sections"][$section_key]["ID"], "sections");
 
                             $section_params["count_block"] = 0;
                             $section_params["count_block_content"] = 0;
@@ -366,6 +372,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
                                         if(!strlen($layout_value["content"]) && $layout_value["visible"]) {
                                             $globals->cache["layout_blocks"][$layout_value["ID"]]["last_update"] = $layout_value["last_update"]; //array X cache_page
                                             $globals->cache["layout_blocks"][$layout_value["ID"]]["frequency"] = $layout_value["frequency"]; //array X cache_page
+                                            Cache::set($layout_value["ID"], "blocks");
 
 											$buffer = system_block_process($layout_value, $section_params);
                                            	$section_params = $buffer["params"];
@@ -383,40 +390,42 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
                                                                                         
                                         }
 										if(strlen($layout_value["content"])) {
-											if ($buffer["content"] && ($layout_value["visible"] == true || $layout_value["visible"] == null)) {
-												$section_params["count_block"]++;
-												/*if(isset($buffer["data_blocks"]) && is_array($buffer["data_blocks"]) && count($buffer["data_blocks"])) {
-													$cache_page["data_blocks"] = array_merge($cache_page["data_blocks"], $buffer["data_blocks"]);
-												} */
+											if ($layout_value["visible"] == true || $layout_value["visible"] == null) {
+												//if (!($section_params["main_content"] && !$buffer["content"])) {
+													$section_params["count_block"]++;
+													/*if(isset($buffer["data_blocks"]) && is_array($buffer["data_blocks"]) && count($buffer["data_blocks"])) {
+														$cache_page["data_blocks"] = array_merge($cache_page["data_blocks"], $buffer["data_blocks"]);
+													} */
 
-												if ($section_params["main_content"]
-													&& strlen($layout_value["content"])
-													&& (count($template["main_section"]) > 1 || $layout_value["use_in_content"] > 0)
-												) {
-													$section_params["count_block_content"]++;
-													$section_params["reset_content_by_user"] = false;
-												}
+													if ($section_params["main_content"]
+														&& $buffer["content"]
+														&& (count($template["main_section"]) > 1 || $layout_value["use_in_content"] > 0)
+													) {
+														$section_params["count_block_content"]++;
+														$section_params["reset_content_by_user"] = false;
+													}
 
-												if (is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
-													$template["sections"][$section_key]["processed_block"]++;
+													if (is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
+														$template["sections"][$section_key]["processed_block"]++;
 
-													//parte per il templating custom
-													if (!$tpl_layer->isset_var("block_" . $layout_value["smart_url"])) {
-														if (array_key_exists("Sez" . $section_key, $tpl_layer->DBlocks) !== false) {
-															$tmp_arrSection[$section_key] = $tmp_arrSection[$section_key] . $layout_value["content"];
+														//parte per il templating custom
+														if (!$tpl_layer->isset_var("block_" . $layout_value["smart_url"])) {
+															if (array_key_exists("Sez" . $section_key, $tpl_layer->DBlocks) !== false) {
+																$tmp_arrSection[$section_key] = $tmp_arrSection[$section_key] . $layout_value["content"];
+															} else {
+																$tpl_layer->set_var("layout", $layout_value["fixed_pre_content"] . $layout_value["content"] . $layout_value["fixed_post_content"]);
+																$tpl_layer->parse("SezSectionLayout", true);
+															}
 														} else {
-															$tpl_layer->set_var("layout", $layout_value["fixed_pre_content"] . $layout_value["content"] . $layout_value["fixed_post_content"]);
-															$tpl_layer->parse("SezSectionLayout", true);
+															$tpl_layer->set_var("block_" . $layout_value["smart_url"], $layout_value["content"]);
 														}
 													} else {
-														$tpl_layer->set_var("block_" . $layout_value["smart_url"], $layout_value["content"]);
+														$frame_buffer .= $layout_value["content"];
 													}
-												} else {
-													$frame_buffer .= $layout_value["content"];
-												}
+												//}
 											}
 										} else {
-											cache_writeLog("Block: " . $layout_value["smart_url"] . " (ID: " . $layout_value["ID"] . ") URL: " . $user_path, "error_block_notfound");
+											Cache::log("Block: " . $layout_value["smart_url"] . " (ID: " . $layout_value["ID"] . ") URL: " . $user_path, "error_block_notfound");
 										}
                                     }
                                 }
@@ -686,7 +695,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
         }        
     } else {
         if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
-            if(AREA_SHOW_NAVBAR_ADMIN && check_function("system_wizard")) {
+            if(Auth::env("AREA_SHOW_NAVBAR_ADMIN") && check_function("system_wizard")) {
             	$tpl_layer->set_var("layout", system_wizard("struct"));
 				//da inserire il wizard
 			} else {
@@ -695,7 +704,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 				}
 	        }
 
-	        $tpl_layer->set_var("container_class", cm_getClassByFrameworkCss("", "row"));
+	        $tpl_layer->set_var("container_class", Cms::getInstance("frameworkcss")->get("", "row"));
 			$tpl_layer->parse("SezSectionLayout", false);
 			$tpl_layer->parse("SezSection", false);
 		    $tpl_layer->parse("SezLayer", false);
@@ -704,9 +713,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 
     if(!count($template["main_section"])) {
     	http_response_code(500);
-		if(check_function("write_notification")) {
-			write_notification("missing_main_section", "", "warning", null, $user_path);
-		}
+    	Logs::write("missing_main_section", "cms_process");
     } elseif($count_notfound == $count_main_content) {
         http_response_code(404);
         $globals->setSeo(array(
@@ -723,17 +730,17 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
   
     if(is_object($tpl_layer) && get_class($tpl_layer) == "ffTemplate") {
         if(!defined("SKIP_VG_LAYOUT")) {
-            if(AREA_SHOW_NAVBAR_ADMIN) {
+            if(Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
             	//setJsRequest("toolbaradmin");
-            	setJsRequest("toolbar");
-            	setJsRequest("cluetip");
+            	//setJsRequest("toolbar");
+            	//setJsRequest("cluetip");
                // setJsRequest($layout_settings_popup["ADMIN_INTERFACE_MENU_PLUGIN"]);
                // setJsRequest($layout_settings_popup["ADMIN_INTERFACE_PLUGIN"]);
             }
             
             $use_admin_ajax = false;
             if(is_array($globals->js["request"]) && count($globals->js["request"])) {
-                if(AREA_SHOW_NAVBAR_ADMIN
+                if(Auth::env("AREA_SHOW_NAVBAR_ADMIN")
                  //   || strlen($layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"]) && array_key_exists($layout_settings_popup["ADMIN_TOOLBAR_MENU_PLUGIN"], $globals->js["request"])
                  //   || strlen($layout_settings_popup["ADMIN_POPUP_MENU_PLUGIN"]) && array_key_exists($layout_settings_popup["ADMIN_POPUP_MENU_PLUGIN"], $globals->js["request"])
                 ) {
@@ -741,26 +748,25 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
                 }
             }
 
-            if(AREA_SHOW_NAVBAR_ADMIN) {
- //               $oPage->tplAddJs("jquery.ui", "jquery.ui.js", FF_THEME_DIR ."/library/jquery.ui");
-//				$oPage->tplAddCss("jquery.toolbaradmin", "jquery.toolbar.admin.css", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/plugins/jquery.toolbaradmin/css");
-//				$oPage->tplAddJs("jquery.toolbaradmin", "jquery.toolbaradmin.observe.js", FF_THEME_DIR ."/" . THEME_INSET . "/javascript/plugins/jquery.toolbaradmin");
-            }
+            Cms::parseWidgets($tpl_layer->getDApplets(), $cm->loaded_applets);
 
             if(check_function("system_set_js"))
-                system_set_js($oPage, $settings_path, false, null, $use_admin_ajax, constant("JS_NO_CASCADING"), true);    
+                system_set_js($oPage, $settings_path, false, null, $use_admin_ajax, true);
             if(check_function("system_set_css"))
-                system_set_css($oPage, $settings_path, constant("CSS_NO_CASCADING"), false);
+                system_set_css($oPage, $settings_path, false);
             if(check_function("system_set_meta")) 
                 system_set_meta($oPage);
 
 		    $oPage->addEvent("on_tpl_parse", "write_user_vars" , ffEvent::PRIORITY_FINAL);
 			//da usare phantomJS 
 			//$oPage->tplAddJs("ff.cms.above-the-fold", "ff.cms.above-the-fold.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"); 
-			
-            if(AREA_SHOW_NAVBAR_ADMIN) {
+
+
+
+
+            if(Auth::env("AREA_SHOW_NAVBAR_ADMIN")) {
             	$cms_options = array();
-				/*if(AREA_SECTION_SHOW_MODIFY && is_array($template["navadmin"]) && count($template["navadmin"])) {
+				/*if(Auth::env("AREA_SECTION_SHOW_MODIFY") && is_array($template["navadmin"]) && count($template["navadmin"])) {
 					$oPage->tplAddCss("cms-editor", "cms-editor.css", FF_THEME_DIR . "/" . THEME_INSET . "/css");
 					$oPage->tplAddJs("ff.cms.editor", "ff.cms.editor.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"); 
 					//$oPage->tplAddJs("jquery.fn.ColorPicker", "jquery.colorpicker.js", FF_THEME_DIR . "/library/plugins/jquery.colorpicker"); 
@@ -777,22 +783,22 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
 
 						$cms_options["editor"]["seo"] = true;
 					}
-					if(AREA_SITEMAP_SHOW_MODIFY && 0) { 
+					if(Auth::env("AREA_SITEMAP_SHOW_MODIFY") && 0) {
 					    $oPage->tplAddJs("ff.cms.sitemap", "ff.cms.sitemap.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools"); 
 
 						$cms_options["editor"]["sitemap"] = array(
 							"menu" => array("class" => "cms-editor-menu sitemap"
-											, "icon" => cm_getClassByFrameworkCss("sitemap", "icon-tag", "2x")
+											, "icon" => Cms::getInstance("frameworkcss")->get("sitemap", "icon-tag", "2x")
 											, "rel" => "add"
 							)
 						);
 					}				
-					if(AREA_LAYOUT_SHOW_MODIFY) { 
+					if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 					    $oPage->tplAddJs("ff.cms.layout", "ff.cms.layout.js", FF_THEME_DIR . "/" . THEME_INSET . "/javascript/tools");
 
 						$cms_options["editor"]["sitemap"] = array(
 							"menu" => array("class" => "cms-editor-menu"
-											, "icon" => cm_getClassByFrameworkCss("addnew", "icon-tag", "2x")
+											, "icon" => Cms::getInstance("frameworkcss")->get("addnew", "icon-tag", "2x")
 											, "rel" => "add"
 							)
 						);
@@ -805,7 +811,7 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
                 $admin_menu["admin"]["css"] = $oPage->page_css;
                 $admin_menu["admin"]["js"] = $oPage->page_js;
                 $admin_menu["admin"]["theme"] = $oPage->theme;
-                $admin_menu["admin"]["international"] = ffTemplate::_get_word_by_code("", null, null, true);
+                $admin_menu["admin"]["international"] = ffTranslator::dump();
                  $admin_menu["admin"]["seo"] = array(
                     "src" => $globals->seo["current"] //$seo_primary_block
                     , "ID" => $globals->seo[$globals->seo["current"]]["ID"] //$ID_seo_node
@@ -822,13 +828,11 @@ function system_layer_gallery($oPage, $tpl_layer, $limit_section = null)
             } else
                 $tpl_layer->set_var("admin", "");
         }
-        
-        if(check_function("system_set_cache_page"))
-            $oPage->addEvent("on_tpl_parsed", "system_set_cache_page" , ffEvent::PRIORITY_FINAL);
     } else {
         return $frame_buffer;
     }
-/*    
+
+    /*
    $js_min = js_minifier($oPage);
    die($js_min);
 */
@@ -841,7 +845,7 @@ function write_user_vars() {
 	$cm = cm::getInstance();
 	$seo = $globals->seo[$globals->seo["current"]];
 
-		$cm->oPage->output_buffer["html"] = str_replace(
+	$cm->oPage->output_buffer["html"] = str_replace(
 		array(
 			"[[PAGE_TITLE]]"
 			, "[[PAGE_HEADER]]"
@@ -866,6 +870,7 @@ function write_user_vars() {
 
 function system_block_process($layout, $params = array()) {
     $cm = cm::getInstance();
+
     $globals = ffGlobals::getInstance("gallery"); 
 
     $res = array(
@@ -875,7 +880,6 @@ function system_block_process($layout, $params = array()) {
 	);
 
     $params["xhr"] 					= false; //non siamo dentro alla chiamata xhr percui e false //$cm->isXHR();
-    $params["user_path_shard"] 		= $globals->user_path_shard;
 	//$params["unic_id"] 				= $layout["prefix"] . $layout["ID"];
 	
     //if($layout["type"] == "ECOMMERCE" || (isset($layout["use_ajax"]) && $layout["use_ajax"])) {

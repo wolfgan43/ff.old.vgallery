@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -36,7 +36,7 @@ if(!isset($_REQUEST["keys"]["swfcnf-ID"])) {
 }
 /*
 if(check_function("check_fs"))
-    check_fs(DISK_UPDIR . "/", "/" );
+    check_fs(FF_DISK_UPDIR . "/", "/" );
 */
 if($_REQUEST["keys"]["swfcnf-ID"] > 0)
 {
@@ -58,7 +58,7 @@ $oRecord->id = "SwfConfigModify";
 $oRecord->resources[] = $oRecord->id;
 $oRecord->resources[] = "modules";
 $oRecord->src_table = "module_swf";
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "swf")) . $module_swf_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "swf")) . $module_swf_title . '</h1>';
 
 if(check_function("MD_swf_on_loaded_data"))
 	$oRecord->addEvent("on_loaded_data", "MD_swf_on_loaded_data");
@@ -87,13 +87,13 @@ $oField->extended_type = "File";
 
 $oField->file_storing_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/swf/" . "[name_VALUE]";
 $oField->file_temp_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/swf";
-$oField->file_max_size = MAX_UPLOAD;
+$oField->file_max_size = Auth::env("MAX_UPLOAD");
 
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb" . "/[_FILENAME_]";
-//$oField->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//$oField->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb" . "/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/thumb" . "/[_FILENAME_]";
+//$oField->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//$oField->file_temp_preview_url = CM_SHOWFILES . "/thumb" . "/[_FILENAME_]";
 $oField->file_allowed_mime = array("swf");
 
 $oField->file_base_path = FF_DISK_PATH . FF_THEME_DIR;

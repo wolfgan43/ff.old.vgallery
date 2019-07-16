@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ VGallery: CMS based on FormsFramework
+  ~ Copyright (C) 2004-2015 Alessandro Stucchi <wolfgan@gmail.com>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~  @package VGallery
+  ~  @subpackage core
+  ~  @author Alessandro Stucchi <wolfgan@gmail.com>
+  ~  @copyright Copyright (c) 2004, Alessandro Stucchi
+  ~  @license http://opensource.org/licenses/gpl-3.0.html
+  ~  @link https://github.com/wolfgan43/vgallery
+  -->
+
+<configdata>
+    <env>
+        <TRANSMUTE_ALIAS extended_type="Boolean" label="Convert text url in link html" value="true" />
+        <DISABLE_SMARTURL_CONTROL extended_type="Boolean" label="Disable SmartUrl Control" value="false" />
+        <ENABLE_AVATAR_SYSTEM extended_type="Boolean" label="Enable Avatar System" value="false" />
+        <LIMIT_CHARACTER_SEO extended_type="Number" label="Limit character SEO" value="320" />
+        <AVOID_META_KEYWORDS extended_type="Boolean" label="Avoid Meta Keywords" value="true" />
+        <ENABLE_VGALLERY_HTMLTAG_AUTOMATIC extended_type="Boolean" label="Enable in VGallery Automatic HTML Tag Detection" value="true" />
+
+        <SEARCH_META_TITLE_PROTOTYPE extended_type="String" label="Meta Title Prototype" value="[GROUP]: [TERM]" />
+        <SEARCH_META_DESCRIPTION_PROTOTYPE extended_type="String" label="Meta Description Prototype" value="[GROUP]: [TERM]" />
+        <SEARCH_KEYWORDS_PROTOTYPE extended_type="String" label="Keywords Prototype" value="[TERM]" />
+        <SEARCH_META_TITLE_HEADER_PROTOTYPE extended_type="String" label="Title Prototype" value="[GROUP]: [TERM]" />
+        <SEARCH_VGALLERY_LIMIT extended_type="CheckGroup" label="Vgallery Limit" value="null" source_SQL = "
+			SELECT vgallery.name
+				, vgallery.name
+			FROM vgallery
+				INNER JOIN vgallery_nodes ON vgallery_nodes.ID_vgallery = vgallery.ID
+					AND vgallery_nodes.parent = '/' AND vgallery_nodes.name = vgallery.name
+			WHERE vgallery.public = 0
+				AND vgallery_nodes.visible > 0
+			ORDER BY vgallery.name
+		" />
+
+        <SEARCH_OVERVIEW_SUBTITLE extended_type="Boolean" label="Enable Overview SubTitle" value="true" />
+        <SEARCH_OVERVIEW_META_TITLE_PROTOTYPE extended_type="String" label="Overview Meta Title Prototype" value="[TERM]" />
+        <SEARCH_OVERVIEW_META_DESCRIPTION_PROTOTYPE extended_type="String" label="Overview Meta Description Prototype" value="[TERM]" />
+        <SEARCH_OVERVIEW_KEYWORDS_PROTOTYPE extended_type="String" label="Overview Keywords Prototype" value="[TERM]" />
+        <SEARCH_OVERVIEW_META_TITLE_HEADER_PROTOTYPE extended_type="String" label="Overview Title Prototype" value="[TERM]" />
+        <SEARCH_OVERVIEW_LIMIT extended_type="Number" label="Overview Limit" value="3" />
+
+        <PLACE_CITY_PERMALINK_PROTOTYPE extended_type="String" label="Permalink City Prototype" value="/citta/[PLACE_SMART_URL]" />
+        <PLACE_CITY_TITLE_PROTOTYPE extended_type="String" label="Title City Prototype" value="Città di [PLACE]" />
+        <PLACE_CITY_DESCRIPTION_PROTOTYPE extended_type="String" label="Description City Prototype" value="Elenco nella città di [PLACE]" />
+        <PLACE_CITY_HEADER_PROTOTYPE extended_type="String" label="Header City Prototype" value="[PLACE]" />
+
+        <PLACE_PROV_PERMALINK_PROTOTYPE extended_type="String" label="Permalink Province Prototype" value="/provincia/[PLACE_SMART_URL]" />
+        <PLACE_PROV_TITLE_PROTOTYPE extended_type="String" label="Title Province Prototype" value="Provincia di [PLACE]" />
+        <PLACE_PROV_DESCRIPTION_PROTOTYPE extended_type="String" label="Description Province Prototype" value="Elenco nella provincia di [PLACE]" />
+        <PLACE_PROV_HEADER_PROTOTYPE extended_type="String" label="Header Province Prototype" value="[PLACE]" />
+
+        <PLACE_REG_PERMALINK_PROTOTYPE extended_type="String" label="Permalink Region Prototype" value="/regione/[PLACE_SMART_URL]" />
+        <PLACE_REG_TITLE_PROTOTYPE extended_type="String" label="Title Region Prototype" value="Regione di [PLACE]" />
+        <PLACE_REG_DESCRIPTION_PROTOTYPE extended_type="String" label="Description Region Prototype" value="Elenco nella regione di [PLACE]" />
+        <PLACE_REG_HEADER_PROTOTYPE extended_type="String" label="Header Region Prototype" value="[PLACE]" />
+
+        <PLACE_STATE_PERMALINK_PROTOTYPE extended_type="String" label="Permalink State Prototype" value="/stato/[PLACE_SMART_URL]" />
+        <PLACE_STATE_TITLE_PROTOTYPE extended_type="String" label="Title State Prototype" value="Stato di [PLACE]" />
+        <PLACE_STATE_DESCRIPTION_PROTOTYPE extended_type="String" label="Description State Prototype" value="Elenco nello stato di [PLACE]" />
+        <PLACE_STATE_HEADER_PROTOTYPE extended_type="String" label="Header State Prototype" value="[PLACE]" />
+
+        <ENABLE_STD_PERMISSION extended_type="Boolean" label="Enable Standard Permission" value="false" />
+        <ENABLE_ADV_PERMISSION extended_type="Boolean" label="Enable Advanced Permission" value="false" />
+        <ENABLE_PASSWORD_VALIDATOR extended_type="Boolean" label="Enable Password Validator" value="true" />
+
+
+        <AREA_ANAGRAPH_SHOW_CREATION_DATE extended_type="Boolean" label="Show Creation Date" value="false" />
+        <AREA_ANAGRAPH_USE_AJAX_DIALOG extended_type="Boolean" label="Enable Dialog Ajax" value="true" />
+        <AREA_ANAGRAPH_SHOW_AVATAR extended_type="Boolean" label="Enable Avatar" value="true" />
+        <AREA_ANAGRAPH_SHOW_AVATAR_GROUP extended_type="Boolean" label="Enable Avatar Group" value="false" />
+        <AREA_ANAGRAPH_AVATAR_TYPE extended_type="Selection" label="Avatar Type" value="simple" source_SQL = "
+			(
+				SELECT 'simple' AS ID
+				, 'Simple' AS name
+			) UNION (
+				SELECT 'advanced' AS ID
+				, 'Advanced' AS name
+			)
+		" />
+        <AREA_ANAGRAPH_AVATAR_MODEL extended_type="Selection" label="Avatar Model" value="vertical" source_SQL = "
+			(
+				SELECT 'default' AS ID
+				, 'Default' AS name
+			) UNION (
+				SELECT 'vertical' AS ID
+				, 'Vertical' AS name
+			) UNION (
+				SELECT 'horizzontal' AS ID
+				, 'Horizzontal' AS name
+			)
+		" />
+        <AREA_ANAGRAPH_AVATAR_MODEL_THUMB extended_type="Selection" label="Avatar Model" value="default" source_SQL = "
+			(
+				SELECT 'default' AS ID
+				, 'Default' AS name
+			) UNION (
+				SELECT 'vertical' AS ID
+				, 'Vertical' AS name
+			) UNION (
+				SELECT 'horizzontal' AS ID
+				, 'Horizzontal' AS name
+			)
+		" />
+        <AREA_ANAGRAPH_CUSTOM_TYPE extended_type="Selection" label="Custom Type" value="null" source_SQL = "
+			(
+				SELECT 'null' AS ID
+					, 'N/A' AS name
+			) UNION (
+				SELECT anagraph_type.ID
+					, anagraph_type.name
+				FROM anagraph_type
+				WHERE 1
+				ORDER BY anagraph_type.name
+			)
+		" />
+        <AREA_ANAGRAPH_SHOW_GENERAL_GROUP extended_type="Boolean" label="Enable General Group" value="true" />
+        <AREA_ANAGRAPH_SHOW_CUSTOM_GROUP extended_type="Boolean" label="Enable Custom Group" value="true" />
+        <AREA_ANAGRAPH_SHOW_BILL_GROUP extended_type="Boolean" label="Enable Bill Group" value="true" />
+        <AREA_ANAGRAPH_BILL_TYPE extended_type="CheckGroup" label="Bill Type" value="null" source_SQL = "
+			(
+				SELECT 'namesurname' AS ID
+				, 'Name Surname' AS name
+			) UNION (
+				SELECT 'reference' AS ID
+				, 'Reference' AS name
+			) UNION (
+				SELECT 'cf' AS ID
+				, 'CF' AS name
+			) UNION (
+				SELECT 'cf-validator' AS ID
+				, 'CF With Validation' AS name
+			) UNION (
+				SELECT 'piva' AS ID
+				, 'P.IVA' AS name
+			) UNION (
+				SELECT 'piva-validator' AS ID
+				, 'P.IVA With Validation' AS name
+			) UNION (
+				SELECT 'address' AS ID
+				, 'Address' AS name
+			)
+		" />
+        <AREA_ANAGRAPH_BILL_REQUIRED extended_type="Boolean" label="Bill Required" value="false" />
+        <AREA_ANAGRAPH_SHOW_SHIPPING_GROUP extended_type="Boolean" label="Enable Shipping Group" value="true" />
+        <AREA_ANAGRAPH_SHOW_CATEGORIES extended_type="Boolean" label="Enable Categories" value="true" />
+        <AREA_ANAGRAPH_SHOW_SETTING_GROUP extended_type="Boolean" label="Enable Setting Group" value="true" />
+        <AREA_ANAGRAPH_SHOW_GMAP extended_type="Boolean" label="Enable Gmap" value="false" />
+        <AREA_ANAGRAPH_SHOW_USER extended_type="Boolean" label="Enable User Account" value="true" />
+        <AREA_ANAGRAPH_SHOW_USER_GROUP extended_type="Selection" label="User Account Group" value="null" source_SQL = "
+			(
+				SELECT 'null' AS ID
+					, 'N/A' AS name
+			) UNION (
+				SELECT
+					[CM_TABLE_PREFIX]mod_security_groups.gid AS ID
+					, [CM_TABLE_PREFIX]mod_security_groups.name AS name
+				FROM
+					[CM_TABLE_PREFIX]mod_security_groups
+				WHERE 1
+				ORDER BY [CM_TABLE_PREFIX]mod_security_groups.name
+			)
+		" />
+        <AREA_ANAGRAPH_USER_FORCE_EDIT extended_type="Boolean" label="Force User Account Edit" value="false" />
+        <AREA_ANAGRAPH_SHOW_VCARD extended_type="Boolean" label="Enable VCard" value="true" />
+        <AREA_ANAGRAPH_SHOW_QRCODE extended_type="Boolean" label="Enable QR-Code" value="false" />
+        <AREA_ANAGRAPH_SHOW_REPORT_GROUP extended_type="Boolean" label="Enable Report Group" value="true" />
+        <AREA_ANAGRAPH_USE_TAB extended_type="Boolean" label="Use Tab" value="true" />
+        <AREA_ANAGRAPH_FORCE_CUSTOM_EMAIL extended_type="Boolean" label="Force Custom Email" value="false" />
+
+
+
+
+        <AREA_SHOW_ECOMMERCE extended_type="Boolean" label="Enable Ecommerce" value="false" />
+        <ENABLE_ECOMMERCE_FILES extended_type="Boolean" label="Enable Ecommerce on Files" value="false" />
+        <ECOMMERCE_CHARGE_METHOD label="Charge Method (FIFO or LIFO)" value="FIFO" />
+        <AREA_ECOMMERCE_SHOW_LOCATION extended_type="Boolean" label="Enable Multi Storage" value="false" />
+        <AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK extended_type="Boolean" label="FrontEnd: Limit goods visibility by stock" value="false" />
+        <AREA_ECOMMERCE_USE_UNIC extended_type="Boolean" label="Enable Unic goods" value="false" />
+        <AREA_ECOMMERCE_USE_STOCK extended_type="Boolean" label="Enable Stock" value="true" />
+        <AREA_ECOMMERCE_USE_RESERVE_STOCK extended_type="Boolean" label="Enable Reserve Stock" value="false" />
+        <AREA_ECOMMERCE_USE_PRICE_VARIABLE extended_type="Boolean" label="Enable Variable Price" value="false" />
+        <AREA_ECOMMERCE_USE_COUPON extended_type="Boolean" label="Enable Coupon" value="true" />
+        <AREA_ECOMMERCE_USE_PROMO extended_type="Boolean" label="Enable Promotion" value="true" />
+        <AREA_ECOMMERCE_USE_SHIPPING extended_type="Boolean" label="Enable Shipping system" value="false" />
+        <AREA_ECOMMERCE_SHIPPING_LIMIT_STATE label="Limit Shipping by this State" value="" extended_type = "Selection" source_SQL= "
+							SELECT [FF_SUPPORT_PREFIX]state.ID
+								, IF(ISNULL([FF_PREFIX]international.description) OR [FF_PREFIX]international.description = ''
+									, [FF_SUPPORT_PREFIX]state.name
+									, [FF_PREFIX]international.description) AS description
+							FROM
+								[FF_SUPPORT_PREFIX]state
+								LEFT JOIN [FF_PREFIX]international ON [FF_PREFIX]international.word_code = [FF_SUPPORT_PREFIX]state.name
+									AND [FF_PREFIX]international.ID_lang = (
+																			SELECT [FF_PREFIX]languages.ID
+																			FROM [FF_PREFIX]languages
+																			WHERE [FF_PREFIX]languages.code = '[FF_LOCALE]'
+																		)
+							ORDER BY description" />
+        <ECOMMERCE_ENABLE_DOCUMENTS_FREEZE extended_type="Boolean" label="Enable Documents Freeze" value="false" />
+        <AREA_ECOMMERCE_SHOW_ANAGRAPH_IN_STOCK extended_type="Boolean" label="Enable Anagraph in Stock" value="false" />
+        <ECOMMERCE_DISABLE_LIMIT_STOCK extended_type="Boolean" label="Disable Limit Stock" value="false" />
+        <AREA_ECOMMERCE_OPERATIONS_PRICE_WITH_VAT extended_type="Boolean" label="Display Price With VAT in Operation" value="false" />
+        <AREA_ECOMMERCE_SHOW_DOCUMENT extended_type="Boolean" label="Show Document" value="true" />
+        <AREA_ECOMMERCE_SHOW_REPORT extended_type="Boolean" label="Show Report" value="true" />
+        <AREA_ECOMMERCE_ANAGRAPH_ENABLE_EDIT_USER extended_type="Boolean" label="Enable user manage in Anagraph" value="false" />
+        <AREA_ECOMMERCE_PREVIEW_USE_SHIPPING_PRICE_IN_DETAIL extended_type="Boolean" label="Doc Preview: Use shipping_price in detail" value="false" />
+        <AREA_ECOMMERCE_PREVIEW_TEMPLATE label="Template Doc Preview" value="" />
+        <AREA_ECOMMERCE_PREVIEW_PDF_FONT label="Font PDF Doc Preview" value="Arial" />
+        <AREA_ECOMMERCE_PREVIEW_PDF_MARGIN_TOP label="Margin Top for PDF Doc Preview" value="40" />
+        <AREA_ECOMMERCE_PREVIEW_PDF_MARGIN_BOTTOM label="Margin Bottom for PDF Doc Preview" value="25" />
+        <AREA_ECOMMERCE_SHOW_ANAGRAPH_SHIPPING_ALWAYS extended_type="Boolean" label="Doc Preview: Always show anagraph shipping" value="false" />
+        <AREA_ECOMMERCE_SHOW_DISCOUNT extended_type="Boolean" label="Doc Preview: Display Discount" value="false" />
+        <AREA_ECOMMERCE_SHOW_ID_IN_MENU extended_type="Boolean" label="Manage: Show ID in Menu" value="true" />
+        <AREA_ECOMMERCE_CURRENCY_DEFAULT label="Default Currency" extended_type = "Selection" value="" source_SQL= "
+								SELECT ff_currency.symbol
+									, ff_currency.name
+								FROM ff_currency
+								ORDER BY ff_currency.name" />
+
+
+
+
+        <ECOMMERCE_CART_TIMEOUT label="Set Cart TimeOut (Sec)" value="false" />
+        <ENABLE_NO_SHIPPING_CART extended_type="Boolean" label="Enable No Shipping Cart" value="false" />
+        <ENABLE_GUEST_CART extended_type="Boolean" label="Enable Guest Cart" value="false" />
+        <ENABLE_CART_BILLDATA extended_type="Boolean" label="Enable Bill Data in Cart" value="false" />
+        <ENABLE_CART_FIELD extended_type="Boolean" label="Enable Additional Field in Cart" value="false" />
+        <SEND_EMAIL_PAYMENT_STATUS_BY_GROUP extended_type="Boolean" label="Switch Email Payment Status by Group" value="false" />
+        <ENABLE_MULTICART extended_type="Boolean" label="Enable Multi Cart" value="false" />
+        <ENABLE_MULTICART_PUBLISH extended_type="Boolean" label="Enable Cart to be Publish" value="false" />
+        <ENABLE_CART_PUBLIC_TOBUYOUT extended_type="Boolean" label="Enable Cart Public to BuyOut" value="false" />
+        <USE_CART_PUBLIC_MONO extended_type="Boolean" label="Enable Wishlist" value="false" />
+        <CART_PUBLIC_MONO_ENABLE_ARCHIVE extended_type="Boolean" label="Wishlist Enable Archive" value="true" />
+        <CART_PUBLIC_MONO_RUSH_EXPIRE_DAY label="Wishlist Delay" value="false" />
+        <CART_PUBLIC_MONO_FORCE_SHIPPING_PRICE extended_type="Boolean" label="Wishlist force Shipping price to owner" value="false" />
+        <CART_MPAY_SHOW_ALWAYS_NOACCOUNT extended_type="Boolean" label="Always Show no Account in Payment Method" value="false" />
+        <LIMIT_CART_PUBLIC_BYGROUP extended_type="CheckGroup" label="Limit Cart Public by group" value="" source_SQL= "
+						SELECT
+							[CM_TABLE_PREFIX]mod_security_groups.gid AS ID
+							, [CM_TABLE_PREFIX]mod_security_groups.name AS name
+					FROM
+						[CM_TABLE_PREFIX]mod_security_groups
+					WHERE 1
+					ORDER BY [CM_TABLE_PREFIX]mod_security_groups.name" />
+
+
+        <ECOMMERCE_FILTER_MANAGE_SHOW_DOC_TYPE label="Operation: Show Document Type"  extended_type="Boolean" value="true"  />
+
+        <ECOMMERCE_FILTER_REPORT_PATH label="Report: Limit Level Path" value="" />
+        <ECOMMERCE_FILTER_REPORT_LOCATION label="Report: Start Location" value="" extended_type = "Selection" source_SQL= "
+							SELECT '0'
+									, 'Location no Set'
+								UNION
+								(SELECT ecommerce_location.ID
+									, ecommerce_location.name
+								FROM ecommerce_location
+								ORDER BY ecommerce_location.name)" />
+        <ECOMMERCE_FILTER_REPORT_SHOW_PAYED label="Report: Show Payed"  extended_type="Boolean" value="true"  />
+        <ECOMMERCE_FILTER_REPORT_SHOW_PARZIAL_PAYED label="Report: Show Parzial Payed"  extended_type="Boolean" value="false"  />
+        <ECOMMERCE_FILTER_REPORT_SHOW_UNSOLVED label="Report: Show Unsolved"  extended_type="Boolean" value="false"  />
+
+        <ECOMMERCE_FILTER_REPORT_SHOW_ECOMMERCE label="Report: Show Ecommerce Online"  extended_type="Boolean" value="false"  />
+        <ECOMMERCE_FILTER_REPORT_SHOW_DOC_TYPE label="Report: Show Document Type"  extended_type="Boolean" value="true"  />
+        <ECOMMERCE_FILTER_REPORT_SHOW_VGALLERY_TYPE label="Report: Show Vgallery Type"  extended_type="Boolean" value="true"  />
+    </env>
+</configdata>

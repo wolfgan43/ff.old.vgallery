@@ -17,7 +17,8 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 	
 //	$tpl = ffTemplate::factory(get_template_cascading($user_path, "comment.html", "", null, $layout["location"]));
 //	$tpl->load_file("comment.html", "main");
@@ -25,24 +26,24 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
     /**
     * Admin Father Bar
     */
-    if(AREA_COMMENT_SHOW_MODIFY && !$disable_control) {
+    if(Auth::env("AREA_COMMENT_SHOW_MODIFY") && !$disable_control) {
         $admin_menu["admin"]["unic_name"] = $unic_id;
         $admin_menu["admin"]["title"] = $layout["title"];
         $admin_menu["admin"]["class"] = $layout["type_class"];
         $admin_menu["admin"]["group"] = $layout["type_group"];
         $admin_menu["admin"]["modify"] = "";
         $admin_menu["admin"]["delete"] = "";
-        if(AREA_PROPERTIES_SHOW_MODIFY) {
+        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
             $admin_menu["admin"]["extra"] = "";
         }
-        if(AREA_ECOMMERCE_SHOW_MODIFY) {
+        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
             $admin_menu["admin"]["ecommerce"] = "";
         }
-        if(AREA_LAYOUT_SHOW_MODIFY) {
+        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
             $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
             $admin_menu["admin"]["layout"]["type"] = $layout["type"];
         }
-        if(AREA_SETTINGS_SHOW_MODIFY) {
+        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
             $admin_menu["admin"]["setting"] = "";
         }
         
@@ -62,16 +63,13 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
     $tpl->set_var("rec_per_page", ffCommon_specialchars($_REQUEST[$unic_id . "_records_per_page"]));
     
     if($layout_settings["AREA_COMMENT_USE_PRIMARY_GROUP_PERMISSION"]) {
-        $user_permission = get_session("user_permission");
-        /*if(is_array($user_permission) && count($user_permission) 
-            && is_array($user_permission["groups"]) && count($user_permission["groups"])
-        ) {
-            $str_allowed_groups = implode(",", $user_permission["groups"]);
-        } */
-        $str_allowed_groups = $user_permission["primary_gid_default"];
-        
-        
+        $user = Auth::get("user");
+
+        $str_allowed_groups = $user->acl;
+
+
         if(strlen($layout_settings["AREA_COMMENT_EXCLUDE_GROUP_PERMISSION"])) {
+            $str_exclude_groups = "";
             $arrExcludeGroup = explode(",", $layout_settings["AREA_COMMENT_EXCLUDE_GROUP_PERMISSION"]);
             if(is_array($arrExcludeGroup) && count($arrExcludeGroup)) {
                 foreach($arrExcludeGroup AS $arrExcludeGroup_value) {
@@ -130,8 +128,8 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
                             : ""
                         ). "
                         AND (NOT(module_form_nodes.hide > 0)
-                            " . (get_session("UserID") != MOD_SEC_GUEST_USER_NAME
-                                    ? " OR " . CM_TABLE_PREFIX . "mod_security_users.ID = " . $db->toSql(get_session("UserNID"), "Number")
+                            " . (Auth::isGuest()
+                                    ? " OR " . CM_TABLE_PREFIX . "mod_security_users.ID = " . $db->toSql(Auth::get("user")->id, "Number")
                                     : ""
                                 ) . "
                         )
@@ -218,7 +216,7 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
 			    $ID_form = $db->getField("ID_form", "Number", true);
 			    $ID_form_node = $db->getField("ID_form_nodes", "Number", true);
 			    if($uid === null) {
-				    if($db->getField("username", "Text", true) == MOD_SEC_GUEST_USER_NAME) {
+				    if($db->getField("username", "Text", true) == Cms::env("MOD_AUTH_GUEST_USER_NAME")) {
 					    $tpl->set_var("username", $db->getField("nick", "Text", true));
 					    if($db->getField("website", "Text", true)) {
 						    $tpl->set_var("url", $db->getField("website", "Text", true));
@@ -232,19 +230,17 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
 				    } else {
                         $username = $db->getField("username", "Text", true);
 					    if($layout_settings["AREA_COMMENT_SHOW_AVATAR"]) {
-					    	if(check_function("get_user_avatar")) {
-								$tpl->set_var("show_thumb", get_user_avatar($db->getField("avatar", "Text", true), false, $db->getField("user_email", "Text", true), cm_showfiles_get_abs_url("/avatar")));
-								$tpl->set_var("alt_name", $username);
-								$tpl->parse("SezAvatar", false);
-					    	}
-					    	
+                            $tpl->set_var("show_thumb", Auth::getUserAvatar(null, $db->getField("avatar", "Text", true)));
+                            $tpl->set_var("alt_name", $username);
+                            $tpl->parse("SezAvatar", false);
+
 
 					    } else {
 						    $tpl->set_var("SezAvatar", "");
 					    }
 					    
 					    $tpl->set_var("username", $username);
-					    if($db->getField("public", "Number", true) || get_session("UserID") == $db->getField("uid", "Number", true)) {
+					    if($db->getField("public", "Number", true) || Auth::get("user")->id == $db->getField("uid", "Number", true)) {
 						    $tpl->set_var("url", FF_SITE_PATH .  USER_RESTRICTED_PATH . "/" . $username . "?ret_url=" . urlencode($ret_url));
 						    $tpl->parse("SezUsernameLink", false);
 						    $tpl->set_var("SezUsernameNoLink", "");
@@ -324,9 +320,9 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
 						    case "Image":	
 						    case "Upload":	
 						    case "UploadImage":	
-							    if(is_file(DISK_UPDIR . $db_field->getField("value", $ff_exthended_type)->getValue($ff_exthended_type, LANGUAGE_INSET))) {
-                                    $tpl->set_var("preview_value", FF_SITE_PATH . constant("CM_SHOWFILES") . "/comment" . $db_field->getField("value", $ff_exthended_type)->getValue($ff_exthended_type, LANGUAGE_INSET));
-						            $tpl->set_var("view_value", FF_SITE_PATH . constant("CM_SHOWFILES") . $db_field->getField("value", $ff_exthended_type)->getValue($ff_exthended_type, LANGUAGE_INSET));
+							    if(is_file(FF_DISK_UPDIR . $db_field->getField("value", $ff_exthended_type)->getValue($ff_exthended_type, LANGUAGE_INSET))) {
+                                    $tpl->set_var("preview_value", CM_SHOWFILES . "/comment" . $db_field->getField("value", $ff_exthended_type)->getValue($ff_exthended_type, LANGUAGE_INSET));
+						            $tpl->set_var("view_value", CM_SHOWFILES . $db_field->getField("value", $ff_exthended_type)->getValue($ff_exthended_type, LANGUAGE_INSET));
 						            $tpl->parse("SezImage", false);
                                 } else {
                                     $tpl->set_var("SezImage", "");
@@ -383,7 +379,7 @@ function process_addon_comment_view($user_path, $ret_url, $tbl_src, $ID_node, $I
     if($layout_settings["AREA_SHOW_FB_COMMENT"]) {
         $cm->oPage->tplAddJs("FB", "all.js", "http://connect.facebook.net/" . strtolower(substr(FF_LOCALE, 0, 2)) . "_" . strtoupper(substr(FF_LOCALE, 0, 2)), false, false, null, true);
 
-        $tpl->set_var("fb_app_id", MOD_SEC_SOCIAL_FACEBOOK_APPID);
+        $tpl->set_var("fb_app_id", Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_ID"));
         $tpl->set_var("domain_inset", DOMAIN_INSET);
         $tpl->set_var("user_path", $user_path);
         $tpl->parse("SezFBComment", false);

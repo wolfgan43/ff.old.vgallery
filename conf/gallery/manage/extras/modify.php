@@ -26,7 +26,7 @@
 
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!(AREA_PROPERTIES_SHOW_MODIFY || AREA_PROPERTIES_DESIGN_SHOW_MODIFY)) {
+if (!(Auth::env("AREA_PROPERTIES_SHOW_MODIFY") || Auth::env("AREA_PROPERTIES_DESIGN_SHOW_MODIFY"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 // da gestire discriminanti per i plugin
@@ -44,11 +44,11 @@ $sSQL = "SELECT cm_layout.*
 			WHERE cm_layout.path = " . $db_gallery->toSql("/");
 $db_gallery->query($sSQL);
 if ($db_gallery->nextRecord()) {
-    $framework_css = cm_getFrameworkCss($db_gallery->getField("framework_css", "Text", true));
+    $framework_css = Cms::getInstance("frameworkcss")->getFramework($db_gallery->getField("framework_css", "Text", true));
     $framework_css_name = $framework_css["name"];
 }*/
 
-$framework_css = cm_getFrameworkCss();
+$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 $template_framework = $framework_css["name"];
     
 $hide_source = false;
@@ -334,7 +334,7 @@ switch ($item_source_tbl) {
 		if (!$db_gallery->nextRecord()) {
 	        if($item_source_path != "/" && check_function("check_fs"))
 	        	check_fs_closest_db($item_source_path);
-				//check_fs(DISK_UPDIR . $item_source_path, $item_source_path);
+				//check_fs(FF_DISK_UPDIR . $item_source_path, $item_source_path);
 
 			$sSQL = "SELECT files.*
         				FROM files
@@ -599,7 +599,7 @@ $oRecord = ffRecord::factory($cm->oPage);
 $oRecord->id = "ExtrasModify";
 $oRecord->resources[] = $oRecord->id;
 //$oRecord->title = ffTemplate::_get_word_by_code("extras_modify_title");
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title ' . $icon["group"] . '">' . cm_getClassByFrameworkCss($icon["type"], "icon-tag", array("2x", "content")) . $extras_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title ' . $icon["group"] . '">' . Cms::getInstance("frameworkcss")->get($icon["type"], "icon-tag", array("2x", "content")) . $extras_title . '</h1>';
 
 $oRecord->addEvent("on_done_action", "ExtrasModify_on_done_action");
 $oRecord->buttons_options["print"]["display"] = false;
@@ -1011,7 +1011,7 @@ if ($hide_source) {
     $oRecord->addContent($oField);  */
 }
 
-if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY) 
+if (Auth::env("AREA_PROPERTIES_DESIGN_SHOW_MODIFY"))
 {
     $oRecord->addContent(null, true, "thumb");
     $oRecord->groups["thumb"] = array(
@@ -1098,15 +1098,15 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 				    "container" => array(
 						"multi_pairs" => array(
 						    array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": " . ffTemplate::_get_word_by_code("grid_skip_all"))),
-						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
-						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
+						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
+						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
 						)
 				    )
 				    , "row" => array(
 						"multi_pairs" => array(
 						    array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": " . ffTemplate::_get_word_by_code("grid_skip_all"))),
-						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
-						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
+						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
+						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
 						)
 				    )
 				)
@@ -1462,7 +1462,6 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
     if ($skip_detail) 
     {
 		$oRecord->insert_additional_fields["preview_hide"]	    			= new ffData($file_properties_preview["hide"], "Number");
-		$oRecord->insert_additional_fields["preview_container_ID_mode"]	    = new ffData($file_properties_preview["container_ID_mode"], "Number");
 		$oRecord->insert_additional_fields["preview_display_view_mode"]	    = new ffData($file_properties_preview["image"]["plugin"]);
 		$oRecord->insert_additional_fields["preview_ID_image"]		    	= new ffData($file_properties_preview["image"]["src"]["default"]["ID"], "Number");
 		$oRecord->insert_additional_fields["preview_ID_image_md"]		    = new ffData($file_properties_preview["image"]["src"]["md"]["ID"], "Number");
@@ -1872,10 +1871,8 @@ function ExtrasModify_on_done_action($component, $action) {
 		    } else {
 				refresh_cache($cache_type, $ID_item, "update");
 			}
-		    
-			if (FF_ENABLE_MEM_SHOWFILES_CACHING) {
-				ffCache::getInstance(CM_CACHE_ADAPTER)->set("__vgallery_settings_thumb__");
-			}	    
+
+            ffCache::getInstance()->clear("/vg/thumbs");
 		}
     }
 }

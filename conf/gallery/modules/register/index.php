@@ -334,7 +334,7 @@ if($db_gallery->nextRecord())
                             ORDER BY IF(module_form_fields_group.`order`, module_form_fields_group.`order`, 999), module_register_fields.`order`, module_register_fields.name");
     if($db_gallery->nextRecord()) 
     {
-		$framework_css = cm_getFrameworkCss();
+		$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 		do
         {
             $ID_anagraph_fields = $db_gallery->getField("ID_anagraph_fields", "Number", true);
@@ -429,7 +429,7 @@ if($db_gallery->nextRecord())
             if(is_array($framework_css))
             {
                 if(!array_key_exists("grid", $arrField[$field_name]["group"]["class"])) {
-                    $arrField[$field_name]["group"]["class"]["grid"] = cm_getClassByFrameworkCss(array(
+                    $arrField[$field_name]["group"]["class"]["grid"] = Cms::getInstance("frameworkcss")->get(array(
                             (int) $db_gallery->getField("group_grid_xs", "Number", true)
                             , (int) $db_gallery->getField("group_grid_sm", "Number", true)
                             , (int) $db_gallery->getField("group_grid_md", "Number", true)
@@ -597,7 +597,7 @@ if($db_gallery->nextRecord())
                     if(!$disable_account_registration) 
                     {
                         if($generate_password) {
-                            $rnd_password = mod_sec_createRandomPassword();
+                            $rnd_password = Auth::password();
                             $oRecord->insert_additional_fields["password"] = new ffData($rnd_password);
                         } else 
                         {
@@ -621,7 +621,7 @@ if($db_gallery->nextRecord())
                             $obj_page_field->extended_type = "Password";
                             $obj_page_field->crypt_method = "mysql_password";
                                 
-                            if(ENABLE_PASSWORD_VALIDATOR) {
+                            if(Cms::env("ENABLE_PASSWORD_VALIDATOR")) {
                                 $obj_page_field->addValidator("password");
                             }
                                 
@@ -730,7 +730,7 @@ if($db_gallery->nextRecord())
                 case "avatar":
                     if($enable_general_data) 
                     {
-                        if(ENABLE_AVATAR_SYSTEM && $show_avatar) 
+                        if(Cms::env("ENABLE_AVATAR_SYSTEM") && $show_avatar)
                         {                                          
                             $obj_page_field = ffField::factory($oPage);
                             $obj_page_field->id = "avatar";
@@ -743,9 +743,9 @@ if($db_gallery->nextRecord())
                             $obj_page_field->label = ffTemplate::_get_word_by_code("user_account_avatar");
                             $obj_page_field->base_type = "Text";
                             $obj_page_field->extended_type = "File";
-                            $obj_page_field->file_storing_path = DISK_UPDIR . "/user/[register-ID_VALUE]";
-                            $obj_page_field->file_temp_path = DISK_UPDIR . "/user";
-                            $obj_page_field->file_max_size = MAX_UPLOAD;
+                            $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/user/[register-ID_VALUE]";
+                            $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/user";
+                            $obj_page_field->file_max_size = Auth::env("MAX_UPLOAD");
                             $obj_page_field->file_full_path = true;
                             $obj_page_field->file_check_exist = true;
                             $obj_page_field->file_normalize = true;
@@ -754,8 +754,8 @@ if($db_gallery->nextRecord())
                             $obj_page_field->uploadify_model = $avatar_model;
                             $obj_page_field->uploadify_model_thumb = ($avatar_model == "default" ? "avatar" : "avatar" . $avatar_model);
 
-                            $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-                            $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . $obj_page_field->uploadify_model_thumb . "/[_FILENAME_]";
+                            $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+                            $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/" . $obj_page_field->uploadify_model_thumb . "/[_FILENAME_]";
             
                             $obj_page_field->control_type = "file";
                             $obj_page_field->file_show_delete = true;
@@ -961,8 +961,8 @@ if($db_gallery->nextRecord())
                     $oRecord->addContent($obj_page_field, $field_value["group"]["field"]);
                     break;
                 case "state":
-                    if(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) {
-                        $oRecord->additional_fields["shippingstate"] = new ffData(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE, "Number");
+                    if(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0) {
+                        $oRecord->additional_fields["shippingstate"] = new ffData(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE"), "Number");
                     } else {
                         $obj_page_field = ffField::factory($oPage);
                         $obj_page_field->id = "billstate";
@@ -1098,8 +1098,8 @@ if($db_gallery->nextRecord())
                     $oRecord->addContent($obj_page_field, $field_value["group"]["field"]);
                     break;
                 case "shippingstate" :
-                    if(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) {
-                        $oRecord->additional_fields["shippingstate"] = new ffData(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE, "Number");
+                    if(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0) {
+                        $oRecord->additional_fields["shippingstate"] = new ffData(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE"), "Number");
                     } else {
                         $obj_page_field = ffField::factory($oPage);
                         $obj_page_field->id = "shippingstate";

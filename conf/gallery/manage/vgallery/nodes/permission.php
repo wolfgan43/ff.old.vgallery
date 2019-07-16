@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION)) {
+if (!(Auth::env("AREA_VGALLERY_SHOW_PERMISSION") && Cms::env("ENABLE_STD_PERMISSION"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -31,7 +31,7 @@ $oRecord->resources[] = $oRecord->id;
 //$oRecord->resources_get = $oRecord->resources; 
 //$oRecord->title = ffTemplate::_get_word_by_code("vgallery_" . $vgallery_name . "_title");
 
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . cm_getClassByFrameworkCss("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $vgallery_nodes_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . Cms::getInstance("frameworkcss")->get("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $vgallery_nodes_title . '</h1>';
 
 $oRecord->src_table = "vgallery_nodes";
 $oRecord->buttons_options["delete"]["display"] = false;

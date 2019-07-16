@@ -45,14 +45,14 @@
   		if(!$icon["size"])
   			$icon["size"] = "lg";
   			
-  		$res["icon"] = cm_getClassByFrameworkCss($icon["name"], "icon-tag", array($icon["size"], $icon["type"]));
+  		$res["icon"] = Cms::getInstance("frameworkcss")->get($icon["name"], "icon-tag", array($icon["size"], $icon["type"]));
 	}
 	
 	if($smart_url)
 		$res["smart_url"] = '<span class="smart-url">' . $smart_url . '</span>';
 	
 	if($goto_url)
-		$res["goto_url"] = '<a class="slug-gotourl ' . cm_getClassByFrameworkCss("external-link", "icon") . '" href="' . ($goto_url !== true ? $goto_url : "javascript:void(0);") . '" target="_blank"></a>';
+		$res["goto_url"] = '<a class="slug-gotourl ' . Cms::getInstance("frameworkcss")->get("external-link", "icon") . '" href="' . ($goto_url !== true ? $goto_url : "javascript:void(0);") . '" target="_blank"></a>';
 	
 	$page_title = $res["icon"] . $title . $res["smart_url"] . $res["goto_url"];
 

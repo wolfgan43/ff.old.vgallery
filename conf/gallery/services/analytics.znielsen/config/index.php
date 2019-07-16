@@ -1,5 +1,5 @@
 <?php
-    if (!AREA_SERVICES_SHOW_MODIFY) {
+    if (!Auth::env("AREA_SERVICES_SHOW_MODIFY")) {
         ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
     }
 
@@ -12,7 +12,7 @@
     $type_field["content"]                       = "String";
     $type_field["server"]                       = "String";
 	if(check_function("system_services_modify"))
-		$oGrid = system_services_modify(basename(ffCommon_dirname(ffCommon_dirname(__FILE__))), $type_field);
+		$oGrid = system_services_modify(basename(ffCommon_dirname(__DIR__)), $type_field);
 
 	if(is_object($oGrid)) {
 		$cm->oPage->fixed_pre_content = ffTemplate::_get_word_by_code("google_services");

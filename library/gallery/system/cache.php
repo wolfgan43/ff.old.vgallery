@@ -72,7 +72,7 @@
     }
 
     function cache_get_page_by_id($id) {
-    	$page = cache_get_settings("page");
+    	$page = Cms::getSchema("page");
     	
     	if(isset($page["/" . $id]))
             return "/" . $id;
@@ -89,8 +89,8 @@
     		if(is_file(FF_DISK_PATH . "/themes/site/settings.php")) {
     			require(FF_DISK_PATH . "/themes/site/settings.php");
     		}
-    		if(is_file(CM_CACHE_PATH . "/locale.php")) {
-    			require(CM_CACHE_PATH . "/locale.php");
+    		if(is_file(CM_CACHE_DISK_PATH . "/locale.php")) {
+    			require(CM_CACHE_DISK_PATH . "/locale.php");
 
                 /** @var include $locale */
                 $schema["locale"] = $locale;
@@ -115,10 +115,10 @@
     
     function cache_get_page_properties($user_path, $skip_locale = false) {
         //require(CACHE_DISK_PATH . "/library/gallery/settings.php");
-        $schema = cache_get_settings();
+        $schema = Cms::getSchema();
 
 		//strippa il path di base per la cache
-		if(is_array($schema["alias"]) && count($schema["alias"])) {
+		if(0 && is_array($schema["alias"]) && count($schema["alias"])) {
 			if($schema["alias"][$_SERVER["HTTP_HOST"]]) {
 				$resAlias["alias"] = $schema["alias"][$_SERVER["HTTP_HOST"]];
 				if(strpos($user_path, $schema["alias"][$_SERVER["HTTP_HOST"]] . "/") === 0
@@ -131,7 +131,7 @@
 				}
 
 				if($resAlias["alias"] != "/") {
-					$arrLocale = cache_get_settings("locale");
+					$arrLocale = Cms::getSchema("locale");
 					if($arrLocale["rev"]["lang"][basename($resAlias["alias"])]) {
 						$lang = $arrLocale["rev"]["lang"][basename($resAlias["alias"])];
 					} else {
@@ -142,7 +142,7 @@
 				$resAlias["redirect"] = false;
 			}
 		}
-        
+        $resAlias["redirect"] = false;
 		$settings_user_path                                     .= $user_path;
         $arrSettings_path                                       = explode("/", trim($user_path, "/"));
 
@@ -178,7 +178,10 @@
 				}
 			}
 		}
-
+        if(!$res) {
+            $res = $schema["pages"]["*"];
+            $page_key = "*";
+        }
         if(strpos($user_path, $res["strip_path"]) === 0) {
             $user_path                                          = substr($user_path, strlen($res["strip_path"]));
 	        if(!$user_path)
@@ -226,7 +229,7 @@
         if(!$skip_locale)
             $res["locale"]                                      = cache_get_locale($res);
 
-        return $res;        
+        return $res;
     }
     
 	function cache_token_write($u, $objToken = null, $type = null) {
@@ -274,7 +277,7 @@
     	return $res;
     }
     
-    function cache_token_resolve($token, $account = null, $precision = 8) {
+    function cache_token_resolve_old($token, $account = null, $precision = 8) {
 	    $res["new"]			= cache_token_generate($account, $precision);
 
 		$res["public"] 		= substr($token, 0, strlen($token) - strlen($res["new"]["private"]));
@@ -285,6 +288,9 @@
     }
 
 	function cache_token_create($user_permission = null, $expire = null, $renew = true, $precision = 8) {
+        return Auth::getInstance("token")->create();
+
+        /*
 		$u = array();
 		$token_user = "t";
 		
@@ -322,7 +328,10 @@
 		cache_token_write($u, $objToken, $token_user);
 
 		return $objToken["token"];
+        */
+
 	}
+	/*
 	function cache_token_repair($token, $user_permission = null, $expire = null, $renew= true, $precision = 8) {
 		$u = array();
 		$token_user = "t";
@@ -332,7 +341,7 @@
 			$user_permission = $_SESSION[APPID . "user_permission"];
 		} elseif(!is_array($user_permission)) {
 			//todo: da fare con l'anagraph class
-			$user_permission = mod_security_get_user_data($user_permission, array("groups" => true));
+			$user_permission = Auth::get("user", array("toArray" => true, "ID_user" => $user_permission);
 		}
 		$uid = $user_permission["ID"];
 		$account = ($user_permission["username_slug"]
@@ -382,6 +391,8 @@
 
 		return $objToken;
 	}
+	*/
+
 	function cache_token_renew($account, $objToken = null) {
     	if(!$objToken) {
     		$objToken = cache_token_generate($account);
@@ -421,10 +432,10 @@
 		//Cache::log("SET COOKIE: " . $_COOKIE["_ut"]  . " = " . $objToken["token"] . " exp: " . $objToken["expire"], "mio");
     }
 
-    function cache_token_get_session_cookie($name = "_ut") {
+    function cache_token_get_session_cookie_old($name = "_ut") {
     	return $_COOKIE[$name];
     }
-    function cache_token_destroy_session_cookie($name = "_ut") {
+    function cache_token_destroy_session_cookie_old($name = "_ut") {
 		$sessionCookie = session_get_cookie_params();
 		setcookie($name, false, $sessionCookie["lifetime"], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure'], $sessionCookie["httponly"]);
 
@@ -435,7 +446,7 @@
     }
     
 	function cache_token_get_file_token($public_token, $type = null, $create_dir = false) {
-		$dir_token = CM_CACHE_PATH . "/token";
+		$dir_token = CM_CACHE_DISK_PATH . "/token";
 		switch($type) {
 			case "t":
 				$step = "/" . substr($public_token, 0, 3);
@@ -464,16 +475,16 @@
 		}
 		return $u;
 	}
-	function cache_check_session_by_token($token = null) {
+	function cache_check_session_by_token_old($token = null) {
 		static $user = null;
-		//$dir_token = CM_CACHE_PATH . "/token";
+		//$dir_token = CM_CACHE_DISK_PATH . "/token";
         $token_user = "t";
 		
 		if(!$user) {
 			//$precision = 8;
 			//$cookie_name = "_ut";
 			if($token === null)
-				$token = cache_token_get_session_cookie();
+				$token = cache_token_get_session_cookie_old();
 
 //			Cache::log("entro: " . $cc . "  " . $token . print_r($_SERVER, true) , "mio");
 
@@ -482,9 +493,9 @@
 					$token = substr($token, 2);
 					$type_token = $token_user;
 					
-					cache_token_destroy_session_cookie();
+					cache_token_destroy_session_cookie_old();
 				}
-				$objToken = cache_token_resolve($token);
+				$objToken = cache_token_resolve_old($token);
 
 				//$stoken = bin2hex(openssl_random_pseudo_bytes($precision));
 				//$new_private = uniqid($stoken);
@@ -508,7 +519,7 @@
 							if($u["renew"] === 1) {
 								$u["renew"] = false;
 								@unlink($fsToken["file"]);
-								cache_token_destroy_session_cookie();
+								cache_token_destroy_session_cookie_old();
 							}
 
 							if($u["renew"]) {
@@ -552,16 +563,16 @@
 							Cache::log("Token: " . $token . " File: " . $fsToken["file"] . " Expired: " . $u["expire"] . " (" . ($u["expire"] - time()) . "s)", "token_expired");
 
 							//	@unlink($fsToken["file"]); //todo:da creare procedura per rigenerare i token per mailchimp
-							cache_token_destroy_session_cookie();
+							cache_token_destroy_session_cookie_old();
 //Cache::log("Destroy: " .  $cc . "  " .  $_COOKIE["_ut"] . "=old> " . $objToken["token"] . " = " . $token, "mio");
 						}
 					}
 				} else {
-					cache_token_destroy_session_cookie();
+					cache_token_destroy_session_cookie_old();
 				}
             } elseif($_GET[$token_user]) {
                 $token = $_GET[$token_user];
-				$objToken = cache_token_resolve($token);
+				$objToken = cache_token_resolve_old($token);
 				$objToken["token"] = $token_user . "-" . $objToken["token"];
 
 				$fsToken = cache_token_get_file_token($objToken["public"], $token_user);
@@ -572,14 +583,14 @@
                     cache_token_set_session_cookie($objToken);
                 }
 
-				cache_do_redirect($_SERVER["HTTP_HOST"] . trim(preg_replace('/([?&])'.$token_user.'=[^&]+(&|$)/','$1',$_SERVER["REQUEST_URI"]), "?"));
+                Cms::redirect($_SERVER["HTTP_HOST"] . trim(preg_replace('/([?&])'.$token_user.'=[^&]+(&|$)/','$1',$_SERVER["REQUEST_URI"]), "?"));
             }
 			
 			
 			
 			
 	//		if($token && !$cookie_valid) {
-		//		cache_token_destroy_session_cookie();
+		//		cache_token_destroy_session_cookie_old();
 
 
 		/*	echo $token . "   sssssssssssssssssssssssssss" ;
@@ -598,20 +609,18 @@
 
 		return $user;
 	} 
-	
-	function cache_get_permission($username, $type = "perm") {
-		$file_permission = CM_CACHE_PATH . "/cfg/" . $type . "/" . $username . ".php";
+	/*
+	function cache_get_permission_old($username, $type = "perm") {
+		$file_permission = CM_CACHE_DISK_PATH . "/cfg/" . $type . "/" . $username . ".php";
 
 		if(is_file($file_permission)) {
 			require($file_permission);
 		}
 		switch($type) {
 			case "perm":
-                /** @var include $user_permission */
                 $res = $user_permission;
 				break;
 			case "gid":
-                /** @var include $permissions */
                 $res = $permissions;
 				break;
 			default:
@@ -621,25 +630,25 @@
 		return $res;
 	}
 	
-	function cache_create_session_by_token($token = null, $start_session = true) {
+	function cache_create_session_by_token_old($token = null, $start_session = true) {
 		$user_permission = array();
 
-		$user = cache_check_session_by_token($token);
+		$user = cache_check_session_by_token_old($token);
 		if($user) {
-			$user_permission = cache_get_permission($user["account"]);
+			$user_permission = cache_get_permission_old($user["account"]);
 			if(!is_array($user_permission)) {
 				$user_permission = array(
 					"ID" => $user["uid"]
 					, "username_slug" => $user["account"]
 					, "primary_gid_name" => $user["group"]
-					, "permissions" => cache_get_permission($user["group"], "gid")
+					, "permissions" => cache_get_permission_old($user["group"], "gid")
 					, "must-revalidate" => true
 				);
 				define("DISABLE_CACHE", true);
 			}
 
 			if(is_array($user_permission) && count($user_permission)) {
-				define("IS_LOGGED", $user_permission["ID"]);
+				//define("IS_LOGGED", $user_permission["ID"]);
 
 				if($start_session) {
 					//require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
@@ -677,14 +686,28 @@
 
 					$_SESSION[APPID . "user_permission"] 	= $user_permission;
 
-					define("MOD_SECURITY_SESSION_STARTED"	, true);
 				}
 			}
 		}
 		
 		return $user_permission;
-	}   
-    function cache_get_session($superadmin_user = null) {
+	}*/
+
+    function cache_get_session() {
+        static $session = null;
+
+        if($session === null) {
+            $session = Auth::check();
+
+            if(isset($session["status"]) && $session["status"] === "0") {
+                if(Auth::isAdmin()) {
+                    define("DISABLE_CACHE", true);
+                }
+            }
+        }
+    }
+/*
+	function cache_get_session_old($superadmin_user = null) {
         static $user_permission = null;
 
         if($user_permission === null) {
@@ -694,10 +717,12 @@
 				$user_permission = $_SESSION[APPID . "user_permission"];
 			} else {
 				//require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
-				if($_REQUEST[SESSION_NAME])
-					$sessid = $_REQUEST[SESSION_NAME];
-				if(!$sessid)
-					$sessid = $_COOKIE[SESSION_NAME];
+				if($_REQUEST[SESSION_NAME]) {
+                    $sessid = $_REQUEST[SESSION_NAME];
+                }
+				if(!$sessid) {
+                    $sessid = $_COOKIE[SESSION_NAME];
+                }
 
 				if($sessid)
 				{
@@ -718,17 +743,24 @@
 
 						$user_permission = $_SESSION[APPID . "user_permission"];
 					} else {
-						cache_token_destroy_session_cookie(SESSION_NAME);
+						cache_token_destroy_session_cookie_old(SESSION_NAME);
 					}
 				}
 
 				if(!count($user_permission)) {
-					$user_permission = cache_create_session_by_token();
+					$user_permission = cache_create_session_by_token_old();
 				}
 
 				if(count($user_permission)) {
-					if(!defined("IS_LOGGED") && $_SESSION[APPID . "UserNID"] != 2)
-						define("IS_LOGGED", $_SESSION[APPID . "UserNID"]);
+                    if($_COOKIE["group"] != $user_permission["group"]["name"]) {
+                        cache_session_share_for_subdomains();
+
+                        $sessionCookie = session_get_cookie_params();
+                        setcookie("group", $user_permission["group"]["name"], $sessionCookie['lifetime'], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure']);
+                    }
+
+					//if(!defined("IS_LOGGED") && $_SESSION[APPID . "UserNID"] != 2)
+					//	define("IS_LOGGED", $_SESSION[APPID . "UserNID"]);
 
 					if($superadmin_user === null) {
 						//require_once(FF_DISK_PATH . "/conf/gallery/config/admin.php");
@@ -748,7 +780,7 @@
 
         return $user_permission;
     }
-      
+      */
     function cache_get_locale_settings($user_permission = null) {
         static $arrLocale = null;
 
@@ -761,7 +793,7 @@
                 $arrLocale["country"]     = $user_permission["country"];
                 $arrLocale["rev"]         = $user_permission["rev"];
             } else {
-            	$arrLocale = cache_get_settings("locale");
+            	$arrLocale = Cms::getSchema("locale");
 			}
 			
 			if(is_array($arrLocale["lang"][LANGUAGE_DEFAULT])) {
@@ -781,7 +813,8 @@
         } else {
             //require_once(FF_DISK_PATH . "/conf/gallery/config/other.php");
 
-            $locale = cache_get_locale_settings($page["session"]);
+            //nelle api non serve il controllo di sessione
+            $locale = cache_get_locale_settings($page["api"] ? false :  $page["session"]);
 
             //recupero della lingua dai cookie
             if ($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest" && strlen($_COOKIE["lang"]))
@@ -879,12 +912,11 @@
 
                 require_once(FF_DISK_PATH . "/library/gallery/common/get_international_settings_path.php");
                 require_once(FF_DISK_PATH . "/library/gallery/common/normalize_url.php");
-                require_once(FF_DISK_PATH . "/library/gallery/common/write_notification.php");
                 require_once(FF_DISK_PATH . "/library/gallery/process/html_page_error.php");
                 
                 $res = get_international_settings_path($page["user_path"], FF_LOCALE);
 
-				cache_do_redirect(normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix));
+                Cms::redirect(normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix));
                 //cache_send_header_content(null, false, false, false);
                 //header('Location:' . normalize_url($res["url"], HIDE_EXT, true, $lang, $prefix), true, 301);
                 //exit;        
@@ -955,7 +987,6 @@
                     $get[$cookie_key] = $cookie_value;
             }
         }
-
         /**
         * GET
         */  
@@ -977,6 +1008,8 @@
                     if(is_array($req_value)) 
                         continue;
 
+
+
 /* assrde condizioni
 					if(!$arrRuleGet && !strlen($req_value))
 						continue;
@@ -984,8 +1017,8 @@
                     if(!$arrRuleGet && is_numeric($req_key) && !$req_value)
                         continue;
 */
-
-                    switch($req_key) {
+                    $req_key_filtered = str_replace("?", "", $req_key);
+                    switch($req_key_filtered) {
                     	case "_ffq_":
 						case "__nocache__":
 						case "__debug__":
@@ -998,7 +1031,7 @@
                         case "utm_campaign": 
                         case "utm_term": 
                         case "utm_content": 
-                            $res["get"]["gparams"][$req_key] = $req_value;
+                            $res["get"]["gparams"][$req_key_filtered] = $req_value;
 							unset($res["request"][$req_key]);
                             break;
                         case "q": 
@@ -1080,17 +1113,22 @@
                         case "lang":
                             break;
                         default:
-							if(isset($arrRuleGet[$req_key])) {
-								$res["get"]["search"]["available_terms"][$req_key] = $req_value;
-			                    $res["get"]["query"][$req_key] = $req_key . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key]);
-							} elseif($arrRuleGet[$req_key] === false) {
-								$res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($req_value);
-							} elseif(is_numeric($req_key) && !$req_value) {
-								$res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($req_value);
-							} elseif(!preg_match('/[^a-z\-0-9_\+]/i', $req_key)) {
-	                            $res["get"]["search"]["available_terms"][$req_key] = $req_value;
-	                            //$res["get"]["query"][$req_key] = $req_key . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key]);
-	                            $res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key]);
+                            if($req_key != $req_key_filtered) {
+                                $res["get"]["invalid"][$req_key] = $req_key . "=" . urlencode($req_value);
+                                unset($res["request"][$req_key]);
+                            } elseif(isset($arrRuleGet[$req_key_filtered])) {
+								$res["get"]["search"]["available_terms"][$req_key_filtered] = $req_value;
+			                    $res["get"]["query"][$req_key_filtered] = $req_key_filtered . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key_filtered]);
+//                            } elseif($req_key != $req_key_filtered) {
+//                                $res["get"]["invalid"][$req_key_filtered] = $req_key . "=" . urlencode($req_value);
+							} elseif($arrRuleGet[$req_key_filtered] === false) {
+								$res["get"]["invalid"][$req_key_filtered] = $req_key_filtered . "=" . urlencode($req_value);
+							} elseif(is_numeric($req_key_filtered) && !$req_value) {
+								$res["get"]["invalid"][$req_key_filtered] = $req_key_filtered . "=" . urlencode($req_value);
+							} elseif(!preg_match('/[^a-z\-0-9_\+]/i', $req_key_filtered)) {
+	                            $res["get"]["search"]["available_terms"][$req_key_filtered] = $req_value;
+	                            //$res["get"]["query"][$req_key_filtered] = $req_key_filtered . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key_filtered]);
+	                            $res["get"]["invalid"][$req_key_filtered] = $req_key_filtered . "=" . urlencode($res["get"]["search"]["available_terms"][$req_key_filtered]);
 	                        }
                     }
                 }
@@ -1115,13 +1153,14 @@
             //ricava la query valida
             if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {
                 if(!(defined("DEBUG_MODE") && (isset($get["__nocache__"]) || isset($get["__debug__"]) || isset($get["__query__"])))) {
+                    $res["valid"] = (is_array($res["get"]["query"]) && count($res["get"]["query"])
+                        ? "?" . implode("&", $res["get"]["query"])
+                        : ""
+                    );
                     if(is_array($res["get"]["invalid"]) && count($res["get"]["invalid"])
                         || ($rule["get"] === false && count($get) != count($res["get"]["query"]))
                     ) {
-                        $res["valid"] = (is_array($res["get"]["query"]) && count($res["get"]["query"])
-                            ? "?" . implode("&", $res["get"]["query"])
-                            : ""
-                        );
+                        $res["redirect"] = true;
                     }
                 }
             }
@@ -1505,14 +1544,16 @@
 
     function cache_set_error_document($cache_error_path, $params)
     {
-        $arrUserPath = explode("/", $params["user_path"]);
-        $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1]; // . ".php";
-        $key = $params["user_path"];
+        if($params["user_path"] && $params["user_path"] != "/") {
+            $arrUserPath = explode("/", $params["user_path"]);
+            $errorDocumentFile = $cache_error_path . "/" . $arrUserPath[1]; // . ".php";
+            $key = $params["user_path"];
 
-        //require_once (FF_DISK_PATH . "/library/gallery/models/filemanager/Filemanager.php");
-        $fs = new Filemanager("php");
+            //require_once (FF_DISK_PATH . "/library/gallery/models/filemanager/Filemanager.php");
+            $fs = new Filemanager("php");
 
-        return $fs->delete($key, $errorDocumentFile, Filemanager::SEARCH_IN_VALUE);
+            return $fs->delete($key, $errorDocumentFile, Filemanager::SEARCH_IN_VALUE);
+        }
     }
 
 
@@ -1743,10 +1784,9 @@
                      return false;
              }*/
             //define("CACHE_PAGE_STORING_PATH", $cache_file["cache_path"] . "/" . $cache_file["filename"]);
-            if(!$cache_file["is_error_document"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
-                require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
-                system_trace("pageview");
-            }
+            /*if(!$cache_file["is_error_document"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
+                Stats::getInstance("trace")->write();
+            }*/
 
             $enable_etag = $lang . "_". $group;
 
@@ -1758,7 +1798,7 @@
                 $expires = false;
                 $max_age = false;
                 $enable_etag = false;
-            } elseif(defined("IS_LOGGED")) {
+            } elseif(Auth::isLogged()) {
                 $expires = null;
                 $max_age = 3;
             } else {
@@ -1796,50 +1836,32 @@
             cache_send_header($target_file, $cache_file["type"], $compress, $max_age, $expires, $enable_etag);
             readfile($target_file);
 
-			if(DEBUG_PROFILING === true)
-				Stats::benchmark("Cache lvl 1 (in cache)");
+//			if(DEBUG_PROFILING === true)
+//                Cms::getInstance("debug")->benchmark("Cache lvl 1 (in cache)");
 
             exit;
         }
 
         return false;
     }
-    function cache_get_path($page, $user_permission = null) {
+    function cache_get_path($page) {
         $cache_path = false;
 
         if($page["cache"]) {
-            if($user_permission === null && $page["session"] !== false)
-                $user_permission = cache_get_session();
-
-			$gid = ($user_permission["primary_gid_name"]
-				? $user_permission["primary_gid_name"]
-				: $user_permission["primary_gid_default_name"]
-			);
-			if(!$gid)
-				$gid = "guests";
-
-			if($_COOKIE["group"] != $gid) {
-				cache_session_share_for_subdomains();
-
-				$sessionCookie = session_get_cookie_params();
-				setcookie("group", $gid, $sessionCookie['lifetime'], $sessionCookie['path'], $sessionCookie['domain'], $sessionCookie['secure']);
-			}
-
             if($page["cache"] === "guest") {
                 $cache_path = "/global";
 			} else {
-                if(defined("IS_LOGGED") && is_array($user_permission) && count($user_permission)) {
+                if(Auth::isLogged() && $page["session"] !== false) {
+                    $user = Auth::get("user");
+
                     if($page["cache"] === "user") {
-                        $auth_path = ($user_permission["username_slug"]
-							? $user_permission["username_slug"]
-							: preg_replace("/[^a-z\-0-9]/i", "", $user_permission["username"])
+                        $auth_path = ($user->username_slug
+							? $user->username_slug
+							: preg_replace("/[^a-z\-0-9]/i", "", $user->username)
 						);
                         $cache_path = "/private";
                     } else {
-                        $auth_path = ($user_permission["primary_gid_name"]
-                            ? $user_permission["primary_gid_name"]
-                            : $user_permission["primary_gid_default_name"]
-                        );
+                        $auth_path = $user->acl_primary;
                     }
                 }
                                 
@@ -1854,7 +1876,7 @@
                 ? ""
                 : "/" . $auth_path
             );
-            
+
             /*
             switch($page["cache"]) {
                 case "guest":    
@@ -1902,9 +1924,9 @@
     
     function cache_sem_get_params($namespace = null, $xhr = null) {
     	//require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
-    	if(!defined("APPID_SEM")) 
-    		define("APPID_SEM", substr(preg_replace("/[^0-9 ]/", '', APPID), 0, 4));
-		
+    	if(!defined("APPID_SEM")) {
+            define("APPID_SEM", substr(crc32(APPID), 0, 4));
+        }
 		$max = 1;
 		$remove = false;
 		if($xhr === null)
@@ -1941,10 +1963,12 @@
     }
     
      function cache_sem($namespace = null, $nowait = false, $max = null) {
-     	$acquired = true;
-     	if(defined("DISABLE_CACHE")) 
-			return array("acquired" => true); //nn funziona    
+         //return array("acquired" => true); //nn funziona
 
+     	$acquired = true;
+     	if($_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"] || defined("DISABLE_CACHE") || DEBUG_MODE === true) {
+            return array("acquired" => true); //nn funziona
+        }
 		if(function_exists("sem_get")) {
 			if(/*defined("DEBUG_MODE") &&*/ isset($_REQUEST["__nocache__"])) {
 				cache_sem_remove($namespace);
@@ -1967,7 +1991,7 @@
 						, "max" => $max
 						, "key" => $params["key"]
 						, "remove" => $params["remove"]
-					), true), "log_sem");						
+					), true), "sem");
 				} else {
 					cache_sem_remove($namespace);
 					Cache::log($namespace . " ERROR: " . print_r(error_get_last(), true), "log_error_sem");
@@ -1992,7 +2016,7 @@
     					if($sem["remove"] && $released !== false) 
 					    	$removed = @sem_remove($sem["res"]);
 
-						Cache::log("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "log_sem");
+						Cache::log("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "sem");
 
 					    unset($arrSem[$key]);
 					}
@@ -2007,14 +2031,14 @@
 			$sem = @sem_get($params["key"]);
 			if($sem) {
 				$is_removed = @sem_remove($sem);
-				Cache::log("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+				Cache::log("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 			}
 			if($namespace != "create") {
 				$params = cache_sem_get_params("create");
 				$sem = @sem_get($params["key"]);	
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 			}
 			if($namespace != "update") {
@@ -2022,7 +2046,7 @@
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 			}
 			if($namespace) {
@@ -2030,14 +2054,14 @@
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 
 				$params = cache_sem_get_params(null, true);	
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 			}
 		}
@@ -2055,7 +2079,7 @@
 
     function cache_check_allowed_path($path_info, $do_redirect = true)
     {
-        $schema = cache_get_settings();
+        $schema = Cms::getSchema();
 
         if(is_array($schema["error"]["rules"]) && count($schema["error"]["rules"]))
         {
@@ -2076,7 +2100,7 @@
                         if(strpos($src, "(") !== false && strpos($action, "$") !== false)
                             $redirect = preg_replace("#" . $src . "#i", $action, $path_info);
 
-						cache_do_redirect($_SERVER["HTTP_HOST"] . $redirect);
+                        Cms::redirect($_SERVER["HTTP_HOST"] . $redirect);
                     }
                 }
             }
@@ -2084,32 +2108,7 @@
 
         return $path_info;
     }
-/*****************************************************************
- * REDIRECT
- *****************************************************************/
-/**
- * @param $destination
- * @param null $http_response_code
- * @param null $request_uri
- */
-function cache_do_redirect($destination, $http_response_code = null, $request_uri = null)
-{
-	if($http_response_code === null)
-		$http_response_code = 301;
-	if($request_uri === null)
-		$request_uri = $_SERVER["REQUEST_URI"];
 
-	//system_trace_url_referer($_SERVER["HTTP_HOST"] . $request_uri, $arrDestination["dst"]);
-	Cache::log(" REDIRECT: " . $destination . " FROM: " . $request_uri . " REFERER: " . $_SERVER["HTTP_REFERER"], "log_redirect");
-
-	cache_send_header_content(false, false, false, false);
-
-	if(strpos($destination, "/") !== 0)
-		$destination = "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $destination;
-
-	header("Location: " . $destination, true, $http_response_code);
-	exit;
-}
 /**
  * @param $path_info
  * @param null $query
@@ -2127,12 +2126,12 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 	if(strlen($query))
 		$request_uri .= "?" . $query;
 
-	if(is_file(CM_CACHE_PATH . "/redirect/" . $hostname . ".php")) {
-		require(CM_CACHE_PATH . "/redirect/" . $hostname . ".php");
+	if(is_file(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php")) {
+		require(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php");
 
 		/** @var include $r */
 		if($r[$request_uri]) {
-			cache_do_redirect($r[$request_uri]["dst"], $r[$request_uri]["code"]);
+            Cms::redirect($r[$request_uri]["dst"], $r[$request_uri]["code"]);
 		}
 	}
 }
@@ -2150,6 +2149,8 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 			
 			$init = true;
         }
+
+        /*
 		$fftmp_ffq = false;
 		if (isset($_REQUEST["_ffq_"])) // used to manage .htaccess [QSA] option, this overwhelm other options
 		{
@@ -2210,26 +2211,29 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 			unset($fftmp_requri_parts);
 		}
 
-
-        if($save_path) {
+*/
+        /*if($save_path) {
             $path_info = $save_path;
         } else {
             $path_info = cache_check_allowed_path($_SERVER["PATH_INFO"]);
-        }
+        }*/
+
+        $path_info = $_SERVER["PATH_INFO"];
 
         $cache_params = cache_get_path(cache_get_page_properties($path_info));
+
 		if(is_array($cache_params)) { //da verificare il nocache
-            $schema = cache_get_settings();
+            $schema = Cms::getSchema();
 
             $rule["path"] = $cache_params["user_path"];
 
-	        if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") 
-	            $rule["path"] = $cache_params["strip_path"] . $rule["path"];
-
+	        if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
+                $rule["path"] = $cache_params["strip_path"] . $rule["path"];
+            }
 	        $request_path = rtrim($cache_params["alias"] . $rule["path"], "/");
-	        if(!$request_path)
-	        	$request_path = "/";
-
+	        if(!$request_path) {
+                $request_path = "/";
+            }
 			$rule["split_path"] = explode("/", $request_path);
 	        if(isset($schema["request"][$request_path])) {
             	$rule["match"] = $schema["request"][$request_path];
@@ -2248,38 +2252,37 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 			    } while($request_path != DIRECTORY_SEPARATOR); //todo: DS check
 			}
 
-			if($rule["match"]["ext"] && is_array($schema["request"][$rule["match"]["ext"]]))
-				$rule["match"] = array_merge_recursive($schema["request"][$rule["match"]["ext"]], $rule["match"]);
-			
-	        $request = cache_get_request($_GET, $_POST, $rule["match"]);
+			if($rule["match"]["ext"] && is_array($schema["request"][$rule["match"]["ext"]])) {
+                $rule["match"] = array_merge_recursive($schema["request"][$rule["match"]["ext"]], $rule["match"]);
+            }
+	        /*$request = cache_get_request($_GET, $_POST, $rule["match"]);
 	        if($request["nocache"]) {
 	            $cache_params = false;
-	        } elseif(isset($request["valid"])) { 
+	        } elseif(isset($request["redirect"])) {
 	            $path_info = $_SERVER["PATH_INFO"];
-	            if($path_info == "/index")
-	                $path_info = "";
-
-				cache_do_redirect($_SERVER["HTTP_HOST"] . $path_info . $request["valid"]);
+	            if($path_info == "/index") {
+                    $path_info = "";
+                }
+                Cms::redirect($_SERVER["HTTP_HOST"] . $path_info . $request["valid"]);
 	        }
 			//necessario XHR perche le request a servizi esterni path del domain alias non triggerano piu			
 	        if(!$save_path && $cache_params["redirect"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {// Evita pagine duplicate quando i link vengono gestiti dagli alias o altro
-				cache_do_redirect($cache_params["redirect"] . $request["valid"]);
-			}
+                Cms::redirect($cache_params["redirect"] . $request["valid"]);
+			}*/
 		}
-
 		//Gestisce gli errori delle pagine provenienti da apachee con errorDocument nell'.htaccess
 		if($cache_params === true) {
 			cache_send_header_content(null, false, false, false);
 			if($_SERVER["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest") {
                 cache_http_response_code(500);
 			} else {
-				$cache_media["url"] = "/media";
-				$cache_media["path"] = "/cache/_thumb";
-				$cache_media["theme_dir"] = "/themes";
+				//$cache_media["url"] = "/media";
+				//$cache_media["path"] = ffMedia::STORING_SITE_PATH;
+				//$cache_media["theme_dir"] = "/themes";
 				$cache_media["theme"] = "site";
 
 				if(strpos($_SERVER["REQUEST_URI"], $cache_media["url"]) === 0) {
-					cache_do_redirect(str_replace("/media", $_SERVER["HTTP_HOST"] . "/cm/showfiles.php", $_SERVER["REQUEST_URI"]), 307);
+                    Cms::redirect(str_replace("/media", $_SERVER["HTTP_HOST"] . "/cm/showfiles.php", $_SERVER["REQUEST_URI"]), 307);
 				}
 
                 cache_http_response_code(404);
@@ -2305,11 +2308,11 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
             if($cache_file["is_error_document"] && !$cache_file["noexistfileerror"] && $cache_file["noexistfile"]) {
                 $cache_file["invalid"] = false;
                 $cache_file["filename"] = "index";
-                if($cache_file["compress"])
+                if($cache_file["compress"]) {
                     $cache_file["primary"] = "index.gz";
-                else
+                } else {
                     $cache_file["primary"] = "index.html";
-
+                }
                 $cache_file["gzip"] = "index.gz";
             } elseif($cache_file["noexistfile"]) {
                 $arrSem[] = cache_sem($cache_file["cache_path"]);
@@ -2348,7 +2351,7 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
                 $cache_exit = true;
             }
         }
-
+//set_time_limit(15);
         if($save_path) {
             // cache_sem_release($arrSem);
             return array(
@@ -2393,7 +2396,16 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
                 if(!count($arrSem))
                     $arrSem[] = cache_sem();
 
-                return false;
+                return array(
+                    "file" => $cache_file
+                    , "user_path" => $path_info
+                    , "params" => $cache_params
+                    , "request" => $request
+                    , "ff_count" => $ff_contents["count"]
+                    , "sem" => &$arrSem
+                );
+
+                //return false;
             }
         }
 
@@ -2423,6 +2435,9 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 
             cache_parse($cache_file, $cache_params["lang"], $cache_params["auth"], $request["get"]);
         }
+
+
+
     }
 /*
 function cache_writeLog($string, $filename = "log") {

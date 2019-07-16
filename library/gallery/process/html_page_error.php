@@ -114,10 +114,10 @@ function process_html_notify($type, $title = null, $message = null, $params = nu
     $tpl_data["custom"] = $framework_css["template"];
     $tpl_data["base"] = $static_page;
 
-    $tpl_data["result"] = get_template_cascading("/", $tpl_data);		
-
+    $tpl_data["result"] = get_template_cascading("/", $tpl_data);
  	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-    $tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+    //$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
 /*    		
     $tpl_data = get_template_cascading("/", $framework_css["template"]);
@@ -134,13 +134,13 @@ function process_html_notify($type, $title = null, $message = null, $params = nu
 	$tpl->set_var("domain_inset", DOMAIN_INSET);
 	$tpl->set_var("language_inset", LANGUAGE_INSET);
 
-	$tpl->set_var("container_class", cm_getClassByDef($framework_css["container"]));
-	$tpl->set_var("inner_class", cm_getClassByDef($framework_css["inner"]));
+	$tpl->set_var("container_class", Cms::getInstance("frameworkcss")->getClass($framework_css["container"]));
+	$tpl->set_var("inner_class", Cms::getInstance("frameworkcss")->getClass($framework_css["inner"]));
 	
 	if($framework_css["image"]) {
-		$tpl->set_var("image_class", cm_getClassByDef($framework_css["image"]));
+		$tpl->set_var("image_class", Cms::getInstance("frameworkcss")->getClass($framework_css["image"]));
 		if($framework_css["icon"]) {
-			$image = cm_getClassByFrameworkCss($framework_css["icon"]["name"], "icon-tag", $framework_css["icon"]["params"]);
+			$image = Cms::getInstance("frameworkcss")->get($framework_css["icon"]["name"], "icon-tag", $framework_css["icon"]["params"]);
 		} else {
 			$image = '<img src="' . FF_SITE_PATH . '/themes/' . THEME_INSET . '/images/error-pages/' . http_response_code() . '.png" />';
 		}
@@ -149,7 +149,7 @@ function process_html_notify($type, $title = null, $message = null, $params = nu
 	}
 
 	if($framework_css["content"]) {
-		$tpl->set_var("content_class", cm_getClassByDef($framework_css["content"]));
+		$tpl->set_var("content_class", Cms::getInstance("frameworkcss")->getClass($framework_css["content"]));
 		$tpl->set_var("error_title", $title);
 		$tpl->set_var("error_description", $message);
 

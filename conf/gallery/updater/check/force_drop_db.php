@@ -40,8 +40,8 @@
   );
   $db_drop_prefix = array();
   
-  require_once(ffCommon_dirname(__FILE__) . "/manifesto.php");
-  require(ffCommon_dirname(__FILE__) . "/exclude_fs.php");
+  require_once(__DIR__ . "/manifesto.php");
+  require(__DIR__ . "/exclude_fs.php");
    /* $fs_external = array();    
     $sSQL = "SELECT updater_externals.path
                 , updater_externals.status 

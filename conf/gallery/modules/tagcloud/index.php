@@ -7,7 +7,7 @@ $sSQL = "SELECT search_tags_page.*
                             ORDER BY search_tags_page.smart_url";
 $db_gallery->query($sSQL);
 if($db_gallery->nextRecord()) {
-    $tpl = ffTemplate::factory(get_template_cascading($user_path, "tagcloud.html", "/modules/tagcloud", ffCommon_dirname(__FILE__)));
+    $tpl = ffTemplate::factory(get_template_cascading($user_path, "tagcloud.html", "/modules/tagcloud", __DIR__));
     $tpl->load_file("tagcloud.html", "main");
 
     $tpl->set_var("site_path", FF_SITE_PATH);

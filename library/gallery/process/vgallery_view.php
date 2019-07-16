@@ -33,6 +33,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
     $arrJsRequest = array();
     
     $layout["unic_id"] = $layout["prefix"] . $layout["ID"];
+    $unic_id = $layout["prefix"] . $layout["ID"];
     if($layout["unic_id"])
         $layout["unic_id"] .= "V";
 
@@ -149,16 +150,19 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
     {
         /**
         * Load Template
-        */   
-        $tpl_data = array( 
-            "custom" => $vg_father["template"]["custom_name"] . $vg_father["template"]["suffix"] . ".html"
+        */
+
+        $tpl_data = array(
+            "id" => $unic_id
+            , "custom" => $vg_father["template"]["custom_name"] . $vg_father["template"]["suffix"] . ".html"
             , "base" => strtolower($vg_father["template"]["name"]) . $vg_father["template"]["suffix"] . ".html"
             , "is_html" => true
         );
         $tpl_data["result"] = get_template_cascading($vg_father["user_path"], $tpl_data, $vg_father["template"]["path"]);
 
         $tpl_data["obj"] = ffTemplate::factory($tpl_data["result"]["path"]);
-        $tpl_data["obj"]->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   	
+        //$tpl_data["obj"]->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+        $tpl_data["obj"]->load_file($tpl_data["result"]["name"], "main");
 
         /**
         * Load Fields by Type
@@ -191,6 +195,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
         $vg = process_vgallery_node($vg_father, $layout_settings, $vg_field);
         if (is_array($vg)) 
         {
+            $count_field_per_row_empty = 0;
             $count_files = 0;
             
             $switch_style = false;
@@ -220,7 +225,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                     $block["class"]["group"] = ffCommon_url_rewrite($params["group"]["name"]);
                 }
                 
-                if($vg_father_params["ref"] === null && $vg_father_params["ID_cart_detail"] === null && !($vg_father["enable_ecommerce"] && AREA_SHOW_ECOMMERCE) && USE_CART_PUBLIC_MONO && $vg_father["is_wishlisted"]) {
+                if($vg_father_params["ref"] === null && $vg_father_params["ID_cart_detail"] === null && !($vg_father["enable_ecommerce"] && Cms::env("AREA_SHOW_ECOMMERCE")) && Cms::env("USE_CART_PUBLIC_MONO") && $vg_father["is_wishlisted"]) {
                     $block["class"]["wishlist"] = "wishlisted";
                 }
                 
@@ -252,7 +257,8 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                 */
                 $count = array();
                 foreach($vg["data"] AS $vg_data_key => $vg_data_value) 
-                {    
+                {
+                    $is_dir = $vg_data_value["is_dir"];
                     //old
                     //$globals->cache["data_blocks"]["VV" . $vg_father["ID_vgallery"] . "-" . $vg_father["ID_node"] . "-" . $params["group"]["ID"]] = $vg_father["ID_node"];
                     set_cache_data("V", $vg_data_value["ID"] . ($vg_father["group"]["ID"] ? "-" . $vg_father["group"]["ID"] : ""),  $vg_father["settings_prefix"] . $vg_father["ID_vgallery"]);
@@ -322,19 +328,6 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                         $count_files++;
                         $col++;                
                     }
-                    /*
-                    if ($vg_father["enable_date"]) 
-                    {
-                        $file_time = new ffData($vg_data_value["last_update"], "Timestamp", FF_SYSTEM_LOCALE);
-                        $file_time = $file_time->getValue("Date", LANGUAGE_INSET);
-                        $tpl_data["obj"]->set_var("last_update", $file_time ? ffCommon_specialchars($file_time) : ffTemplate::_get_word_by_code("date_format_unknow"));
-
-                        $count_field++;
-                        
-                        $tpl_data["obj"]->parse("SezVGalleryDate", false);
-                    } else {
-                        $tpl_data["obj"]->set_var("SezVGalleryDate", "");
-                    }  */
 
                     /**
                     * Class and ID for each Items
@@ -343,44 +336,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                         $block["class"] = array_replace($block["class"], $params_fields["htmltag"]["class"]);
 
                     $block["properties"] = $params_fields["htmltag"]["properties"];
-                    
-    /*                $tpl_data["obj"]->set_var("real_name", preg_replace('/[^a-zA-Z0-9]/', '', $vg_father["unic_id"] . $vg_data_value["name"]));
 
-                    $item_class = $params_fields["htmltag"]["class"];
-                    $item_properties = $params_fields["htmltag"]["properties"];
-
-                    if($vg_father["template"]["framework"]) 
-                    {
-                        $item_class = array_replace($item_class, $vg_father["template"]["class"]);
-                        $item_class["lvl"] = "vgc" . $col;
-                        
-                        if($vg_father["template"]["wrap"]["row"] !== false) {
-                            $item_class["switch"] = ($switch_style 
-                                                        ? "odd"
-                                                        : "even"
-                                                    );
-
-                            $switch_style = !$switch_style;
-                        }
-                    } else {
-                        $item_class["lvl"] = "vgallery_col" . $col;
-                    }
-                    
-                    $item_class["type"] = preg_replace('/[^a-zA-Z0-9]/', '', $vg_data_value["type"]);
-                    
-                    if($vg_data_value["highlight"])
-                        $item_class["highlight"] = "highlight";
-                    
-                    if($vg_father["wishlist"] === null && !($vg_father["enable_ecommerce"] && AREA_SHOW_ECOMMERCE) && USE_CART_PUBLIC_MONO && $vg_data_value["is_wishlisted"])
-                        $item_class["wishlist"] = "wishlisted";
-                    
-                    if($count_files == count($vg["data"]))
-                        $item_class["row_end"] = "end";*/
-
-                        
-                        
-                    //$str_item_class = implode(" ", array_filter($item_class));
-                   // $tpl_data["obj"]->set_var("col_class", $str_item_class);
 
                     if($tpl_data["is_html"] && $tpl_data["result"]["type"] != "custom") {
                         if($count["total_img"]) {
@@ -426,7 +382,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                     if($vg_father["is_custom_template"]) {
                         $tpl_data["obj"]->set_var("error", $strError);
                     } else {
-                    	$tpl_data["obj"]->set_var("error_class", cm_getClassByFrameworkCss("danger", "callout", "error"));
+                    	$tpl_data["obj"]->set_var("error_class", Cms::getInstance("frameworkcss")->get("danger", "callout", "error"));
                         $tpl_data["obj"]->set_var("strError", $strError);
                         $tpl_data["obj"]->parse("SezError", false);
                     }
@@ -437,13 +393,13 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                         if($vg_father["is_custom_template"]) {
                             $tpl_data["obj"]->set_var("error", implode("<br />", array_filter($vg_father["warning"])));
                         } else {
-                        	$tpl_data["obj"]->set_var("error_class", cm_getClassByFrameworkCss("warning", "callout", "warning"));
+                        	$tpl_data["obj"]->set_var("error_class", Cms::getInstance("frameworkcss")->get("warning", "callout", "warning"));
                             $tpl_data["obj"]->set_var("strError", implode("<br />", array_filter($vg_father["warning"])));
                             $tpl_data["obj"]->parse("SezError", false);
                         }
                     }
 
-                    if($layout_settings["AREA_VGALLERY_PREVIEW_SHOW_HORIZNAV"]) 
+                    if($layout_settings["AREA_VGALLERY_PREVIEW_SHOW_HORIZNAV"] && !$is_dir)
                     {
                         $db = ffDB_Sql::factory();
                         if(OLD_VGALLERY) {
@@ -460,7 +416,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                                                 AND vgallery_fields.ID_type = (SELECT vgallery_type.ID FROM vgallery_type WHERE vgallery_type.name = 'system')
                                                 AND vgallery_rel_nodes_fields.uid = IF(vgallery_rel_nodes_fields.`nodes` = ''
                                                     , 0
-                                                    , " . $db->toSql((get_session("UserID") == MOD_SEC_GUEST_USER_NAME ? "0" : get_session("UserNID")), "Number") . "
+                                                    , " . $db->toSql((Auth::isGuest() ? "0" : Auth::get("user")->id), "Number") . "
                                                 )
                                                 AND vgallery_rel_nodes_fields.ID_lang =  " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
                                             LIMIT 1
@@ -488,7 +444,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                                         [find_next_prev_select]
                                         FROM (
                                             SELECT vgallery_nodes.ID
-                                            , (" . ($enable_user_sort
+                                            , (" . ($vg_father_params["enable_user_sort"]
                                                 ? "SELECT IF(vgallery_rel_nodes_fields.description_text = ''
                                                             , vgallery_rel_nodes_fields.description
                                                             , vgallery_rel_nodes_fields.description_text
@@ -496,11 +452,11 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                                                     FROM vgallery_rel_nodes_fields
                                                         INNER JOIN vgallery_fields ON vgallery_fields.ID = vgallery_rel_nodes_fields.ID_fields 
                                                     WHERE vgallery_rel_nodes_fields.ID_nodes = vgallery_nodes.ID
-                                                        AND vgallery_fields.name = " .  $db->toSql($sort, "Text") . "
+                                                        AND vgallery_fields.ID = " .  $db->toSql($vg_father["sort_default"], "Number") . "
                                                         AND vgallery_fields.ID_type = vgallery_nodes.ID_type
                                                         AND vgallery_rel_nodes_fields.uid = IF(vgallery_rel_nodes_fields.`nodes` = ''
                                                             , 0
-                                                            , " . $db->toSql((get_session("UserID") == MOD_SEC_GUEST_USER_NAME ? "0" : get_session("UserNID")), "Number") . "
+                                                            , " . $db->toSql((Auth::isGuest() ? "0" : Auth::get("user")->id), "Number") . "
                                                         )
                                                         AND vgallery_rel_nodes_fields.ID_lang = IF(vgallery_fields.disable_multilang > 0, " . $db->toSql(LANGUAGE_DEFAULT_ID, "Number") . ", " . $db->toSql(LANGUAGE_INSET_ID, "Number") . ")
                                                     LIMIT 1
@@ -516,7 +472,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                                                         AND vgallery_fields.ID_type = vgallery_nodes.ID_type
                                                         AND vgallery_rel_nodes_fields.uid = IF(vgallery_rel_nodes_fields.`nodes` = ''
                                                             , 0
-                                                            , " . $db->toSql((get_session("UserID") == MOD_SEC_GUEST_USER_NAME ? "0" : get_session("UserNID")), "Number") . "
+                                                            , " . $db->toSql((Auth::isGuest() ? "0" : Auth::get("user")->id), "Number") . "
                                                         )
                                                         AND vgallery_rel_nodes_fields.ID_lang = IF(vgallery_fields.disable_multilang > 0, " . $db->toSql(LANGUAGE_DEFAULT_ID, "Number") . ", " . $db->toSql(LANGUAGE_INSET_ID, "Number") . ")
                                                     LIMIT 1
@@ -534,7 +490,7 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
                                                     ? " vgallery_nodes.parent, "
                                                     : ""
                                                 ) .
-                                                ($enable_user_sort
+                                                ($vg_father_params["enable_user_sort"]
                                                     ? "actual_sort " . $vg_father["sort_method"]
                                                     : "vgallery_nodes.`order`, " . ($layout_settings["AREA_VGALLERY_ORDER_LIST_BY_TITLE"] 
                                                                                         ? "actual_sort " . $vg_father["sort_method"]
@@ -599,10 +555,6 @@ function process_vgallery_view($user_path, $vgallery_name, $params = null, &$lay
             }
         }
         if($count_files) {
-        	if($vg_father["search"]["encoded_params"]) {
-        		$globals->user_path_params = "?" . $vg_father["search"]["encoded_params"];
-			}
-
             $buffer = $tpl_data["obj"]->rpparse("main", false);
 		} else {
             return null;

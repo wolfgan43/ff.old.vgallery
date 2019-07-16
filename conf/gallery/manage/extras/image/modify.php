@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_PROPERTIES_SHOW_MODIFY) {
+if (!Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -203,24 +203,7 @@ $oField->multi_pairs = array (
                        );
 $oField->default_value = new ffData($file_properties["format"], "Text");
 $oField->required = true;
-if(!CM_SHOWFILES_OPTIMIZE)
-	$oField->setWidthComponent(6);
-$oRecord->addContent($oField, "image");   
-
-if(!CM_SHOWFILES_OPTIMIZE) {
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "format_jpg_quality";
-	$oField->label = ffTemplate::_get_word_by_code("extras_image_modify_jpg_quality");
-	$oField->base_type = "Number";
-	$oField->default_value = new ffData($file_properties["format_jpg_quality"], "Number");
-	$oField->required = true;
-	$oField->widget = "slider";
-	$oField->min_val = "0";
-	$oField->max_val = "100";
-	$oField->step = "5";
-	$oField->setWidthComponent(6);
-	$oRecord->addContent($oField, "image");
-}
+$oRecord->addContent($oField, "image");
 
 $oRecord->addTab("watermarkimage");
 $oRecord->setTabTitle("watermarkimage", ffTemplate::_get_word_by_code("extras_image_modify_watermarkimage"));
@@ -238,18 +221,18 @@ $oField->label = ffTemplate::_get_word_by_code("extras_image_modify_image_cover"
 $oField->base_type = "Text";
 $oField->extended_type = "File";
 $oField->control_type = "file";
-$oField->file_storing_path = DISK_UPDIR . "/watermarks";
-$oField->file_temp_path = DISK_UPDIR . "/watermarks";
-$oField->file_max_size = MAX_UPLOAD;
+$oField->file_storing_path = FF_DISK_UPDIR . "/watermarks";
+$oField->file_temp_path = FF_DISK_UPDIR . "/watermarks";
+$oField->file_max_size = Auth::env("MAX_UPLOAD");
 $oField->file_show_filename = true; 
 $oField->file_full_path = false;
 $oField->file_check_exist = false;
 $oField->file_normalize = true;
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/watermarks/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/watermarks/[_FILENAME_]";
-$oField->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/watermarks/[_FILENAME_]";
-$oField->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/watermarks/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/watermarks/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/thumb/watermarks/[_FILENAME_]";
+$oField->file_temp_view_url = CM_SHOWFILES . "/watermarks/[_FILENAME_]";
+$oField->file_temp_preview_url = CM_SHOWFILES . "/thumb/watermarks/[_FILENAME_]";
 $oField->widget = "uploadify";
 if(check_function("set_field_uploader")) { 
 	$oField = set_field_uploader($oField);
@@ -439,9 +422,9 @@ $oField->default_value = new ffData("0", "Number");
 $oField->widget = "spinner";
 $oRecord->addContent($oField, "advanced");
 
-$item_value[] = array(new ffData(FF_THEME_DIR . "/" . THEME_INSET . "/images/spacer.gif"), new ffData("spacer"));
+//$item_value[] = array(new ffData(FF_THEME_DIR . "/" . THEME_INSET . "/images/spacer.gif"), new ffData("spacer"));
 
-$icon_file = glob(FF_DISK_PATH . FF_THEME_DIR . "/" . THEME_INSET . "/images/icons/" . THEME_ICO . "/thumb/*");
+$icon_file = glob(ffMedia::getIconPath(false) . "/*");
 if(is_array($icon_file) && count($icon_file)) {
     foreach($icon_file AS $real_file) {
         if(is_file($real_file)) {
@@ -560,16 +543,11 @@ function ExtrasImageModify_on_done_action($component, $action) {
                     ";
         $db->execute($sSQL);
 		
-		if (FF_ENABLE_MEM_SHOWFILES_CACHING) {
-			ffCache::getInstance(CM_CACHE_ADAPTER)->clear("__showfiles_modes__");
-		}
-		
-		if(CM_SHOWFILES_THUMB_IN_CACHE) {
-			$relative_path = "/cache/" . CM_SHOWFILES_THUMB_PATH;
-			
-			if(check_function("fs_operation"))
-        		xpurge_dir($relative_path);
-		}
+        ffCache::getInstance()->clear("/cm/showfiles/modes");
+
+        $relative_path = ffMedia::STORING_SITE_PATH;
+
+        if(check_function("fs_operation"))
+            xpurge_dir($relative_path);
     }
 }
-?>

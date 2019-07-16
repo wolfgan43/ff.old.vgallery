@@ -59,10 +59,17 @@
 				}
 			}
 
+            if (is_file(FF_DISK_PATH . "/library/" . THEME_INSET . "/settings." . FF_PHP_EXT)) {
+                require(FF_DISK_PATH . "/library/" . THEME_INSET . "/settings." . FF_PHP_EXT);
+                if (is_array($schema))
+                    $loaded_schema["schema"] = array_replace_recursive($loaded_schema["schema"], $schema);
+            }
+
 			if (is_file(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/settings." . FF_PHP_EXT)) {
 				require(FF_THEME_DISK_PATH . "/" . FRONTEND_THEME . "/settings." . FF_PHP_EXT);
-				if (is_array($schema))
-					$loaded_schema["schema"] = array_replace_recursive($loaded_schema["schema"], $schema);
+				if (is_array($schema)) {
+                    $loaded_schema["schema"] = array_replace_recursive($loaded_schema["schema"], $schema);
+                }
 			}
 
 			/** @var include $settings_schema */

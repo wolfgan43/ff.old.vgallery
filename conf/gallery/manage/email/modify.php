@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_EMAIL_SHOW_MODIFY) {
+if (!Auth::env("AREA_EMAIL_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -62,6 +62,8 @@ $oField->actex_dialog_edit_params = array("keys[path]" => null);
 $oField->actex_dialog_delete_url = $oField->actex_dialog_url . "&frmAction=EmailTemplateModify_confirmdelete";
 //$oField->resources[] = "EmailTemplateModify"; 
 $oField->multi_select_one_label = ffTemplate::_get_word_by_code("email_template_default");
+$oField->multi_select_one = false;
+$oField->source_SQL = "SELECT tbl_src.* FROM (SELECT '' AS ID, 'Default' AS name, null AS type) AS tbl_src [WHERE] ORDER BY name";
 
 
 $tpl_email = glob(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/email/*");
@@ -83,9 +85,9 @@ if(is_array($tpl_email) && count($tpl_email)) {
 	}
 	
 	if(strlen($sSQL_part)) {
+        $oField->multi_select_one = true;
+        $oField->multi_select_one_label = ffTemplate::_get_word_by_code("email_template_default");
 		$oField->source_SQL = "SELECT tbl_src.* FROM (" . $sSQL_part . ") AS tbl_src [WHERE] ORDER BY name";
-	} else {
-		$oField->source_SQL = "SELECT tbl_src.* FROM (SELECT '' AS ID, '' AS name, null AS type) AS tbl_src [WHERE] ORDER BY name";
 	}	
 } 
 

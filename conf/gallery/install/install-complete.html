@@ -1,51 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        h1 {
-            margin-top: 30%;
-            font-family: verdana;font-weight:lighter;
-        }
-
-        h1 a{
-            padding: 10px 5px;
-            border-width: 1px 1px 4px;
-            border-color: #2F68CD;
-            border-style: solid;
-            background: none repeat scroll 0% 0% #4081F5;
-            color: #FFF;
-            text-transform: uppercase;
-            font-size: 0.7em;
-            width: 170px;
-            margin: 25% auto 0px;
-            text-decoration: none;
-            font-weight:lighter;
-            transition:0.5;
-        }
-
-        h1 a:hover{
-            background: none repeat scroll 0% 0% #2F68CD;
-        }
-    </style>
-    <script>
-        function redirectComplete() {
-            if(window != window.top) {
-                window.open("[DOMAIN_PROTOCOL]://[DOMAIN]/admin/configuration/updater", "_blank");
-            } else {
-                window.location.href = "/admin/configuration/updater";
-            }
-
-        }
-    </script>
-    <title>CMS Installation</title>
+    <title>Installation Complete</title>
     <meta http-equiv="Cache-Control" content="no-cache">
     <meta http-equiv="Pragma" content="no-cache">
+    <script src="[FF_SITE_PATH]/conf/gallery/install/jquery.min.js" type="text/javascript"></script>
+    <script>
+        ff = {
+            "site_path" : "[FF_SITE_PATH]"
+        };
+    </script>
+
+    <script src="[FF_SITE_PATH]/conf/gallery/updater/js/updater.js" type="text/javascript"></script>
+    <script>
+        jQuery(function() {
+            jQuery(".unatantum").remove();
+            jQuery("#check").hide();
+            jQuery("#btstop").hide();
+
+            jQuery("#execute").click();
+
+            jQuery("#Updater").parent().children(".actions").append("<input class=\"button noactivebuttons\" type=\"button\" id=\"gotosite\" name=\"gotosite\" value=\"Go to Site\" />");
+
+
+            jQuery("#gotosite").click(function() {
+                var internalUrl = "/admin/login"
+                if(window != window.top) {
+                    window.open("[DOMAIN_PROTOCOL]://[DOMAIN]" + internalUrl, "_blank");
+                } else {
+                    window.location.href = internalUrl;
+                }
+            });
+        });
+    </script>
+    <link href="[FF_SITE_PATH]/conf/gallery/install/install-complete.css" rel="stylesheet" type="text/css" />
     </head>
 <body>
-<div style="margin: 0 auto; width:300px; text-align:center;">
-    <h1>Installation complete.
-        <a style="display:block;" href="javascript:void(0);" onclick="redirectComplete();">Go to Site</a>
-    </h1>
+<div class="installer">
+    <h1>Installation Complete</h1>
+    <div class="verify-integrity">
+        <table id="Updater">
+            <thead>
+                <tr>
+                    <th>Operation</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="operation" data-limit="1000">/structure</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td class="operation" data-limit="1000">/indexes</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td class="operation" data-limit="1000">/data/basic</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td class="operation" data-limit="1000">/data/international</td>
+                    <td class="result"></td>
+                </tr>
+                <tr>
+                    <td class="operation" data-limit="1000">/data/support</td>
+                    <td class="result"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>

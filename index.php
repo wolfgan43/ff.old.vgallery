@@ -24,51 +24,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @link https://github.com/wolfgan43/vgallery
  */
 
-/**
- * Config
- */
+define('CMS_START', microtime(true));
+
+/*
+|--------------------------------------------------------------------------
+| Load Config base
+|--------------------------------------------------------------------------
+|
+|
+|
+*/
 require_once("config.php");
 
-/**
- * AUTOLOAD CLASS
- */
-	vgAutoload();
+/*
+|--------------------------------------------------------------------------
+| Register The Auto Loader
+|--------------------------------------------------------------------------
+|
+| Composer provides a convenient, automatically generated class loader for
+| our application. We just need to utilize it! We'll simply require it
+| into the script here so that we don't have to worry about manual
+| loading any of our classes later on. It feels great to relax.
+|
+*/
 
-/**
- * Performance Profiling
- */
-if(DEBUG_PROFILING === true) {
-	define("FF_DB_MYSQLI_PROFILE", true);
-	Stats::benchmark();
-}
-if(DEBUG_MODE === true) {
-    Stats::registerErrors();
-}
-
-/**
- * Cache System
- */
-require_once(__DIR__ . "/library/gallery/system/cache.php");
-$cache = check_static_cache_page();
+require_once ("vendor/autoload.php");
 
 
+/*
+|--------------------------------------------------------------------------
+| Init
+|--------------------------------------------------------------------------
+|
+| Rewrite PathInfo
+| Resolve Request
+| Load Settings
+|
+| Run router
+|
+*/
+$kernel = new Kernel();
 
-$path_info = $_SERVER["PATH_INFO"];
-if($path_info == "/index")
-	$path_info = "";
-
-/**
- * Check Redirect
- */
-if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest")
-	cache_check_redirect($path_info);
-
-/**
- * Log File Without Cache
- */
-Cache::log($path_info, "access");
-
-/**
- * Run page Without Cache
- */
-require_once("cm/main.php");
+$kernel->run();
+exit;

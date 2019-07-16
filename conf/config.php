@@ -53,7 +53,7 @@ if(defined("SHOWFILES_IS_RUNNING")) {
 
 		if(!$res) {
 			//da migliorare usando cache_olp_path e quindi redirect 301
-			$mime = ffMimeTypeByFilename($_SERVER["REQUEST_URI"]);
+			$mime = ffMedia::getMimeTypeByFilename($_SERVER["REQUEST_URI"]);
 			switch ($mime) {
 				case "image/svg+xml":
 				case "image/jpeg":

@@ -103,8 +103,8 @@
 																							FROM settings_thumb_image
 																						)";
 	$operation_fixed["2014-01-21"]["than"][] = "INSERT INTO cm_showfiles_modes 
-													( ID,`alignment`, `alpha`, `bgcolor`, `dim_x`, `dim_y`, `mode`, `name`, `format`, `format_jpg_quality`, `wmk_alignment`, `wmk_image`, `transparent`, `frame_size`, `frame_color`, `resize`, `enable_thumb_word_dir`, `enable_thumb_word_file`, `word_color`, `word_size`, `word_type`, `word_align`, `last_update`, `max_upload`, `force_icon`, `allowed_ext`, `enable_thumb_image_dir`, `enable_thumb_image_file`, `wmk_alpha`, `wmk_mode`) 
-													SELECT null, align , alpha, background, fix_x, fix_y, mode, name, extension, jpg_compress, image_align, image_cover, transparent, `frame_size`, `frame_color`, `resize`, `enable_thumb_word_dir`, `enable_thumb_word_file`, `word_color`, `word_size`, `word_type`, `word_align`, `last_update`, `max_upload`, `force_icon`, `allowed_ext`, `enable_thumb_image_dir`, `enable_thumb_image_file`, `image_alpha`, `image_mode` 
+													( ID,`alignment`, `alpha`, `bgcolor`, `dim_x`, `dim_y`, `mode`, `name`, `format`, `wmk_alignment`, `wmk_image`, `transparent`, `frame_size`, `frame_color`, `resize`, `enable_thumb_word_dir`, `enable_thumb_word_file`, `word_color`, `word_size`, `word_type`, `word_align`, `last_update`, `max_upload`, `force_icon`, `allowed_ext`, `enable_thumb_image_dir`, `enable_thumb_image_file`, `wmk_alpha`, `wmk_mode`) 
+													SELECT null, align , alpha, background, fix_x, fix_y, mode, name, extension, image_align, image_cover, transparent, `frame_size`, `frame_color`, `resize`, `enable_thumb_word_dir`, `enable_thumb_word_file`, `word_color`, `word_size`, `word_type`, `word_align`, `last_update`, `max_upload`, `force_icon`, `allowed_ext`, `enable_thumb_image_dir`, `enable_thumb_image_file`, `image_alpha`, `image_mode` 
 													FROM  `settings_thumb_image` 
 													WHERE 1";
 	

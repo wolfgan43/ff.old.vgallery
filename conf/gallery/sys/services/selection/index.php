@@ -48,8 +48,6 @@ if (!$cm->isXHR()/* && strpos(strtolower($_SERVER["HTTP_USER_AGENT"]), "googlebo
 
 //if ($plgCfg_ActiveComboEX_UseOwnSession)
 
-//else
-//    mod_security_check_session();
 
 $php_array                  = array();
 $actex_sql                  = null;

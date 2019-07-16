@@ -438,25 +438,25 @@ function api_process_request_to_sql($sql, $get = null) {
 	if(!$get)
 		$get = $_REQUEST;
 
-	$request = cache_get_request($get);
+	$request = Cms::requestCapture();
 
-	if($request["get"]["navigation"]) {
-		if(!$request["get"]["navigation"]["rec_per_page"])
-			$request["get"]["navigation"]["rec_per_page"] = 50;
+	if($request["navigation"]) {
+		if(!$request["navigation"]["count"])
+			$request["navigation"]["count"] = 50;
 
-		$page = $request["get"]["navigation"]["page"] - 1;
+		$page = $request["navigation"]["page"] - 1;
 		if($page < 0)
 			$page = 0;
 
-		$limit = (int) $page * $request["get"]["navigation"]["rec_per_page"] . ", " . (int) $request["get"]["navigation"]["rec_per_page"];
+		$limit = (int) $page * $request["navigation"]["rec_per_page"] . ", " . (int) $request["navigation"]["count"];
 	}
 
-	if($request["get"]["sort"]) {
-		$order = "`" . $request["get"]["sort"]["name"] . "` " . $request["get"]["sort"]["dir"];
+	if($request["sort"]) {
+		$order = "`" . $request["sort"]["name"] . "` " . $request["sort"]["dir"];
 	}
 
 
-	if($request["get"]["search"]) {
+	if($request["search"]) {
 		$sql = str_replace(array("\r", "\n", "\t"), " ", $sql);
 		$tick1 = strpos($sql,'FROM ') + 5;
 		$tick2 = strpos($sql,' ', $tick1);
@@ -469,26 +469,26 @@ function api_process_request_to_sql($sql, $get = null) {
 		$db->query($sSQL);
 		$fields = $db->fields;
 
-		if($request["get"]["search"]["term"]) {
+		if($request["search"]["term"]) {
 			if(is_array($fields) && count($fields)) {
 				$sub_where = array();
 				foreach($fields AS $field => $params) {
-					$sub_where[] = "`" . $field . "` LIKE '%" . $db->toSql($request["get"]["search"]["term"], "Text", false) . "%'";
+					$sub_where[] = "`" . $field . "` LIKE '%" . $db->toSql($request["search"]["term"], "Text", false) . "%'";
 				}
 				$where[] = " (" . implode(" OR ", $sub_where) . ")";
 			}
 		}
 
-		if(is_array($request["get"]["search"]["available_terms"]) && count($request["get"]["search"]["available_terms"])) {
+		if(is_array($request["search"]["available_terms"]) && count($request["search"]["available_terms"])) {
 			$param_where 		= null;
-			foreach($request["get"]["search"]["available_terms"] AS $keys => $value) {
+			foreach($request["search"]["available_terms"] AS $keys => $value) {
 				$arrValue 		= null;
 				$op 			= "OR";
 				$type_op 		= "eq";
 				$operations 	= array(
 					"eq" 		=> "`[NAME]` = '[VALUE]'"
-				, "in" 		=> "FIND_IN_SET('[VALUE]', `[NAME]`)"
-				, "like" 	=> "`[NAME]` LIKE '%[VALUE]%'"
+                    , "in" 		=> "FIND_IN_SET('[VALUE]', `[NAME]`)"
+                    , "like" 	=> "`[NAME]` LIKE '%[VALUE]%'"
 				);
 
 				if(substr($keys, -1, 1) == "+") {

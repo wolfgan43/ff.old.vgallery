@@ -69,6 +69,7 @@
     									, "security" 	=> false
     								);
     $fs_exclude["/sessions"] = true;
+    $fs_exclude["/vendor"] = true;
     //$fs_exclude["/modules"] = true; 
 
     $fs_exclude["/conf/gallery/updater/check/file.php"] = true;
@@ -118,7 +119,7 @@
 		$fs_exclude["/themes/site/conf/config.remote.php"] 			= true;
 	}
 
-    if(file_exists(ffCommon_dirname(__FILE__) . "/exclude_fs_custom.php"))
+    if(file_exists(__DIR__ . "/exclude_fs_custom.php"))
         include("exclude_fs_custom.php");
         
 	if(defined("FF_DATABASE_NAME") && class_exists("ffDB_Sql"))

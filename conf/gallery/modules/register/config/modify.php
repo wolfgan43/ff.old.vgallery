@@ -2,7 +2,7 @@
 
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -52,7 +52,7 @@ $oRecord->resources[] = $oRecord->id;
 $oRecord->resources[] = "modules";
 $oRecord->src_table = "module_register";
 $oRecord->addEvent("on_do_action", "RegisterConfigModify_on_do_action");
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "register")) . $module_register_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "register")) . $module_register_title . '</h1>';
 
 if (check_function("MD_general_on_done_action"))
     $oRecord->addEvent("on_done_action", "MD_general_on_done_action");
@@ -373,7 +373,7 @@ $oDetailGroup->populate_insert_SQL = "SELECT
                                         , " . CM_TABLE_PREFIX . "mod_security_groups.gid AS gid
                                     FROM 
                                         " . CM_TABLE_PREFIX . "mod_security_groups
-                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . MOD_SEC_GUEST_GROUP_NAME . "'
+                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "'
                                     ORDER BY 
                                         " . CM_TABLE_PREFIX . "mod_security_groups.name";
 $oDetailGroup->auto_populate_edit = true;
@@ -384,7 +384,7 @@ $oDetailGroup->populate_edit_SQL = "SELECT
                                         , " . CM_TABLE_PREFIX . "mod_security_groups.gid AS gid
                                     FROM 
                                         " . CM_TABLE_PREFIX . "mod_security_groups
-                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . MOD_SEC_GUEST_GROUP_NAME . "' 
+                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "' 
                                     ORDER BY 
                                         " . CM_TABLE_PREFIX . "mod_security_groups.name";
 

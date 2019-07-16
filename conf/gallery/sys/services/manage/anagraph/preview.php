@@ -35,7 +35,7 @@ if($db->nextRecord()) {
     
     $sSQL_field = "";
     if(is_array($arrFormField) && count($arrFormField)) {
-        foreach($arrFormField AS $$arrFormField_key => $arrFormField_value) {
+        foreach($arrFormField AS $arrFormField_key => $arrFormField_value) {
             $sSQL_field .= ", (SELECT 
                                 GROUP_CONCAT(IF(anagraph_rel_nodes_fields.description_text = ''
                                                 , anagraph_rel_nodes_fields.description
@@ -53,7 +53,7 @@ if($db->nextRecord()) {
     }
 }
 
-$user_permission = get_session("user_permission");
+$user = Auth::get("user");
 $sSQL = "SELECT anagraph_categories.ID
                 , anagraph_categories.name
                 , anagraph_categories.limit_by_groups 
@@ -61,21 +61,22 @@ $sSQL = "SELECT anagraph_categories.ID
         ORDER BY anagraph_categories.name";
 $db->query($sSQL);
 if($db->nextRecord()) {
+    $allowed_ana_cat = "";
     do {
         $limit_by_groups = $db->getField("limit_by_groups")->getValue();
         if(strlen($limit_by_groups)) {
             $limit_by_groups = explode(",", $limit_by_groups);
             
-            if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
-                if(strlen($allowed_ana_cat))
+            if(array_search($user->acl, $limit_by_groups) !== false) {
+                if(strlen($allowed_ana_cat)) {
                     $allowed_ana_cat .= ",";
-
+                }
                 $allowed_ana_cat .= $db->getField("ID", "Number", true);
             }
         } else {
-            if(strlen($allowed_ana_cat))
+            if(strlen($allowed_ana_cat)) {
                 $allowed_ana_cat .= ",";
-
+            }
             $allowed_ana_cat .= $db->getField("ID", "Number", true);
         }
     
@@ -88,7 +89,7 @@ $sSQL = "SELECT anagraph.*
                 , " . CM_TABLE_PREFIX . "mod_security_users.avatar
                 , anagraph.avatar
             ) AS anagraph_avatar
-            " . (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0
+            " . (Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0
                 ? ""
                 : " , (
                         SELECT
@@ -138,28 +139,6 @@ $sSQL = "SELECT anagraph.*
             ) . "
         GROUP BY anagraph.ID
         ORDER BY anagraph.last_update DESC, billreference ";
-/*
-            " . (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0
-                ? ""
-                : " , (
-                        SELECT
-                            IF(ISNULL(" . FF_PREFIX . "international.description) OR " . FF_PREFIX . "international.description = ''
-                                , " . FF_SUPPORT_PREFIX . "state.name
-                                , " . FF_PREFIX . "international.description) AS description
-                        FROM
-                            " . FF_SUPPORT_PREFIX . "state
-                            LEFT JOIN " . FF_PREFIX . "international ON " . FF_PREFIX . "international.word_code = " . FF_SUPPORT_PREFIX . "state.name
-			                    AND " . FF_PREFIX . "international.ID_lang = (	
-			                    										SELECT " . FF_PREFIX . "languages.ID 
-			                    										FROM " . FF_PREFIX . "languages 
-			                    										WHERE " . FF_PREFIX . "languages.code = " . $db->toSql(LANGUAGE_INSET) . "
-			                    									)
-                        WHERE " . FF_SUPPORT_PREFIX . "state.ID = anagraph.shippingstate                                
-                        ORDER BY description
-                    ) AS shippingstate_label  
-                    "
-            ) . "
-*/
 
 $db->query($sSQL);
 if ($db->nextRecord())
@@ -215,39 +194,16 @@ if ($db->nextRecord())
         $tpl->set_var("SezAnagraphBillProvince", "");
     }
 
-    if(!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) && strlen($db->getField("billstate_label", "Text", true))) {
+    if(!(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0) && strlen($db->getField("billstate_label", "Text", true))) {
         $tpl->set_var("anagraph_billstate", $db->getField("billstate_label", "Text", true));
         $tpl->parse("SezAnagraphBillState", false);
 	} else {
         $tpl->set_var("SezAnagraphBillState", "");
     }
-    /*
-    $tpl->set_var("anagraph_shippingreference", $db->getField("shippingreference", "Text", true));
-    $tpl->set_var("anagraph_shippingaddress", $db->getField("shippingaddress", "Text", true));
-    $tpl->set_var("anagraph_shippingcap", $db->getField("shippingcap", "Text", true));
-    $tpl->set_var("anagraph_shippingtown", $db->getField("shippingtown", "Text", true));
-    $tpl->set_var("anagraph_shippingprovince", $db->getField("shippingprovince", "Text", true));
-    if(!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) && strlen($db->getField("shippingstate_label", "Text", true))) {
-        $tpl->set_var("anagraph_shippingstate", $db->getField("shippingstate_label", "Text", true));
-        $tpl->parse("SezAnagraphShippingState", false);
-	}
-	*/
-	
-/*
-<div class="anagraph-shippingreference"><label>{_anagraph_shippingreference_label}</label>{anagraph_shippingreference}</div>
-<div class="anagraph-shippingaddress"><label>{_anagraph_shippingaddress_label}</label>{anagraph_shippingaddress}</div>
-<div class="anagraph-shippingcap"><label>{_anagraph_shippingcap_label}</label>{anagraph_shippingcap}</div>
-<div class="anagraph-shippingtown"><label>{_anagraph_shippingtown_label}</label>{anagraph_shippingtown}</div>
-<div class="anagraph-shippingprovince"><label>{_anagraph_shippingprovince_label}</label>{anagraph_shippingprovince}</div>
-<!--BeginSezAnagraphShippingState-->
-<div class="anagraph-shippingstate"><label>{_anagraph_shippingstate_label}</label>{anagraph_shippingstate}</div>
-<!--EndSezAnagraphShippingState-->
-*/
+
     $tpl->set_var("anagraph_mail", $db->getField("anagraph_email", "Text", true));
-    if(check_function("get_user_avatar")) {
-		$tpl->set_var("anagraph_avatar", get_user_avatar($db->getField("anagraph_avatar", "Text", true), false, $db->getField("anagraph_email", "Text", true), "http://" . DOMAIN_INSET . FF_SITE_PATH . CM_SHOWFILES));
-		$tpl->parse("SezAnagraphAvatar", false);
-    }
+    $tpl->set_var("anagraph_avatar", Auth::getUserAvatar(null, $db->getField("anagraph_avatar", "Text", true)));
+    $tpl->parse("SezAnagraphAvatar", false);
 
     if(strlen($db->getField("categories", "Text", true))) {
         $arrCategory = explode(",", $db->getField("categories", "Text", true));

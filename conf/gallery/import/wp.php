@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_IMPORT_SHOW_MODIFY) {
+if (!Auth::env("AREA_IMPORT_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 // -------------------------
@@ -68,12 +68,12 @@ if($db_wp->connect(get_session("importwpdb"), get_session("importwphost"), get_s
 	$oRecord->resources = $oRecord->id;
 	$oRecord->title = ffTemplate::_get_word_by_code("import_wp_title") 
 		. (get_session("importwprecord") < $wp_settings["count_post"]
-			? '<a href="?record=' . (get_session("importwprecord") + 1) . '" class="' . cm_getClassByFrameworkCss("right", "util") . '">' . cm_getClassByFrameworkCss("next", "icon-tag", "2x") . '</a>' 
+			? '<a href="?record=' . (get_session("importwprecord") + 1) . '" class="' . Cms::getInstance("frameworkcss")->get("right", "util") . '">' . Cms::getInstance("frameworkcss")->get("next", "icon-tag", "2x") . '</a>' 
 			: ""
 		)
-		. '<a href="javascript:void(0);" onclick="' . $js_action . '" class="' . cm_getClassByFrameworkCss("right", "util") . " " . cm_getClassByFrameworkCss(($wp_settings["ID_node"] ? "success" : "primary") , "button") . '">' . ($wp_settings["ID_node"] ? "Update" : "Import") . " Post: " . (get_session("importwprecord") + 1) . "/" . ($wp_settings["count_post"] + 1) . '</a>' 
+		. '<a href="javascript:void(0);" onclick="' . $js_action . '" class="' . Cms::getInstance("frameworkcss")->get("right", "util") . " " . Cms::getInstance("frameworkcss")->get(($wp_settings["ID_node"] ? "success" : "primary") , "button") . '">' . ($wp_settings["ID_node"] ? "Update" : "Import") . " Post: " . (get_session("importwprecord") + 1) . "/" . ($wp_settings["count_post"] + 1) . '</a>' 
 		. (get_session("importwprecord")
-			? '<a href="?record=' . (get_session("importwprecord") - 1) . '" class="' . cm_getClassByFrameworkCss("right", "util") . '">' . cm_getClassByFrameworkCss("prev", "icon-tag", "2x")  . '</a>'
+			? '<a href="?record=' . (get_session("importwprecord") - 1) . '" class="' . Cms::getInstance("frameworkcss")->get("right", "util") . '">' . Cms::getInstance("frameworkcss")->get("prev", "icon-tag", "2x")  . '</a>'
 			: ""
 	);
 	$oRecord->framework_css["title"]["col"] = array(
@@ -116,7 +116,7 @@ if($db_wp->connect(get_session("importwpdb"), get_session("importwphost"), get_s
  		$oRecord->addContent(null, true, "fields"); 
 	    $oRecord->groups["fields"] = array(
 	                                        "title" => ffTemplate::_get_word_by_code("import_wp_fields")
-	                                        , "class" => cm_getClassByFrameworkCss(array(6), "col") 
+	                                        , "class" => Cms::getInstance("frameworkcss")->get(array(6), "col") 
 	                                     );    
 
 		foreach($fields AS $fields_key => $fields_example) {
@@ -142,7 +142,7 @@ if($db_wp->connect(get_session("importwpdb"), get_session("importwphost"), get_s
 			$oRecord->addContent(null, true, $group_key); 
 			$oRecord->groups[$group_key] = array(
 			                                "title" => ffTemplate::_get_word_by_code("import_wp_meta") . ($lang_code == LANGUAGE_DEFAULT ? "" : " - " . $lang_code)
-			                                , "class" => cm_getClassByFrameworkCss(array(6), "col") 
+			                                , "class" => Cms::getInstance("frameworkcss")->get(array(6), "col") 
 			                             );    
 
 			$oField = ffField::factory($cm->oPage);
@@ -497,8 +497,8 @@ function importWP_exec_dir($relative_dir) {
 	$db = ffDB_Sql::factory();
 
 	$relative_dir = stripslash($relative_dir);
-	if(strlen($relative_dir) && $relative_dir != SITE_UPDIR && strpos($relative_dir, SITE_UPDIR) === 0) {
-		$local_dir = str_replace(SITE_UPDIR, "", $relative_dir);
+	if(strlen($relative_dir) && $relative_dir != FF_SITE_UPDIR && strpos($relative_dir, FF_SITE_UPDIR) === 0) {
+		$local_dir = str_replace(FF_SITE_UPDIR, "", $relative_dir);
 		$sSQL = "SELECT files.*
 				FROM files
 				WHERE files.parent = " . $db->toSql(ffCommon_dirname($local_dir)) . "
@@ -537,7 +537,7 @@ function importWP_exec_dir($relative_dir) {
 	}
 }
 
-function importWP_exec_file($remote_file, $relative_path, $meta = null, $base_path = SITE_UPDIR) {
+function importWP_exec_file($remote_file, $relative_path, $meta = null, $base_path = FF_SITE_UPDIR) {
 	$db = ffDB_Sql::factory();
 	check_function("get_locale");
 
@@ -550,8 +550,8 @@ function importWP_exec_file($remote_file, $relative_path, $meta = null, $base_pa
 
 		if(file_put_contents(FF_DISK_PATH . $base_path . $relative_path . "/" . $filebasename, $file)) {
 			chmod(FF_DISK_PATH . $base_path . $relative_path . "/" . $filebasename, 0777);
-			ffImageOptimize(FF_DISK_PATH . $base_path . $relative_path . "/" . $filebasename);
-			
+            ffMedia::optimize(FF_DISK_PATH . $base_path . $relative_path . "/" . $filebasename);
+
 			$new_file = $base_path . $relative_path . "/" . $filebasename;
 
 			importWP_exec_dir(ffCommon_dirname($new_file));
@@ -682,7 +682,7 @@ function importWP_exec_fields_purge($ID_node, $permalink = null) {
 	
 	
     if($permalink && check_function("fs_operation"))
-        xpurge_dir(DISK_UPDIR . $permalink);	
+        xpurge_dir(FF_DISK_UPDIR . $permalink);
 }
 
 function importWP_exec_fields($ID_node, $node, $arrPermalink) {
@@ -761,8 +761,8 @@ function importWP_exec_fields($ID_node, $node, $arrPermalink) {
 									if($field_value) {
 										$arrField = explode(",", $field_value);
 										foreach($arrField AS $arrField_value) {
-											if(strpos($arrField_value, SITE_UPDIR) === 0) {
-												$arrFinalField[] = str_replace(SITE_UPDIR, "", $arrField_value);
+											if(strpos($arrField_value, FF_SITE_UPDIR) === 0) {
+												$arrFinalField[] = str_replace(FF_SITE_UPDIR, "", $arrField_value);
 											}
 										}
 										$field_value = implode(",", $arrFinalField);
@@ -1348,10 +1348,10 @@ function importWP_settings($db_wp = null) {
 }
 
 function importWP_check_resource($resource) {
-	if(strpos(ffMimeTypeByFilename($resource), "image/") !== false
-		|| strpos(ffMimeTypeByFilename($resource), "application/excel") !== false
-		|| strpos(ffMimeTypeByFilename($resource), "application/pdf") !== false
-		|| strpos(ffMimeTypeByFilename($resource), "application/msword") !== false
+	if(strpos(ffMedia::getMimeTypeByFilename($resource), "image/") !== false
+		|| strpos(ffMedia::getMimeTypeByFilename($resource), "application/excel") !== false
+		|| strpos(ffMedia::getMimeTypeByFilename($resource), "application/pdf") !== false
+		|| strpos(ffMedia::getMimeTypeByFilename($resource), "application/msword") !== false
 	) {
 		return true;
 	}

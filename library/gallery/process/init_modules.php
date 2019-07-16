@@ -73,6 +73,7 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 	                SELECT
 	                    layout.ID AS ID
 	                    , layout.name AS layout_name
+	                    , layout.smart_url AS smart_url
 	                    , layout.ID_type AS ID_type
 	                    , layout.value AS module_name
 	                    , layout.params AS module_params
@@ -150,12 +151,17 @@ function process_init_modules($oPage, $ajax = null, $layouts_limit = "", $custom
 		       	   		
 						$layout_comment["prefix"] = "MD-" . $layout_location_value . "-" . "comment" . "-" . str_replace("/", "", $db_modules->getField("module_name", "Text", true) . "-" . $db_modules->getField("module_params", "Text", true));
 						$layout_comment["ID"] = $db_modules->getField("ID", "Number", true);
+						$layout_comment["smart_url"] = $db_modules->getField("smart_url", "Text", true);
 						$layout_comment["title"] = $db_modules->getField("layout_name", "Text", true) . " [" . $db_modules->getField("type", "Text", true) . "]";
 						$layout_comment["type"] = $db_modules->getField("type", "Text", true);
 						$layout_comment["location"] = $layout_location_value;
 						$layout_comment["visible"] = NULL;
-						if(check_function("get_layout_settings"))
-							$layout_comment["settings"] = get_layout_settings($layout_comment["ID"], $layout_comment["type"]);
+						//if(check_function("get_layout_settings"))
+							$layout_comment["settings"] = Cms::getPackage($layout_comment["smart_url"]);
+							if(!$layout_comment["settings"]) {
+                                $layout_comment["settings"] = Cms::getPackage($layout_comment["type"]);
+                            }
+                            //get_layout_settings($layout_comment["ID"], $layout_comment["type"]);
 
 		       	   		if(check_function("process_addon_comment")) 
 		       	   			process_addon_comment($layout_comment["ID"], $db_modules->getField("module_params")->getValue(), null, $settings_path, $settings_path, "layout", true, $layout_comment);
@@ -190,6 +196,9 @@ function get_path_parts($content_root, $path_info) {
 			$tmp = "/index";
 			$path_info = "/index" . $path_info;
 		}
+        if(!$tmp) {
+            return null;
+        }
 	} while (true);	
 }
 
@@ -225,20 +234,11 @@ function get_module($location, $module_name, $module_params, $MD_chk = array())
     if(is_file(realpath(FF_DISK_PATH . "/conf" . GALLERY_PATH_MODULE . $mod_file . stripslash($module_vars["path_info"]) . "/" . $module_vars["script_name"] . "." . FF_PHP_EXT)) && strpos((FF_DISK_PATH . GALLERY_PATH_MODULE . $mod_file . $module_vars["path_info"] . $module_vars["script_name"] . "." . FF_PHP_EXT), FF_DISK_PATH . GALLERY_PATH_MODULE) !== false) {
         $MD_chk["tag"] = str_replace("/", "", $module_name . "-" . $module_params);
         $MD_chk["inc"] = FF_DISK_PATH . "/conf" . GALLERY_PATH_MODULE . $mod_file . stripslash($module_vars["path_info"]) . "/" . $module_vars["script_name"] . "." . FF_PHP_EXT;
-        
-        if(strpos($module_vars["path_info"], "/config") !== false)
-            $MD_chk["con"] = "MODULE_SHOW_CONFIG";
-        else
-            $MD_chk["con"] = "";
     } else {
         $strError = ffTemplate::_get_word_by_code("dialog_description_invalidpath");
     }
 
     if(!$strError) {
-        if(strlen($MD_chk["con"]) && !constant($MD_chk["con"])) {
-            ffRedirect(FF_SITE_PATH . "/login?ret_url=" . urlencode($_SERVER["REQUEST_URI"]) . "&relogin");
-        }
-
         $MD_chk["id"] = "MD-" . $location . "-" . $MD_chk["tag"];
         $MD_chk["params"] = explode(";", $module_params);
 		$MD_chk["ret_url"] = $registry->user_path;

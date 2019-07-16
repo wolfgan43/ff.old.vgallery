@@ -23,9 +23,34 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
+
+function get_layout_settings_new($ID_layout = NULL, $layout_type = null) {
+
+}
+
 function get_layout_settings($ID_layout = NULL, $layout_type) {
     $db = ffDB_Sql::factory();
-    
+
+
+//    $settings = Auth::getPackage($layout_type);
+ //   return $settings;
+/*    if($layout_type) {
+        $settings = Cms::getPackage(strtolower($layout_type));
+        if ($ID_layout) {
+            $settings = array_replace($settings, Cms::getPackage(strtolower($layout_type) . "-" . $ID_layout));
+        }
+print_r(Cms::$env);
+
+        print_r($layout_type);
+        print_r($ID_layout);
+        die($layout_type . " " . $ID_layout);
+
+        return $settings;
+    } else {
+    }
+die($layout_type . " " . $ID_layout);*/
+    //return array();
+
     static $res = array();
 	$actual_res = array();
 
@@ -91,13 +116,12 @@ function get_layout_settings($ID_layout = NULL, $layout_type) {
 		                $sql_layout_WHERE
 		                ";
 		    $db->query($sSQL);
-		    if($db->nextRecord()) {
-		        do {
-                    $actual_res[$db->getField("layout_type", "Text", true) . "-" . $db->getField("ID_layout", "Number", true)][$db->getField("name", "Text", true)] = $db->getField("value", "Text", true);
+		    $recordset = $db->getRecordset();
+		    foreach ($recordset AS $record) {
+                $actual_res[$record["layout_type"] . "-" . $record["ID_layout"]][$record["name"]] = $record["value"];
 
-		            $res[$db->getField("layout_type", "Text", true) . "-" . $db->getField("ID_layout", "Number", true)][$db->getField("name", "Text", true)] = $db->getField("value", "Text", true);
-		        } while($db->nextRecord());
-		    }
+                $res[$record["layout_type"] . "-" . $record["ID_layout"]][$record["name"]] = $record["value"];
+            }
 		}
 		return $actual_res;		
 	} else {
@@ -153,17 +177,16 @@ function get_layout_settings($ID_layout = NULL, $layout_type) {
 		                INNER JOIN layout_type ON layout_type.ID = layout_settings.ID_layout_type
 		            WHERE " . implode(" OR ", $sql_layout_WHERE);
 		    $db->query($sSQL);
-		    if($db->nextRecord()) {
-		        do {
-                    if(is_array($arrLayoutRev) && $arrLayoutRev[$db->getField("ID_layout", "Number", true)])
-                        $actual_key = $arrLayoutRev[$db->getField("ID_layout", "Number", true)];
-                    else
-                        $actual_key = $db->getField("layout_type", "Text", true) . "-" . $db->getField("ID_layout", "Number", true);
-                        
-		            $actual_res[$actual_key][$db->getField("name", "Text", true)] = $db->getField("value", "Text", true);
-		            $res[$db->getField("layout_type", "Text", true) . "-" . $db->getField("ID_layout", "Number", true)][$db->getField("name", "Text", true)] = $db->getField("value", "Text", true);
-		        } while($db->nextRecord());
-			}
+            $recordset = $db->getRecordset();
+            foreach ($recordset AS $record) {
+                if(is_array($arrLayoutRev) && $arrLayoutRev[$record["ID_layout"]])
+                    $actual_key = $arrLayoutRev[$record["ID_layout"]];
+                else
+                    $actual_key = $record["layout_type"] . "-" . $record["ID_layout"];
+
+                $actual_res[$actual_key][$record["name"]] = $record["value"];
+                $res[$record["layout_type"] . "-" . $record["ID_layout"]][$record["name"]] = $record["value"];
+            }
 		}
 
 		if(is_array($ID_layout))
@@ -216,8 +239,10 @@ function get_layout_by_block($type, $ctx = null, $out = null) {
 			break;
 		case "files":
 			$setting_type = "GALLERY";
-        	if($layout["ID"] && check_function("get_layout_settings"))
-        		$layout["settings"] = get_layout_settings($layout["ID"], "GALLERY");
+        	if($layout["ID"] /*&& check_function("get_layout_settings")*/) {
+                //$layout["settings"] = get_layout_settings($layout["ID"], "GALLERY");
+                $layout["settings"] = Cms::getPackage("gallery");
+            }
 			break;
 		case "publishing":
 			$setting_type = "PUBLISHING";
@@ -296,6 +321,96 @@ function get_layout_by_block($type, $ctx = null, $out = null) {
 
 	if($sSQL) {
 		$db->query($sSQL);
+		$recordset                                                                          = $db->getRecordset();
+        check_function("get_class_by_grid_system");
+        if(count($recordset) > 1) {
+            foreach ($recordset AS $record) {
+                $ID_layout                                                                  = $record["ID"];
+
+                $arrLayout[$record["ctx"]]                                                  = $ID_layout;
+                $layout["layouts"][$record["ctx"]]                                          = array(
+                                                                                                "ID" => $ID_layout
+                                                                                                , "prefix" => "L"
+                                                                                                , "title" => $record["name"]
+                                                                                                , "settings" => array()
+                                                                                                , "base_path" => $record["real_path"]
+                                                                                            );
+
+                $layout["layouts"][$record["ctx"]]                                          = get_class_layout_by_grid_system(
+                                                                                                false
+                                                                                                , $record["block_class"]
+                                                                                                , $record["block_fluid"]
+                                                                                                , array(
+                                                                                                    $record["block_grid_xs"]
+                                                                                                    , $record["block_grid_sm"]
+                                                                                                    , $record["block_grid_md"]
+                                                                                                    , $record["block_default_grid"]
+                                                                                                )
+                                                                                                , $record["block_wrap"]
+                                                                                                , false
+                                                                                                , $layout["layouts"][$record["ctx"]]
+                                                                                            );
+
+                $layout["layouts"][$record["ctx"]]["settings"]                              = Cms::getPackage($record["smart_url"]);
+                if(!$layout["layouts"][$record["ctx"]]["settings"]) {
+                    $layout["layouts"][$record["ctx"]]["settings"]                          = Cms::getPackage(ffCommon_url_rewrite($setting_type));
+                }
+            }
+
+            if(is_array($arrLayout) /*&& check_function("get_layout_settings")*/) {
+               /* $layout["settings"]                                                         = get_layout_settings($arrLayout, $setting_type);
+                if($out == "layouts") {
+                    $layout["layouts"]["/"]                                                 = array(
+                                                                                                "ID" => null
+                                                                                                , "prefix" => "L"
+                                                                                                , "settings" => $layout["settings"][$setting_type . "-0"]
+                                                                                            );
+                    foreach($layout["settings"] AS $ctx => $settings) {
+                        if(isset($layout["layouts"][$ctx]))
+                            $layout["layouts"][$ctx]["settings"]                            = $settings;
+                    }
+                }*/
+
+                if($out)
+                    $res                                                                    = $layout[$out];
+                else
+                    $res                                                                    = $layout;
+            }
+        } else {
+            $ID_layout                                                                      = $recordset[0]["ID"];
+
+            $res                                                                            = array(
+                                                                                                "ID" => $ID_layout
+                                                                                                , "prefix" => "L"
+                                                                                                , "title" => $recordset[0]["name"]
+                                                                                                /*, "settings" => (check_function("get_layout_settings")
+                                                                                                    ? get_layout_settings($ID_layout, $setting_type)
+                                                                                                    : array()
+                                                                                                )*/
+                                                                                                , "base_path" => $recordset[0]["real_path"]
+                                                                                            );
+
+            $res                                                                            = get_class_layout_by_grid_system(
+                                                                                                false
+                                                                                                , $recordset[0]["block_class"]
+                                                                                                , $recordset[0]["block_fluid"]
+                                                                                                , array(
+                                                                                                    $recordset[0]["block_grid_xs"]
+                                                                                                    , $recordset[0]["block_grid_sm"]
+                                                                                                    , $recordset[0]["block_grid_md"]
+                                                                                                    , $recordset[0]["block_default_grid"]
+                                                                                                )
+                                                                                                , $recordset[0]["block_wrap"]
+                                                                                                , false
+                                                                                                , $res
+                                                                                            );
+
+            $res["settings"]                                                                = Cms::getPackage($recordset[0]["smart_url"]);
+            if(!$res["settings"]) {
+                $res["settings"]                                                            = Cms::getPackage(ffCommon_url_rewrite($setting_type));
+            }
+        }
+
 		if($db->nextRecord()) {
 			check_function("get_class_by_grid_system");
 			if($db->numRows() > 1) {

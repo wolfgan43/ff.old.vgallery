@@ -32,7 +32,7 @@ function process_addon_google_docs($user_path, $google_type, $google_key, $layou
 	        
 	}
 
-	$google_docs_mode .= "/ccc";
+	$google_docs_mode = "/ccc";
 	$google_docs_lang = strtolower(substr(LANGUAGE_INSET, 0, -1));
 						
 	if(strlen($google_docs_service) && strlen($google_key)) {
@@ -42,7 +42,8 @@ function process_addon_google_docs($user_path, $google_type, $google_key, $layou
 		$tpl_data["result"] = get_template_cascading($user_path, $tpl_data, "/tpl/addon");
 
 		$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-		$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+		//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+        $tpl->load_file($tpl_data["result"]["name"], "main");
 
 		//$tpl = ffTemplate::factory(get_template_cascading($user_path, "google.docs.view.html", "/vgallery"));
 		//$tpl->load_file("google.docs.view.html", "main");

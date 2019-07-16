@@ -48,7 +48,7 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
         $use_pricelist_as_item_thumb = $db->getField("use_pricelist_as_item_thumb", "Number", true);
     }
 
-    if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+    if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
     	$father_permission = get_file_permission($user_path, "vgallery_nodes", true);
     if (!check_mod($father_permission, 1, ($enable_multilang_visible ? true : LANGUAGE_DEFAULT))) {  
         return;
@@ -57,14 +57,16 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"], $layout_settings["AREA_STATIC_MENU_FOLLOW_FRAMEWORK_CSS"], true);
 
-	$tpl_data["custom"] = $vgallery_name . "_menu_child.html";
+    $tpl_data["id"] = $unic_id;
+    $tpl_data["custom"] = $vgallery_name . "_menu_child.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
 
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 	
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
     $tpl->set_var("site_path", FF_SITE_PATH);
     $tpl->set_var("theme_inset", THEME_INSET);
@@ -128,7 +130,7 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
                                 , vgallery_nodes_rel_languages.permalink_parent     AS permalink_parent
                                 , vgallery_nodes_rel_languages.smart_url            AS smart_url
                                 , vgallery_nodes_rel_languages.alt_url              AS alt_url
-								, " . (!ENABLE_STD_PERMISSION  && ENABLE_ADV_PERMISSION
+								, " . (!Cms::env("ENABLE_STD_PERMISSION") && Cms::env("ENABLE_ADV_PERMISSION")
 									? " vgallery_nodes_rel_languages.visible "
 									: " vgallery_nodes.visible "
 								) . "												AS `visible`
@@ -190,9 +192,9 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
 	                AND vgallery.name = " . $db->toSql($vgallery_name, "Text") . "
                     AND vgallery_nodes.name <> ''
                     AND vgallery_nodes.is_dir > 0
-					" . (ENABLE_STD_PERMISSION 
+					" . (Cms::env("ENABLE_STD_PERMISSION")
 				        ? ""
-				        : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && ENABLE_ADV_PERMISSION && !OLD_VGALLERY
+				        : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && Cms::env("ENABLE_ADV_PERMISSION") && !OLD_VGALLERY
 				            ? " AND vgallery_nodes_rel_languages.visible > 0 " 
 				            : " AND vgallery_nodes.visible > 0 "
 				        )
@@ -282,14 +284,14 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
 		
 		$part_item = array();
 		
-		if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+		if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 			get_file_permission(null, "vgallery_nodes", $menu_key);
 		
 		foreach($menu_item AS $full_path => $item) {
-            if(ENABLE_STD_PERMISSION) {
+            if(Cms::env("ENABLE_STD_PERMISSION")) {
                 if(check_function("get_file_permission"))
                     $file_permission = get_file_permission($full_path, "vgallery_nodes");
-                if (!check_mod($file_permission, 1, ($enable_multilang_visible ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY)) {  
+                if (!check_mod($file_permission, 1, ($enable_multilang_visible ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY"))) {
                     unset($menu_item[$full_path]);   
                     
                     continue;
@@ -362,8 +364,8 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
 
 			$image_cover = "";
 			if($layout_settings["AREA_VGALLERY_SHOW_COVER"]) {
-				if(is_file(DISK_UPDIR . $item["cover"])) {
-					$image_cover = '<img src="' .  FF_SITE_PATH . constant("CM_SHOWFILES") . (strlen($layout_settings["AREA_VGALLERY_SHOW_COVER_MODE"]) ? "/" . $layout_settings["AREA_VGALLERY_SHOW_COVER_MODE"] : "") . $item["cover"] . '" />';
+				if(is_file(FF_DISK_UPDIR . $item["cover"])) {
+					$image_cover = '<img src="' .  CM_SHOWFILES . (strlen($layout_settings["AREA_VGALLERY_SHOW_COVER_MODE"]) ? "/" . $layout_settings["AREA_VGALLERY_SHOW_COVER_MODE"] : "") . $item["cover"] . '" />';
 				}
 			}            
             
@@ -553,7 +555,7 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
                 }
             }
 
-            if(AREA_VGALLERY_DIR_SHOW_ADDNEW || AREA_VGALLERY_DIR_SHOW_MODIFY || AREA_VGALLERY_DIR_SHOW_DELETE || AREA_PROPERTIES_SHOW_MODIFY || AREA_ECOMMERCE_SHOW_MODIFY || AREA_SETTINGS_SHOW_MODIFY) {
+            if(Auth::env("AREA_VGALLERY_DIR_SHOW_ADDNEW") || Auth::env("AREA_VGALLERY_DIR_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_DIR_SHOW_DELETE") || Auth::env("AREA_PROPERTIES_SHOW_MODIFY") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") || Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
                 $popup["admin"]["unic_name"] = $unic_id . stripslash($item["parent"]) . "/" . $item["name"];
                 $popup["admin"]["title"] = $layout["title"] . ": " . stripslash($item["parent"]) . "/" . $item["name"];
                 $popup["admin"]["class"] = $layout["type_class"];
@@ -565,15 +567,15 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
                     $allow_insert_dir = false;
                 }        
                 
-                if(AREA_VGALLERY_DIR_SHOW_ADDNEW && $allow_insert_dir) {
+                if(Auth::env("AREA_VGALLERY_DIR_SHOW_ADDNEW") && $allow_insert_dir) {
                     $popup["admin"]["adddir"] = FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vgallery_name) . "/modify?type=" . ($item["is_dir"] ? "dir" : "node") . "&vname=" . $vgallery_name . "&path=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]) . "&extype=vgallery_nodes"; 
                 }
 
                 if(strtolower(stripslash($item["parent"]) . "/" . $item["name"]) != "/" . strtolower($vgallery_name)) {
-                    if(AREA_VGALLERY_DIR_SHOW_MODIFY) {
+                    if(Auth::env("AREA_VGALLERY_DIR_SHOW_MODIFY")) {
                         $popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vgallery_name) . "/modify?keys[ID]=" . $item["ID"] . "&type=" . ($item["is_dir"] ? "dir" : "node") . "&vname=" . $vgallery_name . "&path=" . urlencode($item["parent"]) . "&extype=vgallery_nodes"; 
                     }
-                    if(AREA_VGALLERY_DIR_SHOW_DELETE) {
+                    if(Auth::env("AREA_VGALLERY_DIR_SHOW_DELETE")) {
                         $popup["admin"]["delete"] = ffDialog(TRUE,
                                                         "yesno",
                                                         ffTemplate::_get_word_by_code("vgallery_erase_title"),
@@ -583,13 +585,13 @@ function process_vgallery_menu_child($menu_item = null, $user_path, $source_user
                                                         FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vgallery_name) . "/dialog");
                     }
                 }
-                if(AREA_PROPERTIES_SHOW_MODIFY) {
+                if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
                     $popup["admin"]["extra"] = FF_SITE_PATH . VG_SITE_VGALLERYMODIFY . "/" . ffCommon_url_rewrite($vgallery_name) . "/properties?keys[ID]=" . $item["ID"] . "&type=" . ($item["is_dir"] ? "dir" : "node") . "&vname=" . $vgallery_name . "&path=" . urlencode($item["parent"]) . "&extype=vgallery_nodes" . "&layout=" . $layout["ID"]; 
                 }
-                if(AREA_ECOMMERCE_SHOW_MODIFY && $enable_ecommerce) {
+                if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && $enable_ecommerce) {
                     $popup["admin"]["ecommerce"] = FF_SITE_PATH . VG_SITE_MANAGE . "/vgallery/" . ffCommon_url_rewrite($vgallery_name) . "/ecommerce/all?keys[ID]=" . $item["ID"] . "&type=" . ($item["is_dir"] ? "dir" : "node") . "&vname=" . $vgallery_name . "&path=" . urlencode($item["parent"]) . "&extype=vgallery_nodes";
                 }
-                if(AREA_SETTINGS_SHOW_MODIFY) {
+                if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
                     $popup["admin"]["setting"] = "";
                 }
 

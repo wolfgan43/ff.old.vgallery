@@ -1,15 +1,15 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_THEME_SHOW_ADDNEW) {
+if (!Auth::env("AREA_THEME_SHOW_ADDNEW")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }  
 
 
 if(strpos($_GET["path"], FF_THEME_DIR) === 0)
 	$base_path = FF_THEME_DIR;
-if(strpos($_GET["path"], SITE_UPDIR) === 0)
-	$base_path = SITE_UPDIR;
+if(strpos($_GET["path"], FF_SITE_UPDIR) === 0)
+	$base_path = FF_SITE_UPDIR;
 
 if(!strlen($base_path) || (isset($_REQUEST["source"]) && strlen($_REQUEST["source"])))
 	$base_path = FF_THEME_DIR;	
@@ -195,7 +195,7 @@ if($type == "dir") {
 	    if(check_function("system_set_js"))
             system_set_js($cm->oPage, "/", false);
 
-	    $tpl->set_var("max_upload", MAX_UPLOAD);
+	    $tpl->set_var("max_upload", Auth::env("MAX_UPLOAD"));
 	    $tpl->set_var("path_upload", $path);
 	    $tpl->set_var("type_upload", $base_path);
 	    
@@ -211,9 +211,9 @@ if($type == "dir") {
 	    $oField->base_type = "Text";
 	    $oField->extended_type = "File";
 	    $oField->control_type = "file";
-	    $oField->file_max_size = MAX_UPLOAD;
-	    //$oField->file_storing_path = DISK_UPDIR . $_REQUEST["parent"];
-	    //$oField->file_temp_path = DISK_UPDIR . $_REQUEST["parent"];
+	    $oField->file_max_size = Auth::env("MAX_UPLOAD");
+	    //$oField->file_storing_path = FF_DISK_UPDIR . $_REQUEST["parent"];
+	    //$oField->file_temp_path = FF_DISK_UPDIR . $_REQUEST["parent"];
 	    $oField->parent_page = array(&$cm->oPage);
 
 	    $tpl->set_var("name_label", ffTemplate::_get_word_by_code("gallery_add_item"));
@@ -275,7 +275,7 @@ if($type == "dir") {
 		$oRecord->src_table = "";
 		$oRecord->skip_action = true;
 
-		$oRecord->buttons_options["delete"]["display"] = AREA_HTML_SHOW_DELETE;
+		$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_HTML_SHOW_DELETE");
 		$oRecord->addEvent("on_done_action", "HtmlModify_on_done_action");
 		$oRecord->addEvent("on_process_template", "HtmlModify_on_process_template");
 

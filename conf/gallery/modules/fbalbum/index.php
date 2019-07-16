@@ -43,7 +43,7 @@
 		$fbalbum_use_prettyphoto	= $db_gallery->getField("use_prettyphoto", "Number", true);
 		
 
-        $tpl = ffTemplate::factory(get_template_cascading($user_path, "albums.html", "/modules/fbalbum", ffCommon_dirname(__FILE__)));
+        $tpl = ffTemplate::factory(get_template_cascading($user_path, "albums.html", "/modules/fbalbum", __DIR__));
         $tpl->load_file("albums.html", "main");
 
         $tpl->set_var("site_path", FF_SITE_PATH);
@@ -89,7 +89,7 @@
 		
 		if($fbalbum_use_tooltip) {
             if(check_function("get_resource_cascading")) {
-			    get_resource_cascading(&$oPage, $user_path, "jquery." . "qtip" . ".css", CSS_NO_CASCADING, FF_THEME_DIR . "/library/plugins/jquery.qtip2");
+			    get_resource_cascading($oPage, $user_path, "jquery." . "qtip" . ".css", FF_THEME_DIR . "/library/plugins/jquery.qtip2");
             }
     		$oPage->tplAddJs("jQuery.fn.qtip", "jquery.qtip.js", FF_THEME_DIR . "/library/plugins/jquery.qtip2");
 
@@ -101,7 +101,7 @@
 		}
 		
         if(check_function("get_resource_cascading")) {
-		    get_resource_cascading($oPage, $user_path, "jquery." . "fbalbum" . ".css", CSS_NO_CASCADING, FF_THEME_DIR . "/jquery.fbalbum/css");
+		    get_resource_cascading($oPage, $user_path, "jquery." . "fbalbum" . ".css", FF_THEME_DIR . "/jquery.fbalbum/css");
         }
     	$oPage->tplAddJs("jquery.isotope", "jquery.isotope.js", FF_THEME_DIR . "/library/plugins/jquery.isotope");
     	

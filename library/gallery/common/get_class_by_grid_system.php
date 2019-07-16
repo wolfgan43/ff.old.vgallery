@@ -25,7 +25,7 @@
  */
 function get_class_by_grid_system($data, $mode, $res = null) {
 	$cm = cm::getInstance();
-	$framework_css = cm_getFrameworkCss();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 
 	switch($mode) {
 		case "wrap":
@@ -34,10 +34,10 @@ function get_class_by_grid_system($data, $mode, $res = null) {
 					$res = true;
 				break;
 			    case 1:
-					$res = cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : ""));
+					$res = Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : ""));
 				break;
 			    case 2:
-					$res = cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid"));
+					$res = Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid"));
 				break;
 			    default:
 					$res = false;
@@ -49,8 +49,8 @@ function get_class_by_grid_system($data, $mode, $res = null) {
 					$arrColumnControl[$label_col_key] = 12 - ($label_col_value == 12 ? 0 : $label_col_value);
 				}
 
-				$res["img"] = cm_getClassByFrameworkCss($data["grid"], "col", $data["class"]["left"]);
-				$res["desc"] = cm_getClassByFrameworkCss($arrColumnControl, "col", $data["class"]["right"]);		
+				$res["img"] = Cms::getInstance("frameworkcss")->get($data["grid"], "col", $data["class"]["left"]);
+				$res["desc"] = Cms::getInstance("frameworkcss")->get($arrColumnControl, "col", $data["class"]["right"]);
 			}
 			$res["location"] = ($data && $data["location"] ? "Bottom" : "Top");			
 			break;
@@ -63,12 +63,12 @@ function get_class_by_grid_system($data, $mode, $res = null) {
 					case -1:
 						$fluid = ($framework_css["is_fluid"] ? "-fluid" : "");
 					    $res["grid"] = false;
-					    $res["grid_alt"] = cm_getClassByFrameworkCss("", "row" . $fluid, "col");
+					    $res["grid_alt"] = Cms::getInstance("frameworkcss")->get("", "row" . $fluid, "col");
 					    break;
 					case -2:
 					    $fluid = ($framework_css["is_fluid"] ? "" : "-fluid");
 					    $res = false;
-					    $res["grid_alt"] = cm_getClassByFrameworkCss("", "row" . $fluid, "col");
+					    $res["grid_alt"] = Cms::getInstance("frameworkcss")->get("", "row" . $fluid, "col");
 					    break;
 					case -3:
 					    $fluid = false;
@@ -81,13 +81,13 @@ function get_class_by_grid_system($data, $mode, $res = null) {
 					    break;
 					case 2:
 					    $fluid = ($framework_css["is_fluid"] ? "-fluid" : "");
-					    $res["grid"] = cm_getClassByFrameworkCss($data["grid"], "col", array("skip-prepost" => true));
+					    $res["grid"] = Cms::getInstance("frameworkcss")->get($data["grid"], "col", array("skip-prepost" => true));
 					    $res["grid_alt"] = false;
 					    break;
 					default:
 					    $fluid = ($framework_css["is_fluid"] ? "-fluid" : "");
 					    if($data["grid"])
-							$res["grid"] = cm_getClassByFrameworkCss($data["grid"], "col");
+							$res["grid"] = Cms::getInstance("frameworkcss")->get($data["grid"], "col");
 						else
 							$res["grid"] = false;
 						$res["grid_alt"] = false;
@@ -127,7 +127,7 @@ function get_class_by_grid_system_def($def, $res = array(), $output = null) {
 
 function get_class_layout_by_grid_system($type = null, $class = null, $fluid = null, $col = null, $wrap = null, $width = null, $res = array()) {
     $cm = cm::getInstance();
-	$framework_css = cm_getFrameworkCss();
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 
     if($type)
     	$res["class"]["type"] = $type;
@@ -207,7 +207,7 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
 
         if($res["grid_isset"]) {
             if($col) {
-                $res["class"]["grid"] = cm_getClassByFrameworkCss(
+                $res["class"]["grid"] = Cms::getInstance("frameworkcss")->get(
                             $col
                             , "col" . $res["fluid"] 
                             , $res["fluid_params"]
@@ -215,10 +215,10 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
             } else {
                 $res["grid_isset"] = false;
                 
-                $row = cm_getClassByFrameworkCss("", "row" . $res["fluid"]);
+                $row = Cms::getInstance("frameworkcss")->get("", "row" . $res["fluid"]);
             }
         } elseif($res["grid_isset"] === false) {
-            $row = cm_getClassByFrameworkCss("", "row" . $res["fluid"]);
+            $row = Cms::getInstance("frameworkcss")->get("", "row" . $res["fluid"]);
         }                
 
 		if($row) {
@@ -231,7 +231,7 @@ function get_class_layout_by_grid_system($type = null, $class = null, $fluid = n
         if($res["wrap"] !== false) {
         	$wrap = array("wrap");
             if($res["wrap"] !== true)
-            	$wrap[] = cm_getClassByFrameworkCss("", "wrap" . $res["wrap"]);
+            	$wrap[] = Cms::getInstance("frameworkcss")->get("", "wrap" . $res["wrap"]);
 
             $res["wrap"] = implode(" ", $wrap);    
         }

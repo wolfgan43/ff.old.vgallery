@@ -4,9 +4,9 @@ require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 $db = ffDB_Sql::factory();
 
 $is_owner = false;
-if (!AREA_DRAFT_SHOW_MODIFY) {
+if (!Auth::env("AREA_DRAFT_SHOW_MODIFY")) {
 	$owner = $_REQUEST["owner"];
-	if($owner == get_session("UserNID")) {
+	if($owner == Auth::get("user")->id) {
     	use_cache(false);
     	$is_owner = true;
 	} else {
@@ -43,11 +43,11 @@ $oRecord->id = "DraftModify";
 $oRecord->resources[] = $oRecord->id;
 //$oRecord->title = ffTemplate::_get_word_by_code("drafts_modify_title");
 $oRecord->src_table = "drafts";
-$oRecord->buttons_options["delete"]["display"] = AREA_DRAFT_SHOW_DELETE;
+$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_DRAFT_SHOW_DELETE");
 $oRecord->buttons_options["print"]["display"] = false;
 $oRecord->addEvent("on_done_action", "DraftModify_on_done_action");
 /* Title Block */
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . cm_getClassByFrameworkCss("vg-draft", "icon-tag", array("2x", "content")) . $title_draft . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . Cms::getInstance("frameworkcss")->get("vg-draft", "icon-tag", array("2x", "content")) . $title_draft . '</h1>';
 	
 $oField = ffField::factory($cm->oPage);
 $oField->id = "ID";
@@ -80,7 +80,7 @@ if($globals->ID_domain > 0) {
 	}	
 }
 
-$oRecord->insert_additional_fields["owner"] =  new ffData(get_session("UserNID"), "Number");
+$oRecord->insert_additional_fields["owner"] =  new ffData(Auth::get("user")->id, "Number");
 $oRecord->additional_fields = array("last_update" =>  new ffData(time(), "Number"));
 
 $cm->oPage->addContent($oRecord);   

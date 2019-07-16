@@ -107,22 +107,22 @@ function repair_langing_place($ID, $place, $visible = null)
             , "permalink"                   => " permalink = IF(permalink = '', " . $db->tosql(str_replace(
                         array("[PLACE]", "[PLACE_SMART_URL]")
                         , array($place_name, $place_smart_url)
-                        , global_settings("PLACE_" . $type . "_PERMALINK_PROTOTYPE")
+                        , Cms::env("PLACE_" . $type . "_PERMALINK_PROTOTYPE")
                     )) . ", permalink) "
             , "meta_title"                  => " meta_title = IF(meta_title = '', " . $db->tosql(str_replace(
                         array("[PLACE]", "[PLACE_SMART_URL]")
                         , array($place_name, $place_smart_url)
-                        , global_settings("PLACE_" . $type . "_TITLE_PROTOTYPE")
+                        , Cms::env("PLACE_" . $type . "_TITLE_PROTOTYPE")
                     )) . ", meta_title) "
             , "meta_description"            => " meta_description = IF(meta_description = '', " . $db->tosql(str_replace(
                         array("[PLACE]", "[PLACE_SMART_URL]")
                         , array($place_name, $place_smart_url)
-                        , global_settings("PLACE_" . $type . "_DESCRIPTION_PROTOTYPE")
+                        , Cms::env("PLACE_" . $type . "_DESCRIPTION_PROTOTYPE")
                     )) . ", meta_description) "
             , "h1"                          => " h1 = IF(h1 = '', " . $db->tosql(str_replace(
                         array("[PLACE]", "[PLACE_SMART_URL]")
                         , array($place_name, $place_smart_url)
-                        , global_settings("PLACE_" . $type . "_HEADER_PROTOTYPE")
+                        , Cms::env("PLACE_" . $type . "_HEADER_PROTOTYPE")
                     )) . ", h1) "
             );
 
@@ -279,7 +279,7 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
     $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/city?ID_state=[ID_VALUE]";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("place_city");
-    $oButton->icon = cm_getClassByFrameworkCss("building", "icon-tag");
+    $oButton->icon = Cms::getInstance("frameworkcss")->get("building", "icon-tag");
     $oButton->display = false;
     $oGrid->addGridButton($oButton);
 
@@ -289,7 +289,7 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
     $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/province?ID_state=[ID_VALUE]";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("place_province");
-    $oButton->icon = cm_getClassByFrameworkCss("map-o", "icon-tag");
+    $oButton->icon = Cms::getInstance("frameworkcss")->get("map-o", "icon-tag");
     $oButton->display = false;
     $oGrid->addGridButton($oButton);
 
@@ -299,7 +299,7 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
     $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/region?ID_state=[ID_VALUE]";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("place_region");
-    $oButton->icon = cm_getClassByFrameworkCss("globe", "icon-tag");
+    $oButton->icon = Cms::getInstance("frameworkcss")->get("globe", "icon-tag");
     $oButton->display = false;
     $oGrid->addGridButton($oButton);
 
@@ -439,7 +439,7 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
     $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/city?ID_region=[ID_VALUE]";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("place_city");
-    $oButton->icon = cm_getClassByFrameworkCss("building", "icon-tag");
+    $oButton->icon = Cms::getInstance("frameworkcss")->get("building", "icon-tag");
     $oButton->display = false;
     $oGrid->addGridButton($oButton);
 
@@ -449,7 +449,7 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
     $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/province?ID_region=[ID_VALUE]";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("place_province");
-    $oButton->icon = cm_getClassByFrameworkCss("map-o", "icon-tag");
+    $oButton->icon = Cms::getInstance("frameworkcss")->get("map-o", "icon-tag");
     $oButton->display = false;
     $oGrid->addGridButton($oButton);
 
@@ -607,7 +607,7 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
     $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/city?ID_province=[ID_VALUE]";
     $oButton->aspect = "link";
     $oButton->label = ffTemplate::_get_word_by_code("place_city");
-    $oButton->icon = cm_getClassByFrameworkCss("building", "icon-tag");
+    $oButton->icon = Cms::getInstance("frameworkcss")->get("building", "icon-tag");
     $oButton->display = false;
     $oGrid->addGridButton($oButton);
 
@@ -820,10 +820,10 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
         if(isset($component->grid_buttons["visible"])) {
             if($component->db[0]->getField("permalink", "Text", true) && $component->db[0]->getField("visible", "Number", true)) {
                 $component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->user_vars["url"] . "setvisible=0";
-                $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye", "icon");
+                $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             } else {
                 $component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->user_vars["url"] . "setvisible=1";
-                $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+                $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             }
         }
     }

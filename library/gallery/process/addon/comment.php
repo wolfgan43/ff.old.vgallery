@@ -13,11 +13,6 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
     	
     $layout_settings = $layout["settings"];
 
-	$UserNID = get_session("UserNID");
-	$UserID = get_session("UserID");	
-	
-	$buffer = "";
-
 	if(is_numeric($form) && $form > 0)
 		$sSQL_cond = "module_form.ID = " . $db->toSql($form, "Number");
 	else
@@ -44,9 +39,9 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
 			$limit_by_groups = $db->getField("limit_by_groups")->getValue();
 			if(strlen($limit_by_groups)) {
 				$limit_by_groups = explode(",", $limit_by_groups);
-				$user_permission = get_session("user_permission"); 			
+                $user = Auth::get("user");
 
-				if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+				if(array_search($user->acl, $limit_by_groups) !== false) {
 					$allow_form = true;
 					$strErrorForm = "";
 				} else {
@@ -210,7 +205,7 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
                 $oRecord->buttons_options["insert"]["label"] = ffTemplate::_get_word_by_code(preg_replace('/[^a-zA-Z0-9]/', '', $form_name) . "_insert");
             }
 
-			if($UserID == MOD_SEC_GUEST_USER_NAME && $layout_settings["AREA_COMMENT_SHOW_FORM_ANONYMOUS"]) {
+			if(Auth::isGuest() && $layout_settings["AREA_COMMENT_SHOW_FORM_ANONYMOUS"]) {
         		$oRecord->addContent(null, true, "anonymous");
 				$oRecord->groups["anonymous"] = array(
 				                                         "title" => ffTemplate::_get_word_by_code("form_anonymous")
@@ -506,7 +501,7 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
 
 				        $obj_page_field->file_storing_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/form/" . $form_name . "/comment/[form-ID_VALUE]";
 				        $obj_page_field->file_temp_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/form/" . $form_name . "/comment";
-				        $obj_page_field->file_max_size = MAX_UPLOAD;
+				        $obj_page_field->file_max_size = Auth::env("MAX_UPLOAD");
 
 						$obj_page_field->file_show_filename = true; 
 						$obj_page_field->file_full_path = true;
@@ -514,10 +509,10 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
 						$obj_page_field->file_normalize = true;
 						 
 						$obj_page_field->file_show_preview = true;
-				        $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-				        $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//				        $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//				        $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+				        $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+				        $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//				        $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//				        $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
 					    if($writable) {
 					        $obj_page_field->control_type = "file";
@@ -550,7 +545,7 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
 
 				        $obj_page_field->file_storing_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/form/" . $form_name . "/comment/[form-ID_VALUE]";
 				        $obj_page_field->file_temp_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/form/" . $form_name . "/comment";
-				        $obj_page_field->file_max_size = MAX_UPLOAD;
+				        $obj_page_field->file_max_size = Auth::env("MAX_UPLOAD");
 
 						$obj_page_field->file_show_filename = true; 
 						$obj_page_field->file_full_path = true;
@@ -558,10 +553,10 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
 						$obj_page_field->file_normalize = true;
 						 
 						$obj_page_field->file_show_preview = true;
-				        $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-				        $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//				        $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//				        $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+				        $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+				        $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//				        $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//				        $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
 					    if($writable) {
 					        $obj_page_field->control_type = "file";
@@ -594,7 +589,7 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
 
 				        $obj_page_field->file_storing_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/form/" . $form_name . "/comment/[form-ID_VALUE]";
 				        $obj_page_field->file_temp_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/form/" . $form_name . "/comment";
-				        $obj_page_field->file_max_size = MAX_UPLOAD;
+				        $obj_page_field->file_max_size = Auth::env("MAX_UPLOAD");
 
 						$obj_page_field->file_show_filename = true; 
 						$obj_page_field->file_full_path = true;
@@ -602,10 +597,10 @@ function process_addon_comment($ID_vgallery_node, $form, $uid = null, $user_path
 						$obj_page_field->file_normalize = true;
 						 
 						$obj_page_field->file_show_preview = true;
-				        $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-				        $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//				        $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//				        $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+				        $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+				        $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//				        $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//				        $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
 					    if($writable) {
 					        $obj_page_field->control_type = "file";

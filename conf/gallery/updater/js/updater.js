@@ -1,4 +1,8 @@
+var startH1 = "";
+var startTitle = "";
 jQuery(function() {
+    startH1 = jQuery("H1").text();
+    startTitle = jQuery("TITLE").text();
 	jQuery("#Updater").parent().append('<div class="actions" />'); 
 	jQuery("#Updater").parent().children(".actions").append("<div class=\"unatantum\"><input type=\"checkbox\" id=\"unatantum\" name=\"unatantum\" value=\"1\" /><label>Clone data from Master site</label></div>");
     jQuery("#Updater").parent().children(".actions").append("<input class=\"button noactivebuttons hidden\" type=\"button\" id=\"btstop\" name=\"btstop\" value=\"stop\" />");
@@ -26,6 +30,9 @@ jQuery(function() {
 	});
     
 	jQuery("#check").click(function()  {
+		jQuery("H1").text("Check Database...");
+        jQuery("TITLE").text("Check Database...");
+
 		UpdaterDisplayButton(false);
 		
 		Updater(false);
@@ -35,6 +42,9 @@ jQuery(function() {
 	});
 
     jQuery("#execute").click(function()  {
+        jQuery("H1").text("Updating Database...");
+        jQuery("TITLE").text("Updating Database...");
+
 		UpdaterDisplayButton(false);
         
     	Updater(true);
@@ -58,10 +68,13 @@ function UpdaterDisplayButton(stop) {
 		}
 	}
 	if(stop) {
+        jQuery("H1").text(startH1);
+        jQuery("TITLE").text(startTitle);
+
 		jQuery("#unatantum").removeAttr("disabled").css("opacity", "1");
         jQuery("#check").removeAttr("disabled").css("opacity", "1");
 		jQuery("#execute").removeAttr("disabled").css("opacity", "1");
-		jQuery("#btstop").addClass("hidden");  
+		jQuery("#btstop").addClass("hidden");
 	} else {
         jQuery("#unatantum").attr("disabled", "disabled").css("opacity", "0.5"); 
     	jQuery("#check").attr("disabled", "disabled").css("opacity", "0.5"); 

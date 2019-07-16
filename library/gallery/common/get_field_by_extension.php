@@ -50,7 +50,7 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
         , "val_max" => 0
         , "val_step" => 0
         , "file_multi" => false
-        , "file_max_upload" => MAX_UPLOAD
+        , "file_max_upload" => Auth::env("MAX_UPLOAD")
         , "file_allowed_ext" => ""
         , "file_storing_path" => ""
         , "file_saved_view_url" => ""
@@ -477,9 +477,9 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
             $obj_page_field->base_type = "Text";
             $obj_page_field->extended_type = "File";
 
-            $obj_page_field->file_storing_path = (strlen($params["file_storing_path"]) ? $params["file_storing_path"] : DISK_UPDIR . "[" . $params["ID"] . "_VALUE]"
+            $obj_page_field->file_storing_path = (strlen($params["file_storing_path"]) ? $params["file_storing_path"] : FF_DISK_UPDIR . "[" . $params["ID"] . "_VALUE]"
                     );
-            $obj_page_field->file_temp_path = (strlen($params["file_temp_path"]) ? $params["file_temp_path"] : DISK_UPDIR . "/tmp"
+            $obj_page_field->file_temp_path = (strlen($params["file_temp_path"]) ? $params["file_temp_path"] : FF_DISK_UPDIR . "/tmp"
                     );
 
             $obj_page_field->file_multi = $params["file_multi"];
@@ -502,11 +502,11 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
             /*
               $obj_page_field->file_saved_view_url = (strlen($params["file_saved_view_url"])
               ? $params["file_saved_view_url"]
-              : FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]"
+              : CM_SHOWFILES . "/[_FILENAME_]"
               );
               $obj_page_field->file_saved_preview_url = (strlen($params["file_saved_preview_url"])
               ? $params["file_saved_preview_url"]
-              : FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]"
+              : CM_SHOWFILES . "/thumb/[_FILENAME_]"
               );
              */
             if ($params["writable"]) {
@@ -538,11 +538,11 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
 
             $obj_page_field->file_storing_path = (strlen($params["file_storing_path"]) 
                                                     ? $params["file_storing_path"] 
-                                                    : DISK_UPDIR . "[" . $params["ID"] . "_VALUE]"
+                                                    : FF_DISK_UPDIR . "[" . $params["ID"] . "_VALUE]"
                                                 );
             $obj_page_field->file_temp_path = (strlen($params["file_temp_path"]) 
                                                 ? $params["file_temp_path"] 
-                                                : DISK_UPDIR . "/tmp"
+                                                : FF_DISK_UPDIR . "/tmp"
                                             );
 
             $obj_page_field->file_multi = $params["file_multi"];
@@ -565,11 +565,11 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
             /*
               $obj_page_field->file_saved_view_url = (strlen($params["file_saved_view_url"])
               ? $params["file_saved_view_url"]
-              : FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]"
+              : CM_SHOWFILES . "/[_FILENAME_]"
               );
               $obj_page_field->file_saved_preview_url = (strlen($params["file_saved_preview_url"])
               ? $params["file_saved_preview_url"]
-              : FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]"
+              : CM_SHOWFILES . "/thumb/[_FILENAME_]"
               );
              */
 
@@ -600,9 +600,9 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
             $obj_page_field->base_type = "Text";
             $obj_page_field->extended_type = "File";
 
-            $obj_page_field->file_storing_path = (strlen($params["file_storing_path"]) ? $params["file_storing_path"] : DISK_UPDIR . "[" . $params["ID"] . "_VALUE]"
+            $obj_page_field->file_storing_path = (strlen($params["file_storing_path"]) ? $params["file_storing_path"] : FF_DISK_UPDIR . "[" . $params["ID"] . "_VALUE]"
                     );
-            $obj_page_field->file_temp_path = (strlen($params["file_temp_path"]) ? $params["file_temp_path"] : DISK_UPDIR . "/tmp"
+            $obj_page_field->file_temp_path = (strlen($params["file_temp_path"]) ? $params["file_temp_path"] : FF_DISK_UPDIR . "/tmp"
                     );
 
             $obj_page_field->file_multi = $params["file_multi"];
@@ -625,11 +625,11 @@ function get_field_by_extension(&$obj_page_field, $params = array(), $ext = null
             /*
               $obj_page_field->file_saved_view_url = (strlen($params["file_saved_view_url"])
               ? $params["file_saved_view_url"]
-              : FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]"
+              : CM_SHOWFILES . "/[_FILENAME_]"
               );
               $obj_page_field->file_saved_preview_url = (strlen($params["file_saved_preview_url"])
               ? $params["file_saved_preview_url"]
-              : FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]"
+              : CM_SHOWFILES . "/thumb/[_FILENAME_]"
               );
              */
 
@@ -843,7 +843,7 @@ function get_field_by_extension_form($obj_page_field, $params = array()) {
                                             SELECT DISTINCT
                                                 vgallery_rel_nodes_fields.description AS nameID
                                                 , vgallery_rel_nodes_fields.description  AS name
-                                                " . (AREA_SHOW_ECOMMERCE && strlen($params["type"]) ? " , '' AS qta
+                                                " . (Cms::env("AREA_SHOW_ECOMMERCE") && strlen($params["type"]) ? " , '' AS qta
                                                         , '' AS price
                                                         , '' AS vat
                                                         , '' AS weight" : ""
@@ -899,7 +899,7 @@ function get_field_by_extension_form($obj_page_field, $params = array()) {
                 break;
         }
 
-        if (strlen($params["source_SQL"]) && (AREA_SHOW_ECOMMERCE && $params["form"]["enable_ecommerce"] && strlen($params["type"]))) {
+        if (strlen($params["source_SQL"]) && (Cms::env("AREA_SHOW_ECOMMERCE") && $params["form"]["enable_ecommerce"] && strlen($params["type"]))) {
             $selection_value = array();
             $selection_user_vars = null;
             $source_SQL_key = md5($params["source_SQL"]);
@@ -912,7 +912,7 @@ function get_field_by_extension_form($obj_page_field, $params = array()) {
             if ($db->nextRecord()) {
                 $old_qta = 0;
                 do {
-                    if (AREA_SHOW_ECOMMERCE && $params["form"]["enable_ecommerce"] && strlen($params["type"])) {
+                    if (Cms::env("AREA_SHOW_ECOMMERCE") && $params["form"]["enable_ecommerce"] && strlen($params["type"])) {
                         switch ($params["type"]) {
                             case "multiplier":
                                 $nameID = $db->getField("qta", "Number", true);
@@ -1116,11 +1116,11 @@ function get_field_by_extension_form($obj_page_field, $params = array()) {
         case "Image":
         case "Upload":
         case "UploadImage":
-            $obj_page_field->file_storing_path = DISK_UPDIR . $params["path"] . $params["form"]["name"] . "/[form-ID_VALUE]";
-            $obj_page_field->file_temp_path = DISK_UPDIR . $params["path"] . $params["form"]["name"];
+            $obj_page_field->file_storing_path = FF_DISK_UPDIR . $params["path"] . $params["form"]["name"] . "/[form-ID_VALUE]";
+            $obj_page_field->file_temp_path = FF_DISK_UPDIR . $params["path"] . $params["form"]["name"];
             break;
         case "Number":
-            if (AREA_SHOW_ECOMMERCE && $params["form"]["enable_ecommerce"] && strlen($params["type"] == "multiplier")) {
+            if (Cms::env("AREA_SHOW_ECOMMERCE") && $params["form"]["enable_ecommerce"] && strlen($params["type"] == "multiplier")) {
                 $db->query($params["source_SQL"]);
                 if ($db->nextRecord()) {
                     do {
@@ -1176,7 +1176,7 @@ function get_field_by_extension_form($obj_page_field, $params = array()) {
             case "shippingprovince":
             case "shippingtown":
             case "shippingstate":
-                if(get_session("UserID") != MOD_SEC_GUEST_USER_NAME && check_function("get_user_data")) {
+                if(!Auth::isGuest() && check_function("get_user_data")) {
                     $obj_page_field->default_value = new ffData(get_user_data($params["preload_by_db"]), $params["ff_extended_type"]);
                 }
             default:
@@ -1221,7 +1221,7 @@ function get_field_by_extension_vgallery($obj_page_field, $params = array()) {
                                 SELECT anagraph.ID
                                     , CONCAT(anagraph.name, ' ', anagraph.surname) AS display_name
                                     , IF(anagraph.avatar = ''
-                                        , '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+                                        , '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
                                         , CONCAT('<img src=\"" . CM_SHOWFILES . "/32x32', anagraph.avatar, '\" />')  
                                     ) AS image 
                                 FROM anagraph
@@ -1271,7 +1271,7 @@ function get_field_by_extension_vgallery($obj_page_field, $params = array()) {
                                                     [HAVING]
                                                     [ORDER] [COLON] module_form.name
                                                     [LIMIT]";
-                    if (AREA_MODULES_SHOW_MODIFY) {
+                    if (Auth::env("AREA_MODULES_SHOW_MODIFY")) {
                         $obj_page_field->actex_dialog_url = $cm->oPage->site_path . VG_SITE_RESTRICTED . "/modules/form/extra?clonename=" . urlencode(ucwords(str_replace("-", " ", $params["vgallery_node_name"])));
                         $obj_page_field->actex_dialog_edit_params = array("name" => null);
                         $obj_page_field->actex_dialog_delete_url = $cm->oPage->site_path . VG_SITE_RESTRICTED . "/modules/form/extra?frmAction=FormExtraFieldModify_confirmdelete";
@@ -1685,8 +1685,8 @@ function get_field_by_extension_register($obj_page_field, $params = array()) {
         case "Image":
         case "Upload": 
         case "UploadImage":
-            $obj_page_field->file_storing_path = DISK_UPDIR . $params["path"] . $params["form"]["name"] . "/[form-ID_VALUE]";
-            $obj_page_field->file_temp_path = DISK_UPDIR . $params["path"] . $params["form"]["name"];
+            $obj_page_field->file_storing_path = FF_DISK_UPDIR . $params["path"] . $params["form"]["name"] . "/[form-ID_VALUE]";
+            $obj_page_field->file_temp_path = FF_DISK_UPDIR . $params["path"] . $params["form"]["name"];
             break;
         case "Number":
             break; 
@@ -1725,7 +1725,7 @@ function get_field_by_extension_register($obj_page_field, $params = array()) {
             case "shippingprovince":
             case "shippingtown":
             case "shippingstate":
-                if(get_session("UserID") != MOD_SEC_GUEST_USER_NAME && check_function("get_user_data")) {
+                if(!Auth::isGuest() && check_function("get_user_data")) {
                     $obj_page_field->default_value = new ffData(get_user_data($params["preload_by_db"]), $params["ff_extended_type"]);
                 }
             default:
@@ -2049,7 +2049,7 @@ function get_field_by_extension_search($obj_page_field, $params = array()) {
             case "shippingprovince":
             case "shippingtown":
             case "shippingstate":
-                if(get_session("UserID") != MOD_SEC_GUEST_USER_NAME && check_function("get_user_data")) {
+                if(!Auth::isGuest() && check_function("get_user_data")) {
                     //$obj_page_field->default_value = new ffData(get_user_data($params["preload_by_db"]), $params["ff_extended_type"]);
                 }
             default:
@@ -2153,8 +2153,8 @@ function get_field_by_extension_cart($obj_page_field, $params = array()) {
         case "Image":
         case "Upload": 
         case "UploadImage":
-            $obj_page_field->file_storing_path = DISK_UPDIR . $params["path"] . $params["form"]["name"] . "/[form-ID_VALUE]";
-            $obj_page_field->file_temp_path = DISK_UPDIR . $params["path"] . $params["form"]["name"];
+            $obj_page_field->file_storing_path = FF_DISK_UPDIR . $params["path"] . $params["form"]["name"] . "/[form-ID_VALUE]";
+            $obj_page_field->file_temp_path = FF_DISK_UPDIR . $params["path"] . $params["form"]["name"];
             break;
         case "Number":
             break; 
@@ -2193,7 +2193,7 @@ function get_field_by_extension_cart($obj_page_field, $params = array()) {
             case "shippingprovince":
             case "shippingtown":
             case "shippingstate":
-                if(get_session("UserID") != MOD_SEC_GUEST_USER_NAME && check_function("get_user_data")) {
+                if(!Auth::isGuest() && check_function("get_user_data")) {
                     $obj_page_field->default_value = new ffData(get_user_data($params["preload_by_db"]), $params["ff_extended_type"]);
                 }
             default:

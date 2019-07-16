@@ -1,7 +1,7 @@
 <?php
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -54,14 +54,14 @@ $oRecord->resources[] = $oRecord->id;
 $oRecord->resources[] = "modules";
 //$oRecord->title = ffTemplate::_get_word_by_code("search_modify");
 $oRecord->src_table = "module_search";
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "search")) . $module_search_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "search")) . $module_search_title . '</h1>';
 
 $sSQL = "SELECT cm_layout.* 
         FROM cm_layout 
         WHERE cm_layout.path = " . $db_gallery->toSql("/");
 $db_gallery->query($sSQL);
 if($db_gallery->nextRecord()) {
-    $framework_css = cm_getFrameworkCss($db_gallery->getField("framework_css", "Text", true));
+    $framework_css = Cms::getInstance("frameworkcss")->getFramework($db_gallery->getField("framework_css", "Text", true));
     $template_framework = $framework_css["name"];
 } 
 

@@ -16,7 +16,7 @@ $oRecord->resources[] = $oRecord->id;
 $oRecord->src_table = "vgallery_fields_htmltag";
 $oRecord->display_required_note = FALSE;
 
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-menu">' . cm_getClassByFrameworkCss("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-menu">' . Cms::getInstance("frameworkcss")->get("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $title . '</h1>';
 
 
 $oField = ffField::factory($cm->oPage);

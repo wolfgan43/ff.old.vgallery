@@ -1,9 +1,12 @@
 <?php
+
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_VGALLERY_SHOW_MODIFY) {
+if (!Auth::env("AREA_VGALLERY_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
+
+$_REQUEST["createnew"] = true;
 
 if(isset($_REQUEST["frmAction"]) && isset($_REQUEST["setstatus"]) && $_REQUEST["keys"]["ID"] > 0) {
     $sSQL = "UPDATE vgallery
@@ -122,7 +125,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 	$oRecord->resources[] = $oRecord->id;
 	//$oRecord->title = ffTemplate::_get_word_by_code("admin_vgallery_modify_title");
     
-    $oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . cm_getClassByFrameworkCss("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $vgallery_title . '<span class="smart-url">' . $vgallery_name . '</span>' .'</h1>';
+    $oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content">' . Cms::getInstance("frameworkcss")->get("vg-virtual-gallery", "icon-tag", array("2x", "content")) . $vgallery_title . '<span class="smart-url">' . $vgallery_name . '</span>' .'</h1>';
 
 	$oRecord->addEvent("on_do_action", "VGalleryModify_on_do_action");
 	$oRecord->addEvent("on_done_action", "VGalleryModify_on_done_action");
@@ -420,7 +423,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 	$oRecord->groups["Highlight"] = array(
 										"title" => ffTemplate::_get_word_by_code("admin_vgallery_Highlight")
 										, "cols" => 1
-										, "class" => cm_getClassByFrameworkCss(array(12, 12, 12, 6), "col")
+										, "class" => Cms::getInstance("frameworkcss")->get(array(12, 12, 12, 6), "col")
 									 );	*/
 	$oField = ffField::factory($cm->oPage);
 	$oField->id = "enable_highlight";
@@ -461,7 +464,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 	$oRecord->addContent($oField, $group_settings);*/
 
 
-	if(AREA_SHOW_ECOMMERCE) {
+	if(Cms::env("AREA_SHOW_ECOMMERCE")) {
 		/*******************************
 		* Ecommerce
 		*/
@@ -529,7 +532,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 	$oRecord->groups["Notice"] = array(
 										"title" => ffTemplate::_get_word_by_code("admin_vgallery_notice")
 										, "cols" => 1
-										, "class" => cm_getClassByFrameworkCss(array(12, 12, 12, 6), "col")
+										, "class" => Cms::getInstance("frameworkcss")->get(array(12, 12, 12, 6), "col")
 									 );	*/
 	$oField = ffField::factory($cm->oPage);
 	$oField->id = "enable_email_notify_on_insert";
@@ -572,7 +575,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 	$oRecord->groups["BackOffice"] = array(
 										"title" => ffTemplate::_get_word_by_code("admin_vgallery_backoffice")
 										, "cols" => 1
-										, "class" => cm_getClassByFrameworkCss(array(12, 12, 12, 6), "col")
+										, "class" => Cms::getInstance("frameworkcss")->get(array(12, 12, 12, 6), "col")
 									 );	*/
 
 	$oField = ffField::factory($cm->oPage);
@@ -788,7 +791,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 	$oRecord->groups["AutoRel"] = array(
 										"title" => ffTemplate::_get_word_by_code("admin_vgallery_auto_relationship")
 										, "cols" => 1
-										, "class" => cm_getClassByFrameworkCss(array(12), "col")
+										, "class" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 									 );	
 */
 
@@ -925,8 +928,8 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$oField->base_type = "Text";
 		$oField->control_type = "file";
 		$oField->extended_type = "File";
-		$oField->file_storing_path = DISK_UPDIR . "/vgallery/[name_VALUE]";
-		$oField->file_temp_path = DISK_UPDIR . "/vgallery";
+		$oField->file_storing_path = FF_DISK_UPDIR . "/vgallery/[name_VALUE]";
+		$oField->file_temp_path = FF_DISK_UPDIR . "/vgallery";
 		$oField->file_allowed_mime = array();	                
 		$oField->file_full_path = true;
 		$oField->file_check_exist = true;
@@ -935,8 +938,8 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$oField->file_writable = false;
 		$oField->file_normalize = true;
 		$oField->file_show_preview = true;
-		$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/vgallery/[name_VALUE]/[_FILENAME_]";
-		$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/100x100/vgallery/[name_VALUE]/[_FILENAME_]";
+		$oField->file_saved_view_url = CM_SHOWFILES . "/vgallery/[name_VALUE]/[_FILENAME_]";
+		$oField->file_saved_preview_url = CM_SHOWFILES . "/100x100/vgallery/[name_VALUE]/[_FILENAME_]";
 		
 		$oField->widget = "uploadify";
 		if(check_function("set_field_uploader")) { 
@@ -1027,6 +1030,26 @@ function VGalleryModify_on_do_action($component, $action) {
 				}
 	            break;
 	        case "update":
+                $limit_type_ori = $component->form_fields["limit_type_node"]->value_ori->getValue()
+                    . (strlen($component->form_fields["limit_type_dir"]->value_ori->getValue())
+                        ? "," . $component->form_fields["limit_type_dir"]->value_ori->getValue()
+                        : ""
+                    );
+
+                $limit_type = $component->form_fields["limit_type_node"]->getValue()
+                    . (strlen($component->form_fields["limit_type_dir"]->getValue())
+                        ? "," . $component->form_fields["limit_type_dir"]->getValue()
+                        : ""
+                    );
+                if($limit_type != $limit_type_ori) {
+                    $sSQL = "SELECT vgallery_nodes.ID FROM vgallery_nodes WHERE vgallery_nodes.ID_vgallery = " . $db->toSql($component->key_fields["ID"]->value);
+                    $db->query($sSQL);
+                    if ($db->nextRecord()) {
+                        $component->tplDisplayError("Sono già presenti degli elementi in questa vgallery. Prima di cambiare la struttura è necessario eliminare tutti gli elementi");
+                        return true;
+                    }
+                }
+
 	                $db->query("SELECT * 
 	                            FROM vgallery
 	                            WHERE vgallery.name = " . $db->toSql(ffCommon_url_rewrite($component->form_fields["name"]->getValue())) . "
@@ -1153,7 +1176,7 @@ function VGalleryModify_on_done_action ($component, $action) {
 	                            , '1'
 	                            , " . $db->toSql(new ffData(time(), "Number")) . "
 	                            , " . $db->toSql($visible, "Number") . "
-		                        , " . $db->toSql(get_session("UserNID"), "Number") . "
+		                        , " . $db->toSql(Auth::get("user")->id, "Number") . "
 	                        )";
 	            $db->execute($sSQL);
                 $ID_node = $db->getInsertID(true);
@@ -1217,7 +1240,7 @@ function VGalleryModify_on_done_action ($component, $action) {
 		                            , '1'
 		                            , " . $db->toSql(new ffData(time(), "Number")) . "
 		                            , '1'
-		                            , " . $db->toSql(get_session("UserNID"), "Number") . "
+		                            , " . $db->toSql(Auth::get("user")->id, "Number") . "
 		                        )";
 		            $db->execute($sSQL);
 		            $ID_node = $db->getInsertID(true);
@@ -1333,4 +1356,3 @@ function VGalleryModify_on_done_action ($component, $action) {
         }
 	}    
 }
-?>

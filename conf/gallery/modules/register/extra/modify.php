@@ -4,7 +4,7 @@ require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
 $db = ffDB_Sql::factory();
 
-if (!AREA_MODULES_SHOW_MODIFY) {
+if (!Auth::env("AREA_MODULES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -115,7 +115,7 @@ $oRecord->insert_additional_fields["ID_module"] = new ffData($_REQUEST["keys"]["
 $oRecord->addEvent("on_do_action", "RegisterExtraFieldModify_on_do_action");
 $oRecord->addEvent("on_done_action", "RegisterExtraFieldModify_on_done_action");
 $oRecord->buttons_options["print"]["display"] = false;
-$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . cm_getClassByFrameworkCss("vg-modules", "icon-tag", array("2x", "module", "register")) . $module_register_title . '</h1>';
+$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-module">' . Cms::getInstance("frameworkcss")->get("vg-modules", "icon-tag", array("2x", "module", "register")) . $module_register_title . '</h1>';
 $oRecord->user_vars["system_field"] = $system_field;
 
 $oField = ffField::factory($cm->oPage);
@@ -350,7 +350,7 @@ if ($display_addnew) {
 		        WHERE cm_layout.path = " . $db_gallery->toSql("/");
     $db_gallery->query($sSQL);
     if ($db_gallery->nextRecord()) {
-        $framework_css = cm_getFrameworkCss($db_gallery->getField("framework_css", "Text", true));
+        $framework_css = Cms::getInstance("frameworkcss")->getFramework($db_gallery->getField("framework_css", "Text", true));
         $template_framework = $framework_css["name"];
     }
 

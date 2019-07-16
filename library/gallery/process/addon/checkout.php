@@ -46,7 +46,8 @@ function process_addon_checkout($user_path, $item_title, $item_price, $mpay, $la
 		$tpl_data["result"] = get_template_cascading($user_path, $tpl_data, "/tpl/addon");
 
 		$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-		$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+		//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+        $tpl->load_file($tpl_data["result"]["name"], "main");
 
 	   // $tpl = ffTemplate::factory(get_template_cascading($user_path, "checkout-" . ffCommon_url_rewrite($mpay) . ".html", "/vgallery", null, $layout["location"])); 
 	   // $tpl->load_file("checkout-" . ffCommon_url_normalize($mpay) . ".html", "main");

@@ -47,7 +47,8 @@ function process_vgallery_menu_group($user_path, $group_menu, $search_param = ""
     
     if(check_function("get_grid_system_params"))
     	$menu_params = get_grid_system_menu($layout["template"]);
-    
+
+    $tpl_data["id"] = $unic_id;
 	$tpl_data["custom"] = "menu_group.html";
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
@@ -55,12 +56,13 @@ function process_vgallery_menu_group($user_path, $group_menu, $search_param = ""
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 	
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 	
 	/**
 	* Admin Father Bar
 	*/
-    if(AREA_VGALLERY_GROUP_SHOW_MODIFY) {
+    if(Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY")) {
         $admin_menu["admin"]["unic_name"] = $unic_id;
         $admin_menu["admin"]["title"] = $layout["title"];
         $admin_menu["admin"]["class"] = $layout["type_class"];
@@ -68,17 +70,17 @@ function process_vgallery_menu_group($user_path, $group_menu, $search_param = ""
         $admin_menu["admin"]["addnew"] = "";
         $admin_menu["admin"]["modify"] = "";
         $admin_menu["admin"]["delete"] = "";
-        if(AREA_PROPERTIES_SHOW_MODIFY) {
+        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
             $admin_menu["admin"]["extra"] = "";
         }
-        if(AREA_ECOMMERCE_SHOW_MODIFY) {
+        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
             $admin_menu["admin"]["ecommerce"] = "";
         }
-        if(AREA_LAYOUT_SHOW_MODIFY) {
+        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
             $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
             $admin_menu["admin"]["layout"]["type"] = $layout["type"];
         }
-        if(AREA_SETTINGS_SHOW_MODIFY) {
+        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
             $admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
         }
         

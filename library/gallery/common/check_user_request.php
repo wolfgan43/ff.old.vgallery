@@ -26,17 +26,17 @@
   function check_user_request(&$user, $old_session_id = null, $permanent_session = null) {
   	$cm = cm::getInstance();
     //i global qui nn sono valorizzati
-	if(/*global_settings("ENABLE_ECOMMERCE") &&*/ check_function("ecommerce_cart_merge"))
+	if(check_function("ecommerce_cart_merge"))
 		ecommerce_cart_merge($user, $old_session_id, $permanent_session);
 
   	check_user_form_request($user, $old_session_id, $permanent_session);
   	check_user_vgallery_request($user, $old_session_id, $permanent_session);
     $arrRetUrl = explode("?", $cm->oPage->ret_url);
   	if($arrRetUrl[0] == "/" || $arrRetUrl[0] == "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/") {  	
-		$mod_sec_dashboard = $cm->router->getRuleById("mod_sec_dashboard");
-		if($mod_sec_dashboard)
-			$cm->oPage->ret_url = $mod_sec_dashboard->reverse;  	
-	}  	  	
+		$mod_auth_dashboard = $cm->router->getRuleById("mod_auth_dashboard");
+		if($mod_auth_dashboard)
+			$cm->oPage->ret_url = $mod_auth_dashboard->reverse;
+	}
 
   }
 
@@ -71,7 +71,7 @@ function check_user_form_request($user, $old_session_id = null, $permanent_sessi
         $request_info = false;
     }
     
-    $uid = get_session("UserNID");
+    $uid = Auth::get("user")->id;
     if($uid == $user["ID"])
         set_session("request_info", ($request_info == false ? false : USER_RESTRICTED_PATH . "/additionaldata"));
 
@@ -185,7 +185,7 @@ function check_user_vgallery_request($user, $old_session_id = null, $permanent_s
 		$request_vgallery = false;
 	}
 
-    $uid = get_session("UserNID");
+    $uid = Auth::get("user")->id;
     if($uid == $user["ID"]) {
         set_session("request_vgallery", ($request_vgallery == false || is_array($request_vgallery) ? false : $request_vgallery));
         if(is_array($vgallery_user_path) && count($vgallery_user_path)) {

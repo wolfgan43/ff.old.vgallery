@@ -65,7 +65,7 @@
                                         $disable_scroll = $db_gallery->getField("disableScroll")->getValue();
                                         $disable_drag = $db_gallery->getField("disableDrag")->getValue(); 
                     
-					$tpl = ffTemplate::factory(ffCommon_dirname(ffCommon_dirname(__FILE__)));
+					$tpl = ffTemplate::factory(ffCommon_dirname(__DIR__));
 					$tpl->load_file("maps3.html", "main");
 
 					$tpl->set_var("site_path", FF_SITE_PATH);
@@ -196,7 +196,7 @@
 
 
 
-					$tpl = ffTemplate::factory(ffCommon_dirname(ffCommon_dirname(__FILE__)));
+					$tpl = ffTemplate::factory(ffCommon_dirname(__DIR__));
 					$tpl->load_file("maps.html", "main");
 
 					$tpl->set_var("site_path", FF_SITE_PATH);
@@ -487,7 +487,7 @@
 								$tpl->set_var("icon_width", $icon_width);
 								$tpl->set_var("icon_height", $icon_height);
 
-								$tpl->set_var("icon", FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/" . $map_name . "/" . $icon);
+								$tpl->set_var("icon", CM_SHOWFILES . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/" . $map_name . "/" . $icon);
 								$tpl->parse("SezMarkerIcon", true); 
 							} else {
 								$tpl->parse("SezMarker", true);

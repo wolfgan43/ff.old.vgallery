@@ -23,9 +23,17 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
+if(!function_exists("cache_send_header_content")) {
+    require_once (FF_DISK_PATH . "/library/gallery/system/cache.php");
+}
+
+
 function system_set_cache_page($content) {
+return;
     $globals = ffGlobals::getInstance("gallery");
     $cache_file = $globals->cache["file"];
+
+
 
 	if(is_object($content)) {
 		switch(get_class($content)) {
@@ -44,13 +52,9 @@ function system_set_cache_page($content) {
 
 	$is_error_document = !($buffer && http_response_code() == 200);
 	if(!$is_error_document) {
-		Stats::getInstance("page")->write();
+        Stats::getInstance("page")->write();
 		if (TRACE_VISITOR === true) {
-			require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
-			system_trace(array(
-				"name" => "pageview"
-				, "value" => "nocache"
-			));
+            Stats::getInstance("trace")->write("pageview", "nocache");
 		}
 	}
 
@@ -90,26 +94,129 @@ function system_set_cache_page($content) {
             @unlink($cache["file"]["cache_path"] . "/" . $cache["file"]["filename"] . "." . $cache["file"]["type"]);
     }
 
-    cache_sem_release($globals->cache["sem"]);
+    if(function_exists("cache_sem_release")) {
+        cache_sem_release($globals->cache["sem"]);
+    }
+
+/*    if(DEBUG_PROFILING === true)
+        Cms::getInstance("debug")->benchmark((defined("DISABLE_CACHE")
+            ? "Cache lvl 2 (no cache) "
+            : "Cache lvl 3 (gen cache)"
+        ));
+*/
 
     if(defined("DISABLE_CACHE"))
         cache_send_header_content(false, false, false, false);
     else
         cache_send_header_content(false, false);
 
-	if(DEBUG_PROFILING === true)
-		Stats::benchmark((defined("DISABLE_CACHE")
-        	? "Cache lvl 2 (no cache) "
-        	: "Cache lvl 3 (gen cache)"
-        ));
 
         //ffErrorHandler::raise("DEBUG CM Process End", E_USER_WARNING, null, get_defined_vars());
 
 }
 
+if(!function_exists("cache_sem_release")) {
+    function cache_sem_release(&$arrSem, $message = null) {
+        if(function_exists("sem_release")) {
+            if(is_array($arrSem) && count($arrSem)) {
+                foreach($arrSem AS $key => $sem) {
+                    if($sem["res"] && $sem["acquired"]) {
+                        $released = @sem_release($sem["res"]);
+                        if($sem["remove"] && $released !== false)
+                            $removed = @sem_remove($sem["res"]);
+
+                        Cache::log("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "sem");
+
+                        unset($arrSem[$key]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+if(!function_exists("cache_send_header_content")) {
+    function cache_send_header_content($type = null, $compress = null, $max_age = null, $expires = null, $length = null, $pragma = "!invalid")
+    {
+        //if(!defined("CM_PAGECACHE_KEEP_ALIVE"))
+        //    define("CM_PAGECACHE_KEEP_ALIVE", true);
+
+        //if(CM_PAGECACHE_KEEP_ALIVE)
+        header("Connection: Keep-Alive");
+
+        if($compress !== false && strpos($_SERVER["HTTP_ACCEPT_ENCODING"], "gzip") !== false) {
+            header("Content-Encoding: gzip");
+        }
+
+        switch($type)
+        {
+            case "xml":
+                header("Content-type: text/xml");
+            case "json":
+                header("Content-type: text/javascript");
+                break;
+            case "html":
+            default:
+                header("Content-type: text/html; charset=UTF-8");
+
+        }
+
+        if ($expires !== false)
+        {
+            if ($expires === null)
+            { //da abilitare il max age per vedere se gli piace a webpagetest
+                $expires = time() + (60 * 60 * 24 * 7);
+                //$expires = time() + 7;
+            }
+            elseif ($expires < 0)
+            {
+                $expires = time() - $expires;
+            }
+            $exp_gmt = gmdate("D, d M Y H:i:s", $expires) . " GMT";
+            header("Expires: $exp_gmt");
+        }
+
+        if ($max_age !== false)
+        {
+            if ($max_age === null)
+            {
+                $max_age = 3;
+                header("Cache-Control: public, max-age=$max_age");
+            }
+            else
+            {
+                header("Cache-Control: public, max-age=$max_age");
+            }
+        }
+
+        if($expires === false && $max_age === false)
+        {
+            header('Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
+
+            $expires = time() - 1;
+            $exp_gmt = gmdate("D, d M Y H:i:s", $expires) . " GMT";
+            header("Expires: $exp_gmt");
+
+            $pragma = "no-cache";
+        } else {
+            $mod_gmt = gmdate("D, d M Y H:i:s", time()) . " GMT";
+            header("Last-Modified: $mod_gmt");
+        }
+
+        if($pragma)
+            header("Pragma: " . $pragma);
+
+        if($length)
+            header("Content-Length: " . $length);
+
+        header("Vary: Accept-Encoding");
+    }
+}
+
+
 function system_write_cache_page($user_path, $contents) {
     $globals = ffGlobals::getInstance("gallery");
-
+return;
     $http_status_code = http_response_code();
     if($http_status_code == 200)
         $use_in_sitemap = 1;
@@ -117,7 +224,8 @@ function system_write_cache_page($user_path, $contents) {
     //if(!$skip_strip_path)
         $user_path = $globals->page["strip_path"] . $user_path;
 
-    $cache = check_static_cache_page($user_path, $http_status_code);
+    //$cache = check_static_cache_page($user_path, $http_status_code);
+    $cache = Cache::getInstance("page")->get();
 
     $globals->cache = array_replace($globals->cache, $cache);
     //$globals->cache["sem"] = &$cache["sem"];
@@ -421,90 +529,20 @@ function system_write_cache_stats_old($buffer, $page = null, $expires = null) {
     return $buffer;
 }
 */
-
-function system_write_cache_token_session($user, $old_session_id, $permanent_session = MOD_SECURITY_SESSION_PERMANENT) {
-	if($user["username"] == MOD_SEC_GUEST_USER_ID)
-		return false;
-	if(!$permanent_session)
-		return false;
-
-	$u = array();
-	$user_permission = get_session("user_permission");
-	$account = ($user_permission["username_slug"]
-		? $user_permission["username_slug"]
-		: ($user_permission["username"]
-			? ffCommon_url_rewrite($user_permission["username"])
-			: ffCommon_url_rewrite($user_permission["email"])
-		)
-	);
-	$gid = ($user_permission["primary_gid_name"]
-                ? $user_permission["primary_gid_name"]
-                : $user_permission["primary_gid_default_name"]
-            );
-
-
-	//$precision = 8;
-	$file_token_dir = CM_CACHE_PATH . "/token";
-
-    $token = cache_token_get_session_cookie();
-    if($token) {
-    	$objToken = cache_token_resolve($token, $account);
-		if(is_file($file_token_dir . "/" . $objToken["public"] . ".php")) {
-			require($file_token_dir . "/" . $objToken["public"] . ".php");
-			if($u["uniqid"] == $objToken["private"]) {
-				if($u["expire"] >= time()) {
-					$token_valid = true;
-				}
-			}
-
-			if(!$token_valid)
-				unlink($file_token_dir . "/" . $objToken["public"] . ".php");
-		}
-    } else {
-    	$objToken["new"] = cache_token_generate($account);
-    }
-
-	if(!$token_valid) {
-		//cache_token_set_session_cookie($objToken["new"]);
-
-	    //$u["logs"][$_SERVER["REMOTE_ADDR"]]++;
-	    $u = array(
-			"account" => $user["username"]
-			, "uid" => $user["ID"]
-			, "group" => $gid
-			, "uniqid" => $objToken["new"]["private"]
-			, "expire" => $objToken["new"]["expire"]
-			, "renew" => true
-			, "addr" => $_SERVER["REMOTE_ADDR"]
-			, "agent" => $_SERVER["HTTP_USER_AGENT"] 
-		);
-				
-		cache_token_write($u, $objToken["new"]);
-
-/*
-	    $file_token = $file_token_dir . "/" . $objToken["new"]["public"] . ".php";
-		if(!is_dir($file_token_dir))
-			@mkdir($file_token_dir, 0777, true);
-		
-		$content = "<?php\n";
-		$content .= '$u = ' . var_export($u, true) . ";";
- 		if($handle = @fopen($file_token, 'w')) {
-     		@fwrite($handle, $content); 
-     		@fclose($handle);
-		}*/              
-	}
+function cache_token_get_session_cookie($name = "_ut") {
+    return $_COOKIE[$name];
 }
 
 function system_destroy_cache_token_session() {
 	//$precision = 8;
     //$cookie_name = "_ut";
-    $file_token = CM_CACHE_PATH . "/token.php";
+    $file_token = CM_CACHE_DISK_PATH . "/token.php";
 
 	$token = cache_token_get_session_cookie();
 	if($token) {
 		$objToken = cache_token_resolve($token);
 
-		$file_token = CM_CACHE_PATH . "/token/" . $objToken["public"] . ".php";
+		$file_token = CM_CACHE_DISK_PATH . "/token/" . $objToken["public"] . ".php";
 		if(is_file($file_token)) {
 			require($file_token);
 
@@ -520,7 +558,7 @@ function system_destroy_cache_token_session() {
 		$public = substr($token, 0, strlen($token) - strlen($new_private));
 		$private = substr($token, strlen($public));
 
-		$file_token_dir = CM_CACHE_PATH . "/token";
+		$file_token_dir = CM_CACHE_DISK_PATH . "/token";
 	    $file_token = $file_token_dir . "/" . $public . ".php";
 
 		if(is_file($file_token)) {

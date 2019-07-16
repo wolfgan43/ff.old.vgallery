@@ -60,7 +60,7 @@ function get_thumb($path, $params = array(), $res = null)
 
     $params["base_path"] 	= ($params["base_path"]
 								? $params["base_path"]
-								: FF_DISK_PATH . FF_UPDIR 
+								: FF_DISK_UPDIR
 						    );
     
 /*
@@ -202,7 +202,7 @@ function get_thumb_by_grid_system($path, $params, $thumb_params = array(), $sour
 
 		$extension = ($thumb_params["format"]
 			? $thumb_params["format"]
-			: THUMB_ICO_EXTENSION
+			: "jpg"
 		);
 
 	    if ($mode && !$params["preserve_orig"]) {
@@ -241,21 +241,14 @@ function get_thumb_by_grid_system($path, $params, $thumb_params = array(), $sour
 			}
 	    }
 */
-
 	    $res = array(
-			"src" => (CM_MEDIACACHE_SHOWPATH
-				? CM_MEDIACACHE_SHOWPATH . stripslash(ffCommon_dirname($path)) . "/" . $name_cache_thumb . $ext . "-" . basename($mode) . "." . $extension
-				: CM_SHOWFILES . $mode . $ext . $params["showfiles_path"] . stripslash(ffCommon_dirname($path)) . "/" . $name_cache_thumb . "." . $extension
-			)
+			"src" => ffMedia::getUrl($path, basename($mode), "url")
 			, "width" => $size["width"]
 			, "height" => $size["height"]
 	    );
 	} else {
 		$res = array(
-			"src" => (CM_MEDIACACHE_SHOWPATH
-				? CM_MEDIACACHE_SHOWPATH . $path
-				: CM_SHOWFILES . $params["showfiles_path"] . $path
-			)
+			"src" => ffMedia::getUrl($path, false, "url")
 			, "width" => $size["width"]
 			, "height" => $size["height"]
 	    );	
@@ -267,7 +260,7 @@ function get_thumb_by_grid_system($path, $params, $thumb_params = array(), $sour
 
 function get_thumb_by_media_queries($media, $params, $type = "picture") 
 {
-	$resolution = cm_getResolution("media", false);
+	$resolution = Cms::getInstance("frameworkcss")->getResolution("media", false);
 	if(CM_CACHE_IMG_LAZY_LOAD
 		&& is_numeric($params["default"]["width"]) && $params["default"]["width"] > 0 
 		&& is_numeric($params["default"]["height"]) && $params["default"]["height"] > 0	
@@ -310,7 +303,7 @@ function get_thumb_by_media_queries($media, $params, $type = "picture")
 	return $res;
 }
 
-function check_thumb_format($img_path, $width = null, $height = null, $mime = null, $base_path = DISK_UPDIR, $skip_base_path = null) 
+function check_thumb_format($img_path, $width = null, $height = null, $mime = null, $base_path = FF_DISK_UPDIR, $skip_base_path = null) 
 {
 	static $img_checked = array();
 	
@@ -322,7 +315,7 @@ function check_thumb_format($img_path, $width = null, $height = null, $mime = nu
 
 		if((substr(CM_SHOWFILES, 0, 7) == "http://" || substr(CM_SHOWFILES, 0, 8) == "https://" || substr(CM_SHOWFILES, 0, 2) == "//")) {
 			$base_path = true;
-			$mime = ffMimeTypeByFilename($img_path);
+			$mime = ffMedia::getMimeTypeByFilename($img_path);
 			switch($mime) {
 				case "image/svg+xml":
 					$img_checked[$img_path]["skip_mode"] = true;
@@ -359,7 +352,7 @@ function check_thumb_format($img_path, $width = null, $height = null, $mime = nu
 
 		if($abs_path && $skip_base_path != $base_path) {
 			if(!$mime)
-				$mime = ffMimeTypeByFilename($abs_path);
+				$mime = ffMedia::getMimeTypeByFilename($abs_path);
 
 			switch($mime) {
 				case "image/svg+xml":
@@ -404,11 +397,11 @@ function check_thumb_format($img_path, $width = null, $height = null, $mime = nu
 		$res["width"] = $width;
 	if($height)
 		$res["height"] = $height;
-	
+
 	return $res;
 }
 
-function get_thumb_size($img_path, $width = null, $height = null, $mime = null, &$src = null, $base_path = DISK_UPDIR) 
+function get_thumb_size($img_path, $width = null, $height = null, $mime = null, &$src = null, $base_path = FF_DISK_UPDIR) 
 {
 	$res = false;
 	if(!$width || !$height) {

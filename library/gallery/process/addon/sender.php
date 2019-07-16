@@ -28,8 +28,6 @@ function process_addon_sender($user_path, $ID_node, $vgallery_name, $title, $dat
 	
 	$buffer = "";
 	
-	$UserID = get_session("UserID");
-	$userMail = get_session("UserEmail");
 	$arrDataLimit = array();
 	
 	$data = array();
@@ -87,8 +85,8 @@ function process_addon_sender($user_path, $ID_node, $vgallery_name, $title, $dat
 	            || $field_extended_type == "Upload"
 	            || $field_extended_type == "UploadImage"
 	        ) {
-	        	if(is_file(DISK_UPDIR . $field_data)) {
-	        		$file_size = filesize(DISK_UPDIR . $field_data);
+	        	if(is_file(FF_DISK_UPDIR . $field_data)) {
+	        		$file_size = filesize(FF_DISK_UPDIR . $field_data);
 	        		if($file_size < 10000000) {
 						$total_file_size = $total_file_size + $file_size;
 
@@ -149,7 +147,8 @@ function process_addon_sender($user_path, $ID_node, $vgallery_name, $title, $dat
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data, "/tpl/addon");
 
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
     //$tpl = ffTemplate::factory(get_template_cascading($user_path, "sender.html", "/vgallery"));
     //$tpl->load_file("sender.html", "main");
@@ -169,13 +168,13 @@ function process_addon_sender($user_path, $ID_node, $vgallery_name, $title, $dat
 
 	$tpl->set_var("sender_reference", "/" . set_sid($serial_data, $user_path . " sender"));
 	
-	if($UserID == MOD_SEC_GUEST_USER_NAME) {
+	if(Auth::isGuest()) {
 		$tpl->set_var("sender_name", "");	
 		$tpl->set_var("sender_mail", "");	
 		$tpl->set_var("class_hidden", "");
 	} else {
-		$tpl->set_var("sender_name", $UserID);	
-		$tpl->set_var("sender_mail", $userMail);	
+		$tpl->set_var("sender_name", Auth::get("user")->username);
+		$tpl->set_var("sender_mail", Auth::get("user")->email);
 		$tpl->set_var("class_hidden", " hide");
 	}
 	

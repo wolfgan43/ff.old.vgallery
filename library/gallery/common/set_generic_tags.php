@@ -23,20 +23,23 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function set_generic_tags($description, $description_bypath = "") 
+function set_generic_tags($description, $description_bypath = "")
 {
     $cm = cm::getInstance();
     $theme = $cm->oPage->theme;
-    
+
     $haystack = $description;
-    
+
     $haystack = str_replace("[SITE_PATH]", FF_SITE_PATH, $haystack);
-        $haystack = str_replace("[LANGUAGE_INSET]", LANGUAGE_INSET, $haystack);
+    $haystack = str_replace("[LANGUAGE_INSET]", LANGUAGE_INSET, $haystack);
     $haystack = str_replace("[THEME_INSET]", $theme, $haystack);
     $haystack = str_replace("[DOMAIN_INSET]", DOMAIN_INSET, $haystack);
     $haystack = str_replace("[ENCODED_THIS_URL]", urlencode($_SERVER["REQUEST_URI"]), $haystack);
-    if(strlen($description_bypath)) 
-    	$haystack = str_replace("[DESCRIPTION_BY_PATH]", ffTemplate::_get_word_by_code(preg_replace('/[^a-zA-Z0-9\_]/', '', str_replace("/", "_", substr($description_bypath, 1)))), $haystack);
+    if(strlen($description_bypath))
+        $real_desc = preg_replace('/[^a-zA-Z0-9\_]/', '', str_replace("/", "_", substr($description_bypath, 1)));
+
+    if($real_desc)
+        $haystack = str_replace("[DESCRIPTION_BY_PATH]", ffTemplate::_get_word_by_code($real_desc), $haystack);
 
     return $haystack;
 }

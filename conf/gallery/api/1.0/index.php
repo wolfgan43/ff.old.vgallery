@@ -116,6 +116,22 @@ function getBearerToken() {
     return null;
 }
 
+if($service_api["request"]) {
+    $settings_path = $service_path_info;
+    do {
+
+        if (isset($service_api["request"][$settings_path])) {
+            $server["request"] = $service_api["request"][$settings_path];
+            break;
+        }
+    } while ($settings_path != DIRECTORY_SEPARATOR && ($settings_path = dirname($settings_path))); //todo: DS check
+
+    if(!$server["request"][$request_method]) {
+        http_response_code(400);
+        echo strtoupper($request_method) . " Not Permitted";
+        exit;
+    }
+}
 
 if($service_api["oAuth"])
 {
@@ -146,10 +162,7 @@ if($service_api["oAuth"])
 			}
 			$server["scopes"]["available"] = $server["rules"]["scopes"][$request_method];
 
-			require FF_DISK_PATH . "/library/OAuth2/Autoloader.php";
-			OAuth2\Autoloader::register();
-
-			$server["oAuth2"] = modsec_getOauth2Server();
+			$server["oAuth2"] = mod_auth_getOauth2Server();
 			$server["request"] = OAuth2\Request::createFromGlobals();
 			$server["response"] = new OAuth2\Response();
 

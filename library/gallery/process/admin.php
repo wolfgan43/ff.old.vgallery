@@ -38,9 +38,10 @@ SezRestrictedAction*/
 		    $tpl_data["result"] = get_template_cascading($globals->user_path, $tpl_data);
 		    
 		    $tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-			$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+			//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+            $tpl->load_file($tpl_data["result"]["name"], "main");
 			
-			$tpl->set_var("toggle_class", cm_getClassByFrameworkCss("ellipsis-v", "icon", $icon_size)); 
+			$tpl->set_var("toggle_class", Cms::getInstance("frameworkcss")->get("ellipsis-v", "icon", $icon_size)); 
 			/**
 			* Block Actions
 			*/
@@ -54,8 +55,8 @@ SezRestrictedAction*/
 			$tpl->set_var("block_type_class", $block["group"]);
 			$tpl->set_var("block_modify_path", get_path_by_rule("blocks") . "?keys[ID]=" . $ID_block);
 			if($block["class"]) { 
-           		// $tpl->set_var("block_class", cm_getClassByFrameworkCss("vg-" . $admin_menu["class"], "icon", array($admin_menu["group"], "2x")));
-            	$tpl->set_var("block_icon", cm_getClassByFrameworkCss("vg-" . $block["class"], "icon-tag", array($block["group"], "2x")));
+           		// $tpl->set_var("block_class", Cms::getInstance("frameworkcss")->get("vg-" . $admin_menu["class"], "icon", array($admin_menu["group"], "2x")));
+            	$tpl->set_var("block_icon", Cms::getInstance("frameworkcss")->get("vg-" . $block["class"], "icon-tag", array($block["group"], "2x")));
 			}			
 
 			$tpl->set_var("block_id", $ID_block);
@@ -71,7 +72,7 @@ SezRestrictedAction*/
 			$restricted_params = $block["key_name"] . "=" . $block_value;
 			
 			$tpl->set_var("restricted_path", $restricted_path . ($restricted_params ? "?" . $restricted_params : ""));
-			$tpl->set_var("restricted_icon", cm_getClassByFrameworkCss("editrow", "icon-tag", $icon_size));
+			$tpl->set_var("restricted_icon", Cms::getInstance("frameworkcss")->get("editrow", "icon-tag", $icon_size));
 			$tpl->set_var("restricted_class", "");
 			$tpl->set_var("restricted_name", "");
 			$tpl->parse("SezRestrictedAction", true);
