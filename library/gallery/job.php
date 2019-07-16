@@ -263,8 +263,8 @@ function check_cache($show_info = true) {
 			$check["info"] .= ffTemplate::_get_word_by_code("count_cache_sid") . $db->getField("cache_sid", "Number", true) . "<br>";
 		}
 	}
-   	if(is_dir(CM_CACHE_PATH)) {
-		$fs = get_check_fs(CM_CACHE_PATH, array(ffTemplate::$_MultiLang_cache_path => true));
+   	if(is_dir(CM_CACHE_DISK_PATH)) {
+		$fs = get_check_fs(CM_CACHE_DISK_PATH, array(CM_CACHE_PATH => true));
 		
 		if($show_info) {
 			$arrDir = array("d" => 1);
@@ -287,35 +287,11 @@ function check_cache($show_info = true) {
 	return $check;    	
 }
 function check_international($show_info = true) {
-    $db = ffDB_Sql::factory();
-    
-    $check["info"] = "";
-    $check["status"] = false;
 
-	if(is_dir(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path)) {
-		$db->query("SELECT * FROM " . FF_PREFIX . "languages ORDER BY code");
-		if($db->nextRecord()) {
-		    do {
-		        if(!is_file(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT) 
-		            || !is_readable(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT) 
-		            || !is_writable(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT)) {
-		        
-		            $check["status"] .= ffTemplate::_get_word_by_code("wrong_file")  . " " . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT . "<br>"; 
-		        
-		        } else {
-		            if($show_info) {
-	            		$i18n = array();
-	            		require(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT);
-	            		$check["info"] .= ffTemplate::_get_word_by_code("count_code_" . strtolower($db->getField("code")->getValue())) . count($i18n) . "<br>";
-					}
-				} 
-		    } while($db->nextRecord());
-		}
-	} else {
-		$check["status"] = ffTemplate::_get_word_by_code("directory_not_exist") . " " . ffTemplate::$_MultiLang_cache_path;
-	}
-	
-	return $check; 
+    $check["info"] = "";
+    $check["status"] = true;
+
+	return $check;
 }
 function check_config($show_info = true) {
     $check["info"] = "";
@@ -350,8 +326,8 @@ function check_uploads($show_info = true) {
 
     check_function("get_literal_size");
     
-	if(is_dir(DISK_UPDIR)) {
-		$fs = get_check_fs(DISK_UPDIR, array("/.htaccess" => true)); //, array("/" . basename(DISK_UPDIR) . "/" . GALLERY_TPL_PATH => true)
+	if(is_dir(FF_DISK_UPDIR)) {
+		$fs = get_check_fs(FF_DISK_UPDIR, array("/.htaccess" => true)); //, array("/" . basename(FF_DISK_UPDIR) . "/" . GALLERY_TPL_PATH => true)
 		
 		if($show_info) {
 			$arrDir = array("d" => 1);
@@ -366,7 +342,7 @@ function check_uploads($show_info = true) {
 		    $check["status"] = ffTemplate::_get_word_by_code("permission_corrupted") . " " . $files;
 		}
 	} else {
-		$check["status"] = ffTemplate::_get_word_by_code("directory_not_exist") . " /" . basename(DISK_UPDIR);
+		$check["status"] = ffTemplate::_get_word_by_code("directory_not_exist") . " /" . basename(FF_DISK_UPDIR);
 	}
 
 	return $check;	
@@ -400,18 +376,18 @@ function set_cache_clear_all() {
 
 	$arrFtpMkDir = NULL;
     $strError = "";
-    if(!@is_dir(CM_CACHE_PATH)) {
-        if(@mkdir(CM_CACHE_PATH)) {
-        	@chmod(CM_CACHE_PATH, 0777);
+    if(!@is_dir(CM_CACHE_DISK_PATH)) {
+        if(@mkdir(CM_CACHE_DISK_PATH)) {
+        	@chmod(CM_CACHE_DISK_PATH, 0777);
 		} else {
 			$arrFtpMkDir[] = "/cache";
 			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /cache";
 		}
 	} else {
-		@chmod(CM_CACHE_PATH, 0777);
+		@chmod(CM_CACHE_DISK_PATH, 0777);
 	}
 
-	$strError = set_fs("/cache", "delete", array(ffTemplate::$_MultiLang_cache_path => true), $arrFtpMkDir);
+	$strError = set_fs(CM_CACHE_PATH, "delete", array(CM_CACHE_PATH => true), $arrFtpMkDir);
 		
 	$sSQL = "TRUNCATE TABLE `cache_sid`";
 	$db->execute($sSQL);
@@ -441,18 +417,18 @@ function set_cache_clear_all() {
 function set_cache_repair() {
 	$arrFtpMkDir = NULL;
     $strError = "";
-    if(!@is_dir(CM_CACHE_PATH)) {
-        if(@mkdir(CM_CACHE_PATH)) {
-        	@chmod(CM_CACHE_PATH, 0777);
+    if(!@is_dir(CM_CACHE_DISK_PATH)) {
+        if(@mkdir(CM_CACHE_DISK_PATH)) {
+        	@chmod(CM_CACHE_DISK_PATH, 0777);
 		} else {
 			$arrFtpMkDir[] = "/cache";
 			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /cache";
 		}
 	} else {
-		@chmod(CM_CACHE_PATH, 0777);
+		@chmod(CM_CACHE_DISK_PATH, 0777);
 	}
 	
-	$strError = set_fs("/cache", "chmod", array(ffTemplate::$_MultiLang_cache_path => true), $arrFtpMkDir);
+	$strError = set_fs(CM_CACHE_PATH, "chmod", array(CM_CACHE_PATH => true), $arrFtpMkDir);
 
 	return $strError;
 }
@@ -460,18 +436,18 @@ function set_cache_repair() {
 function set_cache_clear() {
 	$arrFtpMkDir = NULL;
     $strError = "";
-    if(!@is_dir(CM_CACHE_PATH)) {
-        if(@mkdir(CM_CACHE_PATH)) {
-        	@chmod(CM_CACHE_PATH, 0777);
+    if(!@is_dir(CM_CACHE_DISK_PATH)) {
+        if(@mkdir(CM_CACHE_DISK_PATH)) {
+        	@chmod(CM_CACHE_DISK_PATH, 0777);
 		} else {
 			$arrFtpMkDir[] = "/cache";
 			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /cache";
 		}
 	} else {
-		@chmod(CM_CACHE_PATH, 0777);
+		@chmod(CM_CACHE_DISK_PATH, 0777);
 	}
 
-	$strError = set_fs("/cache", "delete", array(ffTemplate::$_MultiLang_cache_path => true), $arrFtpMkDir);
+	$strError = set_fs(CM_CACHE_PATH, "delete", array(CM_CACHE_PATH => true), $arrFtpMkDir);
 		
 	$cache_change = 0; 
 	$cache = get_session("cache");
@@ -512,18 +488,18 @@ function set_cache_clear_sid() {
 
 	$arrFtpMkDir = NULL;
     $strError = "";
-    if(!@is_dir(CM_CACHE_PATH . "/sid")) {
-        if(@mkdir(CM_CACHE_PATH . "/sid")) {
-        	@chmod(CM_CACHE_PATH . "/sid", 0777);
+    if(!@is_dir(CM_CACHE_DISK_PATH . "/sid")) {
+        if(@mkdir(CM_CACHE_DISK_PATH . "/sid")) {
+        	@chmod(CM_CACHE_DISK_PATH . "/sid", 0777);
 		} else {
-			$arrFtpMkDir[] = "/cache/sid";
-            $strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /cache/sid";
+			$arrFtpMkDir[] = CM_CACHE_PATH . "/sid";
+            $strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " " . CM_CACHE_PATH . "/sid";
 		}
 	} else {
-		@chmod(CM_CACHE_PATH . "/sid", 0777);
+		@chmod(CM_CACHE_DISK_PATH . "/sid", 0777);
 	}
 
-	$strError = set_fs("/cache/sid", "delete", array(ffTemplate::$_MultiLang_cache_path => true), $arrFtpMkDir);
+	$strError = set_fs(CM_CACHE_PATH . "/sid", "delete", array(CM_CACHE_PATH => true), $arrFtpMkDir);
 	
 	$sSQL = "TRUNCATE TABLE `cache_sid`";
 	$db->execute($sSQL);
@@ -559,29 +535,29 @@ function set_international_repair() {
 				)";
 	//$db->execute($sSQL);
     $strError = "";
-    if(!@is_dir(CM_CACHE_PATH)) {
-        if(@mkdir(CM_CACHE_PATH)) {
-        	@chmod(CM_CACHE_PATH, 0777);
+    if(!@is_dir(CM_CACHE_DISK_PATH)) {
+        if(@mkdir(CM_CACHE_DISK_PATH)) {
+        	@chmod(CM_CACHE_DISK_PATH, 0777);
 		} else {
 			$arrFtpMkDir[] = "/cache";
 			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /cache" . "<br>";
 		}
 	} else {
-		@chmod(CM_CACHE_PATH, 0777);
+		@chmod(CM_CACHE_DISK_PATH, 0777);
 	}
 
-    if(!@is_dir(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path)) {
-        if(@mkdir(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path)) {
-        	@chmod(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path, 0777);
+    if(!@is_dir(CM_CACHE_DISK_PATH)) {
+        if(@mkdir(CM_CACHE_DISK_PATH)) {
+        	@chmod(CM_CACHE_DISK_PATH, 0777);
 		} else {
-			$arrFtpMkDir[] = ffTemplate::$_MultiLang_cache_path;
-			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " " . ffTemplate::$_MultiLang_cache_path . "<br>";
+			$arrFtpMkDir[] = CM_CACHE_PATH;
+			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " " . CM_CACHE_PATH . "<br>";
 		}
 	} else {
-		@chmod(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path, 0777);
+		@chmod(CM_CACHE_DISK_PATH, 0777);
 	}
 
-	$strError .= set_fs(ffTemplate::$_MultiLang_cache_path, "chmod", NULL, $arrFtpMkDir);
+	$strError .= set_fs(CM_CACHE_DISK_PATH, "chmod", NULL, $arrFtpMkDir);
 
 	return $strError;
 }
@@ -612,22 +588,9 @@ function set_international_reset() {
 	//UPDATE CACHE 
 	$db->query("SELECT * FROM " . FF_PREFIX . "languages WHERE 1");
 	if($db->nextRecord()) {
-		$i18n_error = false;
 		do {
-		    if(is_file(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT)) {
-		        if($handle = @fopen(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT, 'w')) {
-		            $i18n_content = "";
-		            if(@fwrite($handle, $i18n_content) === FALSE) {
-		                $i18n_error = true;
-		            }
-		            @fclose($handle);
-		        }
-		    } else {
-		        $handle = @fopen(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT, 'w');
-		        @fclose($handle);
-		        @chmod(FF_DISK_PATH . ffTemplate::$_MultiLang_cache_path . "/" . strtoupper($db->getField("code")->getValue()) . "." . FF_PHP_EXT, 0777);
-		    }
-		} while($db->nextRecord());
+            ffTranslator::clear($db->getField("code")->getValue());
+        } while($db->nextRecord());
 	}
 	
 	return $strError;
@@ -654,18 +617,18 @@ function set_uploads_repair() {
 	$arrFtpMkDir = NULL;
     $strError = "";
 
-	if(!@is_dir(DISK_UPDIR)) {
-	    /*if(@mkdir(DISK_UPDIR)) {
-	        @chmod(DISK_UPDIR, 0777);
+	if(!@is_dir(FF_DISK_UPDIR)) {
+	    /*if(@mkdir(FF_DISK_UPDIR)) {
+	        @chmod(FF_DISK_UPDIR, 0777);
 		} else {  */
-			$arrFtpMkDir[] = "/" . basename(DISK_UPDIR);
-			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /" . basename(DISK_UPDIR) . "<br>";
+			$arrFtpMkDir[] = "/" . basename(FF_DISK_UPDIR);
+			$strError .= ffTemplate::_get_word_by_code("dir_creation_failed") . " /" . basename(FF_DISK_UPDIR) . "<br>";
 		//}
 	} else {
-		@chmod(DISK_UPDIR, 0777);
+		@chmod(FF_DISK_UPDIR, 0777);
 	}
 
-	$strError .= set_fs("/" . basename(DISK_UPDIR), "chmod", NULL, $arrFtpMkDir);  //array("/" . basename(DISK_UPDIR) . "/" . GALLERY_TPL_PATH => true)
+	$strError .= set_fs("/" . basename(FF_DISK_UPDIR), "chmod", NULL, $arrFtpMkDir);  //array("/" . basename(FF_DISK_UPDIR) . "/" . GALLERY_TPL_PATH => true)
 
 	return $strError;
 }

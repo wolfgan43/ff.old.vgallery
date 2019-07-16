@@ -43,7 +43,7 @@ if($db->nextRecord()) {
             case "mailchimp":
                 $template = "newsletter-mailchimp.html";
                 if(strlen($service_form)) {
-                    $tpl = ffTemplate::factory(get_template_cascading($user_path, $template, "/modules/newsletter", ffCommon_dirname(__FILE__)));
+                    $tpl = ffTemplate::factory(get_template_cascading($user_path, $template, "/modules/newsletter", __DIR__));
                     $tpl->load_file($template, "main");
                    /* 
                     $cm->oPage->tplAddCss("mailchimp-css"
@@ -77,7 +77,7 @@ if($db->nextRecord()) {
                 break;
             default:
                 $template = "newsletter.html";
-                $tpl = ffTemplate::factory(get_template_cascading($user_path, $template, "/modules/newsletter", ffCommon_dirname(__FILE__)));
+                $tpl = ffTemplate::factory(get_template_cascading($user_path, $template, "/modules/newsletter", __DIR__));
                 $tpl->load_file($template, "main");
                 
                 $tpl->set_var("service_type", $service_type);

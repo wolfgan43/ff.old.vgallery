@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_DRAFT_SHOW_MODIFY) {
+if (!Auth::env("AREA_DRAFT_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }    
 
@@ -37,9 +37,9 @@ $oRecord = ffRecord::factory($cm->oPage);
 $oRecord->id = "DraftModify";
 $oRecord->resources[] = $oRecord->id;
 $oRecord->src_table = "drafts";
-$oRecord->buttons_options["delete"]["display"] = AREA_DRAFT_SHOW_DELETE;
+$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_DRAFT_SHOW_DELETE");
 $oRecord->addEvent("on_done_action", "DraftModify_on_done_action");
-$oRecord->insert_additional_fields["owner"] =  new ffData(get_session("UserNID"), "Number");
+$oRecord->insert_additional_fields["owner"] =  new ffData(Auth::get("user")->id, "Number");
 $oRecord->additional_fields = array("last_update" =>  new ffData(time(), "Number"));
 
 /**

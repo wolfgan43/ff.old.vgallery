@@ -58,7 +58,7 @@ $sSQL = "SELECT cm_layout.*
 			WHERE cm_layout.path = " . $db->toSql("/");
 $db->query($sSQL);
 if ($db->nextRecord()) {
-    $framework_css = cm_getFrameworkCss($db->getField("framework_css", "Text", true));
+    $framework_css = Cms::getInstance("frameworkcss")->getFramework($db->getField("framework_css", "Text", true));
     $framework_css_name = $framework_css["name"];
 }*/
 
@@ -233,15 +233,15 @@ if(!$type || $type == "overview") {
 					"container" => array(
 						"multi_pairs" => array(
 							array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": " . ffTemplate::_get_word_by_code("grid_skip_all"))),
-							array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
-							array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
+							array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
+							array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
 						)
 					)
 					, "row" => array(
 						"multi_pairs" => array(
 							array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": " . ffTemplate::_get_word_by_code("grid_skip_all"))),
-							array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
-							array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
+							array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
+							array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
 						)
 					)
 				)

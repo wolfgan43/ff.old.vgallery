@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-    if (!AREA_IMPORT_SHOW_MODIFY) {
+    if (!Auth::env("AREA_IMPORT_SHOW_MODIFY")) {
         ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
     }
 
@@ -61,7 +61,7 @@
 		$oRecord->buttons_options["insert"]["label"] = ffTemplate::_get_word_by_code("wizcsv_step2");
 
 		$menu = '
-		<div class="import-type ' . cm_getClassByFrameworkCss(array(6), "col"). '">
+		<div class="import-type ' . Cms::getInstance("frameworkcss")->get(array(6), "col"). '">
 			<h2>' . ffTemplate::_get_word_by_code("import_tool") . '</h2>
 			<ul>
 				<li><a href="{import_path}/anagraph">{_import_anagraph}</a></li>
@@ -86,14 +86,14 @@
 		$oField->file_show_delete = false;
 		$oField->extended_type = "File";
 		$oField->control_type = "file";
-		$oField->file_temp_path = FF_DISK_PATH . "/uploads/importcsv";
-		$oField->file_storing_path = FF_DISK_PATH . "/uploads/importcsv";
+		$oField->file_temp_path = FF_DISK_UPDIR . "/importcsv";
+		$oField->file_storing_path = FF_DISK_UPDIR . "/importcsv";
 		$oField->file_full_path = false;
 		$oField->file_check_exist = false;
-		$oField->file_saved_view_url		= FF_SITE_PATH . "/cm/showfiles." . FF_PHP_EXT . "/importcsv/[_FILENAME_]";
-		$oField->file_saved_preview_url		= FF_SITE_PATH . "/cm/showfiles." . FF_PHP_EXT . "/thumb/importcsv/[_FILENAME_]";
-		$oField->file_temp_view_url			= FF_SITE_PATH . "/cm/showfiles." . FF_PHP_EXT . "/importcsv/[_FILENAME_]";
-		$oField->file_temp_preview_url		= FF_SITE_PATH . "/cm/showfiles." . FF_PHP_EXT . "/thumb/importcsv[_FILENAME_]";
+		$oField->file_saved_view_url		= CM_SHOWFILES . "/importcsv/[_FILENAME_]";
+		$oField->file_saved_preview_url		= CM_SHOWFILES . "/thumb/importcsv/[_FILENAME_]";
+		$oField->file_temp_view_url			= CM_SHOWFILES . "/importcsv/[_FILENAME_]";
+		$oField->file_temp_preview_url		= CM_SHOWFILES . "/thumb/importcsv[_FILENAME_]";
 		$oField->widget = "uploadify";
 		if (check_function("set_field_uploader")) {
             $oField = set_field_uploader($oField);
@@ -157,19 +157,18 @@
 				if(!$tmpfile)
 					$tmpfile = $oRecord->form_fields["upload"]->default_value->getValue();
 
-				if (ffMimeType(FF_DISK_PATH . "/uploads/importcsv/" . $tmpfile) != "text/plain"
-					&& strpos(ffMimeType(FF_DISK_PATH . "/uploads/importcsv/" . $tmpfile), "text/x-c") === false
+				if (ffMedia::getMimeTypeByFilename(FF_DISK_UPDIR . "/importcsv/" . $tmpfile) != "text/plain"
+					&& strpos(ffMedia::getMimeTypeByFilename(FF_DISK_UPDIR . "/importcsv/" . $tmpfile), "text/x-c") === false
 				) {
-					
 					$oRecord->tplDisplayError(ffTemplate::_get_word_by_code("wizcsv_file_mimetype_not_supported"));
 					return true;
 				}
-				if($oRecord->form_fields["upload"]->file_tmpname && is_file(FF_DISK_PATH . "/uploads/importcsv/" . $oRecord->form_fields["upload"]->file_tmpname)) {
-					$file_data = file_get_contents(FF_DISK_PATH . "/uploads/importcsv/" . $oRecord->form_fields["upload"]->file_tmpname);
+				if($oRecord->form_fields["upload"]->file_tmpname && is_file(FF_DISK_UPDIR . "/importcsv/" . $oRecord->form_fields["upload"]->file_tmpname)) {
+					$file_data = file_get_contents(FF_DISK_UPDIR . "/importcsv/" . $oRecord->form_fields["upload"]->file_tmpname);
 					$file_encoding = mb_detect_encoding($file_data);
 					if($file_encoding && $file_encoding != 'utf-8') {
 						$fc = iconv($file_encoding, 'utf-8//ignore', $file_data); 
-				        file_put_contents(FF_DISK_PATH . "/uploads/importcsv/" . $oRecord->form_fields["upload"]->file_tmpname, $fc, LOCK_EX); 
+				        file_put_contents(FF_DISK_UPDIR . "/importcsv/" . $oRecord->form_fields["upload"]->file_tmpname, $fc, LOCK_EX);
 					}
 				}
 

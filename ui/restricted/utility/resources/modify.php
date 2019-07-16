@@ -1,5 +1,5 @@
 <?php
-if (!AREA_THEME_SHOW_MODIFY) {
+if (!Auth::env("AREA_THEME_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -72,7 +72,7 @@ if(defined("FTP_USERNAME") && strlen(FTP_USERNAME) && defined("FTP_PASSWORD") &&
 	$oRecord->src_table = "";
 	$oRecord->skip_action = true;
 
-	$oRecord->buttons_options["delete"]["display"] = AREA_HTML_SHOW_DELETE;
+	$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_HTML_SHOW_DELETE");
 	$oRecord->addEvent("on_done_action", "HtmlModify_on_done_action");
 	$oRecord->addEvent("on_process_template", "HtmlModify_on_process_template");
 

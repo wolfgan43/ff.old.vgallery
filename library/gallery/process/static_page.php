@@ -73,14 +73,14 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
             set_cache_data("D", $draft["ID"]);
             //$globals->cache["data_blocks"]["DV" . "0" . "-" . $draft["ID"]] = $draft["ID"];
 
-        	if($draft["owner"] == get_session("UserNID")) {
+        	if($draft["owner"] == Auth::get("user")->id) {
 				$is_owner = true;
         	} else {
 				$is_owner = false;
         	}
 			
-    		check_function("set_generic_tags");
-	        $draft_value = set_generic_tags($draft["value"], $settings_path);
+    		//check_function("set_generic_tags");
+	        //$draft_value = set_generic_tags($draft["value"], $settings_path);
 
 			$tpl_draft = ffTemplate::factory(null);
 			$tpl_draft->load_content($draft_value, "Main");
@@ -96,8 +96,8 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
     } elseif($static_type == "STATIC_PAGE_BY_FILE") {
 		$block["class"]["default"] = ffCommon_url_rewrite(ffGetFilename($static_value));
 
-    	check_function("set_generic_tags");
-        $static_value = set_generic_tags($static_value, $settings_path);
+    	//check_function("set_generic_tags");
+        //$static_value = set_generic_tags($static_value, $settings_path);
 
         if(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $theme . "/" . GALLERY_TPL_PATH . ffCommon_dirname($static_value) . "/" . LANGUAGE_INSET . "/" . basename($static_value))) {
 
@@ -120,7 +120,7 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
             $tpl = ffTemplate::factory(get_template_cascading($user_path, "draft.html"));
             $tpl->load_file("draft.html", "main");
             $tpl->set_var("content", "");
-            $strError = ffTemplate::_get_word_by_code("static_page_nopage_file");
+            $strError = ffTemplate::_get_word_by_code("static_page_nopage_file (" . FF_THEME_DIR . "/" . $theme . "/" . GALLERY_TPL_PATH . $static_value) . ")";
         }
         
         set_cache_data("T", basename($static_value));
@@ -131,8 +131,8 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 	    foreach($globals->request AS $request_key => $request_value) {
 			$tpl->set_var($request_key, $_GET[$request_key]);
 			
-			$tpl->set_var("current:" . $request_key . "=" . $_GET[$request_key], ' class="' . cm_getClassByFrameworkCss("current", "util"). '"');
-			$tpl->set_var("current-class:" . $request_key . "=" . $_GET[$request_key], cm_getClassByFrameworkCss("current", "util"));
+			$tpl->set_var("current:" . $request_key . "=" . $_GET[$request_key], ' class="' . Cms::getInstance("frameworkcss")->get("current", "util"). '"');
+			$tpl->set_var("current-class:" . $request_key . "=" . $_GET[$request_key], Cms::getInstance("frameworkcss")->get("current", "util"));
 			$tpl->set_var("selected:" . $request_key . "=" . $_GET[$request_key], ' selected="selected"');
 			$tpl->set_var("checked:" . $request_key . "=" . $_GET[$request_key], ' checked="checked"');
 	    }
@@ -142,17 +142,17 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 	* Admin Father Bar
 	*/
 	if (
-	    AREA_DRAFT_SHOW_MODIFY 
-	    || AREA_DRAFT_SHOW_DELETE 
-	    || AREA_PROPERTIES_SHOW_MODIFY 
-	    || AREA_ECOMMERCE_SHOW_MODIFY 
-	    || AREA_LAYOUT_SHOW_MODIFY 
-	    || AREA_SETTINGS_SHOW_MODIFY
+        Auth::env("AREA_DRAFT_SHOW_MODIFY")
+	    || Auth::env("AREA_DRAFT_SHOW_DELETE")
+	    || Auth::env("AREA_PROPERTIES_SHOW_MODIFY")
+	    || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")
+	    || Auth::env("AREA_LAYOUT_SHOW_MODIFY")
+	    || Auth::env("AREA_SETTINGS_SHOW_MODIFY")
 	    || $is_owner
 	) {
         $admin_menu["admin"]["unic_name"] = $unic_id . $static_type. "-" . $is_owner;
 
-		if($is_owner && !AREA_SHOW_NAVBAR_ADMIN)
+		if($is_owner && !Auth::isAdmin())
         	$admin_menu["admin"]["title"] = ffTemplate::_get_word_by_code("static_pages_owner") . ": " . $draft["title"];
 		else
 	        $admin_menu["admin"]["title"] = $layout["title"];
@@ -160,12 +160,12 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 	    $admin_menu["admin"]["class"] = $layout["type_class"];
 	    $admin_menu["admin"]["group"] = $layout["type_group"];
 	    
-        if($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
+        if($is_owner && !Auth::isAdmin()) {
 	    	$base_path = FF_SITE_PATH . VG_SITE_DRAFT . "/modify/" . ffCommon_url_rewrite($draft["name"]);
 	    	$path_params = "?keys[ID]=" . $static_value;
 
             $admin_menu["admin"]["modify"] = $base_path . $path_params . "&owner=" . $draft["owner"];
-		} elseif(AREA_DRAFT_SHOW_MODIFY) {
+		} elseif(Auth::env("AREA_DRAFT_SHOW_MODIFY")) {
 		    if($static_type == "STATIC_PAGE_BY_DB") {
 	    		$base_path = FF_SITE_PATH . "/restricted/draft/modify/" . ffCommon_url_rewrite($draft["name"]);
 	    		$path_params = "?keys[ID]=" . $static_value;
@@ -177,7 +177,7 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
             $admin_menu["admin"]["modify"] = $base_path . $path_params;
 		}
 
-	    if(AREA_DRAFT_SHOW_DELETE) {
+	    if(Auth::env("AREA_DRAFT_SHOW_DELETE")) {
 	        $admin_menu["admin"]["delete"] = ffDialog(TRUE,
 	                                            "yesno",
 	                                            ffTemplate::_get_word_by_code("drafts_erase_title"),
@@ -187,17 +187,17 @@ function process_static_page($static_type, $static_value, $user_path, &$layout)
 	                                            FF_SITE_PATH . VG_SITE_DRAFT . "/dialog");
 	    }
 
-        if(AREA_PROPERTIES_SHOW_MODIFY) {
+        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
             $admin_menu["admin"]["extra"] = "";
         }
-        if(AREA_ECOMMERCE_SHOW_MODIFY) {
+        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
             $admin_menu["admin"]["ecommerce"] = "";
         }
-        if(AREA_LAYOUT_SHOW_MODIFY) {
+        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
             $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
             $admin_menu["admin"]["layout"]["type"] = $layout["type"];
         }
-        if(AREA_SETTINGS_SHOW_MODIFY) {
+        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
             $admin_menu["admin"]["setting"] = "";//$layout["type"];
         }
 

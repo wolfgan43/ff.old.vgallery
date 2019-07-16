@@ -27,5 +27,8 @@
     // $actual_srv = params defined by system
 
     if(isset($actual_srv["code"]) && strlen($actual_srv["code"])) { 
-        $oPage->tplAddMeta("google-site-verification", $actual_srv["code"]);
+        $oPage->tplAddMeta(array(
+            "name" => "google-site-verification"
+            , "content" => $actual_srv["code"]
+        ));
     }

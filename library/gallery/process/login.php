@@ -76,12 +76,8 @@ function process_login($user_path, &$layout) {
     $unic_id = $layout["prefix"] . $layout["ID"];
     $layout_settings = $layout["settings"];
 
-    $UserID = get_session("UserID");
-    $UserNID = get_session("UserNID");
-    $UserEmail = get_session("UserEmail");
-
 	$template_name = ($layout["template"] ? $layout["template"]. "_" : "");
-    if ($UserID == MOD_SEC_GUEST_USER_NAME) {
+    if (Auth::isGuest()) {
         //if (!$cm->isXHR() && ($user_path == "/login" || strpos($user_path , "/login/") !== false)) //non processa il block_login se siamo nella pagina di login
             //return array("content" => "");
 
@@ -98,12 +94,13 @@ function process_login($user_path, &$layout) {
             return array("content" => "");
 
          $base_template_name = "logout";
-         
-        $user_permission = get_session("user_permission");
-        $template_prefix = ffCommon_url_rewrite($user_permission["primary_gid_name"]);
+
+        $user = Auth::get("user");
+        $template_prefix = ffCommon_url_rewrite($user->acl_primary);
     }
-	
-	$tpl_data["prefix"] = $template_prefix;
+
+    $tpl_data["id"] = $unic_id;
+    $tpl_data["prefix"] = $template_prefix;
 	$tpl_data["custom"] = $base_template_name . ".html";
     $tpl_data["base"] = $template_name . $base_template_name . ".html";
     $tpl_data["path"] = $layout["tpl_path"];
@@ -111,79 +108,36 @@ function process_login($user_path, &$layout) {
     $tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 
     $tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-    $tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+    //$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
 
-/*
- 	$check_vgallery_path = false;
-    $vgallery_user_path = get_session("vgallery_user_path");
-    if (is_array($vgallery_user_path) && strlen($user_path))
-        $check_vgallery_path = array_search($user_path, $vgallery_user_path);
-        
-        
-    if (
-        strpos($user_path, USER_RESTRICTED_PATH) === false && strpos($user_path, VG_SITE_ECOMMERCE) === false && strpos($user_path, VG_SITE_CART) === false && $check_register && strpos($user_path, VG_SITE_MOD_SEC_ACTIVATION) === false && strpos($user_path, VG_SITE_MOD_SEC_RECOVER) === false && strpos($user_path, VG_SITE_VGALLERY) === false && $check_vgallery_path === false
-    ) {
-        $user_ret_url = $ret_url;
-    } else {
-        $user_ret_url = urldecode($ret_url);
-        do {
-            $arr_ret_url = @parse_url($user_ret_url);
-            if ($arr_ret_url === false) {
-                $user_ret_url = FF_SITE_PATH . "/";
-            } else {
-                parse_str($arr_ret_url["query"], $arg_ret_url);
-                $user_ret_url = $arg_ret_url["ret_url"];
-                if (!strlen($user_ret_url))
-                    $user_ret_url = FF_SITE_PATH . "/";
-            }
-            $check_vgallery_path = false;
-            if (is_array($vgallery_user_path) && strlen($user_ret_url))
-                $check_vgallery_path = array_search($user_ret_url, $vgallery_user_path);
 
-            if (strlen($layout_settings["AREA_LOGIN_REGISTER"])) {
-                if (strpos($user_path, $layout_settings["AREA_LOGIN_REGISTER"]) === false) {
-                    $check_register = false;
-                } else {
-                    $check_register = true;
-                }
-            } else {
-                $check_register = true;
-            }
-        } while (
-        !(strpos($user_ret_url, USER_RESTRICTED_PATH) === false && strpos($user_ret_url, VG_SITE_ECOMMERCE) === false && strpos($user_ret_url, VG_SITE_CART) === false && $check_register && strpos($user_ret_url, VG_SITE_MOD_SEC_ACTIVATION) === false && strpos($user_ret_url, VG_SITE_MOD_SEC_RECOVER) === false && strpos($user_ret_url, VG_SITE_VGALLERY) === false && $check_vgallery_path === false
-        ) && $user_ret_url != "/"
-        );
-    }*/
 
-    /**
-     * Load Template
-     */
-     
 
     
 
     /**
      * Admin Father Bar
      */
-    if (AREA_LOGIN_SHOW_MODIFY) {
+    if (Auth::env("AREA_LOGIN_SHOW_MODIFY")) {
         $admin_menu["admin"]["unic_name"] = $unic_id;
         $admin_menu["admin"]["title"] = $layout["title"];
         $admin_menu["admin"]["class"] = $layout["type_class"];
         $admin_menu["admin"]["group"] = $layout["type_group"];
         $admin_menu["admin"]["modify"] = "";
         $admin_menu["admin"]["delete"] = "";
-        if (AREA_PROPERTIES_SHOW_MODIFY) {
+        if (Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
             $admin_menu["admin"]["extra"] = "";
         }
-        if (AREA_ECOMMERCE_SHOW_MODIFY) {
+        if (Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
             $admin_menu["admin"]["ecommerce"] = "";
         }
-        if (AREA_LAYOUT_SHOW_MODIFY) {
+        if (Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
             $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
             $admin_menu["admin"]["layout"]["type"] = $layout["type"];
         }
-        if (AREA_SETTINGS_SHOW_MODIFY) {
+        if (Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
             $admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
         }
 
@@ -199,7 +153,7 @@ function process_login($user_path, &$layout) {
         $block = get_template_header($user_path, $admin_menu, $layout, $tpl);
 
     //LOGIN BOX
-    if ($UserID == MOD_SEC_GUEST_USER_NAME) {
+    if (Auth::isGuest()) {
         $tmp_data_field["username"]["id"] = $unic_id . "username";
         $tmp_data_field["username"]["content"] = ffTemplate::_get_word_by_code("login_username");
         $tmp_data_field["username"]["onkeydown"] = "return ff.submitProcessKey(event, '" . $unic_id . "btLogin')";
@@ -261,38 +215,35 @@ function process_login($user_path, &$layout) {
             $rel_layout["settings"]["AREA_USER_SHOW_ECOMMERCE_CART"] = $layout_settings["AREA_USER_SHOW_ECOMMERCE_CART_LOGIN"];
             $rel_layout["settings"]["AREA_USER_TEMPLATE"] = "login";
             $rel_layout["prefix"] = $layout["prefix"] . "M";
-            $res = process_user_menu(null, null, AREA_SHOW_ECOMMERCE, $user_path, $rel_layout, true, false);
+            $res = process_user_menu(null, null, Cms::env("AREA_SHOW_ECOMMERCE"), $user_path, $rel_layout, true, false);
 
             $tmp_data_field["user-menu"] = $res["content"];
         }
         
         $tiny_lang_code = strtolower(substr(LANGUAGE_INSET, 0, 2));
         if (strlen($layout_settings["AREA_LOGIN_REGISTER"])) {
-            $tmp_data_field["register"]["href"] = FF_SITE_PATH . ($cm->router->getRuleById("mod_sec_register_" . $tiny_lang_code) 
-                                                        ? $cm->router->getRuleById("mod_sec_register_" . $tiny_lang_code)->reverse
-                                                        :  ($cm->router->getRuleById("mod_sec_register")
-                                                            ? $cm->router->getRuleById("mod_sec_register")->reverse
-                                                            : (MOD_SEC_LOGIN_REGISTER_URL
-                                                                ? MOD_SEC_LOGIN_REGISTER_URL
-                                                                : ""
-                                                            )
+            $tmp_data_field["register"]["href"] = FF_SITE_PATH . ($cm->router->getRuleById("mod_auth_register_" . $tiny_lang_code)
+                                                        ? $cm->router->getRuleById("mod_auth_register_" . $tiny_lang_code)->reverse
+                                                        :  ($cm->router->getRuleById("mod_auth_register")
+                                                            ? $cm->router->getRuleById("mod_auth_register")->reverse
+                                                            : ""
                                                         ) 
                                                     );        
             $tmp_data_field["register"]["class"] = "register";
             $tmp_data_field["register"]["content"] = ffTemplate::_get_word_by_code("register_title");
             $tmp_data_field["register"]["default"] = '<a href="' . $tmp_data_field["register"]["href"] . '" class="' . $tmp_data_field["register"]["class"] . '">' . $tmp_data_field["register"]["content"] . '</a>';
         }
-        $tmp_data_field["activation"]["href"] = FF_SITE_PATH . ($cm->router->getRuleById("mod_sec_activation_" . $tiny_lang_code) 
-                                                                    ? $cm->router->getRuleById("mod_sec_activation_" . $tiny_lang_code)->reverse
-                                                                    :  $cm->router->getRuleById("mod_sec_activation")->reverse
+        $tmp_data_field["activation"]["href"] = FF_SITE_PATH . ($cm->router->getRuleById("mod_auth_activation_" . $tiny_lang_code)
+                                                                    ? $cm->router->getRuleById("mod_auth_activation_" . $tiny_lang_code)->reverse
+                                                                    :  $cm->router->getRuleById("mod_auth_activation")->reverse
                                                                 );
         $tmp_data_field["activation"]["class"] = "activation";
         $tmp_data_field["activation"]["content"] = ffTemplate::_get_word_by_code("activation_title");
         $tmp_data_field["activation"]["default"] = '<a href="' . $tmp_data_field["activation"]["href"] . '" class="' . $tmp_data_field["activation"]["class"] . '">' . $tmp_data_field["activation"]["content"] . '</a>';
 
-        $tmp_data_field["recover"]["href"] = FF_SITE_PATH . ($cm->router->getRuleById("mod_sec_recover_" . $tiny_lang_code) 
-                                                                ? $cm->router->getRuleById("mod_sec_recover_" . $tiny_lang_code)->reverse
-                                                                :  $cm->router->getRuleById("mod_sec_recover")->reverse
+        $tmp_data_field["recover"]["href"] = FF_SITE_PATH . ($cm->router->getRuleById("mod_auth_recover_" . $tiny_lang_code)
+                                                                ? $cm->router->getRuleById("mod_auth_recover_" . $tiny_lang_code)->reverse
+                                                                :  $cm->router->getRuleById("mod_auth_recover")->reverse
                                                             );
         $tmp_data_field["recover"]["class"] = "recover";
         $tmp_data_field["recover"]["content"] = ffTemplate::_get_word_by_code("lost_password_title");
@@ -322,21 +273,21 @@ function process_login($user_path, &$layout) {
         $enable_social = false;
 
             if (strlen($layout_settings["AREA_LOGIN_REGISTER"])) {
-                $tpl->set_var("link_register_class", cm_getClassByDef($framework_css["block"]["register"]));
+                $tpl->set_var("link_register_class", Cms::getInstance("frameworkcss")->getClass($framework_css["block"]["register"]));
                 $tpl->set_var("register_link", $tmp_data_field["register"]["href"]);
                 $tpl->parse("SezRegister", false);
             }
             
             if ($layout_settings["AREA_LOGIN_SHOW_LOSTPASSWORD"]) {
-                $tpl->set_var("lostpassword_class", cm_getClassByDef($framework_css["block"]["lost_password"]));
+                $tpl->set_var("lostpassword_class", Cms::getInstance("frameworkcss")->getClass($framework_css["block"]["lost_password"]));
                 $tpl->set_var("user_path", $tmp_data_field["recover"]["href"]);
                 $tpl->parse("SezLostPassword", false);
             }
 
-            if (MOD_SEC_SOCIAL_FACEBOOK) {
-                $tpl->set_var("fb_appid", MOD_SEC_SOCIAL_FACEBOOK_APPID);
+            if (cm::env("MOD_AUTH_SOCIAL_FACEBOOK")) {
+                $tpl->set_var("fb_appid", cm::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_ID"));
 
-                $tpl->set_var("ajax_loader", cm_getClassByFrameworkCss("spinner", "icon-tag", "spin"));
+                $tpl->set_var("ajax_loader", Cms::getInstance("frameworkcss")->get("spinner", "icon-tag", "spin"));
                 $tpl->set_var("logged_message", ffTemplate::_get_word_by_code("fb_wait_loading"));
                 $tpl->parse("SectAjaxLoader", false);
 
@@ -345,15 +296,7 @@ function process_login($user_path, &$layout) {
 
                 $enable_social = true;
             }
-            if (MOD_SEC_SOCIAL_JANRAIN) {
-                $tpl->set_var("janrain_appname", ffCommon_url_rewrite(MOD_SEC_SOCIAL_JANRAIN_APPNAME));
 
-                $tpl->parse("SezLoginExtendedJanrain", false);
-                $tpl->set_var("SezLoginShortJanrain", "");
-
-                $enable_social = true;
-            }
-            
             if (strlen($layout_settings["AREA_LOGIN_SHOW_LABEL"])) {
                 $tpl->parse("SezShowLabelUsername", false);
                 $tpl->parse("SezShowLabelPassword", false);
@@ -362,14 +305,14 @@ function process_login($user_path, &$layout) {
                 $tpl->set_var("SezShowLabelPassword", "");
             }
             
-            $tpl->set_var("container_class", cm_getClassByDef($framework_css["block"]["container"]));
-            $tpl->set_var("fields_class", cm_getClassByDef($framework_css["block"]["fields"]));
+            $tpl->set_var("container_class", Cms::getInstance("frameworkcss")->getClass($framework_css["block"]["container"]));
+            $tpl->set_var("fields_class", Cms::getInstance("frameworkcss")->getClass($framework_css["block"]["fields"]));
             
             
             
             
-            $tpl->set_var("actions_class", cm_getClassByDef($framework_css["actions"]["def"]));
-            $tpl->set_var("buttons_class", cm_getClassByDef($framework_css["actions"]["buttons"]));
+            $tpl->set_var("actions_class", Cms::getInstance("frameworkcss")->getClass($framework_css["actions"]["def"]));
+            $tpl->set_var("buttons_class", Cms::getInstance("frameworkcss")->getClass($framework_css["actions"]["buttons"]));
             
         
 
@@ -377,16 +320,14 @@ function process_login($user_path, &$layout) {
             $tpl->set_var("class_social", " social");
         }
     } else { //LOGOUT BOX
-        $user_permission = get_session("user_permission");
-        
         $arrLogout = array();
-        if (check_function("get_user_avatar")) {
-            $arrLogout["avatar"] = get_user_avatar($user_permission["avatar"], true, $UserEmail, cm_showfiles_get_abs_url("/avatar"), false); 
-        }
-        $arrLogout["username"] = $UserID;
-        $user_permission = get_session("user_permission");
-        $arrLogout["name"] = $user_permission["name"];
-        $arrLogout["surname"] = $user_permission["surname"];
+        $arrLogout["avatar"] = Auth::getUserAvatar();
+        $arrLogout["username"] = Auth::get("user")->username;
+
+        $anagraph = Auth::get();
+
+        $arrLogout["name"] = $anagraph["person"]["name"];
+        $arrLogout["surname"] = $anagraph["person"]["surname"];
         if ($tpl_data["result"]["type"] == "custom" || $tpl_data["result"]["type"] == "category") {
             if (is_array($arrLogout) && count($arrLogout)) {
                 foreach ($arrLogout AS $key => $value) {
@@ -403,7 +344,7 @@ function process_login($user_path, &$layout) {
 
         if ($layout_settings["AREA_LOGOUT_SHOW_AVATAR"]) {
             if(isset($arrLogout["avatar"])) {
-				$arrSize = explode("x", MOD_SEC_USER_AVATAR_MODE);
+				$arrSize = explode("x", cm::env("MOD_AUTH_USER_AVATAR"));
 				
 				if(!is_numeric($arrSize[0]) || !$arrSize[0] > 0)
 					$arrSize[0] = 80;
@@ -424,19 +365,16 @@ function process_login($user_path, &$layout) {
             $tpl->set_var("SezLogoutUsername", "");
         }
 
-        //if(check_function("get_layout_settings"))
-        //$layout["settings"] = get_layout_settings($layout["ID"], "ADMIN");
-
         if (check_function("process_user_menu")) {
             $rel_layout = $layout;
             $rel_layout["prefix"] = $layout["prefix"] . "M";
             $rel_layout["settings"]["AREA_USER_TEMPLATE"] = "login";
-            $res = process_user_menu(null, null, AREA_SHOW_ECOMMERCE, $user_path, $rel_layout, true, false);
+            $res = process_user_menu(null, null, Cms::env("AREA_SHOW_ECOMMERCE"), $user_path, $rel_layout, true, false);
             $tpl->set_var("user_menu", $res["content"]);
         }
     }
 
-    $cm->doEvent("vg_on_processed_block_login", array(&$tpl, $user_permission));
+    $cm->doEvent("vg_on_processed_block_login", array(&$tpl, $anagraph));
 
     $buffer = $tpl->rpparse("main", false);
     return array(

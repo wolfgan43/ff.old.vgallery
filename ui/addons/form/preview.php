@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -58,10 +58,9 @@ if($db->nextRecord()) {
     
 	$limit_by_groups = $db->getField("limit_by_groups")->getValue();
 	if(strlen($limit_by_groups)) {
+        $user = Auth::get("user");
 		$limit_by_groups = explode(",", $limit_by_groups);
-		$user_permission = get_session("user_permission"); 			
-
-		if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+		if(array_search($user->acl, $limit_by_groups) !== false) {
 			$allow_form = true;
 		} else {
 			$allow_form = false;
@@ -419,10 +418,10 @@ if($db->nextRecord()) {
 			    $obj_page_field->file_normalize = true;
 			     
 			    $obj_page_field->file_show_preview = true;
-	            $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-	            $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//	            $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//	            $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+	            $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+	            $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//	            $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//	            $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
 		        if($writable) {
 		            $obj_page_field->control_type = "file";
@@ -463,10 +462,10 @@ if($db->nextRecord()) {
 			    $obj_page_field->file_normalize = true;
 			     
 			    $obj_page_field->file_show_preview = true;
-	            $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-	            $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//	            $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//	            $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+	            $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+	            $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//	            $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//	            $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
 		        if($writable) {
 		            $obj_page_field->control_type = "file";
@@ -507,10 +506,10 @@ if($db->nextRecord()) {
 			    $obj_page_field->file_normalize = true;
 			     
 			    $obj_page_field->file_show_preview = true;
-	            $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-	            $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//	            $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//	            $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+	            $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+	            $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//	            $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//	            $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
 		        if($writable) {
 		            $obj_page_field->control_type = "file";

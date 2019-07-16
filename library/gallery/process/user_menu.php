@@ -43,13 +43,15 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
     	$template = "";
     
 	//$tpl_data["custom"] = "menu-user.html";
+    $tpl_data["id"] = $unic_id;
 	$tpl_data["custom"] = $layout["smart_url"] . ".html";		
 	$tpl_data["base"] = "user_menu" . $template . ".html";
 
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
     
     //$tpl = ffTemplate::factory(get_template_cascading($user_path, "user_menu" . $template . ".html", "", null, $layout["location"]));
     //$tpl->load_file("user_menu" . $template . ".html", "main");
@@ -58,24 +60,24 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
 		/**
 		* Admin Father Bar
 		*/
-	    if(AREA_USERS_SHOW_MODIFY && (AREA_LAYOUT_SHOW_MODIFY ) && $enable_edit) {
+	    if(Auth::env("AREA_USERS_SHOW_MODIFY") && (Auth::env("AREA_LAYOUT_SHOW_MODIFY")) && $enable_edit) {
 	        $admin_menu["admin"]["unic_name"] = $unic_id;
 	        $admin_menu["admin"]["title"] = $layout["title"];
 	        $admin_menu["admin"]["class"] = $layout["type_class"];
 	        $admin_menu["admin"]["group"] = $layout["type_group"];
 	        $admin_menu["admin"]["modify"] = "";
 	        $admin_menu["admin"]["delete"] = "";
-	        if(AREA_PROPERTIES_SHOW_MODIFY) {
+	        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 	            $admin_menu["admin"]["extra"] = "";
 	        }
-	        if(AREA_ECOMMERCE_SHOW_MODIFY) {
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
 	            $admin_menu["admin"]["ecommerce"] = "";
 	        }
-	        if(AREA_LAYOUT_SHOW_MODIFY) {
+	        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 	            $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
 	            $admin_menu["admin"]["layout"]["type"] = $layout["type"];
 	        }
-	        if(AREA_SETTINGS_SHOW_MODIFY) {
+	        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
 	            $admin_menu["admin"]["setting"] = "";
 	        }
 	        
@@ -101,7 +103,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
 
     // Visualizzazione o meno della sezione login
     if($UserNID === NULL)
-        $UserNID  = get_session("UserNID");
+        $UserNID  = Auth::get("user")->id;
     
     $UserID = NULL;  
     
@@ -118,7 +120,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
 	        ORDER BY users_rel_module_form.request DESC, users_rel_module_form.`order`, module_form.ID
             ";
     $db_user_menu->query($sSQL);
-    if($db_user_menu->nextRecord() && $db_user_menu->getField("username")->getValue() != MOD_SEC_GUEST_USER_NAME) {
+    if($db_user_menu->nextRecord() && $db_user_menu->getField("username")->getValue() != Cms::env("MOD_AUTH_GUEST_USER_NAME")) {
     	$UserID = $db_user_menu->getField("username", "Text", true);
     	
        
@@ -134,7 +136,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
         } else
             $tpl->set_var("SezManageAccount", "");
 
-        if ($layout_settings["AREA_USER_SHOW_ECOMMERCE_MANAGE"] && AREA_SHOW_ECOMMERCE && $enable_ecommerce) {
+        if ($layout_settings["AREA_USER_SHOW_ECOMMERCE_MANAGE"] && Cms::env("AREA_SHOW_ECOMMERCE") && $enable_ecommerce) {
             $count_item++;
             
             $tpl->set_var("item_path", FF_SITE_PATH . VG_SITE_ECOMMERCE);
@@ -143,7 +145,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
             $tpl->set_var("SezEcommerceManage", "");
         }
 
-        if ($layout_settings["AREA_USER_SHOW_ECOMMERCE_CART"] && AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_SHOW_CART && $enable_ecommerce) {
+        if ($layout_settings["AREA_USER_SHOW_ECOMMERCE_CART"] && Cms::env("AREA_SHOW_ECOMMERCE") && Auth::env("AREA_ECOMMERCE_SHOW_CART") && $enable_ecommerce) {
             $count_item++;
             
             $tpl->set_var("item_path", FF_SITE_PATH . VG_SITE_CART);
@@ -158,7 +160,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
             $tpl->set_var("SezEcommerceCart", "");
         }
 
-        if ($layout_settings["AREA_USER_SHOW_WISHLIST"] && AREA_SHOW_ECOMMERCE && USE_CART_PUBLIC_MONO && $enable_ecommerce) {
+        if ($layout_settings["AREA_USER_SHOW_WISHLIST"] && Cms::env("AREA_SHOW_ECOMMERCE") && Cms::env("USE_CART_PUBLIC_MONO") && $enable_ecommerce) {
             $count_item++;
             
             $tpl->set_var("item_path", FF_SITE_PATH . VG_SITE_WISHLIST);
@@ -275,7 +277,7 @@ function process_user_menu($UserNID = NULL, $source_user_path = NULL, $enable_ec
             }
         }
     } else {
-        if ($layout_settings["AREA_USER_SHOW_ECOMMERCE_CART"] && AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_SHOW_CART && $enable_ecommerce) {
+        if ($layout_settings["AREA_USER_SHOW_ECOMMERCE_CART"] && Cms::env("AREA_SHOW_ECOMMERCE") && Auth::env("AREA_ECOMMERCE_SHOW_CART") && $enable_ecommerce) {
             $count_item++;
             
             $tpl->set_var("item_path", FF_SITE_PATH . VG_SITE_CART);

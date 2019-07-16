@@ -41,30 +41,7 @@ function system_layer_gallery($oPage = null)
     $settings_path = $globals->settings_path;
     $selected_lang = $globals->selected_lang;
 
-    //$userNID = get_session("UserNID");
-    //$is_guest = (!$userNID || $userNID == MOD_SEC_GUEST_USER_ID);
-	//$is_xhr = $cm->isXHR();
-	
-    /*
-    if(!$ret_url)
-        $ret_url = $_SERVER["REQUEST_URI"];
-      */
-    
-    //$cache_page_contents = 0; // x cache_page
-    //$globals->cache["layout_blocks"] = array(); // x cache_page
-    //$globals->cache["section_blocks"] = array(); // x cache_page
-    //$globals->cache["data_blocks"] = array(); // x cache_page
-    //$globals->cache["ff_blocks"] = array(); // x cache_page
-	
-	
-  /*  if(!$is_xhr) {
-		if(check_function("system_set_media"))            
-    		system_set_media($oPage, $settings_path, AREA_SHOW_NAVBAR_ADMIN);
-        if(check_function("get_webservices"))
-        	get_webservices(null, $oPage);
-    } */
-    
-	if(ENABLE_STD_PERMISSION && check_function("get_file_permission")) {
+	if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission")) {
 	    $file_permission = get_file_permission($settings_path, "static_pages");
 	    if (is_array($file_permission) && !check_mod($file_permission, 1, true)) {
 	    	if(!defined("SKIP_MAIN_CONTENT")) define("SKIP_MAIN_CONTENT", true);
@@ -119,9 +96,7 @@ function system_layer_gallery($oPage = null)
     												)*/    
     if(!count($template["stats"]["main_section"])) {
     	http_response_code(500);
-		if(check_function("write_notification")) {
-			write_notification("missing_main_section", "", "warning", null, $user_path);
-		}
+        Logs::write("missing_main_section", "cms_process");
     } elseif($template["stats"]["notfound"] == $template["stats"]["main_content"]) {
         http_response_code(404);
         $globals->setSeo(array(
@@ -197,34 +172,35 @@ function system_layer_gallery($oPage = null)
 			$ID_seo_node = $globals->seo[$seo_primary_block]["ID"];
 						
 			$globals->seo["current"] = $seo_primary_block;*/
+
             if(check_function("system_set_media"))            
-                system_set_media($oPage, $globals->settings_path, AREA_SHOW_NAVBAR_ADMIN, true);
+                system_set_media($oPage, $globals->settings_path, Auth::isAdmin(), true);
                 
             if(check_function("system_set_meta")) 
                 system_set_meta($oPage);
 
 		    $oPage->addEvent("on_tpl_parse", "write_user_vars" , ffEvent::PRIORITY_FINAL);
 
-            if(AREA_SHOW_NAVBAR_ADMIN) {
+            if(Auth::isAdmin()) {
             	$cms_options = array();
-				if(AREA_SECTION_SHOW_MODIFY && is_array($template["navadmin"]) && count($template["navadmin"])) {
+				if(Auth::env("AREA_SECTION_SHOW_MODIFY") && is_array($template["navadmin"]) && count($template["navadmin"])) {
 					$cms_options["editor"] = array();
 
 					if(AREA_SEO_SHOW_MODIFY) { 
 						$cms_options["editor"]["seo"] = true;
 					}
-					if(AREA_SITEMAP_SHOW_MODIFY && 0) { 
+					if(Auth::env("AREA_SITEMAP_SHOW_MODIFY") && 0) {
 						$cms_options["editor"]["sitemap"] = array(
 							"menu" => array("class" => "cms-editor-menu sitemap"
-											, "icon" => cm_getClassByFrameworkCss("sitemap", "icon-tag", "2x")
+											, "icon" => Cms::getInstance("frameworkcss")->get("sitemap", "icon-tag", "2x")
 											, "rel" => "add"
 							)
 						);
 					}				
-					if(AREA_LAYOUT_SHOW_MODIFY) { 
+					if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 						$cms_options["editor"]["sitemap"] = array(
 							"menu" => array("class" => "cms-editor-menu"
-											, "icon" => cm_getClassByFrameworkCss("addnew", "icon-tag", "2x")
+											, "icon" => Cms::getInstance("frameworkcss")->get("addnew", "icon-tag", "2x")
 											, "rel" => "add"
 							)
 						);
@@ -236,7 +212,7 @@ function system_layer_gallery($oPage = null)
                 $admin_menu["admin"]["css"] = $oPage->page_css;
                 $admin_menu["admin"]["js"] = $oPage->page_js;
                 $admin_menu["admin"]["theme"] = $oPage->theme;
-                $admin_menu["admin"]["international"] = ffTemplate::_get_word_by_code("", null, null, true);
+                $admin_menu["admin"]["international"] = ffTranslator::dump();
                 $admin_menu["admin"]["seo"] = array(
                     "src" => $globals->seo["current"] //$seo_primary_block
                     , "ID" => $globals->seo[$globals->seo["current"]]["ID"] //$ID_seo_node
@@ -308,7 +284,7 @@ function system_process_page_blocks($blocks, $params, &$template)
 		{
 			if(!$template["blocks"][$ID_block])
 				continue;
-					
+
 			if($template["blocks"][$ID_block]["processed"]) 
 			{
 				if($block_key != $template["blocks"][$ID_block]["processed"]) {
@@ -365,7 +341,8 @@ function system_process_page_blocks($blocks, $params, &$template)
 						if(array_key_exists("template", $buffer))
 							$template = array_replace_recursive ($template, $buffer["template"]);                                            
 		            }
-					if(strlen($buffer["content"])) {
+
+					if (!($params["main_content"] && !$buffer["content"])) {
 						$params["count_block"]++;
 
 						if($params["main_content"]
@@ -406,7 +383,7 @@ function system_process_page_blocks($blocks, $params, &$template)
 							$template["stats"]["processed_shard"]++;
 						}
 					} else {
-						cache_writeLog("Block: " . $template["blocks"][$ID_block]["smart_url"] . " (ID: " . $ID_block . ") URL: " . $globals->user_path, "error_block_notfound");
+						Cache::log("Block: " . $template["blocks"][$ID_block]["smart_url"] . " (ID: " . $ID_block . ") URL: " . $globals->user_path, "error_block_notfound");
 					}
 
 				}
@@ -662,7 +639,7 @@ function system_process_page_layers($layers = null, $params, &$template)
 function system_pre_process_page($params = null/*, $process_page = false*/) 
 {
     $globals 					= ffGlobals::getInstance("gallery");
-	$params["framework_css"]	= cm_getFrameworkCss();
+	$params["framework_css"]	= Cms::getInstance("frameworkcss")->getFramework();
 	if(!$params["settings_path"])
 		$params["settings_path"] = $globals->settings_path;
 		
@@ -734,7 +711,7 @@ function system_process_page($params, $template = null) {
 	    //ffErrorHandler::raise("ad", E_USER_ERROR, null, get_defined_vars());
 	    $params["count_ff"] = 0;
 
-		if(AREA_SHOW_NAVBAR_ADMIN) {
+		if(Auth::isAdmin()) {
 		    $navadmin_section = ($template["navadmin"][$template["stats"]["primary_section"]]
 		        ? $template["stats"]["primary_section"]
 		        : "unknown"
@@ -767,8 +744,8 @@ function system_process_page($params, $template = null) {
 		            $content_layout[$content_unic_id]["location"] = "Content";
 		            //$content_layout[$content_unic_id]["width"] = $sections[$primary_main_section]["width"];
 		            $content_layout[$content_unic_id]["visible"] = NULL;
-		            if(check_function("get_layout_settings"))
-		                $content_layout[$content_unic_id]["settings"] = get_layout_settings(NULL, "SEARCH");
+		            //if(check_function("get_layout_settings"))
+		                $content_layout[$content_unic_id]["settings"] = Cms::getPackage("search"); //get_layout_settings(NULL, "SEARCH");
 		            $content_layout_sort = $content_layout[$content_unic_id]["settings"]["AREA_SEARCH_DEFAULT_SORT"];
 		            break;
 		        default:
@@ -789,14 +766,14 @@ function system_process_page($params, $template = null) {
 		            $content_layout[$content_unic_id]["location"] = "Content";
 		            //$content_layout[$content_unic_id]["width"] = $sections[$primary_main_section]["width"];
 		            $content_layout[$content_unic_id]["visible"] = NULL;
-		            if(check_function("get_layout_settings"))
-		                $content_layout[$content_unic_id]["settings"] = get_layout_settings(NULL, "FORMS_FRAMEWORK");
+		            //if(check_function("get_layout_settings"))
+		                $content_layout[$content_unic_id]["settings"] = Cms::getPackage("applets"); //get_layout_settings(NULL, "FORMS_FRAMEWORK");
 		            $content_layout_sort = $content_layout[$content_unic_id]["settings"]["AREA_FF_DEFAULT_SORT"];
 		    }
 		    $tmp_content_layout = $content_layout[$content_unic_id];
 		    $tmp_content_layout["settings"] = md5(serialize($tmp_content_layout["settings"]));
 		    
-		    if(AREA_SHOW_NAVBAR_ADMIN) {
+		    if(Auth::isAdmin()) {
 				$template["navadmin"][$navadmin_section]["blocks"] = 
 					array_slice($template["navadmin"][$navadmin_section]["blocks"], 0, $content_layout_sort, true)
 					+ array($content_unic_id => $tmp_content_layout)
@@ -836,7 +813,7 @@ function system_process_page($params, $template = null) {
 
 	$template["fixed_pre_content"] 	= $params["fixed_pre_body"] . $params["fixed_pre_content"];
 	$template["fixed_post_content"] = $params["fixed_post_content"] . $params["fixed_post_body"];
-	
+
 	if($globals->page["template"]) {
 		$template["buffer"]["container"]["content"] = false;
 		$params["skip_landing_page"] = true;
@@ -856,7 +833,7 @@ function system_process_page($params, $template = null) {
 
 		//not found
 		if(!$params["no_content"] && !$template["buffer"]["container"]["content"]) {
-			if(AREA_SHOW_NAVBAR_ADMIN && check_function("system_wizard")) {
+			if(Auth::isAdmin() && check_function("system_wizard")) {
 				$template["buffer"]["container"]["content"] = system_wizard("struct");
 				//da inserire il wizard
 			} else {
@@ -983,6 +960,8 @@ function system_parse_page($template) {
 	}
 	$buffer = $template["buffer"]["admin"] . $buffer;
 
+    Cms::parseWidgets($buffer);
+
 	return $buffer;
 }
 
@@ -1002,7 +981,6 @@ function system_block_process($layout, $params = array()) {
     $unic_id = $layout["prefix"] . $layout["ID"];
 
     $params["xhr"] = $cm->isXHR();
-    $params["user_path_shard"] = $globals->user_path_shard;
 
     //if($layout["type"] == "ECOMMERCE" || (isset($layout["use_ajax"]) && $layout["use_ajax"])) {
     if((isset($layout["ajax"]) && $layout["ajax"]) && $layout["ajax_on_ready"] != "preload" && !$cm->isXHR()) {
@@ -1031,17 +1009,17 @@ function system_block_process($layout, $params = array()) {
 
         switch ($layout["type"]) {
             case "STATIC_PAGE_BY_DB":
-                if(AREA_STATIC_SHOW_MODIFY || AREA_STATIC_SHOW_ADDNEW) {
+                if(Auth::env("AREA_STATIC_SHOW_MODIFY") || Auth::env("AREA_STATIC_SHOW_ADDNEW")) {
                 	get_admin_bar();
                 }
                 break;
             case "STATIC_PAGE_BY_FILE":
-                if(AREA_STATIC_SHOW_MODIFY || AREA_STATIC_SHOW_ADDNEW) {
+                if(Auth::env("AREA_STATIC_SHOW_MODIFY") || Auth::env("AREA_STATIC_SHOW_ADDNEW")) {
                     get_admin_bar();
                 }
                 break;
             case "STATIC_PAGES_MENU":
-                if(AREA_STATIC_SHOW_MODIFY || AREA_STATIC_SHOW_ADDNEW) {
+                if(Auth::env("AREA_STATIC_SHOW_MODIFY") || Auth::env("AREA_STATIC_SHOW_ADDNEW")) {
                     get_admin_bar();
                 }
                 break;
@@ -1054,7 +1032,7 @@ function system_block_process($layout, $params = array()) {
             case "VGALLERY_MENU":
             case "VGALLERY_GROUP":
             case "GALLERY_MENU":
-                if(AREA_VGALLERY_SHOW_MODIFY || AREA_VGALLERY_SHOW_ADDNEW) {
+                if(Auth::env("AREA_VGALLERY_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_SHOW_ADDNEW")) {
                     get_admin_bar();
                 }
                 /*
@@ -1085,28 +1063,28 @@ function system_block_process($layout, $params = array()) {
                 }*/
                 break;
             case "MODULE":
-                if(MODULE_SHOW_CONFIG) {
+                if(Auth::env("MODULE_SHOW_CONFIG")) {
                     get_admin_bar();
                 }
                 break;
             case "ECOMMERCE":
-                if(AREA_ECOMMERCE_SHOW_MODIFY)
+                if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY"))
                     get_admin_bar();
                 break;
             case "LANGUAGES":
-                if(AREA_LANGUAGES_SHOW_MODIFY)
+                if(Auth::env("AREA_LANGUAGES_SHOW_MODIFY"))
                     get_admin_bar();
                 break;
             case "SEARCH":
-                if(AREA_SEARCH_SHOW_MODIFY)
+                if(Auth::env("AREA_SEARCH_SHOW_MODIFY"))
                     get_admin_bar();
                 break;
             case "LOGIN":
-                if(AREA_LOGIN_SHOW_MODIFY)
+                if(Auth::env("AREA_LOGIN_SHOW_MODIFY"))
                     get_admin_bar();
                 break;
             case "USER":
-                if(AREA_USERS_SHOW_MODIFY)
+                if(Auth::env("AREA_USERS_SHOW_MODIFY"))
                     get_admin_bar();
                 break;
             case "FORMS_FRAMEWORK":
@@ -1145,17 +1123,17 @@ function system_block_process($layout, $params = array()) {
                     $available_path = $params["settings_path"];
                 }
                 
-                $real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+                $real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
                 if((!$params["main_content"] || $layout["use_in_content"] == "-1") && $real_path === false && strlen($available_path) && $available_path != "/") {
                     do {
                         $available_path = ffCommon_dirname($available_path);
-                        $real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+                        $real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
                         if($real_path !== false)
                             break;
                     } while($available_path != "/");
                 }
 
-				/*if(!$params["main_content"] || (strpos($params["settings_path"], stripslash($layout["db"]["value"]) . $available_path) === 0 && is_dir(DISK_UPDIR . $params["settings_path"]))
+				/*if(!$params["main_content"] || (strpos($params["settings_path"], stripslash($layout["db"]["value"]) . $available_path) === 0 && is_dir(FF_DISK_UPDIR . $params["settings_path"]))
 				) {
 					$valid_gallery_path = true;
 				} else {
@@ -1165,7 +1143,7 @@ function system_block_process($layout, $params = array()) {
 				if($real_path) {
 	                if(!is_dir($real_path)) {  
 	                    $available_path = $layout["db"]["value"];
-	                    $real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]));
+	                    $real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]));
 	                } else {  
 	                    if(strpos($available_path, $layout["db"]["value"]) === 0) {
 	                        $available_path = stripslash(substr($available_path, strlen($layout["db"]["value"])));
@@ -1177,23 +1155,23 @@ function system_block_process($layout, $params = array()) {
 	                if($available_path == "")
 	                    $available_path = "/";
 
-	                if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	                if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 	                    $file_permission = get_file_permission($available_path, "files", null, true);
 	                    
 	                //File permessi Cartella (controllo se l'utente ha diritti di lettura)
-	                if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+	                if (check_mod($file_permission, 1, true, Auth::env("AREA_GALLERY_SHOW_MODIFY"))) {
 	                    if(is_dir($real_path)) {
 	                        $rst_file = array();
 	                        $rst_dir = array();
 	                        $arr_real_path = glob($real_path . "/*");
 	                        if(is_array($arr_real_path) && count($arr_real_path)) {
 	                            foreach ($arr_real_path AS $real_file) { 
-	                                $file = str_replace(DISK_UPDIR, "", $real_file);
+	                                $file = str_replace(FF_DISK_UPDIR, "", $real_file);
 	                                $description = "";
-	                                if ((is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH /*&& basename($real_file) != GALLERY_TPL_PATH*/) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
-	                                    if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	                                if ((is_dir($real_file) /*&& basename($real_file) != ffMedia::STORING_BASE_NAME && basename($real_file) != GALLERY_TPL_PATH*/) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
+	                                    if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 	                                        $file_permission = get_file_permission($file);
-	                                    if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+	                                    if (check_mod($file_permission, 1, true, Auth::env("AREA_GALLERY_SHOW_MODIFY"))) {
 	                                        $rst_dir[$file]["permission"] = $file_permission;
 	                                    }
 	                                }
@@ -1247,7 +1225,7 @@ function system_block_process($layout, $params = array()) {
 				    /**
 				    * Admin Father Bar
 				    */                    
-                    if(AREA_MODULES_SHOW_MODIFY) {
+                    if(Auth::env("AREA_MODULES_SHOW_MODIFY")) {
                         $admin_menu["admin"]["unic_name"] = $unic_id;
                         $admin_menu["admin"]["title"] = $layout["title"] . ": " . $params["user_path"];
                         $admin_menu["admin"]["class"] = $layout["type_class"];
@@ -1259,12 +1237,12 @@ function system_block_process($layout, $params = array()) {
                         $admin_menu["admin"]["extra"] = "";
 
                         $admin_menu["admin"]["ecommerce"] = "";
-                        if(AREA_LAYOUT_SHOW_MODIFY) {
+                        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
                             $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
                             $admin_menu["admin"]["layout"]["type"] = $layout["type"];
                         }
                         $admin_menu["admin"]["setting"] = ""; //$layout["type"];
-                        if(MODULE_SHOW_CONFIG) {
+                        if(Auth::env("MODULE_SHOW_CONFIG")) {
                             $admin_menu["admin"]["module"]["value"] = $layout["db"]["value"];
                             $admin_menu["admin"]["module"]["params"] = $layout["db"]["params"];
                         }
@@ -1388,7 +1366,7 @@ function system_block_process($layout, $params = array()) {
 					if($layout["settings"]["AREA_VGALLERY_SHOW_THUMB_PARENT"] && $virtual_path != $source_user_path) {
 	                    if(check_function("process_vgallery_view"))
 	                        $buffer_vg_view = process_vgallery_view(
-	                        		$virtual_path . $globals->user_path_shard
+	                        		$virtual_path
 	                        		, $vgallery_name
 	                        		, array(
 	                        			"source_user_path" => $source_user_path
@@ -1446,7 +1424,7 @@ function system_block_process($layout, $params = array()) {
 	                if($layout["settings"]["AREA_VGALLERY_SHOW_PREVIEW"]) {
 	                    if(check_function("process_vgallery_view")) {
 	                        $buffer_vg_view = process_vgallery_view(
-	                        		$virtual_path . $globals->user_path_shard
+	                        		$virtual_path
 	                        		, $vgallery_name
 	                        		, array(
 	                        			"source_user_path" => $source_user_path
@@ -1570,11 +1548,11 @@ function system_block_process($layout, $params = array()) {
                         $available_path = $globals->settings_path;
                     }
                     
-                    $real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+                    $real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
                     if($real_path === false && $available_path != "/") {
                         do {
                             $available_path = ffCommon_dirname($available_path);
-                            $real_path = realpath(DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
+                            $real_path = realpath(FF_DISK_UPDIR . stripslash($layout["db"]["value"]) . $available_path);
                             if($real_path !== false)
                                 break;
                         } while($available_path != "/");
@@ -1696,13 +1674,13 @@ function system_block_process($layout, $params = array()) {
                 break;
             case "USER":
                 if(check_function("process_user_menu"))
-                    $res = process_user_menu(null, null, AREA_SHOW_ECOMMERCE, $globals->user_path, $layout);
+                    $res = process_user_menu(null, null, Cms::env("AREA_SHOW_ECOMMERCE"), $globals->user_path, $layout);
                 break;
             case "FORMS_FRAMEWORK":
 			    /**
 			    * Admin Father Bar
 			    */            
-                if(AREA_FORMS_FRAMEWORK_SHOW_MODIFY) {
+                if(Auth::env("AREA_FORMS_FRAMEWORK_SHOW_MODIFY")) {
                     $admin_menu["admin"]["unic_name"] = $unic_id;
                     $admin_menu["admin"]["title"] = $layout["title"] . ": " . $globals->user_path;
                     $admin_menu["admin"]["class"] = $layout["type_class"];
@@ -1713,11 +1691,11 @@ function system_block_process($layout, $params = array()) {
                     $admin_menu["admin"]["delete"] = "";
                     $admin_menu["admin"]["extra"] = "";
                     $admin_menu["admin"]["ecommerce"] = "";
-                    if(AREA_LAYOUT_SHOW_MODIFY) {
+                    if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
                         $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
                         $admin_menu["admin"]["layout"]["type"] = $layout["type"];
                     }
-                    if(AREA_SETTINGS_SHOW_MODIFY) {
+                    if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
                         $admin_menu["admin"]["setting"] = "";
                     }
 

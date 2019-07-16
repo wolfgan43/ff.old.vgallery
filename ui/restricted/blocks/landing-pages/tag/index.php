@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!(AREA_INTERNATIONAL_SHOW_MODIFY || AREA_LANGUAGES_SHOW_MODIFY || AREA_CHARSET_SHOW_MODIFY)) {
+if (!(Auth::env("AREA_INTERNATIONAL_SHOW_MODIFY") || Auth::env("AREA_LANGUAGES_SHOW_MODIFY") || Auth::env("AREA_CHARSET_SHOW_MODIFY"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 $db = ffDB_Sql::factory();
@@ -351,7 +351,7 @@ function enableTag_on_before_parse_row($component) {
 	
 	if(isset($component->grid_buttons["enableTag"])) {
 		if($component->db[0]->getField("status", "Number", true)) {
-            $component->grid_buttons["enableTag"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["enableTag"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["enableTag"]->icon = null;
             $component->grid_buttons["enableTag"]->action_type = "submit"; 
             $component->grid_buttons["enableTag"]->form_action_url = $component->grid_buttons["enableTag"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["enableTag"]->parent[0]->addit_record_param . "settagstatus=0&ret_url=" . urlencode($component->parent[0]->getRequestUri());
@@ -363,7 +363,7 @@ function enableTag_on_before_parse_row($component) {
                 //$component->grid_buttons["enableTag"]->url = $component->grid_buttons["enableTag"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["enableTag"]->parent[0]->addit_record_param . "settagstatus=0&frmAction=settagstatus&ret_url=" . urlencode($component->parent[0]->getRequestUri());
             }   
 	    } else {
-			$component->grid_buttons["enableTag"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+			$component->grid_buttons["enableTag"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["enableTag"]->icon = null;
             $component->grid_buttons["enableTag"]->action_type = "submit";     
             $component->grid_buttons["enableTag"]->form_action_url = $component->grid_buttons["enableTag"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["enableTag"]->parent[0]->addit_record_param . "settagstatus=1&ret_url=" . urlencode($component->parent[0]->getRequestUri());

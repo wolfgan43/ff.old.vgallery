@@ -89,10 +89,10 @@
   	if($cover)
   	{
   		if(strpos($cover, "://") === false) {
-  			if(is_file(DISK_UPDIR . $cover)) {
+  			if(is_file(FF_DISK_UPDIR . $cover)) {
   				$img = $cover;
-			} elseif(is_dir(DISK_UPDIR . $cover)) {
-				$res = glob(DISK_UPDIR . $cover . "/*.{jpg,jpeg,gif,png}", GLOB_BRACE);
+			} elseif(is_dir(FF_DISK_UPDIR . $cover)) {
+				$res = glob(FF_DISK_UPDIR . $cover . "/*.{jpg,jpeg,gif,png}", GLOB_BRACE);
 				if(is_array($res) && count($res)) {
 					foreach($res AS $file_path) {
 						$img = $cover . "/" . basename($file_path);
@@ -145,7 +145,7 @@
   		}
   		if(is_array($arrDesc)) {
   			$desc_col = array_fill(0,3, (int) floor(12 / count($arrDesc)));
- 			$desc .= '<div class="' . cm_getClassByFrameworkCss($desc_col, "col") . '">' . implode('</div><div class="' . cm_getClassByFrameworkCss($desc_col, "col") . '">', $arrDesc) . '</div>';
+ 			$desc .= '<div class="' . Cms::getInstance("frameworkcss")->get($desc_col, "col") . '">' . implode('</div><div class="' . Cms::getInstance("frameworkcss")->get($desc_col, "col") . '">', $arrDesc) . '</div>';
 		}
   		
   	} elseif(strlen($description)) {
@@ -155,7 +155,7 @@
   	$name = '	<h4 title="'  . $title . '">' . ($permalink
   							? ($params["link"]
   								? '<a href="' . normalize_url_by_current_lang($permalink) . '" target="_blank" title="'  . $title . '">' . $title . '</a>'
-  								: $title . '<a class="' . cm_getClassByFrameworkCss("right", "util") . '" href="' . normalize_url_by_current_lang($permalink) . '" target="_blank" title="'  . $title . '">' . cm_getClassByFrameworkCss("external-link", "icon-tag") . '</a>'
+  								: $title . '<a class="' . Cms::getInstance("frameworkcss")->get("right", "util") . '" href="' . normalize_url_by_current_lang($permalink) . '" target="_blank" title="'  . $title . '">' . Cms::getInstance("frameworkcss")->get("external-link", "icon-tag") . '</a>'
   							)
   							: $title
   						)
@@ -175,7 +175,7 @@
   	
   	if(is_array($params["icons"]) && count($params["icons"])) {
   		foreach($params["icons"] AS $icon_name => $icon_params) {
-  			$icons .= '<a href="javascript:void(0);" class="' . $icon_name . '">' . cm_getClassByFrameworkCss($icon_name, "icon-tag", $icon_params) . '</a>';
+  			$icons .= '<a href="javascript:void(0);" class="' . $icon_name . '">' . Cms::getInstance("frameworkcss")->get($icon_name, "icon-tag", $icon_params) . '</a>';
   		
   		}
   	}
@@ -184,15 +184,15 @@
 		case "marker":
   			$buffer = $name . $cat
   						. ($img !== false
-  							? '<div class="' . cm_getClassByDef($framework_css["img" . ($params["noqrcode"] ? "qrcode" : "")]) 
+  							? '<div class="' . Cms::getInstance("frameworkcss")->getClass($framework_css["img" . ($params["noqrcode"] ? "qrcode" : "")]) 
   									. ($img === null
-  										? " " . cm_getClassByFrameworkCss("noimg", "icon", "4x")
+  										? " " . Cms::getInstance("frameworkcss")->get("noimg", "icon", "4x")
   										: ""
   									) . '">'
   									. $image . '
   								</div>
-  								<div class="' . cm_getClassByDef($framework_css["desc" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
-  							: '<div class="' . cm_getClassByDef($framework_css["desconly" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
+  								<div class="' . Cms::getInstance("frameworkcss")->getClass($framework_css["desc" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
+  							: '<div class="' . Cms::getInstance("frameworkcss")->getClass($framework_css["desconly" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
   						) . '
   							' . str_replace(array(" - "), array("<br />"), $desc) . $isbn . '
   						</div>'
@@ -204,20 +204,20 @@
 		default:
   			$buffer = '<div class="vg-card">
   						' . ($img !== false
-  							? '<div class="' . cm_getClassByDef($framework_css["img" . ($params["noqrcode"] ? "qrcode" : "")]) 
+  							? '<div class="' . Cms::getInstance("frameworkcss")->getClass($framework_css["img" . ($params["noqrcode"] ? "qrcode" : "")]) 
   									. ($img === null
-  										? " " . cm_getClassByFrameworkCss("noimg", "icon", "4x")
+  										? " " . Cms::getInstance("frameworkcss")->get("noimg", "icon", "4x")
   										: ""
   									) . '">'
   									. $image . '
   								</div>
-  								<div class="' . cm_getClassByDef($framework_css["desc" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
-  							: '<div class="' . cm_getClassByDef($framework_css["desconly" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
+  								<div class="' . Cms::getInstance("frameworkcss")->getClass($framework_css["desc" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
+  							: '<div class="' . Cms::getInstance("frameworkcss")->getClass($framework_css["desconly" . ($params["noqrcode"] ? "" : "qrcode")]) . '">'
   						) . '
   							' . $name . $cat . $desc . '
   						</div>
   						' . ($isbn
-  							? '<div class="' . cm_getClassByDef($framework_css["qrcode"]) . '">'
+  							? '<div class="' . Cms::getInstance("frameworkcss")->getClass($framework_css["qrcode"]) . '">'
   									. $isbn
   								. '</div>'
   							: ''
@@ -296,9 +296,9 @@
   					break;
   				default;
   					if(is_numeric(str_replace(array("+", "-", " ", "."), "", $value))) {
-  						$res[] = '<a href="tel:' . $value . '" target="_blank">' . cm_getClassByFrameworkCss("phone", "icon-tag") . " ". $value . '</a>';
+  						$res[] = '<a href="tel:' . $value . '" target="_blank">' . Cms::getInstance("frameworkcss")->get("phone", "icon-tag") . " ". $value . '</a>';
 					} elseif(preg_match('/^([.0-9a-z_-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,4})$/i', $value) > 0) {
-	  					$res[] = '<a href="mailto:' . $value . '" target="_blank">' . cm_getClassByFrameworkCss("envelope", "icon-tag") . " ". $value . '</a>';
+	  					$res[] = '<a href="mailto:' . $value . '" target="_blank">' . Cms::getInstance("frameworkcss")->get("envelope", "icon-tag") . " ". $value . '</a>';
 					} else {
 						$res[] = $value;
 					}

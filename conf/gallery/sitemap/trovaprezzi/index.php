@@ -134,8 +134,8 @@ if($db->nextRecord()) {
 		$gallery = array();
 		$cover = "";
 		$full_path = stripslash($db->getField("parent", "Text", true)) . "/" . $db->getField("name", "Text", true);
-		if(is_dir(DISK_UPDIR . $full_path)) { 
-			$directory = new RecursiveDirectoryIterator(DISK_UPDIR . $full_path);
+		if(is_dir(FF_DISK_UPDIR . $full_path)) { 
+			$directory = new RecursiveDirectoryIterator(FF_DISK_UPDIR . $full_path);
 			$flattened = new RecursiveIteratorIterator($directory);
 
 			$files = new RegexIterator($flattened, '#^(?:[A-Z]:)?(?:/(?!\.Trash)[^/]+)+/[^/]+\.(?:jpg|png|gif|svg)$#Di');
@@ -143,9 +143,9 @@ if($db->nextRecord()) {
 			sort($files);
 
 			foreach($files as $file) {
-				$file_path = str_replace(DISK_UPDIR, "", $file);
+				$file_path = str_replace(FF_DISK_UPDIR, "", $file);
 
-				if(ffCommon_dirname($file) == DISK_UPDIR . $full_path) {
+				if(ffCommon_dirname($file) == FF_DISK_UPDIR . $full_path) {
 					if(!$cover)
 						$cover = $file_path;
 				} else {
@@ -199,7 +199,7 @@ if($db->nextRecord()) {
 
 $buffer = ffCommon_utf8_for_xml($tpl->rpparse("main", false));
 if($buffer) {
-	$mime = ffMimeTypeByExtension("xml");
+	$mime = ffMedia::getMimeTypeByExtension("xml");
 	if($mime)
 		header("Content-type: " . $mime);
 

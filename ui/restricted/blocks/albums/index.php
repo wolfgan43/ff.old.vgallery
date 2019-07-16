@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!(AREA_GALLERY_SHOW_MODIFY || AREA_GALLERY_SHOW_ADDNEW || AREA_GALLERY_SHOW_DELETE)) {
+if (!(Auth::env("AREA_GALLERY_SHOW_MODIFY") || Auth::env("AREA_GALLERY_SHOW_ADDNEW") || Auth::env("AREA_GALLERY_SHOW_DELETE"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -35,14 +35,14 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
 
 	$sSQL_file = "";
 
-	$album = glob(DISK_UPDIR . "/*", GLOB_ONLYDIR);
+	$album = glob(FF_DISK_UPDIR . "/*", GLOB_ONLYDIR);
 	if(is_array($album) && count($album)) {
 		$arrStaticFile = array();
 		foreach($album AS $full_path) {
 			if(basename($full_path) == "tmp")
 				continue;
 
-		 	$album_path = str_replace(DISK_UPDIR, "", $full_path);
+		 	$album_path = str_replace(FF_DISK_UPDIR, "", $full_path);
 			if(!isset($arrStaticFile[$album_path])) {
 				if(strlen($sSQL_file))
 					$sSQL_file .= " UNION ";
@@ -69,10 +69,10 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
 	$oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/modify";
 	$oGrid->record_id = "GalleryModify";
 	$oGrid->resources[] = $oGrid->record_id;
-	$oGrid->display_new = AREA_GALLERY_SHOW_ADDNEW;
+	$oGrid->display_new = Auth::env("AREA_GALLERY_SHOW_ADDNEW");
 	$oGrid->display_edit_bt = false;
-	$oGrid->display_edit_url = AREA_GALLERY_SHOW_MODIFY;
-	$oGrid->display_delete_bt = AREA_GALLERY_SHOW_DELETE;
+	$oGrid->display_edit_url = Auth::env("AREA_GALLERY_SHOW_MODIFY");
+	$oGrid->display_delete_bt = Auth::env("AREA_GALLERY_SHOW_DELETE");
 
 	/**
 	* Title

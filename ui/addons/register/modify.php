@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -391,7 +391,7 @@ $oDetailGroup->populate_insert_SQL = "SELECT
                                         , " . CM_TABLE_PREFIX . "mod_security_groups.gid AS gid
                                     FROM 
                                         " . CM_TABLE_PREFIX . "mod_security_groups
-                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . MOD_SEC_GUEST_GROUP_NAME . "'
+                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "'
                                     ORDER BY 
                                         " . CM_TABLE_PREFIX . "mod_security_groups.name";
 $oDetailGroup->auto_populate_edit = true;
@@ -402,7 +402,7 @@ $oDetailGroup->populate_edit_SQL = "SELECT
                                         , " . CM_TABLE_PREFIX . "mod_security_groups.gid AS gid
                                     FROM 
                                         " . CM_TABLE_PREFIX . "mod_security_groups
-                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . MOD_SEC_GUEST_GROUP_NAME . "' 
+                                    WHERE " . CM_TABLE_PREFIX . "mod_security_groups.name <> '" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "' 
                                     ORDER BY 
                                         " . CM_TABLE_PREFIX . "mod_security_groups.name";
 

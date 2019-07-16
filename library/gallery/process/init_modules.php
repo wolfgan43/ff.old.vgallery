@@ -168,16 +168,11 @@ function get_module($location, $module_name, $module_params)
     if(is_file(FF_DISK_PATH . VG_ADDONS_PATH . "/" . $module_name . "/widget/index." . FF_PHP_EXT)) {
         $MD_chk["tag"] = str_replace("/", "", $module_name . "-" . $module_params);
         $MD_chk["inc"] = FF_DISK_PATH . VG_ADDONS_PATH . "/" . $module_name . "/widget/index." . FF_PHP_EXT;
-       // $MD_chk["con"] = "MODULE_SHOW_CONFIG";
     } else {
         $strError = ffTemplate::_get_word_by_code("dialog_description_invalidpath");
     }
 
     if(!$strError) {
-        //if(strlen($MD_chk["con"]) && !constant($MD_chk["con"])) {
-         //   ffRedirect(FF_SITE_PATH . "/login?ret_url=" . urlencode($_SERVER["REQUEST_URI"]) . "&relogin");
-        //}
-
         $MD_chk["id"] = "MD-" . $location . "-" . $MD_chk["tag"];
         $MD_chk["params"] = explode(";", $module_params);
 		$MD_chk["ret_url"] = $registry->user_path;

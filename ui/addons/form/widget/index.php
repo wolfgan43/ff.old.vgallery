@@ -39,7 +39,7 @@ $db->query("SELECT module_form.*
                         WHERE 
                             module_form.name = " . $db->toSql($MD_chk["params"][0]));
 if($db->nextRecord()) {
-	$framework_css = cm_getFrameworkCss();	
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 
     $ID_form = $db->getField("ID")->getValue();
     $form_name = $db->getField("name")->getValue();
@@ -87,10 +87,9 @@ if($db->nextRecord()) {
     $limit_by_groups = $db->getField("limit_by_groups")->getValue();
     if(strlen($limit_by_groups)) 
     {
+        $user = Auth::get("user");
         $limit_by_groups = explode(",", $limit_by_groups);
-        $user_permission = get_session("user_permission"); 			
-
-        if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+        if(array_search($user->acl, $limit_by_groups) !== false) {
                 $allow_form = true;
         } else {
                 $allow_form = false;
@@ -237,7 +236,7 @@ if($db->nextRecord()) {
     $oRecord->user_vars["form_title"] = $MD_chk["title"];
     $oRecord->user_vars["report"] = $report;
     
-    if(AREA_SHOW_ECOMMERCE) {
+    if(Cms::env("AREA_SHOW_ECOMMERCE")) {
         $oRecord->user_vars["enable_ecommerce"] = $enable_ecommerce;
         $oRecord->user_vars["enable_ecommerce_weight"] = $enable_ecommerce_weight;
         $oRecord->user_vars["enable_dynamic_cart"] = $enable_dynamic_cart;
@@ -367,7 +366,7 @@ if($db->nextRecord()) {
                     if(strlen($db->getField("group_cover_mode")->getValue())) {
                         $field[$ID_field]["group_cover"] = CM_SHOWFILES . "/" . $db->getField("group_cover_mode")->getValue() . $db->getField("group_cover")->getValue();
                     } else {
-                        $field[$ID_field]["group_cover"] = SITE_UPDIR . $db->getField("group_cover")->getValue();
+                        $field[$ID_field]["group_cover"] = FF_SITE_UPDIR . $db->getField("group_cover")->getValue();
                     }
 
                     $field[$ID_field]["group_cover"] = '<img src="' . $field[$ID_field]["group_cover"] . '" />';
@@ -449,7 +448,7 @@ if($db->nextRecord()) {
             $field[$ID_field]["label_ecommerce"] = "";
             $field[$ID_field]["ecommerce_class"] = "";
             $field[$ID_field]["price_isset"] = false;
-            if(AREA_SHOW_ECOMMERCE 
+            if(Cms::env("AREA_SHOW_ECOMMERCE")
                 && $field[$ID_field]["form"]["enable_ecommerce"]
             ) {
                 if($field[$ID_field]["type"] == "price")
@@ -522,12 +521,12 @@ if($db->nextRecord()) {
 
         if($restore_default_by_cart) {
             use_cache(false);
-            $add_cond = " AND ecommerce_order.owner = " . $db->toSql(get_session("UserNID"), "Number");
+            $add_cond = " AND ecommerce_order.owner = " . $db->toSql(Auth::get("user")->id, "Number");
 
-            if (get_session("UserID") == MOD_SEC_GUEST_USER_NAME && check_function("ecommerce_cart_get_sid")) {
+            if (Auth::isguest() && check_function("ecommerce_cart_get_sid")) {
                 $add_cond .= " AND ecommerce_order.SID = " . $db->toSql(ecommerce_cart_get_sid());
             } else {
-                if(ENABLE_MULTICART) {
+                if(Cms::env("ENABLE_MULTICART")) {
                     $cart_name = get_session("cart_name");
                     $add_cond .= " AND ecommerce_order.cart_name = " . $db->toSql($cart_name);
                 }

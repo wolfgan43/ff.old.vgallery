@@ -23,20 +23,11 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-  define("CM_DEFAULT_THEME", "responsive");
- 
+
   define("CM_SHOWFILES_ENABLE_DEBUG", false);
-  define("CM_SHOWFILES_FORCE_PATH", true);
-  define("CM_SHOWFILES_SKIP_DB", true);
-  define("CM_SHOWFILES_THEME", "gallery");
-  define("CM_SHOWFILES_ICON_PATH", "/images/icons/default/thumb");
-  define("CM_SHOWFILES_ENABLE_GZIP", true);
-  define("CM_SHOWFILES_EXTEND", true);
-  define("CM_SHOWFILES_THUMB_IN_CACHE", true);
-  
+
   define("CM_PAGECACHE_KEEP_ALIVE", true);
-  define("CM_MULTIDOMAIN_ROUTING", false);
-  
+
   if(!defined("DISABLE_CACHE")) {
 	  /*if(
   		strpos($_SERVER["PATH_INFO"], "/admin") !== 0
@@ -63,9 +54,7 @@
   define("CM_CACHE_IMG_LAZY_LOAD", true);
 
   //define("CM_SHOWFILES_MODULES", true);
-  //define("CM_SHOWFILES_OPTIMIZE", true);
-  
+
   define("CM_CACHE_STORAGE_SAVING_MODE", 3);
   define("CM_CSSCACHE_SHOWPATH", FF_SITE_PATH . "/asset/css");
   define("CM_JSCACHE_SHOWPATH", FF_SITE_PATH . "/asset/js");
-  //define("CM_MEDIACACHE_SHOWPATH", CM_SHOWFILES);

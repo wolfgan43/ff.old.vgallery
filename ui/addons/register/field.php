@@ -26,7 +26,7 @@
 
 $db = ffDB_Sql::factory();
 
-if (!AREA_MODULES_SHOW_MODIFY) {
+if (!Auth::env("AREA_MODULES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -391,7 +391,7 @@ if ($record["noentry"]) {
     $oField->label = ffTemplate::_get_word_by_code("register_config_fields_custom_placeholder");
     $oRecord->addContent($oField);
 
-	$framework_css = cm_getFrameworkCss();	
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
     $framework_css_name = $framework_css["name"];
 
     if (strlen($framework_css_name)) {

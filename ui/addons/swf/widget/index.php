@@ -33,7 +33,7 @@ if($db->nextRecord()) {
     $oRecord->class = $MD_chk["id"];
     $oRecord->src_table = "";
 
-    $oRecord->template_dir = get_template_cascading($user_path, "tpl_swf.html", "/modules/swf", ffCommon_dirname(__FILE__));
+    $oRecord->template_dir = get_template_cascading($user_path, "tpl_swf.html", "/modules/swf", __DIR__);
     $oRecord->template_file = "tpl_swf.html";
     if(check_function("MD_swf_on_load_template"))
     	$oRecord->addEvent("on_process_template", "MD_swf_on_load_template");

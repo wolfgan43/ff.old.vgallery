@@ -49,7 +49,7 @@ function system_set_media($oPage, $setting_path, $admin = false, $include_media 
 	                , "doredirects" => true
 	                , "responsive" => true
 	                , "unic" => true
-	                , "dialogClass" => cm_getClassByFrameworkCss("window-large", "dialog")
+	                , "dialogClass" => Cms::getInstance("frameworkcss")->get("window-large", "dialog")
 	            )
 	            , $oPage
 	        );
@@ -113,14 +113,32 @@ function system_set_media_libs()
 		}
 	}
 
+    if(is_array($globals->js["link"]) && count($globals->js["link"])) {
+        foreach($globals->js["link"] AS $js_name => $js_path) {
+            $cm->oPage->tplAddJs($js_name, array(
+                "path" => ffCommon_dirname($js_path)
+            , "file" => basename($js_path)
+            ));
+        }
+    }
+
 	if(is_array($globals->js["embed"]) && count($globals->js["embed"])) {
 		foreach($globals->js["embed"] AS $js_name => $js_embed) {
 			$cm->oPage->tplAddJs($js_name, array(
 				"embed" => $js_embed
 			));
 		}
-	}	
-	
+	}
+
+    if(is_array($globals->css["link"]) && count($globals->css["link"])) {
+        foreach($globals->css["link"] AS $css_name => $css_path) {
+            $cm->oPage->tplAddCss($css_name, array(
+                "path" => ffCommon_dirname($css_path)
+            , "file" => basename($css_path)
+            ));
+        }
+    }
+
 	if(is_array($globals->css["embed"]) && count($globals->css["embed"])) {
 		foreach($globals->css["embed"] AS $css_name => $css_embed) {
 			$cm->oPage->tplAddCss($css_name, array(

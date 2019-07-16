@@ -95,7 +95,7 @@
     ); */
     $oButton = ffButton::factory($cm->oPage);
     $oButton->id = "force"; 
-    $oButton->class = cm_getClassByFrameworkCss("cog", "icon");
+    $oButton->class = Cms::getInstance("frameworkcss")->get("cog", "icon");
     //$oButton->label = "preview";
     $oButton->action_type = "submit";
     $oButton->aspect = "link";
@@ -106,8 +106,8 @@
 
     $oButton = ffButton::factory($cm->oPage);
     $oButton->id = "install"; 
-    $oButton->class = cm_getClassByFrameworkCss("cloud-download", "icon");
-    //$oButton->class = cm_getClassByFrameworkCss("share", "icon", "rotate-90");
+    $oButton->class = Cms::getInstance("frameworkcss")->get("cloud-download", "icon");
+    //$oButton->class = Cms::getInstance("frameworkcss")->get("share", "icon", "rotate-90");
     //$oButton->label = "preview";
     $oButton->action_type = "submit";
     $oButton->aspect = "link";

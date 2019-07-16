@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_LAYOUT_SHOW_MODIFY) {
+if (!Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -38,7 +38,7 @@ $db = ffDB_Sql::factory();
  */
 if($_REQUEST["repair"]) {
     /*if(check_function("check_fs"))
-        check_fs(DISK_UPDIR, "/"); */
+        check_fs(FF_DISK_UPDIR, "/"); */
 
     $sSQL = "SELECT COUNT( * ) 
 	            , layout_settings_rel.*
@@ -872,32 +872,39 @@ $oField->actex_on_change = 'function(obj, old_value, action) { if(action == 'cha
     // $oDetail_path->setWidthComponent("6");
 
     if(strlen($layout_path)) {
-        if($layout_path == "/") {
-            $layout_ereg_path = $layout_path;
-            $cascading = "0";
-        } else {
-            $layout_ereg_path = $layout_path . "*";
-            $cascading = "1";
+        $db = ffDB_Sql::factory();
+        $db->query("SELECT layout_path.ID 
+            FROM layout_path 
+            WHERE layout_path.ID_layout = " . $db->toSql($_REQUEST["keys"]["ID"]) . "
+                AND layout_path.path = " . $db->toSql($layout_path)
+        );
+        if (!$db->nextRecord()) {
+            if ($layout_path == "/") {
+                $layout_ereg_path = $layout_path;
+                $cascading = "0";
+            } else {
+                $layout_ereg_path = $layout_path . "*";
+                $cascading = "1";
+            }
+
+
+            $sSQL_update_path = "UNION
+                                (
+                                    SELECT 
+                                        null AS ID
+                                        , " . $db->toSql($layout_path) . " AS real_path
+                                        , " . $db->toSql($layout_ereg_path) . " AS path
+                                        , '1' AS visible
+                                        , " . $db->toSql($cascading, "Number") . " AS cascading
+                                        , '' AS class
+                                        , '12' AS default_grid
+                                        , '12' AS grid_md
+                                        , '12' AS grid_sm
+                                        , '12' AS grid_xs
+                                        , '0' AS fluid
+                                        , '' AS wrap
+                                )";
         }
-
-
-        $sSQL_update_path = "UNION
-		                    (
-		                        SELECT 
-		                            null AS ID
-		                            , " . $db->toSql($layout_path) . " AS real_path
-		                            , " . $db->toSql($layout_ereg_path) . " AS path
-		                            , '1' AS visible
-		                            , " . $db->toSql($cascading, "Number") . " AS cascading
-		                            , '' AS class
-		                            , '12' AS default_grid
-		                            , '12' AS grid_md
-		                            , '12' AS grid_sm
-		                            , '12' AS grid_xs
-		                            , '0' AS fluid
-		                            , '' AS wrap
-		                    )";
-
         $oDetail_path->auto_populate_insert = true;
         $oDetail_path->populate_insert_SQL = "SELECT 
                                                 " . $db->tosql($layout_ereg_path, "Text") .  " AS path
@@ -959,7 +966,7 @@ $oField->actex_on_change = 'function(obj, old_value, action) { if(action == 'cha
     $oField = ffField::factory($cm->oPage);
     $oField->id = "path";
     $oField->class = "layout-path";
-    $oField->container_class = "layout-path-rule " . cm_getClassByFrameworkCss(array(4), "col");
+    $oField->container_class = "layout-path-rule " . Cms::getInstance("frameworkcss")->get(array(4), "col");
     $oField->label = ffTemplate::_get_word_by_code("block_modify_path");
     $oField->extended_type = "Selection";
     $oField->widget = "autocomplete"; //"actex"; e fondamentale rendere il plugin che mantiene i valori anche se nn in combo
@@ -1279,8 +1286,8 @@ $oField->actex_on_change = 'function(obj, old_value, action) { if(action == 'cha
     // $oDetail_settings->user_vars["tbl_src"] = $tbl_src;
     //$oDetail_settings->user_vars["tbl_src_name"] = $tbl_src_name;
     $oDetail_settings->user_vars["tpl_path"] = $currentType["tpl_path"];
-    if(check_function("get_layout_settings") && $tbl_src)
-        $oDetail_settings->user_vars["layout_settings"] = get_layout_settings(NULL, $tbl_src);
+    if(/*check_function("get_layout_settings") &&*/ $tbl_src)
+        $oDetail_settings->user_vars["layout_settings"] = Cms::getPackage($tbl_src); //get_layout_settings(NULL, $tbl_src);
 
     $oDetail_settings->auto_populate_insert = true;
     $oDetail_settings->populate_insert_SQL = "SELECT 
@@ -1417,7 +1424,7 @@ $oField->actex_on_change = 'function(obj, old_value, action) { if(action == 'cha
 
     $oField = ffField::factory($cm->oPage);
     $oField->id = "use_ajax";
-    $oField->container_class = cm_getClassByFrameworkCss("align-right", "util", "use-ajax");
+    $oField->container_class = Cms::getInstance("frameworkcss")->get("align-right", "util", "use-ajax");
     $oField->label = ffTemplate::_get_word_by_code("block_modify_use_ajax");
     $oField->control_type = "checkbox";
     $oField->extended_type = "Boolean";
@@ -1863,8 +1870,8 @@ function add_block($action = "")
 
         $tpl = ffTemplate::factory(FF_THEME_DISK_PATH . "/" . THEME_INSET . "/contents/admin/block");
         $tpl->load_file("add.html","main");
-        $tpl->set_var("ico_help", cm_getClassByFrameworkCss("question-circle", "icon") . " " . cm_getClassByFrameworkCss("right", "util"));
-        $tpl->set_var("ico_add", cm_getClassByFrameworkCss("primary", "button", array("size" => "small")) . " " . cm_getClassByFrameworkCss("plus", "icon") . " " . cm_getClassByFrameworkCss("right", "util"));
+        $tpl->set_var("ico_help", Cms::getInstance("frameworkcss")->get("question-circle", "icon") . " " . Cms::getInstance("frameworkcss")->get("right", "util"));
+        $tpl->set_var("ico_add", Cms::getInstance("frameworkcss")->get("primary", "button", array("size" => "small")) . " " . Cms::getInstance("frameworkcss")->get("plus", "icon") . " " . Cms::getInstance("frameworkcss")->get("right", "util"));
 
         foreach($block_type[$type_group] AS $group_key => $block_by_group)
         {
@@ -1893,7 +1900,7 @@ function add_block($action = "")
                     $block_description = ffTemplate::_get_word_by_code(str_replace("-", "_", $block_smart_url) . "_description");
                 }
 
-                $block_col = cm_getClassByFrameworkCss(array(
+                $block_col = Cms::getInstance("frameworkcss")->get(array(
                     "xs" => 12
                 , "sm" => 12
                 , "md" => $block_type[$block_key]["coloumn_template"]
@@ -1917,9 +1924,9 @@ function add_block($action = "")
 
                 $tpl->set_var("block_title", $block_title);
                 $tpl->set_var("block_class", "item vg-" . $block_type[$block_key]["group"] . " " . $block_col);
-                $tpl->set_var("block_img", cm_getClassByFrameworkCss("left", "util", "item-img"));
-                $tpl->set_var("block_icon", cm_getClassByFrameworkCss($block_icon, "icon-tag", array("6x")));
-                // $tpl->set_var("element_icon_large", cm_getClassByFrameworkCss("vg-" . $real_icon, "icon-tag", array("5x", $group_name, $blockProperty["class"])));
+                $tpl->set_var("block_img", Cms::getInstance("frameworkcss")->get("left", "util", "item-img"));
+                $tpl->set_var("block_icon", Cms::getInstance("frameworkcss")->get($block_icon, "icon-tag", array("6x")));
+                // $tpl->set_var("element_icon_large", Cms::getInstance("frameworkcss")->get("vg-" . $real_icon, "icon-tag", array("5x", $group_name, $blockProperty["class"])));
                 $tpl->set_var("block_description", $block_description);
                 $tpl->set_var("ID_dialog", ($_REQUEST["XHR_CTX_ID"] ? $_REQUEST["XHR_CTX_ID"] : "dialogManage"));
                 $tpl->parse("SezBlockItem", true);

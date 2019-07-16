@@ -33,7 +33,7 @@ $db->query("SELECT module_search.*
                         WHERE 
                             module_search.name = " . $db->toSql($MD_chk["params"][0]));
 if($db->nextRecord()) {
-	$framework_css = cm_getFrameworkCss();	
+	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 
     $ID_search = $db->getField("ID")->getValue();
     $search_name = $db->getField("name")->getValue();
@@ -117,7 +117,7 @@ if($db->nextRecord())
         if(is_array($framework_css))
         {
             if(!array_key_exists("grid", $arrField[$field_name]["group"]["class"])) {
-                $arrField[$field_name]["group"]["class"]["grid"] = cm_getClassByFrameworkCss(array(
+                $arrField[$field_name]["group"]["class"]["grid"] = Cms::getInstance("frameworkcss")->get(array(
                         (int) $db->getField("group_grid_xs", "Number", true)
                         ,(int) $db->getField("group_grid_sm", "Number", true)
                         ,(int) $db->getField("group_grid_md", "Number", true)

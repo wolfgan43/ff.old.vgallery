@@ -26,7 +26,6 @@
 
 $db = ffDB_Sql::factory();
 
-$gmap3_enabled = global_settings("ENABLE_GMAP3");
 $maps_position = array (
 							array(new ffData(TOP_CENTER), new ffData("TOP CENTER")),
 							array(new ffData(TOP_LEFT), new ffData("TOP LEFT")),
@@ -42,7 +41,7 @@ $maps_position = array (
 							array(new ffData(BOTTOM_RIGHT), new ffData("BOTTOM RIGHT"))
 						);
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -346,41 +345,6 @@ if(check_function("set_field_gmap")) {
 }
 $oField->properties["style"]["height"] = "600px";
 $oRecord->addContent($oField, "map");
-/*
-$oField = ffField::factory($cm->oPage);
-$oField->id = "width";
-$oField->label = ffTemplate::_get_word_by_code("maps_width");
-$oField->base_type = "Number";
-$oField->required = true;
-$oField->default_value = new ffData("480", "Number");
-$oRecord->addContent($oField, "map");
-
-$oField = ffField::factory($cm->oPage);
-$oField->id = "height";
-$oField->label = ffTemplate::_get_word_by_code("maps_height");
-$oField->base_type = "Number";
-$oField->required = true;
-$oField->default_value = new ffData("360", "Number");
-$oRecord->addContent($oField, "map");
-*/
-if(!$gmap3_enabled)
-{
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "MapType";
-	$oField->label = ffTemplate::_get_word_by_code("maps_MapType");
-	$oField->extended_type = "Selection";
-	$oField->base_type = "Text";
-	$oField->multi_pairs =  array (
-								array(new ffData("G_NORMAL_MAP"), new ffData(ffTemplate::_get_word_by_code("G_NORMAL_MAP"))),
-								array(new ffData("G_SATELLITE_MAP"), new ffData(ffTemplate::_get_word_by_code("G_SATELLITE_MAP"))),
-								array(new ffData("G_HYBRID_MAP"), new ffData(ffTemplate::_get_word_by_code("G_HYBRID_MAP"))),
-								array(new ffData("G_DEFAULT_MAP_TYPES"), new ffData(ffTemplate::_get_word_by_code("G_DEFAULT_MAP_TYPES"))),
-								array(new ffData("G_PHYSICAL_MAP"), new ffData(ffTemplate::_get_word_by_code("G_PHYSICAL_MAP"))),
-								array(new ffData("G_SATELLITE_3D_MAP"), new ffData(ffTemplate::_get_word_by_code("G_SATELLITE_3D_MAP")))
-						   );
-	$oField->default_value = new ffData("G_NORMAL_MAP"); 
-	$oRecord->addContent($oField, "map");
-}
 
 $oRecord->addTab("mapcontrol");
 $oRecord->setTabTitle("mapcontrol", ffTemplate::_get_word_by_code("module_maps_mapcontrol"));
@@ -391,331 +355,178 @@ $oRecord->groups["mapcontrol"] = array(
                                  , "cols" => 1
                                  , "tab" => "mapcontrol"
                               );
-if($gmap3_enabled)
-{
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableMarkerCluster";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enableMarkerCluster");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "markerClusterMaxZoom";
-	$oField->label = ffTemplate::_get_word_by_code("maps_MarkerClusterMaxZoom");
-	$oField->base_type = "Number";
-	$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "markerClusterDim";
-	$oField->label = ffTemplate::_get_word_by_code("maps_MarkerClusterDim");
-	$oField->base_type = "Number";
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableZoomControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_ZoomControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "ZoomControlStyle";
-	$oField->label = ffTemplate::_get_word_by_code("maps_ZoomControlStyle");
-	$oField->extended_type = "Selection";
-	$oField->multi_pairs = array (
-							array(new ffData("SMALL"), new ffData("SMALL")),
-							array(new ffData("LARGE"), new ffData("LARGE")),
-							array(new ffData("DEFAULT"), new ffData("DEFAULT"))
-						);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "ZoomControlPosition";
-	$oField->label = ffTemplate::_get_word_by_code("maps_ZoomControlPosition");
-	$oField->extended_type = "Selection";
-	$oField->multi_pairs = $maps_position;
-	$oRecord->addContent($oField, "mapcontrol");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "enableMarkerCluster";
+$oField->label = ffTemplate::_get_word_by_code("maps_enableMarkerCluster");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableMapTypeControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_MapTypeControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "MapTypeControlStyle";
-	$oField->label = ffTemplate::_get_word_by_code("maps_MapTypeControlStyle");
-	$oField->extended_type = "Selection";
-	$oField->multi_pairs = array (
-							array(new ffData(HORIZONTAL_BAR), new ffData("HORIZONTAL_BAR")),
-							array(new ffData(DROPDOWN_MENU), new ffData("DROPDOWN_MENU")),
-	//						array(new ffData(DEFAULT), new ffData("DEFAULT"))
-						);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enablePanControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_PanControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "PanControlPosition";
-	$oField->label = ffTemplate::_get_word_by_code("maps_PanControlPosition");
-	$oField->extended_type = "Selection";
-	$oField->multi_pairs = $maps_position;
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableScaleControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_ScaleControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "ScaleControlPosition";
-	$oField->label = ffTemplate::_get_word_by_code("maps_ScaleControlPosition");
-	$oField->extended_type = "Selection";
-	$oField->multi_pairs = $maps_position;
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableStreetViewControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_StreetViewControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "StreetViewControlPosition";
-	$oField->label = ffTemplate::_get_word_by_code("maps_StreetViewControlPosition");
-	$oField->extended_type = "Selection";
-	$oField->multi_pairs = $maps_position;
-	$oRecord->addContent($oField, "mapcontrol");
-        
-        $oField = ffField::factory($cm->oPage);
-	$oField->id = "enablePersonalColor";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enablePersonalColor");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-        //$oField->fixed_post_content = '<iframe src="http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html" width="800" height="800"></iframe>';
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-        
-        $oField = ffField::factory($cm->oPage); 
-	$oField->id = "disableScroll";
-	$oField->label = ffTemplate::_get_word_by_code("maps_disableScroll");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol"); 
-        
-        $oField = ffField::factory($cm->oPage);
-	$oField->id = "disableDrag"; 
-	$oField->label = ffTemplate::_get_word_by_code("maps_disableDrag");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
-	
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "PersonalColor";
-	$oField->label = ffTemplate::_get_word_by_code("maps_PersonalColor");
-	$oField->extended_type = "Text";
-	$oRecord->addContent($oField, "mapcontrol");
-        
-        $oRecord->addTab("mapwizard");
-        $oRecord->setTabTitle("mapwizard", ffTemplate::_get_word_by_code("module_maps_mapwizard"));
+$oField = ffField::factory($cm->oPage);
+$oField->id = "markerClusterMaxZoom";
+$oField->label = ffTemplate::_get_word_by_code("maps_MarkerClusterMaxZoom");
+$oField->base_type = "Number";
+$oRecord->addContent($oField, "mapcontrol");
 
-        $oRecord->addContent(null, true, "mapwizard"); 
-        $oRecord->groups["mapwizard"] = array(
-                                         "title" => ffTemplate::_get_word_by_code("module_maps_mapwizard")
-                                         , "cols" => 1
-                                         , "tab" => "mapwizard"
-                                      );
-        $oRecord->addContent('<iframe src="http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html" width="100%" height="800"></iframe>', "mapwizard");
-	
-} else
-{
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "GLargeMapControl3D";
-	$oField->label = ffTemplate::_get_word_by_code("maps_GLargeMapControl3D");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "markerClusterDim";
+$oField->label = ffTemplate::_get_word_by_code("maps_MarkerClusterDim");
+$oField->base_type = "Number";
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "GMapTypeControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_GMapTypeControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "enableZoomControl";
+$oField->label = ffTemplate::_get_word_by_code("maps_ZoomControl");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "GScaleControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_GScaleControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "ZoomControlStyle";
+$oField->label = ffTemplate::_get_word_by_code("maps_ZoomControlStyle");
+$oField->extended_type = "Selection";
+$oField->multi_pairs = array (
+                        array(new ffData("SMALL"), new ffData("SMALL")),
+                        array(new ffData("LARGE"), new ffData("LARGE")),
+                        array(new ffData("DEFAULT"), new ffData("DEFAULT"))
+                    );
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "GOverviewMapControl";
-	$oField->label = ffTemplate::_get_word_by_code("maps_GOverviewMapControl");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapcontrol");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "ZoomControlPosition";
+$oField->label = ffTemplate::_get_word_by_code("maps_ZoomControlPosition");
+$oField->extended_type = "Selection";
+$oField->multi_pairs = $maps_position;
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oRecord->addTab("mapservices");
-	$oRecord->setTabTitle("mapservices", ffTemplate::_get_word_by_code("module_maps_mapservices"));
+$oField = ffField::factory($cm->oPage);
+$oField->id = "enableMapTypeControl";
+$oField->label = ffTemplate::_get_word_by_code("maps_MapTypeControl");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oRecord->addContent(null, true, "mapservices"); 
-	$oRecord->groups["mapservices"] = array(
-									 "title" => ffTemplate::_get_word_by_code("module_maps_mapservices")
-									 , "cols" => 1
-									 , "tab" => "mapservices"
-								  );
+$oField = ffField::factory($cm->oPage);
+$oField->id = "MapTypeControlStyle";
+$oField->label = ffTemplate::_get_word_by_code("maps_MapTypeControlStyle");
+$oField->extended_type = "Selection";
+$oField->multi_pairs = array (
+                        array(new ffData(HORIZONTAL_BAR), new ffData("HORIZONTAL_BAR")),
+                        array(new ffData(DROPDOWN_MENU), new ffData("DROPDOWN_MENU")),
+//						array(new ffData(DEFAULT), new ffData("DEFAULT"))
+                    );
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableGooglePhysical";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enableGooglePhysical");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapservices");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "enablePanControl";
+$oField->label = ffTemplate::_get_word_by_code("maps_PanControl");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableGoogleEarth";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enableGoogleEarth");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapservices");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "PanControlPosition";
+$oField->label = ffTemplate::_get_word_by_code("maps_PanControlPosition");
+$oField->extended_type = "Selection";
+$oField->multi_pairs = $maps_position;
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableGoogleBar";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enableGoogleBar");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapservices");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "enableScaleControl";
+$oField->label = ffTemplate::_get_word_by_code("maps_ScaleControl");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "layers";
-	$oField->label = ffTemplate::_get_word_by_code("maps_layers");
-	$oField->extended_type = "Selection";
-	$oField->base_type = "Text";
-	$oField->multi_pairs =  array (
-								array(new ffData("com.panoramio.all"), new ffData(ffTemplate::_get_word_by_code("google_panoramio"))),
-								array(new ffData("com.youtube.all"), new ffData(ffTemplate::_get_word_by_code("google_youtube"))),
-								array(new ffData("org.wikipedia." . strtolower(substr(LANGUAGE_INSET, 0, -1))), new ffData(ffTemplate::_get_word_by_code("google_wikipedia"))),
-								array(new ffData("com.google.webcams"), new ffData(ffTemplate::_get_word_by_code("google_webcams")))
-						   ); 
-	$oField->widget = "checkgroup";
-	$oField->grouping_separator = ",";
-	$oRecord->addContent($oField, "mapservices");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "ScaleControlPosition";
+$oField->label = ffTemplate::_get_word_by_code("maps_ScaleControlPosition");
+$oField->extended_type = "Selection";
+$oField->multi_pairs = $maps_position;
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableStreetView";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enableStreetView");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "mapservices");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "enableStreetViewControl";
+$oField->label = ffTemplate::_get_word_by_code("maps_StreetViewControl");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oRecord->addTab("streetview");
-	$oRecord->setTabTitle("streetview", ffTemplate::_get_word_by_code("module_streetview"));
+$oField = ffField::factory($cm->oPage);
+$oField->id = "StreetViewControlPosition";
+$oField->label = ffTemplate::_get_word_by_code("maps_StreetViewControlPosition");
+$oField->extended_type = "Selection";
+$oField->multi_pairs = $maps_position;
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oRecord->addContent(null, true, "streetview"); 
-	$oRecord->groups["streetview"] = array(
-									 "title" => ffTemplate::_get_word_by_code("module_streetview")
-									 , "cols" => 1
-									 , "tab" => "streetview"
-								  );
+$oField = ffField::factory($cm->oPage);
+$oField->id = "enablePersonalColor";
+$oField->label = ffTemplate::_get_word_by_code("maps_enablePersonalColor");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+//$oField->fixed_post_content = '<iframe src="http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html" width="800" height="800"></iframe>';
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "streetView_width";
-	$oField->label = ffTemplate::_get_word_by_code("maps_streetView_width");
-	$oField->base_type = "Number";
-	$oField->required = true;
-	$oField->default_value = new ffData("0", "Number");
-	$oRecord->addContent($oField, "streetview");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "disableScroll";
+$oField->label = ffTemplate::_get_word_by_code("maps_disableScroll");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "streetView_height";
-	$oField->label = ffTemplate::_get_word_by_code("maps_streetView_height");
-	$oField->base_type = "Number";
-	$oField->required = true;
-	$oField->default_value = new ffData("0", "Number");
-	$oRecord->addContent($oField, "streetview");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "disableDrag";
+$oField->label = ffTemplate::_get_word_by_code("maps_disableDrag");
+$oField->base_type = "Number";
+$oField->extended_type = "Boolean";
+$oField->control_type = "checkbox";
+$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
+$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableStreetOverlay";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enableStreetOverlay");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "streetview");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "PersonalColor";
+$oField->label = ffTemplate::_get_word_by_code("maps_PersonalColor");
+$oField->extended_type = "Text";
+$oRecord->addContent($oField, "mapcontrol");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "enableStreetPhoto";
-	$oField->label = ffTemplate::_get_word_by_code("maps_enableStreetPhoto");
-	$oField->base_type = "Number";
-	$oField->extended_type = "Boolean";
-	$oField->control_type = "checkbox";
-	$oField->checked_value = new ffData("1", "Number", FF_SYSTEM_LOCALE);
-	$oField->unchecked_value = new ffData("0", "Number", FF_SYSTEM_LOCALE);
-	$oRecord->addContent($oField, "streetview");
-}
+$oRecord->addTab("mapwizard");
+$oRecord->setTabTitle("mapwizard", ffTemplate::_get_word_by_code("module_maps_mapwizard"));
+
+$oRecord->addContent(null, true, "mapwizard");
+$oRecord->groups["mapwizard"] = array(
+                                 "title" => ffTemplate::_get_word_by_code("module_maps_mapwizard")
+                                 , "cols" => 1
+                                 , "tab" => "mapwizard"
+                              );
+$oRecord->addContent('<iframe src="http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html" width="100%" height="800"></iframe>', "mapwizard");
+
+
 $oRecord->addTab("markericon");
 $oRecord->setTabTitle("markericon", ffTemplate::_get_word_by_code("module_markericon"));
 
@@ -742,10 +553,10 @@ $oField->file_normalize = true;
 $oField->file_show_preview = true; 
 $oField->file_check_exist = false; 
 $oField->file_full_path = false;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[name_VALUE]/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[name_VALUE]/[_FILENAME_]";
-$oField->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[_FILENAME_]";
-$oField->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[name_VALUE]/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/thumb/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[name_VALUE]/[_FILENAME_]";
+$oField->file_temp_view_url = CM_SHOWFILES . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[_FILENAME_]";
+$oField->file_temp_preview_url = CM_SHOWFILES . "/thumb/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[_FILENAME_]";
 $oField->widget = "uploadify";
 if(check_function("set_field_uploader")) { 
 	$oField = set_field_uploader($oField);
@@ -753,71 +564,18 @@ if(check_function("set_field_uploader")) {
 $oRecord->addContent($oField, "markericon");
 
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "icon_width";
-	$oField->label = ffTemplate::_get_word_by_code("maps_icon_width");
-	$oField->base_type = "Number";
-	$oRecord->addContent($oField, "markericon");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "icon_width";
+$oField->label = ffTemplate::_get_word_by_code("maps_icon_width");
+$oField->base_type = "Number";
+$oRecord->addContent($oField, "markericon");
 
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "icon_height";
-	$oField->label = ffTemplate::_get_word_by_code("maps_icon_height");
-	$oField->base_type = "Number";
-	$oRecord->addContent($oField, "markericon");
+$oField = ffField::factory($cm->oPage);
+$oField->id = "icon_height";
+$oField->label = ffTemplate::_get_word_by_code("maps_icon_height");
+$oField->base_type = "Number";
+$oRecord->addContent($oField, "markericon");
 
-if(!$gmap3_enabled)
-{
-	$oRecord->addTab("markershadow");
-	$oRecord->setTabTitle("markershadow", ffTemplate::_get_word_by_code("module_markershadow"));
-
-	$oRecord->addContent(null, true, "markershadow"); 
-	$oRecord->groups["markershadow"] = array(
-									 "title" => ffTemplate::_get_word_by_code("module_markershadow")
-									 , "cols" => 1
-									 , "tab" => "markershadow"
-								  );
-
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "shadow";
-	$oField->label = ffTemplate::_get_word_by_code("maps_shadow");
-	$oField->base_type = "Text";
-	$oField->extended_type = "File";
-	$oField->control_type = "file";
-
-	$oField->file_max_size = MAX_UPLOAD;
-	$oField->file_base_path = FF_DISK_PATH . FF_THEME_DIR;
-	$oField->file_storing_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/" . "[name_VALUE]";
-	$oField->file_temp_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps";
-	$oField->file_show_filename = true; 
-	$oField->file_show_delete = true;
-	$oField->file_normalize = true;
-	$oField->file_show_preview = true; 
-	$oField->file_check_exist = false;
-	$oField->file_full_path = false;
-	$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[name_VALUE]/[_FILENAME_]";
-	$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[name_VALUE]/[_FILENAME_]";
-	$oField->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[_FILENAME_]";
-	$oField->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/[_FILENAME_]";
-	$oField->widget = "uploadify";
-	if(check_function("set_field_uploader")) { 
-		$oField = set_field_uploader($oField);
-	}
-
-	$oRecord->addContent($oField, "markershadow");
-
-
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "shadow_width";
-	$oField->label = ffTemplate::_get_word_by_code("maps_shadow_width");
-	$oField->base_type = "Number";
-	$oRecord->addContent($oField, "markershadow");
-
-	$oField = ffField::factory($cm->oPage);
-	$oField->id = "shadow_height";
-	$oField->label = ffTemplate::_get_word_by_code("maps_shadow_height");
-	$oField->base_type = "Number";
-	$oRecord->addContent($oField, "markershadow");
-}
 
 $cm->oPage->addContent($oRecord);
 

@@ -81,14 +81,14 @@ function system_gallery_redirect($path_info, $query = null, $hostname = null, $w
 
 
 function system_redirect_get_destination($hostname, $request_uri) {
-	if(is_file(CM_CACHE_PATH . "/redirect/" . $hostname . ".php")) {
-		$filesize = floor(filesize(CM_CACHE_PATH . "/redirect/" . $hostname . ".php") / 1000000);
+	if(is_file(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php")) {
+		$filesize = floor(filesize(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php") / 1000000);
 		
 		$memory_limit = ($filesize * 8);
 		if($memory_limit > MEMORY_LIMIT)
 			@ini_set("memory_limit", $memory_limit . 'M');
 	
-		require(CM_CACHE_PATH . "/redirect/" . $hostname . ".php");
+		require(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php");
 
 		/** @var include $r */
 		if(array_key_exists($request_uri, $r)) {
@@ -113,10 +113,10 @@ function system_redirect_goto_destination($arrDestination, $hostname = null, $re
         if($write_cache)
             system_redirect_set_destination($hostname, $request_uri, $arrDestination["dst"], $arrDestination["code"]);
 
-        if(TRACE_VISITOR === true) {
+        /*if(TRACE_VISITOR === true) {
             require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
             system_trace("redirect", "http" . ($_SERVER["HTTPS"] ? "s": "") . "://" . $arrDestination["dst"]);
-        }
+        }*/
 
         cache_send_header_content(false, false, false, false);
 
@@ -132,7 +132,7 @@ function system_redirect_set_destination($hostname, $request_uri, $destination, 
 	
 	$r = $loaded_redir[$hostname];
 	
-	$file = CM_CACHE_PATH . "/redirect/" . $hostname . ".php";
+	$file = CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php";
 	if(!$loaded_redir[$hostname]) {	
 		$loaded_redir[$hostname] = array();
 		if(is_file($file)) {
@@ -157,7 +157,7 @@ function system_redirect_set_destination($hostname, $request_uri, $destination, 
 function system_redirect_get_rule($hostname, $write_cache = false, $skip_db = false) {
 	static $loaded_redir = array();
 	
-	$file = CM_CACHE_PATH . "/redirect/" . $hostname . ".rule.php";
+	$file = CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".rule.php";
 	if(!$loaded_redir[$hostname]) {
 		if(is_file($file)) {
 			require($file);
@@ -209,7 +209,7 @@ function system_redirect_get_rule($hostname, $write_cache = false, $skip_db = fa
 
 function system_redirect_set_destination_old($hostname, $request_uri, $destination, $code = '') {
 	clearstatcache();
-	$file = CM_CACHE_PATH . "/redirect/" . $hostname . ".php";
+	$file = CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php";
 
 	if(!is_dir(dirname($file))) {
 		mkdir(dirname($file), 0777, true);
@@ -236,8 +236,8 @@ function system_redirect_get_rule_old($hostname, $write_cache = false) {
 
 	if(!is_array($loaded_redirect[$hostname])) {
 		$loaded_redirect[$hostname] = array();
-		if(is_file(CM_CACHE_PATH . "/redirect/" . $hostname . ".rule.php")) {
-			require_once(CM_CACHE_PATH . "/redirect/" . $hostname . ".rule.php");
+		if(is_file(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".rule.php")) {
+			require_once(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".rule.php");
 
 			/** @var include $redir */
 			$loaded_redirect[$hostname] = $redir;
@@ -246,7 +246,7 @@ function system_redirect_get_rule_old($hostname, $write_cache = false) {
 		
 			 clearstatcache();
 			 
-			 $file = CM_CACHE_PATH . "/redirect/" . $hostname . ".rule.php";
+			 $file = CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".rule.php";
 			 if($write_cache) {
 			 	if(!is_dir(dirname($file)))
 			 		mkdir(dirname($file), 0777, true);
@@ -355,8 +355,8 @@ function system_redirect_set_rule($hostname, $request_uri, $destination, $code =
 	}
 	
 	if($rule["ID"]) {
-		@unlink(CM_CACHE_PATH . "/redirect/" . $rule["hostname"] . ".php");
-    	@unlink(CM_CACHE_PATH . "/redirect/" . $rule["hostname"] . ".rule.php");
+		@unlink(CM_CACHE_DISK_PATH . "/redirect/" . $rule["hostname"] . ".php");
+    	@unlink(CM_CACHE_DISK_PATH . "/redirect/" . $rule["hostname"] . ".rule.php");
 	}
 	
 	return $rule;

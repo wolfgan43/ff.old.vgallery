@@ -273,7 +273,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				}
 			}
 			if(!strlen($st_session_save_path)) {
-				$st_session_save_path = ffCommon_dirname(ffCommon_dirname(__FILE__)) . "/sessions";
+				$st_session_save_path = dirname(__DIR__) . "/sessions";
 				if(!(@is_dir($st_session_save_path) && @is_writable($st_session_save_path))) {
 					$st_session_save_path = "";
 				}
@@ -285,10 +285,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	 *  Define OTHER Vars
 	 */
 
-	$st_appid 					= (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : $master_token) . "-" ;
+	$st_appid 					= "W-" . (defined("MASTER_TOKEN") && MASTER_TOKEN ? MASTER_TOKEN : $master_token) . "-" ;
 	$st_session_name 			= str_replace(array("a", "e", "i", "o", "u", "-"), "", strtolower($domain["primary"]));
 	//$st_session_name 			= "PHPSESS_" . substr($st_appid, 1, 8);
 	$st_memory_limit 			= "96M";
+
+	$st_composer_path 			= (installer_commandExist("composer") ? "/vendor" : "");
 	$st_service_time_limit		= false;
 	$st_session_permanent 		= true;
 	$st_cdn_static 				= false;
@@ -301,6 +303,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$st_font_icon 				= "fontawesome";
 
 	$st_timezone 				= "Europe/Rome";
+    $st_cache_adapter			= false;
 	$st_security_shield 		= false;
 	$st_admin_theme 			= "admin";
 
@@ -325,24 +328,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	/**
 	 *  INSTALLATION: INSTALL (config, .htaccess, other)
 	 */
+
 	$frmAction = $_REQUEST["frmAction"];
-    if($frmAction == "install")
+    if($frmAction == "install") 
     {
         $disk_path              = $_REQUEST["FF_DISK_PATH"];
         $site_path              = $_REQUEST["FF_SITE_PATH"];
 
-        $disk_updir             = $_REQUEST["DISK_UPDIR"];
-        $site_updir             = $_REQUEST["SITE_UPDIR"];
+        $disk_updir             = $_REQUEST["FF_DISK_UPDIR"];
+        $site_updir             = $_REQUEST["FF_SITE_UPDIR"];
 
         $session_save_path      = $_REQUEST["SESSION_SAVE_PATH"];
         $session_name           = $_REQUEST["SESSION_NAME"];
-		$session_permanent      = (isset($_REQUEST["MOD_SECURITY_SESSION_PERMANENT"])
-									? $_REQUEST["MOD_SECURITY_SESSION_PERMANENT"]
+		$session_permanent      = (isset($_REQUEST["MOD_AUTH_SESSION_PERMANENT"])
+									? $_REQUEST["MOD_AUTH_SESSION_PERMANENT"]
 									: null
 								);
 
 		$character_set          = $_REQUEST["CHARACTER_SET"];
 		$collation		        = $_REQUEST["COLLATION"];
+
 
         $database_host          = $_REQUEST["FF_DATABASE_HOST"];
 		$database_name          = $_REQUEST["FF_DATABASE_NAME"];
@@ -441,13 +446,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         $smtp_conf_password     = $_REQUEST["A_SMTP_CONF_PASSWORD"];
 		$smtp_port              = $_REQUEST["A_SMTP_PORT"];
 		$smtp_secure            = $_REQUEST["A_SMTP_SECURE"];
-
+        
         $email_address          = $_REQUEST["A_FROM_EMAIL"];
         $email_name             = $_REQUEST["A_FROM_NAME"];
-        $cc_address             = $_REQUEST["CC_FROM_EMAIL"];
-        $cc_name                = $_REQUEST["CC_FROM_NAME"];
-        $bcc_address            = $_REQUEST["BCC_FROM_EMAIL"];
-        $bcc_name               = $_REQUEST["BCC_FROM_NAME"];
+
+        $email_debug            = $_REQUEST["EMAIL_DEBUG"];
+        $email_bcc              = $_REQUEST["EMAIL_BCC"];
 
 		$username               = $_REQUEST["Username"];
 		$password               = $_REQUEST["Password"];
@@ -505,8 +509,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 								);
 
 		$memory_limit           = $_REQUEST["MEMORY_LIMIT"];
+        $composer_path          = $_REQUEST["COMPOSER_PATH"];
 		$service_time_limit     = $_REQUEST["SERVICE_TIME_LIMIT"];
 		$timezone 				= $_REQUEST["TIMEZONE"];
+        $cache_adapter			= $_REQUEST["FF_CACHE_ADAPTER"];
 		$security_shield 		= $_REQUEST["SECURITY_SHIELD"];
 
 
@@ -544,7 +550,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             $database_password = "";
             $database_conf_password = "";
             $strError .= "Database password no match<br />";
-        }
+        }    
 
         //mongo
 		if($mongo_database_password != $mongo_database_conf_password) {
@@ -626,7 +632,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         if(!strlen($email_address))
             $strError .= "Site Email-address empty <br />";
-
+        
         if(!strlen($email_name))
             $strError .= "Site Email-name empty <br />";
 
@@ -648,7 +654,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         if(!$db_res)
             $strError .= "Connection failed to database " . $database_name . "<br />";
-
+        
         if(!is_readable($disk_path . "/conf/gallery/install/structure.sql") || filesize($disk_path . "/conf/gallery/install/structure.sql") <= 0)
             $strError .= "Unable read file: " . $disk_path . "/conf/gallery/install/structure.sql" . "<br />";
 
@@ -660,11 +666,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				///////////////////////////////
 				//Scrittura del file config.remote.php
 				///////////////////////////////
-				$strError = installer_write("/themes/site/conf/config.remote.php"
+                $params["[FTP_PATH]"]                       = $ftp_path;
+
+                $strError = installer_write("/themes/site/conf/config.remote.php"
 					, "config.tpl"
 					, array(
-						"conn_id" 									=> $conn_id
-						, "path" 									=> $ftp_path
+						"conn_id" 							=> $conn_id
+						, "path" 							=> $ftp_path
 					)
 					, $params
 				);
@@ -673,12 +681,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			}, array(
 				"[FF_DISK_PATH]"							=> $disk_path
 				, "[FF_SITE_PATH]"							=> $site_path
-				, "[SITE_UPDIR]"							=> $site_updir
-				, "[DISK_UPDIR]"							=> $disk_updir
+				, "[FF_SITE_UPDIR]"							=> $site_updir
+				, "[FF_DISK_UPDIR]"							=> $disk_updir
 
 				, "[SESSION_SAVE_PATH]"						=> $session_save_path
 				, "[SESSION_NAME]"							=> $session_name
-				, "[MOD_SECURITY_SESSION_PERMANENT]"		=> ($session_permanent ? "true" : "false") //$session_permanent
+				, "[MOD_AUTH_SESSION_PERMANENT]"		    => ($session_permanent ? "true" : "false") //$session_permanent
 
 				, "[DB_CHARACTER_SET]"						=> $character_set
 				, "[DB_COLLATION]"							=> $collation
@@ -764,10 +772,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 				, "[A_FROM_EMAIL]"							=> $email_address
 				, "[A_FROM_NAME]"							=> $email_name
-				, "[CC_FROM_EMAIL]"							=> $cc_address
-				, "[CC_FROM_NAME]"							=> $cc_name
-				, "[BCC_FROM_EMAIL]"						=> $bcc_address
-				, "[BCC_FROM_NAME]"							=> $bcc_name
+				, "[EMAIL_DEBUG]"						    => $email_debug
+                , "[EMAIL_BCC]"						        => $email_bcc
 
 				, "[SUPERADMIN_USERNAME]"					=> $username
 				, "[SUPERADMIN_PASSWORD]"					=> $password
@@ -782,7 +788,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 				, "[FTP_USERNAME]"							=> $ftp_username
 				, "[FTP_PASSWORD]"							=> $ftp_password
-				, "[FTP_PATH]"								=> ($ftp_path ? $ftp_path : "/")
+				, "[FTP_PATH]"								=> "/"
 
 				, "[DEBUG_MODE]"							=> ($debug_mode ? "true" : "false")
 				, "[DEBUG_PROFILING]"						=> ($debug_profiling ? "true" : "false")
@@ -824,18 +830,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					)
 
 				, "[MEMORY_LIMIT]"							=> $memory_limit
+                , "[COMPOSER_PATH]"							=> $composer_path
 				, "[SERVICE_TIME_LIMIT]"					=> $service_time_limit
 				, "[TIMEZONE]"								=> $timezone
+                , "[FF_CACHE_ADAPTER]"						=> ($cache_adapter ? "'" . $cache_adapter . "'" : "false")
 				, "[SECURITY_SHIELD]"						=> ($security_shield ? "true" : "false")
 
-				, "[PHP_EXT_MEMCACHE]"						=> (array_search("memcached", $php_ext_loaded) === false
-						? "false"
-						: "true"
-					)
-				, "[PHP_EXT_APC]"							=> (array_search("apc", $php_ext_loaded) === false
-						? "false"
-						: "true"
-					)
 				, "[PHP_EXT_JSON]"							=> (array_search("json", $php_ext_loaded) === false
 						? "false"
 						: "true"
@@ -848,22 +848,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 						? "false"
 						: "true"
 					)
-				, "[MYSQLI_EXTENSIONS]"						=> (function_exists("mysqli_init") && function_exists('mysqli_fetch_all')
-						? "true"
-						: "false"
+				, "[FF_DB_INTERFACE]"						=> (function_exists("mysqli_init") && function_exists('mysqli_fetch_all')
+						? "mysqli"
+						: "mysql"
 					)
 				, "[DOMAIN_PROTOCOL]"						=> ($site_ssl ? "https" : "http")
 			));
 			///////////////////////////////////
 
-            if($master_site) {
-
+            if(0 && $master_site) {
 				if(!$strError && $_SERVER["REQUEST_URI"] == $site_path . "/setup") {
 					$strError = updater_resetDB($db_install);
                 }
 
 				// CERCA di sincronizzare il database con il MASTER SITE in merito alla STRUTTURA
-				if(!$strError) {
+
+
+                if(!$strError) {
 					// Tenta di sincronizzare la STRUTTURA DB con il MASTER SITE
 					$count_limit = 0;
 					do {
@@ -955,12 +956,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     {
         $disk_path          = (defined("FF_DISK_PATH") ? FF_DISK_PATH : "");
         $site_path          = (defined("FF_SITE_PATH") ? FF_SITE_PATH : "");
-        $disk_updir         = (defined("DISK_UPDIR") ? DISK_UPDIR : "");
-        $site_updir         = (defined("SITE_UPDIR") ? SITE_UPDIR : "");
+        $disk_updir         = (defined("FF_DISK_UPDIR") ? FF_DISK_UPDIR : "");
+        $site_updir         = (defined("FF_SITE_UPDIR") ? FF_SITE_UPDIR : "");
 
         $session_save_path  = (defined("SESSION_SAVE_PATH") ? SESSION_SAVE_PATH : "");
         $session_name       = (defined("SESSION_NAME") ? SESSION_NAME : "");
-        $session_permanent  = (defined("MOD_SECURITY_SESSION_PERMANENT") ? MOD_SECURITY_SESSION_PERMANENT : "");
+        $session_permanent  = (defined("MOD_AUTH_SESSION_PERMANENT") ? MOD_AUTH_SESSION_PERMANENT : "");
 
 		$character_set      = (defined("CHARACTER_SET") ? CHARACTER_SET : "");
 		$collation       	= (defined("COLLATION") ? COLLATION : "");
@@ -1053,10 +1054,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         
         $email_address      = (defined("A_FROM_EMAIL") ? A_FROM_EMAIL : "");
         $email_name         = (defined("A_FROM_NAME") ? A_FROM_NAME : "");
-        $cc_address         = (defined("CC_FROM_EMAIL") ? CC_FROM_EMAIL : "");
-        $cc_name            = (defined("CC_FROM_NAME") ? CC_FROM_NAME : "");
-        $bcc_address        = (defined("BCC_FROM_EMAIL") ? BCC_FROM_EMAIL : "");
-        $bcc_name           = (defined("BCC_FROM_NAME") ? BCC_FROM_NAME : "");
+
+        $email_debug        = (defined("EMAIL_DEBUG") ? EMAIL_DEBUG : "");
+        $email_bcc          = (defined("EMAIL_BCC") ? EMAIL_BCC: "");
 
 		$username           = (defined("SUPERADMIN_USERNAME") ? SUPERADMIN_USERNAME : "");
 		$password           = (defined("SUPERADMIN_PASSWORD") ? SUPERADMIN_PASSWORD : "");
@@ -1099,12 +1099,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		$logo_brand						= (defined("LOGO_BRAND") ? LOGO_BRAND : "");
 		$logo_docs						= (defined("LOGO_DOCS") ? LOGO_DOCS : "");
 
-		$cdn_static       	= (defined("CM_SHOWFILES") || defined("CM_MEDIACACHE_SHOWPATH") ? true : null);
+		$cdn_static       	= (defined("CM_SHOWFILES") ? true : null);
 		$cdn_services      	= (defined("CMS_API_PATH") || defined("CMS_REQUEST_PATH") ? true : null);
 
 		$memory_limit       = (defined("MEMORY_LIMIT") ? MEMORY_LIMIT : "");
+        $composer_path      = (defined("COMPOSER_PATH") ? COMPOSER_PATH : "");
 		$service_time_limit = (defined("SERVICE_TIME_LIMIT") ? SERVICE_TIME_LIMIT : "");
 		$timezone   		= (defined("TIMEZONE") ? TIMEZONE : "");
+        $cache_adapter 		= (defined("FF_CACHE_ADAPTER") ? FF_CACHE_ADAPTER : null);
 		$security_shield 	= (defined("SECURITY_SHIELD") ? SECURITY_SHIELD : "");
 
 
@@ -1181,14 +1183,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             $email_address = "info@" . $domain["name"];
         if(!strlen($email_name))
             $email_name = ucfirst($domain["primary"]);
-        if(!strlen($cc_address))
-            $cc_address = "";
-        if(!strlen($cc_name))
-            $cc_name = "";
-		if(!strlen($bcc_address))
-			$bcc_address = "";
-		if(!strlen($bcc_name))
-			$bcc_name = "";
+
+        if(!strlen($email_debug))
+            $email_debug = "";
+        if(!strlen($email_bcc))
+            $email_bcc = "";
 
         if(!strlen($username))
             $username = "admin";
@@ -1245,10 +1244,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 		if(!strlen($memory_limit))
 			$memory_limit = $st_memory_limit;
+        if(!strlen($composer_path))
+            $composer_path = $st_composer_path;
 		if(!strlen($service_time_limit))
 			$service_time_limit = $st_service_time_limit;
 		if(!strlen($timezone))
 			$timezone = $st_timezone;
+        if($cache_adapter === null)
+            $cache_adapter = $st_cache_adapter;
 		if(!strlen($security_shield))
 			$security_shield = $st_security_shield;
     }
@@ -1273,15 +1276,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$tpl->set_var("domain_ext", $domain["ext"]);
 	$tpl->set_var("domain_unique", $domain["unique"]);
 
-	if(!function_exists("cm_getClassByFrameworkCss") && is_file($disk_path . "/library/FF/common/framework-css.php")) {
+	/*if(!function_exists("Cms::getInstance("frameworkcss")->get") && is_file($disk_path . "/library/FF/common/framework-css.php")) {
 		require_once($disk_path . "/library/FF/common/framework-css.php");
-	}
-    if(function_exists("cm_getClassByFrameworkCss")) {
-		$arrFrameworkCss  = cm_getFrameworkCss_settings();
-		$arrFontIcon  = cm_getFontIcon_settings();
+	}*/
+    if(1) {
+		$arrFrameworkCss  = Cms::getInstance("frameworkcss")->frameworks();
+		$arrFontIcon  = Cms::getInstance("frameworkcss")->fontIcons();
 
-		$tpl->set_var("row_class", cm_getClassByFrameworkCss("", "row-default"), null, "bootstrap");
-		$tpl->set_var("button_class", cm_getClassByFrameworkCss("", "link", null, "bootstrap"));
+		$tpl->set_var("row_class", Cms::getInstance("frameworkcss")->get("", "row-default"), null, "bootstrap");
+		$tpl->set_var("button_class", Cms::getInstance("frameworkcss")->get("", "link", null, "bootstrap"));
 
 		if($arrFrameworkCss) {
 			foreach($arrFrameworkCss AS $framework_name => $framework_params) {
@@ -1349,26 +1352,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     $tpl->set_var("session_name", $session_name);
     $tpl->set_var("appid", $appid);
     $tpl->set_var("memory_limit", $memory_limit);
-	if(array_search("memcached", $php_ext_loaded) === false) {
-		$tpl->set_var("php_ext_memcache", "");
-		$tpl->set_var("php_ext_memcache_label", "Off");
-		$tpl->set_var("php_ext_memcache_class", "red");
-	} else {
-		$tpl->set_var("php_ext_memcache", "1");
-		$tpl->set_var("php_ext_memcache_label", "On");
-		$tpl->set_var("php_ext_memcache_class", "green");
-
-	}
-	if(array_search("apc", $php_ext_loaded) === false) {
-		$tpl->set_var("php_ext_apc", "");
-		$tpl->set_var("php_ext_apc_label", "Off");
-		$tpl->set_var("php_ext_apc_class", "red");
-	} else {
-		$tpl->set_var("php_ext_apc", "1");
-		$tpl->set_var("php_ext_apc_label", "On");
-		$tpl->set_var("php_ext_apc_class", "green");
-
-	}
+    $tpl->set_var("composer_path", $composer_path);
 	if(array_search("json", $php_ext_loaded) === false) {
 		$tpl->set_var("php_ext_json", "");
 		$tpl->set_var("php_ext_json_label", "Off");
@@ -1399,14 +1383,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		$tpl->set_var("apache_module_expires_class", "green");
 
 	}
-	if(function_exists("mysqli_init")) {
-		$tpl->set_var("mysqli_extensions", "1");
-		$tpl->set_var("mysqli_extensions_label", "On");
-		$tpl->set_var("mysqli_extensions_class", "green");
+	if(function_exists("mysqli_init") && function_exists('mysqli_fetch_all')) {
+		$tpl->set_var("ff_db_interface", "1");
+		$tpl->set_var("ff_db_interface_label", "On");
+		$tpl->set_var("ff_db_interface_class", "green");
 	} else {
-		$tpl->set_var("mysqli_extensions", "");
-		$tpl->set_var("mysqli_extensions_label", "Off");
-		$tpl->set_var("mysqli_extensions_class", "red");
+		$tpl->set_var("ff_db_interface", "");
+		$tpl->set_var("ff_db_interface_label", "Off");
+		$tpl->set_var("ff_db_interface_class", "red");
 	}
 
 
@@ -1425,7 +1409,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	else
 		$tpl->set_var("cdn_services", "");
 
-    $tpl->set_var("database_host", $database_host);
+	$tpl->set_var("database_host", $database_host);
 	$tpl->set_var("database_name", $database_name);
     $tpl->set_var("database_user", $database_username);
     $tpl->set_var("database_password", $database_password);
@@ -1488,11 +1472,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     $tpl->set_var("email_address", $email_address);
     $tpl->set_var("email_name", $email_name);
 
-    $tpl->set_var("cc_address", $cc_address);
-    $tpl->set_var("cc_name", $cc_name);
-    
-    $tpl->set_var("bcc_address", $bcc_address);
-    $tpl->set_var("bcc_name", $bcc_name);
+    $tpl->set_var("email_debug", $email_debug);
+    $tpl->set_var("email_bcc", $email_bcc);
 
     $tpl->set_var("site_title", $site_title);
 	if($site_ssl)
@@ -1543,6 +1524,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}
 	}
 
+    if(array_search("apc", $php_ext_loaded) !== false)
+        $calist[] = "apc";
+	if(array_search("memcached", $php_ext_loaded) !== false)
+        $calist[] = "memcached";
+    if(array_search("redis", $php_ext_loaded) !== false)
+        $calist[] = "redis";
+
+    if(is_array($calist) && count($calist)) {
+        foreach($calist AS $ca) {
+            $tpl->set_var("cache_adapter", $ca);
+            $tpl->set_var("cache_adapter_label", ucfirst($ca));
+            if($ca == $cache_adapter)
+                $tpl->set_var("cache_adapter_current", 'selected="selected"');
+            else
+                $tpl->set_var("cache_adapter_current", "");
+
+            $tpl->parse("SezCacheAdapterItem", true);
+        }
+    }
+
+
     if($debug_mode)
         $tpl->set_var("debug_mode", "checked=\"checked\"");
     else
@@ -1584,7 +1586,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     }
 
     if($_SERVER["PATH_INFO"] == VG_SITE_ADMININSTALL) {
-        if (!AREA_INSTALLATION_SHOW_MODIFY) {
+        if (!Auth::env("AREA_INSTALLATION_SHOW_MODIFY")) {
             ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
         }
 
@@ -1617,25 +1619,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		    $tpl_diagnostic = ffTemplate::factory($disk_path . "/themes/gallery/contents");
 		    $tpl_diagnostic->load_file("diagnostic.html", "Main");
 
-		    //da estendere introducendo una tabella con i valori impostati ==> valori reali sul server
-		    $tpl_diagnostic->set_var("ext_class", ffCommon_url_rewrite("PHP_EXT_MEMCACHE"));
-		    $tpl_diagnostic->set_var("ext_name", "PHP EXT MEMCACHE");
-		    $tpl_diagnostic->set_var("ext_status", (defined("PHP_EXT_MEMCACHE")
-		    											? PHP_EXT_MEMCACHE ? ffTemplate::_get_word_by_code("on") : ffTemplate::_get_word_by_code("off")
-		    											: ffTemplate::_get_word_by_code("na")		
-		    									)
-		    								);
-		    $tpl_diagnostic->parse("SezExtension", true);
-		    
-		    $tpl_diagnostic->set_var("ext_class", ffCommon_url_rewrite("PHP_EXT_APC"));
-		    $tpl_diagnostic->set_var("ext_name", "PHP EXT APC");
-		    $tpl_diagnostic->set_var("ext_status", (defined("PHP_EXT_APC")
-		    											? PHP_EXT_APC ? ffTemplate::_get_word_by_code("on") : ffTemplate::_get_word_by_code("off")
-		    											: ffTemplate::_get_word_by_code("na")		
-		    									)
-		    								);
-		    $tpl_diagnostic->parse("SezExtension", true);
-
 		    $tpl_diagnostic->set_var("ext_class", ffCommon_url_rewrite("PHP_EXT_JSON"));
 		    $tpl_diagnostic->set_var("ext_name", "PHP EXT JSON");
 		    $tpl_diagnostic->set_var("ext_status", (defined("PHP_EXT_JSON")
@@ -1663,21 +1646,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		    								);
 		    $tpl_diagnostic->parse("SezExtension", true);
 			
-		    $tpl_diagnostic->set_var("ext_class", ffCommon_url_rewrite("MYSQLI_EXTENSIONS"));
+		    $tpl_diagnostic->set_var("ext_class", ffCommon_url_rewrite("FF_DB_INTERFACE"));
 		    $tpl_diagnostic->set_var("ext_name", "MySQLnd active driver");
-		    $tpl_diagnostic->set_var("ext_status", (defined("MYSQLI_EXTENSIONS")
-		    											? MYSQLI_EXTENSIONS ? ffTemplate::_get_word_by_code("on") : ffTemplate::_get_word_by_code("off")
+		    $tpl_diagnostic->set_var("ext_status", (defined("FF_DB_INTERFACE")
+		    											? FF_DB_INTERFACE
+                                                            ? ffTemplate::_get_word_by_code("on")
+                                                            : ffTemplate::_get_word_by_code("off")
 		    											: ffTemplate::_get_word_by_code("na")		
 		    									)
 		    								);
 		    $tpl_diagnostic->parse("SezExtension", true);
-		    
-			if(!defined("PHP_EXT_MEMCACHE")
-				|| !defined("PHP_EXT_APC")
-				|| !defined("APACHE_MODULE_EXPIRES")
-				|| !defined("PHP_EXT_JSON")
-				|| !defined("PHP_EXT_GD")
-			) {
+
+            if(!defined("APACHE_MODULE_EXPIRES")
+                || !defined("PHP_EXT_JSON")
+                || !defined("PHP_EXT_GD")
+                || !defined("FF_DB_INTERFACE")
+                || !defined("FF_CACHE_ADAPTER")
+            ) {
 				mod_notifier_add_message_to_queue(ffTemplate::_get_word_by_code("server_extention_not_set"));
 			}
         	

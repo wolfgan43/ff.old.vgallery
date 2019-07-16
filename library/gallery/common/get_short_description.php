@@ -23,8 +23,12 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-function get_short_description($description, $limit_char = VG_SEO_DESCRIPTION_LIMIT, $type = null, $link = false)
+function get_short_description($description, $limit_char = null, $type = null, $link = false)
 {
+    if(!$limit_char) {
+        $limit_char = Cms::env("LIMIT_CHARACTER_SEO");
+    }
+
 	$page_break = array();
 	$page_break["TextBB"]['<!-- pagebreak -->'] = "";
 	$page_break["TextCK"]['<div style="page-break-after: always">'] = '<div class="page-break">';

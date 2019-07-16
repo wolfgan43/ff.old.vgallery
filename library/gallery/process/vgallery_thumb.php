@@ -37,6 +37,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
     $tpl = null;
 
     $layout["unic_id"] = $layout["prefix"] . $layout["ID"];
+    $unic_id = $layout["unic_id"];
     if(is_array($layout["settings"])) {
 	    $father_settings = $layout["settings"];
         $node_settings = $layout["settings"];
@@ -276,8 +277,9 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	{
 	    /**
 	    * Load Template
-	    */  
+	    */
 
+	    $tpl_data["id"] = $unic_id;
 	    if(isset($tpl_data["type"])) {
 	        $tpl_data["custom"] = $vg_father["template"]["custom_name"] . "." . $tpl_data["type"];
 	        $tpl_data["base"] = "vgallery" . $vg_father["template"]["suffix"] . "." . $tpl_data["type"];
@@ -291,7 +293,8 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	    $tpl_data["result"] = get_template_cascading($vg_father["user_path"], $tpl_data, $vg_father["template"]["path"]);
 
 	    $tpl_data["obj"] = ffTemplate::factory($tpl_data["result"]["path"]);
-	    $tpl_data["obj"]->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   	
+	    //$tpl_data["obj"]->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+        $tpl_data["obj"]->load_file($tpl_data["result"]["name"], "main");
 	    
 	    if($vg_father["type"] == "learnmore" && $vg_father["navigation"] && $tpl_data["result"]["type"] == "custom" && !$tpl_data["obj"]->isset_var("pagination")) {
 		    $vg_father["navigation"] = false;
@@ -508,7 +511,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                }                  
 
 					if($father_settings["AREA_VGALLERY_THUMB_EQUALIZER"])
-						$item_properties["equalizer"] = cm_getClassByFrameworkCss("equalizer-col", "util");
+						$item_properties["equalizer"] = Cms::getInstance("frameworkcss")->get("equalizer-col", "util");
 						
 					if($father_settings["AREA_VGALLERY_THUMB_SHOW_FILTER_AZ"])
 						$item_properties["filter-az"] = "data-ffl=" . substr($vg_data_value["smart_url"], 0, 1);
@@ -521,9 +524,9 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 					if($vg_data_value["class"])
 			    		$item_class["custom"] = $vg_data_value["class"];
 					if($vg_data_value["highlight"]["container"])
-                		$item_class["grid"] = cm_getClassByFrameworkCss(explode(",", $vg_data_value["highlight"]["container"]), "col");
+                		$item_class["grid"] = Cms::getInstance("frameworkcss")->get(explode(",", $vg_data_value["highlight"]["container"]), "col");
 					
-					if($vg_father["wishlist"] === null && !($vg_father["enable_ecommerce"] && AREA_SHOW_ECOMMERCE) && USE_CART_PUBLIC_MONO && $vg_data_value["is_wishlisted"])
+					if($vg_father["wishlist"] === null && !($vg_father["enable_ecommerce"] && Cms::env("AREA_SHOW_ECOMMERCE")) && Cms::env("USE_CART_PUBLIC_MONO") && $vg_data_value["is_wishlisted"])
 						$item_class["wishlist"] = "wishlisted";
 	                
 					if(($count_files + $count_field_per_row_empty) == count($vg["data"]))
@@ -682,7 +685,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                                : ""
 	                            );
 
-            	$max_col["class"] = cm_getClassByFrameworkCss(array(12), "col");
+            	$max_col["class"] = Cms::getInstance("frameworkcss")->get(array(12), "col");
             	$max_col["prefix"] = '<div class="' . $max_col["class"] . '">';
             	$max_col["postfix"] = '</div>'; 
 
@@ -713,7 +716,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
             			$tpl_data["obj"]->set_var("max_col_class", " " . $max_col["class"]);
 	                    
 	                    if($vg_father["navigation"] && is_object($vg_father["navigation"]["obj"]))
-	                        $vg_father["navigation"]["obj"]->framework_css["component"]["class"] = $vg_father["navigation"]["obj"]->framework_css["component"]["class"] . ($max_col["class"] ? " " .cm_getClassByFrameworkCss("", "row") : "");
+	                        $vg_father["navigation"]["obj"]->framework_css["component"]["class"] = $vg_father["navigation"]["obj"]->framework_css["component"]["class"] . ($max_col["class"] ? " " .Cms::getInstance("frameworkcss")->get("", "row") : "");
 					}
 	                if (/*$vg_father["enable_title"] &&*/ strlen($vg_father["title"])) {
 				        if($tpl_data["is_html"]) {
@@ -786,7 +789,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                if($father_settings["AREA_VGALLERY_ORDER_LIST_BY_LAST_UPDATE"]) {
 	                    $vg_father["sort"]["fields"][] = '<li'
 	                                                        . ($vg_father["sort_default"] == "lastupdate"
-	                                                            ? ' class="' . cm_getClassByFrameworkCss("current", "util") . '"'
+	                                                            ? ' class="' . Cms::getInstance("frameworkcss")->get("current", "util") . '"'
 	                                                            : ""
 	                                                        )
 	                                                        . '><a href="javascript:vgSort(\'' . $vg_father["unic_id"] . '\', \'lastupdate\');">' 
@@ -813,7 +816,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                        if($vg_field_sort_value["enable"]) {
 	                            $vg_father["sort"]["fields"][] = '<li'
 	                                                                . ($vg_father["sort_default"] == $vg_field_sort_value["name"]
-	                                                                    ? ' class="' . cm_getClassByFrameworkCss("current", "util") . '"'
+	                                                                    ? ' class="' . Cms::getInstance("frameworkcss")->get("current", "util") . '"'
 	                                                                    : ""
 	                                                                )
 	                                                                . '><a href="javascript:vgSort(\'' . $vg_father["unic_id"] . '\', \'' . $vg_field_sort_value["name"] . '\');">' 
@@ -974,7 +977,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	                if($vg_father["is_custom_template"]) {
 	                    $tpl_data["obj"]->set_var("error", $strError);
 	                } else {
-	                	$tpl_data["obj"]->set_var("error_class", cm_getClassByFrameworkCss("info", "callout", "error"));
+	                	$tpl_data["obj"]->set_var("error_class", Cms::getInstance("frameworkcss")->get("info", "callout", "error"));
 			            $tpl_data["obj"]->set_var("strError", $strError);
 			            $tpl_data["obj"]->parse("SezError", false);
 	                }
@@ -995,7 +998,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
                 } else {
                     $wrap_container["prefix"] = '<div class="vg-wrap">';
                     $wrap_container["postfix"] = '</div>';             
-    //                $block["class"]["error"] = cm_getClassByFrameworkCss("info", "callout");
+    //                $block["class"]["error"] = Cms::getInstance("frameworkcss")->get("info", "callout");
                 }
                 $block = get_template_header($user_path, $admin_menu, $layout, $tpl, $block);
                 $buffer =  $wrap_container["prefix"] . process_html_page_error() . $wrap_container["postfix"]; 
@@ -1005,12 +1008,9 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
                 return;
             }
         } else {
-			if($vg_father["seo"]["mode"] == "thumb")
-        		$globals->navigation["tot_page"] = $vg_father["navigation"]["tot_page"];
-//print_r($vg_father["search"]);
-        	if($vg_father["search"]["encoded_params"]) {
-        		$globals->user_path_params = "?" . $vg_father["search"]["encoded_params"];
-			}
+			if($vg_father["seo"]["mode"] == "thumb") {
+                $globals->navigation["tot_page"] = $vg_father["navigation"]["tot_page"];
+            }
 
         	if($father_settings["AREA_VGALLERY_THUMB_SHOW_FILTER_AZ"] || $father_settings["AREA_VGALLERY_THUMB_FULLCLICK"])
         		$cm->oPage->tplAddJs("ff.cms.vgallery");
@@ -1025,7 +1025,7 @@ function process_vgallery_thumb($user_path, $type, $params = array(), &$layout)
 	        $block["class"]["vgallery"] = $vg_father["vgallery_class"];
 
 			if($father_settings["AREA_VGALLERY_THUMB_EQUALIZER"])
-				$block["properties"]["equalizer"] = cm_getClassByFrameworkCss("equalizer-row", "util");
+				$block["properties"]["equalizer"] = Cms::getInstance("frameworkcss")->get("equalizer-row", "util");
 	        
 	        if($vg_father["is_custom_template"])
         		$block["class"]["template"] = ffCommon_url_rewrite($vg_father["template"]["custom_name"]);

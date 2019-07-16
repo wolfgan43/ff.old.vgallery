@@ -169,7 +169,7 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
         	$tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . $struct["default"]["path"] . $tpl_email_path;
         	$tpl_error = false;
 		} elseif(strlen($struct["default"]["theme"])) {
-			$tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.tpl";
+			$tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.tpl";
 			$tpl_error = true;
 		} else {
 			return ffTemplate::_get_word_by_code("mail_tpl_not_exist");
@@ -179,10 +179,10 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
         	$tpl_email_txt_path = ffCommon_dirname($tpl_email_html_path) . "/" . ffGetFilename($tpl_email_html_path) . ".txt";
         	$tpl_error = false;
 		} else {
-			if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.txt")) {
-				$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.txt";	
-			} elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.txt")) {
-				$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"]  . "/contents/mail/email.txt";	
+			if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.txt")) {
+				$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.txt";
+			} elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.txt")) {
+				$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"]  . "/contents/email/email.txt";
 			}
 			$tpl_error = true;
 		}
@@ -193,12 +193,12 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
 			}
 		}		
 	} else {
-		if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.tpl")) {
-			$tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.tpl";
-			$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/mail/email.txt";	
-		} elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.tpl")) {
-			$tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.tpl";
-			$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/mail/email.txt";	
+		if(strlen($struct["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.tpl")) {
+			$tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.tpl";
+			$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["theme"] . "/contents/email/email.txt";
+		} elseif(strlen($struct["default"]["theme"]) && is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.tpl")) {
+			$tpl_email_html_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.tpl";
+			$tpl_email_txt_path = FF_DISK_PATH . FF_THEME_DIR . "/" . $struct["default"]["theme"] . "/contents/email/email.txt";
 		} else {
 			return ffTemplate::_get_word_by_code("mail_default_tpl_not_exist");
 		}
@@ -577,7 +577,7 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
 
 	    
 	    $tpl->set_var("site_path", FF_SITE_PATH);
-	    $tpl->set_var("site_updir", SITE_UPDIR);
+	    $tpl->set_var("FF_SITE_UPDIR", FF_SITE_UPDIR);
 	    $tpl->set_var("domain_inset", $struct["domain"]);
 	    $tpl->set_var("theme_inset", THEME_INSET);
 	    $tpl->set_var("theme", $struct["theme"]);
@@ -1058,7 +1058,7 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
 			$arrEmailImages = glob(ffCommon_dirname($tpl_email_html_path) . "/images/*");
 			if(is_array($arrEmailImages) && count($arrEmailImages)) {
 			    foreach($arrEmailImages AS $email_image) {
-			    	$mail->AddEmbeddedImage($email_image, basename($email_image), basename($email_image), 'base64',ffMimeContentType($email_image)); 
+			    	$mail->AddEmbeddedImage($email_image, basename($email_image), basename($email_image), 'base64',ffMedia::getMimeTypeByFilename($email_image));
 				}
 	   		}
 		}
@@ -1078,8 +1078,8 @@ function process_mail($email_struct, $to, $subject = NULL, $tpl_email_path = NUL
 	    } else {
 		    if(is_array($attach) && count($attach)) {
 				foreach($attach AS $attach_key => $attach_value) {
-					if(is_file(DISK_UPDIR . $attach_value))
-						$mail->AddAttachment(DISK_UPDIR . $attach_value, $attach_key);
+					if(is_file(FF_DISK_UPDIR . $attach_value))
+						$mail->AddAttachment(FF_DISK_UPDIR . $attach_value, $attach_key);
 				}
 		    }
 			
@@ -1488,10 +1488,10 @@ function clone_template_mail($email_name) {
 
     if(!is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . $form_path) && check_function("fs_operation"))
     {
-	    $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/mail/email.tpl"
+	    $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/email/email.tpl"
 	                        , FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . $form_path . "/email.tpl"
 	                    );
-	    $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/mail/email.txt"
+	    $res = $res && xcopy(FF_THEME_DIR . "/" . THEME_INSET . "/contents/email/email.txt"
 	                        , FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . $form_path . "/email.txt"
 	                    );
 
@@ -1503,8 +1503,8 @@ function clone_template_mail($email_name) {
             $img_source = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.gif";
         } elseif(is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.jpg")) {
             $img_source = FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/logo-mail.jpg";
-        } elseif(is_file(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png")) {
-            $img_source = __CMS_DIR__ . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/mail/images/logo-mail.png";
+        } elseif(is_file(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/email/images/logo-mail.png")) {
+            $img_source = __CMS_DIR__ . "/" . THEME_INSET . "/" . GALLERY_TPL_PATH . "/email/images/logo-mail.png";
         }
 
          if($img_source) {

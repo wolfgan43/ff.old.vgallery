@@ -23,20 +23,23 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-  function check_user_request(&$user, $old_session_id = null, $permanent_session = MOD_SECURITY_SESSION_PERMANENT) {
+  function check_user_request(&$user, $old_session_id = null, $permanent_session = null) {
   	$cm = cm::getInstance();
+  	if($permanent_session === null) {
+        $permanent_session = Cms::env("MOD_AUTH_SESSION_PERMANENT");
+    }
     //i globals qui nn sono valorizzati
-	if(/*global_settings("ENABLE_ECOMMERCE") &&*/ check_function("ecommerce_cart_merge"))
+	if(check_function("ecommerce_cart_merge"))
 		ecommerce_cart_merge($user);
 
   	check_user_form_request($user);
   	check_user_vgallery_request($user);
     $arrRetUrl = explode("?", $cm->oPage->ret_url);
   	if($arrRetUrl[0] == "/" || $arrRetUrl[0] == "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/") {  	
-		$mod_sec_dashboard = $cm->router->getRuleById("mod_sec_dashboard");
-		if($mod_sec_dashboard)
-			$cm->oPage->ret_url = $mod_sec_dashboard->reverse;  	
-	}  	  	
+		$mod_auth_dashboard = $cm->router->getRuleById("mod_auth_dashboard");
+		if($mod_auth_dashboard)
+			$cm->oPage->ret_url = $mod_auth_dashboard->reverse;
+	}
 
   }
 
@@ -71,7 +74,7 @@ function check_user_form_request($user, $exclude_form = null) {
         $request_info = false;
     }
     
-    $uid = get_session("UserNID");
+    $uid = Auth::get("user")->id;
     if($uid == $user["ID"])
         set_session("request_info", ($request_info == false ? false : USER_RESTRICTED_PATH . "/additionaldata"));
 
@@ -185,7 +188,7 @@ function check_user_vgallery_request($user, $return = "link", $exclude_vgallery 
 		$request_vgallery = false;
 	}
 
-    $uid = get_session("UserNID");
+    $uid = Auth::get("user")->id;
     if($uid == $user["ID"]) {
         set_session("request_vgallery", ($request_vgallery == false || is_array($request_vgallery) ? false : $request_vgallery));
         if(is_array($vgallery_user_path) && count($vgallery_user_path)) {

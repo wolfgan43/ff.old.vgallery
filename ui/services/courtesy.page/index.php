@@ -25,7 +25,7 @@
  */ 
 	// $globals : globals settings
     // $actual_srv = params defined by system
-    if(get_session("UserID") == MOD_SEC_GUEST_USER_NAME)
+    if(Auth::isguest())
     {
         $now =  time();
         $timestamp = 0;
@@ -68,10 +68,10 @@
 						$oPage->page_css = $css_purged;
 					}
 
-					$oPage->use_own_js = false;
+					//$oPage->use_own_js = false;
 					$oPage->widgets = array();
 
-					$oPage->addContent($embed_content, null, basename(ffCommon_dirname(__FILE__)));
+					$oPage->addContent($embed_content, null, basename(__DIR__));
 
                     if(is_file(FF_DISK_PATH . FF_THEME_DIR ."/" . FRONTEND_THEME . "/css/courtesy-page.css")) {
 						$oPage->tplAddCss("courtesyPage", array(

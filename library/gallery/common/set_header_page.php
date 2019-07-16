@@ -128,32 +128,12 @@
 		if(!$globals->meta["viewport"])
 			$globals->meta["viewport"] = "width=device-width, height=device-height, initial-scale=1.0, user-scalable=0";
 
-		//favicon
-		if(!$globals->links["favicon"]) {
-			if(file_exists(FF_DISK_PATH . "/favicon.ico")) {
-				$globals->links["favicon"]  = "/favicon.ico";
-			} elseif(file_exists(FF_DISK_PATH . "/favicon.png")) {
-				$globals->links["favicon"]  = "/favicon.png";
-			} elseif(file_exists(FF_DISK_PATH . "/favicon.gif")) {
-				$globals->links["favicon"]  = "/favicon.gif";
-			}
-		}
-		if($globals->links["favicon"]) {
-			if(is_array($globals->links["favicon"]) && count($globals->links["favicon"])) {
-				foreach($globals->links["favicon"] AS $favicon_key => $favicon_file) {
-					$cm->oPage->tplAddCss("favicon-" . $favicon_key, basename($favicon_file), ffCommon_dirname($favicon_file), $favicon_key, ffMimeTypeByFilename($favicon_file));
-				}
-			} else {
-				$cm->oPage->tplAddCss("favicon", basename($globals->links["favicon"]), ffCommon_dirname($globals->links["favicon"]), "icon", ffMimeTypeByFilename($globals->links["favicon"]));
-			}
-		}
-
         if($globals->http_status == 200) {
             //Meta Robots
             if(!$globals->meta["robots"])
             {
                 $globals->meta["robots"] = "index, follow";
-                if($globals->navigation["page"] > 0 /*&& $globals->navigation["tot_page"] >= $globals->navigation["page"]*/)
+                if($globals->navigation["page"] > 1 /*&& $globals->navigation["tot_page"] >= $globals->navigation["page"]*/)
                     $globals->meta["robots"] = "noindex, follow";
 
             }
@@ -179,7 +159,7 @@
                 } elseif ($globals->canonical) {
                     $cm->oPage->canonical = $globals->canonical;
                 } elseif ($canonical !== false && !$cm->oPage->canonical) {
-                    $cm->oPage->canonical = $domain_path . $globals->page["strip_path"] . $globals->user_path . $globals->user_path_params;
+                    $cm->oPage->canonical = $domain_path . $globals->page["strip_path"] . $globals->user_path;
                 }
             }
             if($cm->oPage->canonical)
@@ -381,8 +361,8 @@
 			$meta_description_processed 							= implode(", ", $globals->meta["description"]);
 
 		//Facebook BASE
-	    if($globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"] && !isset($globals->meta["fb:app_id"]))
-	        $globals->meta["fb:app_id"] 							= array("content" => $globals->settings["MOD_SEC_SOCIAL_FACEBOOK_APPID"], "type" => "property");
+	    if(Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_ID") && !isset($globals->meta["fb:app_id"]))
+	        $globals->meta["fb:app_id"] 							= array("content" => Cms::env("MOD_AUTH_SOCIAL_FACEBOOK_CLIENT_ID"), "type" => "property");
 
         //Open Graph BASE
         if(!isset($globals->meta["og:title"]))
@@ -439,52 +419,32 @@
 
 	    //Author
 		if(!$globals->author && $seo["owner"]) {
-			//todo: da implementare la classe anagraph
-			check_function("get_user_data");
+            $globals->setAuthor($seo["owner"]);
 
-            $anagraph 												= user2anagraph($seo["owner"], "anagraph");
-            $globals->author = array(
-                "id" 												=> (int) $anagraph["ID"]
-                , "avatar"											=> $anagraph["avatar"]
-                , "name" 											=> ($anagraph["role"] ? $anagraph["role"] . " " : "") . $anagraph["name"] . " " . $anagraph["surname"]
-                , "smart_url" 										=> ($anagraph["username_slug"] ? $anagraph["username_slug"] : ffCommon_url_rewrite($anagraph["username"]))
-                , "email"											=> $anagraph["email"]
-                , "tel"												=> $anagraph["tel"]
-                , "src" 											=> ($anagraph["visible"] ? $anagraph["permalink"] : "")
-                , "url" 											=> ($anagraph["visible"] ? $domain_path . $anagraph["permalink"] : "")
-                , "tags" 											=> explode(",", $anagraph["tags"])
-                , "uid" 											=> (int) $anagraph["uid"]
-                , "token"											=> $anagraph["token"]
-                , "user_vars"										=> array()
-            );
+            //Meta Author
+            if(!$globals->meta["author"])
+                $globals->meta["author"] 							= $globals->author["name"];
 
-			//Meta Author
-			if(!$globals->meta["author"])
-				$globals->meta["author"] 							= $globals->author["name"];
-
-			if(!isset($globals->meta["twitter:creator"]))
-				$globals->meta["twitter:creator"] 					= array("content" => "@" . $globals->author["name"], "type" => "name");
+            if(!isset($globals->meta["twitter:creator"]))
+                $globals->meta["twitter:creator"] 					= array("content" => "@" . $globals->author["name"], "type" => "name");
 		}
-
-
 
 		//Title TAG
 		if(strlen($globals->page_title)) {
 			if(CM_LOCAL_APP_NAME && strpos($globals->page_title, CM_LOCAL_APP_NAME) === false)
 			    $tmp_basic_title 									= ffTemplate::_get_word_by_code("separator_meta_title") . CM_LOCAL_APP_NAME;
 
-			if(is_array($globals->request) && count($globals->request)) {
+            if(is_array($globals->request) && count($globals->request)) {
                 $page_title_params = "";
-				foreach($globals->request AS $req) {
-					$arrReq = explode("=", $req);
-					if($page_title_params)
-						$page_title_params .= ", ";
-					else
-						$page_title_params = " - ";
+                foreach(array_filter($globals->request) AS $req_key => $req_value) {
+                    if($page_title_params)
+                        $page_title_params .= ", ";
+                    else
+                        $page_title_params = " - ";
 
-					$page_title_params .= ffTemplate::_get_word_by_code($arrReq[0]) . " " . ucwords($arrReq[1]);
-				}
-			}
+                    $page_title_params .= ffTemplate::_get_word_by_code($req_key) . " " . ucwords($req_value);
+                }
+            }
 
 			$cm->oPage->title 										= $globals->page_title . $page_title_params . $tmp_basic_title;
 		} elseif(!$cm->oPage->title) {

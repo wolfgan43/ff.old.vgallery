@@ -246,13 +246,13 @@ function update_cache_file($last_update, $path = null) {
             ";
     $db->query($sSQL);
     if($db->nextRecord()) {
-        $schema = cache_get_settings();
+        $schema = Cms::getSchema();
 
         $cache = array();
         //$count_page = $db->numRows();
         $max_page = 100;
         $page = 0;
-        $base_path = CM_CACHE_PATH;
+        $base_path = CM_CACHE_DISK_PATH;
         $error_document_path = $schema["page"]["/error"]["cache_path"];
 
         do {

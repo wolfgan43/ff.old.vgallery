@@ -34,8 +34,6 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 
     $db = ffDB_Sql::factory();
 
-    $user_permission = get_session("user_permission");
-    
     $unic_id = $layout["prefix"] . $layout["ID"];
     $layout_settings = $layout["settings"];
 	$follow_framework = false;
@@ -55,6 +53,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
     	$menu_params = get_grid_system_menu($layout["template"], $layout_settings["AREA_STATIC_MENU_FOLLOW_FRAMEWORK_CSS"]);
     
 	//$tpl_data["custom"] = "menu.html";
+    $tpl_data["id"] = $unic_id;
 	$tpl_data["custom"] = $layout["smart_url"] . ".html";		
 	$tpl_data["base"] = $menu_params["tpl_name"];
 	$tpl_data["path"] = $layout["tpl_path"];
@@ -62,7 +61,8 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	$tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 	
 	$tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 	
     if ($layout_settings["AREA_STATIC_SHOW_TITLE"]) {
         $tpl->set_var("title" , ffTemplate::_get_word_by_code(preg_replace('/[^a-zA-Z0-9]/', '', $unic_id)));
@@ -102,7 +102,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 								, static_pages_rel_languages.permalink_parent	AS permalink_parent
 								, static_pages_rel_languages.smart_url			AS smart_url
 								, static_pages_rel_languages.alt_url			AS alt_url
-								, " . (!ENABLE_STD_PERMISSION  && ENABLE_ADV_PERMISSION
+								, " . (!Cms::env("ENABLE_STD_PERMISSION") && Cms::env("ENABLE_ADV_PERMISSION")
 									? " static_pages_rel_languages.visible "
 									: " static_pages.visible "
 								) . "											AS `visible`
@@ -139,13 +139,13 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                         OR drafts_rel_languages.value LIKE '%" . $db->toSql($search_param, "Text", false) . "%'
                     )
                     AND static_pages.name <> '' 
-					" . (!ENABLE_STD_PERMISSION && !ENABLE_ADV_PERMISSION
-					    	? " AND (static_pages.permission = '' OR FIND_IN_SET(" . $db->toSql($user_permission["primary_gid"]) . ", static_pages.permission))"
+					" . (!Cms::env("ENABLE_STD_PERMISSION") && !Cms::env("ENABLE_ADV_PERMISSION")
+					    	? " AND (static_pages.permission = '' OR FIND_IN_SET(" . $db->toSql(Auth::get("user")->acl) . ", static_pages.permission))"
 					    	: ""
 					)                    
-					. (ENABLE_STD_PERMISSION 
+					. (Cms::env("ENABLE_STD_PERMISSION")
 				        ? ""
-				        : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && ENABLE_ADV_PERMISSION
+				        : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && Cms::env("ENABLE_ADV_PERMISSION")
 				            ? " AND static_pages_rel_languages.visible > 0 " 
 				            : " AND static_pages.visible > 0 "
 				        )
@@ -181,7 +181,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 								, static_pages_rel_languages.permalink_parent	AS permalink_parent
 								, static_pages_rel_languages.smart_url			AS smart_url
 								, static_pages_rel_languages.alt_url			AS alt_url
-								, " . (!ENABLE_STD_PERMISSION  && ENABLE_ADV_PERMISSION
+								, " . (!Cms::env("ENABLE_STD_PERMISSION") && Cms::env("ENABLE_ADV_PERMISSION")
 									? " static_pages_rel_languages.visible "
 									: " static_pages.visible "
 								) . "											AS `visible`
@@ -201,13 +201,13 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 			         WHERE
 					    static_pages.parent LIKE '" . $db->toSql($settings_path, "Text", false) . "%'
 					    AND FIND_IN_SET(" . $db->toSql($layout["location"]) . ", static_pages.location)
-					    " . (!ENABLE_STD_PERMISSION && !ENABLE_ADV_PERMISSION
-					    	? " AND (static_pages.permission = '' OR FIND_IN_SET(" . $db->toSql($user_permission["primary_gid"]) . ", static_pages.permission))"
+					    " . (!Cms::env("ENABLE_STD_PERMISSION") && !Cms::env("ENABLE_ADV_PERMISSION")
+					    	? " AND (static_pages.permission = '' OR FIND_IN_SET(" . $db->toSql(Auth::get("user")->acl) . ", static_pages.permission))"
 					    	: ""
 						)
-					    . (ENABLE_STD_PERMISSION 
+					    . (Cms::env("ENABLE_STD_PERMISSION")
 				            ? ""
-				            : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && ENABLE_ADV_PERMISSION
+				            : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && Cms::env("ENABLE_ADV_PERMISSION")
 				                ? " AND static_pages_rel_languages.visible > 0 " 
 				                : " AND static_pages.visible > 0 "
 				            )
@@ -428,7 +428,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                                 , vgallery_nodes_rel_languages.permalink_parent     AS permalink_parent
                                 , vgallery_nodes_rel_languages.smart_url            AS smart_url
                                 , vgallery_nodes_rel_languages.alt_url              AS alt_url
-								, " . (!ENABLE_STD_PERMISSION  && ENABLE_ADV_PERMISSION
+								, " . (!Cms::env("ENABLE_STD_PERMISSION") && Cms::env("ENABLE_ADV_PERMISSION")
 									? " vgallery_nodes_rel_languages.visible "
 									: " vgallery_nodes.visible "
 								) . "												AS `visible`
@@ -468,9 +468,9 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                 		? " AND ($sSQL_Where)"
                 		: ""
                 	) . "
-					" . (ENABLE_STD_PERMISSION 
+					" . (Cms::env("ENABLE_STD_PERMISSION")
 				        ? ""
-				        : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && ENABLE_ADV_PERMISSION && !OLD_VGALLERY
+				        : (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && Cms::env("ENABLE_ADV_PERMISSION") && !OLD_VGALLERY
 				            ? " AND vgallery_nodes_rel_languages.visible > 0 " 
 				            : " AND vgallery_nodes.visible > 0 "
 				        )
@@ -584,7 +584,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 		else
 			$compare_path = $settings_path . "/";
 
-		if(ENABLE_STD_PERMISSION && check_function("get_file_permission")) {
+		if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission")) {
 			if(is_array($menu_key) && count($menu_key))
 				get_file_permission(null, "static_pages", $menu_key);
 			if(is_array($menu_vgallery_key) && count($menu_vgallery_key))
@@ -594,7 +594,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	            if(check_function("get_file_permission"))
 					$file_permission = get_file_permission($full_path, $item["type"]);
 
-		        if (!check_mod($file_permission, 1, true, AREA_STATIC_SHOW_MODIFY)) {  
+		        if (!check_mod($file_permission, 1, true, Auth::env("AREA_STATIC_SHOW_MODIFY"))) {
 		            unset($menu_item[$full_path]);
 		        }
 	        }
@@ -610,7 +610,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 			$part_item = $menu_item;
 		}
 
-	    if(array_key_exists($settings_path, $menu_item) && $menu_item[$settings_path]["owner"] == get_session("UserNID")) {
+	    if(array_key_exists($settings_path, $menu_item) && $menu_item[$settings_path]["owner"] == Auth::get("user")->id) {
 			$is_owner = true;
 	    }		
 	}
@@ -619,16 +619,16 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
     * Admin Father Bar
     */
 	if (
-	    (AREA_STATIC_SHOW_ADDNEW && !$search_param)
-	    /*|| AREA_PROPERTIES_SHOW_MODIFY 
-	    || (AREA_ECOMMERCE_SHOW_MODIFY && !$search_param)*/
-	    || AREA_LAYOUT_SHOW_MODIFY 
-	    || (AREA_SETTINGS_SHOW_MODIFY && !$search_param)
+	    (Auth::env("AREA_STATIC_SHOW_ADDNEW") && !$search_param)
+	    /*|| Auth::env("AREA_PROPERTIES_SHOW_MODIFY")
+	    || (Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && !$search_param)*/
+	    || Auth::env("AREA_LAYOUT_SHOW_MODIFY")
+	    || (Auth::env("AREA_SETTINGS_SHOW_MODIFY") && !$search_param)
 	    || $is_owner
 	) {
         $admin_menu["admin"]["unic_name"] = $unic_id . $settings_path . "-" . $is_owner;
 
-		if($is_owner && !AREA_SHOW_NAVBAR_ADMIN)
+		if($is_owner && !Auth::isAdmin())
         	$admin_menu["admin"]["title"] = ffTemplate::_get_word_by_code("static_menu_owner");
 		else
 	        $admin_menu["admin"]["title"] = $layout["title"];
@@ -636,10 +636,10 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 		$admin_menu["admin"]["class"] = $layout["type_class"];
 		$admin_menu["admin"]["group"] = $layout["type_group"];
         
-        if($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
+        if($is_owner && !Auth::isAdmin()) {
         	$admin_menu["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_MENU . "/modify?parent=" . urlencode($settings_path) . "&owner=" . $menu_item[$settings_path]["owner"];
 		} else {
-	        if(AREA_STATIC_SHOW_ADDNEW && !$search_param) {
+	        if(Auth::env("AREA_STATIC_SHOW_ADDNEW") && !$search_param) {
 	            $admin_menu["admin"]["addnew"] = get_path_by_rule("pages") . "/modify?parent=" . urlencode($settings_path);
 	        } else {
 	            $admin_menu["admin"]["addnew"] = "";
@@ -647,17 +647,17 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 		}        
         $admin_menu["admin"]["modify"] = "";
         $admin_menu["admin"]["delete"] = "";
-        if(AREA_PROPERTIES_SHOW_MODIFY) {
+        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
             $admin_menu["admin"]["extra"] = "";
         }
-        if(AREA_ECOMMERCE_SHOW_MODIFY && !$search_param) {
+        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY") && !$search_param) {
             $admin_menu["admin"]["ecommerce"] = "";
         }
-        if(AREA_LAYOUT_SHOW_MODIFY) {
+        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
             $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
             $admin_menu["admin"]["layout"]["type"] = $layout["type"];
         }
-        if(AREA_SETTINGS_SHOW_MODIFY && !$search_param) {
+        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY") && !$search_param) {
             $admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
         }
         
@@ -820,24 +820,24 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                 $tpl->parse("SezItemDescription", false);
             }
 
-        	if($item["owner"] == get_session("UserNID")) {
+        	if($item["owner"] == Auth::get("user")->id) {
 				$is_owner = true;
         	} else {
 				$is_owner = false;
         	}
 
 	        if (
-	            AREA_STATIC_SHOW_MODIFY
-	            || AREA_STATIC_SHOW_ADDNEW
-	            || AREA_STATIC_SHOW_DELETE 
-	            || AREA_PROPERTIES_SHOW_MODIFY 
-	            || AREA_ECOMMERCE_SHOW_MODIFY 
-	            || AREA_SETTINGS_SHOW_MODIFY
+                Auth::env("AREA_STATIC_SHOW_MODIFY")
+	            || Auth::env("AREA_STATIC_SHOW_ADDNEW")
+	            || Auth::env("AREA_STATIC_SHOW_DELETE")
+	            || Auth::env("AREA_PROPERTIES_SHOW_MODIFY")
+	            || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")
+	            || Auth::env("AREA_SETTINGS_SHOW_MODIFY")
 	            || $is_owner
 	        ) {
                 $popup["admin"]["unic_name"] = $unic_id . stripslash($item["parent"]) . "/" . $item["name"] . "-" . $is_owner;
 
-				if($is_owner && !AREA_SHOW_NAVBAR_ADMIN)
+				if($is_owner && !Auth::isAdmin())
         			$popup["admin"]["title"] = ffTemplate::_get_word_by_code("static_menu_owner") . ": " . $item["title"];
 				else
 	                $popup["admin"]["title"] = $layout["title"] . ": " . stripslash($item["parent"]) . "/" . $item["name"];
@@ -849,7 +849,7 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
                 if($full_path == "/")
                 	$full_path = "/home";
                 
-                if($is_owner && !AREA_SHOW_NAVBAR_ADMIN) {
+                if($is_owner && !Auth::isAdmin()) {
 	                $popup["admin"]["addnew"] = FF_SITE_PATH . VG_SITE_MENU . "/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]) . "&owner=" . $item["owner"];
                 	$popup["admin"]["modify"] = FF_SITE_PATH . VG_SITE_MENU . "/modify" . $full_path . "?owner=" . $item["owner"];
 		            $popup["admin"]["delete"] = ffDialog(TRUE,
@@ -860,16 +860,16 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	                                                FF_SITE_PATH . VG_SITE_MENU . "/modify" . $full_path . "?ret_url=" . "--encodereturl--" . "&frmAction=StaticModify_confirmdelete" . "&owner=" . $item["owner"], 
 	                                                FF_SITE_PATH . VG_SITE_MENU . "/dialog");
 				} else {
-	                if(AREA_STATIC_SHOW_ADDNEW) {
+	                if(Auth::env("AREA_STATIC_SHOW_ADDNEW")) {
 	                    $popup["admin"]["addnew"] = get_path_by_rule("pages") . "/modify?parent=" . urlencode(stripslash($item["parent"]) . "/" . $item["name"]);
 	                } else {
 	                    $popup["admin"]["addnew"] = "";
 	                }
 	                
-	                if(AREA_STATIC_SHOW_MODIFY) {
+	                if(Auth::env("AREA_STATIC_SHOW_MODIFY")) {
                 		$popup["admin"]["modify"] = get_path_by_rule("pages") . "/modify" . $full_path;
 					}
-	                if(AREA_STATIC_SHOW_DELETE) {
+	                if(Auth::env("AREA_STATIC_SHOW_DELETE")) {
 	                    $popup["admin"]["delete"] = ffDialog(TRUE,
 	                                                    "yesno",
 	                                                    ffTemplate::_get_word_by_code("vgallery_erase_title"),
@@ -879,13 +879,13 @@ function process_static_menu($settings_path, $user_path, $search_param = null, &
 	                                                    get_path_by_rule("pages") . "/dialog");
 	                }
 				}
-                if(AREA_PROPERTIES_SHOW_MODIFY) {
+                if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
                     $popup["admin"]["extra"] = "";
                 }
-                if(AREA_ECOMMERCE_SHOW_MODIFY) {
+                if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
                     $popup["admin"]["ecommerce"] = "";
                 }
-                if(AREA_SETTINGS_SHOW_MODIFY) {
+                if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
                     $popup["admin"]["setting"] = "";
                 }
                 

@@ -89,7 +89,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 						, "visible" => $db->getField("visible", "Number", true)
 						, "tab" => null
 					);
-					$page_group[$group_type][$group_smart_url]["column"] = cm_getClassByFrameworkCss(array($page_group[$group_type][$group_smart_url]["grid"]["xs"],$page_group[$group_type][$group_smart_url]["grid"]["sm"],$page_group[$group_type][$group_smart_url]["grid"]["md"],$page_group[$group_type][$group_smart_url]["grid"]["default"]), "col");
+					$page_group[$group_type][$group_smart_url]["column"] = Cms::getInstance("frameworkcss")->get(array($page_group[$group_type][$group_smart_url]["grid"]["xs"],$page_group[$group_type][$group_smart_url]["grid"]["sm"],$page_group[$group_type][$group_smart_url]["grid"]["md"],$page_group[$group_type][$group_smart_url]["grid"]["default"]), "col");
 				//}
 			} while($db->nextRecord());
 		}  
@@ -109,7 +109,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
   					$default_group[LANGUAGE_DEFAULT] = array(
 						"ID" => ""
 				        , "name" => "general"
-				        , "column" => cm_getClassByFrameworkCss(array(12,12,7), "col")
+				        , "column" => Cms::getInstance("frameworkcss")->get(array(12,12,7), "col")
 				        , "grid" => array(
 		        			"default" => 7
 		        			, "md" => 7 
@@ -125,7 +125,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					$default_group["lang"] = array(
 						"ID" => ""
 				        , "name" => "lang"
-				        , "column" => cm_getClassByFrameworkCss(array(12,12,5), "col")
+				        , "column" => Cms::getInstance("frameworkcss")->get(array(12,12,5), "col")
 				        , "grid" => array(
 		        			"default" => 5
 		        			, "md" => 5 
@@ -141,7 +141,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					$default_group["publishing"] = array(
 						"ID" => ""
 					    , "name" => "publishing"
-					    , "column" => cm_getClassByFrameworkCss(array(12,12,5), "col")
+					    , "column" => Cms::getInstance("frameworkcss")->get(array(12,12,5), "col")
 				        , "grid" => array(
 		        			"default" => 5
 		        			, "md" => 5 
@@ -157,7 +157,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					$default_group["optional"] = array(
 						"ID" => ""
 					    , "name" => "optional"
-					    , "column" => cm_getClassByFrameworkCss(array(12,12,5), "col")
+					    , "column" => Cms::getInstance("frameworkcss")->get(array(12,12,5), "col")
 				        , "grid" => array(
 		        			"default" => 5
 		        			, "md" => 5 
@@ -173,7 +173,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					$default_group["setting"] = array(
 						"ID" => ""
 					    , "name" => "setting"
-					    , "column" => cm_getClassByFrameworkCss(array(12,12,5), "col")
+					    , "column" => Cms::getInstance("frameworkcss")->get(array(12,12,5), "col")
 				        , "grid" => array(
 		        			"default" => 5
 		        			, "md" => 5 
@@ -189,7 +189,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
                     $default_group["highlight"] = array(
                         "ID" => ""
                         , "name" => "highlight"
-                        , "column" => cm_getClassByFrameworkCss(array(12,12,5), "col")
+                        , "column" => Cms::getInstance("frameworkcss")->get(array(12,12,5), "col")
                         , "grid" => array(
                             "default" => 5
                             , "md" => 5 
@@ -205,7 +205,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					$default_group["tags"] = array(
 						"ID" => ""
 					    , "name" => "tags"
-					    , "column" => cm_getClassByFrameworkCss(array(12,12,5), "col")
+					    , "column" => Cms::getInstance("frameworkcss")->get(array(12,12,5), "col")
 				        , "grid" => array(
 		        			"default" => 5
 		        			, "md" => 5 
@@ -221,7 +221,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					$default_group["seo"] = array(
 						"ID" => ""
 					    , "name" => "seo"
-					    , "column" => cm_getClassByFrameworkCss(array(12), "col")
+					    , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 				        , "grid" => array(
 		        			"default" => 12
 		        			, "md" => 12 
@@ -237,7 +237,7 @@ function get_vgallery_type_group($ID_type, $type = null, $skip_update = false, $
 					$default_group["permission"] = array(
 						"ID" => ""
 					    , "name" => "permission"
-					    , "column" => cm_getClassByFrameworkCss(array(12), "col")
+					    , "column" => Cms::getInstance("frameworkcss")->get(array(12), "col")
 				        , "grid" => array(
 		        			"default" => 12
 		        			, "md" => 12 

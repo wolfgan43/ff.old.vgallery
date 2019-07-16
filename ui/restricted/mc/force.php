@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_UPDATER_SHOW_MODIFY) {
+if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -303,7 +303,7 @@ if($valid_domain) {
         $cm->oPage->tplAddJs("ff.ajax");
         $cm->oPage->tplAddJs("jquery.plugins.jstree");
         
-        $tpl = ffTemplate::factory(ffCommon_dirname(__FILE__));
+        $tpl = ffTemplate::factory(__DIR__);
         $tpl->load_file("tree.html", "main");
         $tpl->set_var("site_path", FF_SITE_PATH);
         $tpl->set_var("json_path", $cm->oPage->page_path . $cm->real_path_info);
@@ -779,7 +779,7 @@ function get_item_data($ID_domain, $manifesto, $key = null) {
                 } while($db->nextRecord());
             }
             
-            $restricted_settings = mod_restricted_get_all_setting();
+            //$restricted_settings = mod_restricted_get_all_setting();
             $manifesto_data["jqueryui_theme/" . "base"] = "1";
 /*
             if(!array_key_exists("jqueryui_theme/" . $restricted_settings["JQUERYUI_ADMIN_THEME"], $manifesto_data) && array_key_exists("jqueryui_theme/" . $restricted_settings["JQUERYUI_ADMIN_THEME"], $manifesto)) {

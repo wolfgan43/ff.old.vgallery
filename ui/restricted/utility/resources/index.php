@@ -1,5 +1,5 @@
 <?php
-if (!(AREA_THEME_SHOW_MODIFY || AREA_THEME_SHOW_ADDNEW || AREA_THEME_SHOW_DELETE)) {
+if (!(Auth::env("AREA_THEME_SHOW_MODIFY") || Auth::env("AREA_THEME_SHOW_ADDNEW") || Auth::env("AREA_THEME_SHOW_DELETE"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }  
 
@@ -44,8 +44,8 @@ if(strlen($actual_path) &&  isset($arrAllowed[basename($actual_path)]) && is_dir
 	$layout["type"] = "GALLERY_MENU";
 	$layout["location"] = "Content";
 	$layout["width"] = $sections["Content"]["width"];
-	if(check_function("get_layout_settings"))
-		$layout["settings"] = get_layout_settings(NULL, "GALLERY_MENU");
+	//if(check_function("get_layout_settings"))
+		$layout["settings"] = Cms::getPackage("gallery-menu"); //get_layout_settings(NULL, "GALLERY_MENU");
 	$layout["visible"] = NULL;
 	
 	setJsRequest("cluetipclick"); 

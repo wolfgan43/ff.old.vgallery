@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if (!AREA_STATIC_SHOW_MODIFY) {
+if (!Auth::env("AREA_STATIC_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -99,7 +99,7 @@ $oRecord->resources[] = $oRecord->id;
 $oRecord->src_table = "static_pages";
 //$oRecord->addEvent("on_done_action", "StaticModify_on_done_action");
 $oRecord->insert_additional_fields["visible"] = new ffData("1", "Number");
-$oRecord->insert_additional_fields["owner"] =  new ffData(get_session("UserNID"), "Number");
+$oRecord->insert_additional_fields["owner"] =  new ffData(Auth::get("user")->id, "Number");
 $oRecord->additional_fields = array("last_update" =>  new ffData(time(), "Number"));
 $oRecord->tab = true;	
 
@@ -169,7 +169,7 @@ $oField->source_SQL = " SELECT
 							: ""
 						) . "
 	                    " . ($is_owner
-                        	? "AND static_pages.owner = " . $db->toSql(get_session("UserNID"), "Number")
+                        	? "AND static_pages.owner = " . $db->toSql(Auth::get("user")->id, "Number")
                         	: ""
 	                    ) . "
 						[AND] [WHERE]
@@ -439,7 +439,7 @@ $oField->source_SQL = "SELECT name, name
 $oField->default_value = new ffData($location);
 $oRecord->addContent($oField, "advanced");
 
-if(!ENABLE_STD_PERMISSION  && !ENABLE_ADV_PERMISSION) {
+if(!Cms::env("ENABLE_STD_PERMISSION") && !Cms::env("ENABLE_ADV_PERMISSION")) {
 	$oField = ffField::factory($cm->oPage);
 	$oField->id = "permission";
 	$oField->label = ffTemplate::_get_word_by_code("static_page_permission");
@@ -519,24 +519,6 @@ function PageModify_on_do_action($component, $action) {
 				if($component->user_vars["src"]["field"]["name"])
 					$item_name = $db->getField($component->user_vars["src"]["field"]["name"], "Text", true);
 			}       
-			//ffErrorHandler::raise("ASD", E_USER_ERROR, null, get_defined_vars());
-        	//DISABLE_SMARTURL_CONTROL
-        	/*if(isset($component->form_fields["smart_url"])) {
-				if(is_array($component->recordset) && count($component->recordset)) {
-				    foreach($component->recordset AS $rst_key => $rst_value) {
-				    	if(strlen($component->recordset[$rst_key]["smart_url"]->getValue()))
-				    		continue;
-
-				    	if($component->recordset[$rst_key]["ID_languages"]->getValue() == LANGUAGE_DEFAULT_ID) {
- 							$component->displayError(ffTemplate::_get_word_by_code("smart_url_empty") . " (" . $component->recordset[$rst_key]["code_lang"]->getValue() . ")");
-			                return true;
-				    	} elseif(!DISABLE_SMARTURL_CONTROL) {
- 							$component->displayError(ffTemplate::_get_word_by_code("smart_url_empty") . " (" . $component->recordset[$rst_key]["code_lang"]->getValue() . ")");
-			                return true;
-				    	}
-					}
-				}
-			}*/
 
 			if(is_array($component->recordset) && count($component->recordset)) {
 			    foreach($component->recordset AS $rst_key => $rst_value) {
@@ -592,7 +574,7 @@ function PageModify_on_do_action($component, $action) {
 		            		array(
 		            			"smart_url" => ($component->user_vars["src"]["seo"]["smart_url"] && isset($rst_value["smart_url"])
 		            				? $rst_value["smart_url"]->getValue()
-		            				: null
+		            				: false
 		            			)
 		            			, "title" => ($component->user_vars["src"]["seo"]["title"] && isset($rst_value["title"])
 		            				? $rst_value["title"]->getValue()

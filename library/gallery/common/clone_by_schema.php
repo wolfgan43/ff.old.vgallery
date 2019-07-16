@@ -134,8 +134,8 @@
 						                        "
 						                    );
 
-                					if(is_dir(DISK_UPDIR . $old_parent) && check_function("fs_operation")) {
-										full_copy(DISK_UPDIR . $old_parent, DISK_UPDIR . $new_parent, false);  
+                					if(is_dir(FF_DISK_UPDIR . $old_parent) && check_function("fs_operation")) {
+										full_copy(FF_DISK_UPDIR . $old_parent, FF_DISK_UPDIR . $new_parent, false);  
 									}
 								}
 
@@ -260,7 +260,7 @@ function clone_by_remote_schema_field($service_name, $remote_schema_field, $remo
 		, "public"              => false
 		, "last_update"         => time()
 		, "created"             => time()
-		, "owner"               => get_session("UserNID")
+		, "owner"               => Auth::get("user")->id
 	
 	);
 	$compare_fields = array(

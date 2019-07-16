@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */ 
 
-if (!AREA_UPDATER_SHOW_MODIFY) {
+if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -151,7 +151,8 @@ $oRecord->groups["billing"] = array(
                                          , "cols" => 1
                                       );
 
-                                      
+
+$user = Auth::get("user");
 $sSQL = "SELECT anagraph_categories.ID
 				, anagraph_categories.name
 				, anagraph_categories.limit_by_groups 
@@ -159,21 +160,21 @@ $sSQL = "SELECT anagraph_categories.ID
 		ORDER BY anagraph_categories.name";
 $db->query($sSQL);
 if($db->nextRecord()) {
+    $allowed_ana_cat = "";
 	do {
 		$limit_by_groups = $db->getField("limit_by_groups")->getValue();
 		if(strlen($limit_by_groups)) {
 			$limit_by_groups = explode(",", $limit_by_groups);
-			
-			if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
-				if(strlen($allowed_ana_cat))
-					$allowed_ana_cat .= ",";
-
+			if(array_search($user->acl, $limit_by_groups) !== false) {
+				if(strlen($allowed_ana_cat)) {
+                    $allowed_ana_cat .= ",";
+                }
 				$allowed_ana_cat .= $db->getField("ID", "Number", true);
 			}
 		} else {
-			if(strlen($allowed_ana_cat))
-				$allowed_ana_cat .= ",";
-
+			if(strlen($allowed_ana_cat)) {
+                $allowed_ana_cat .= ",";
+            }
 			$allowed_ana_cat .= $db->getField("ID", "Number", true);
 		}
 	

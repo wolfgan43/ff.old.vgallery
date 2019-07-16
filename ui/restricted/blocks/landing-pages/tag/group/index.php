@@ -79,7 +79,7 @@ function TagsGroup_on_before_parse_row($component) {
     
     if(isset($component->grid_buttons["status"])) {
         if($component->db[0]->getField("status", "Number", true)) {
-            $component->grid_buttons["status"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["status"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["status"]->icon = null;
             $component->grid_buttons["status"]->action_type = "submit"; 
             $component->grid_buttons["status"]->form_action_url = $component->grid_buttons["status"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["status"]->parent[0]->addit_record_param . "setstatus=0";
@@ -91,7 +91,7 @@ function TagsGroup_on_before_parse_row($component) {
                 //$component->grid_buttons["status"]->url = $component->grid_buttons["status"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["status"]->parent[0]->addit_record_param . "setstatus=0&frmAction=setstatus";
             }   
         } else {
-            $component->grid_buttons["status"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["status"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["status"]->icon = null;
             $component->grid_buttons["status"]->action_type = "submit";     
             $component->grid_buttons["status"]->form_action_url = $component->grid_buttons["status"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["status"]->parent[0]->addit_record_param . "setstatus=1";

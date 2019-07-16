@@ -43,16 +43,12 @@ function system_set_cache_page($content) {
 	}
 
 	$is_error_document = !($buffer && http_response_code() == 200);
-	if(!$is_error_document) {
+	/*if(!$is_error_document) {
 		Stats::getInstance("page")->write();
 		if (TRACE_VISITOR === true) {
-			require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
-			system_trace(array(
-				"name" => "pageview"
-				, "value" => "nocache"
-			));
+            Stats::getInstance("trace")->write("pageview", "nocache");
 		}
-	}
+	}*/
 
     if(!defined("DISABLE_CACHE") && $globals->cache["enabled"] !== false) {
         $expires = time() + (60 * 60 * 24 * 1);
@@ -336,7 +332,7 @@ function system_write_cache_error_document($cache_file = null, $expires = null)
     $arrUserPath = explode("/", $globals->user_path);
 
     $errorDocumentFile = $cache_file["error_path"] . "/" . $arrUserPath[1];
-    $user_path = str_replace(CM_CACHE_PATH, "", $cache_file["cache_path"]);
+    $user_path = str_replace(CM_CACHE_DISK_PATH, "", $cache_file["cache_path"]);
 
     check_function("Filemanager");
 
@@ -395,9 +391,9 @@ function system_write_cache_stats_old($buffer, $page = null, $expires = null) {
         $s[$page]["css"] = $cm->oPage->page_defer["css"];
 
         $link_path = $globals->cache["file"]["cache_path"] . "/" . basename($globals->cache["file"]["cache_path"]);
-        $res_path = str_replace(CM_CACHE_PATH, "/asset", $link_path);
+        $res_path = str_replace(CM_CACHE_DISK_PATH, "/asset", $link_path);
         if(is_array($cm->oPage->page_defer["css"]) && count($cm->oPage->page_defer["css"]) == 1) {
-            $real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["css"][0]);
+            $real_file = str_replace("/asset", CM_CACHE_DISK_PATH, $cm->oPage->page_defer["css"][0]);
 
             //symlink($real_file, $link_path . ".css");
             //symlink(str_replace(".css", ".css.gz", $real_file), $link_path . ".css.gz");
@@ -405,7 +401,7 @@ function system_write_cache_stats_old($buffer, $page = null, $expires = null) {
            // $buffer = str_replace($cm->oPage->page_defer["css"][0], $res_path . ".css", $buffer);
         }
         if(is_array($cm->oPage->page_defer["js"]) && count($cm->oPage->page_defer["js"]) == 1) {
-            $real_file = str_replace("/asset", CM_CACHE_PATH, $cm->oPage->page_defer["js"][0]);
+            $real_file = str_replace("/asset", CM_CACHE_DISK_PATH, $cm->oPage->page_defer["js"][0]);
 
             //symlink($real_file, $link_path . ".js");
             //symlink(str_replace(".js", ".js.gz", $cm->oPage->page_defer["js"][0]), $link_path . ".js.gz");
@@ -422,89 +418,16 @@ function system_write_cache_stats_old($buffer, $page = null, $expires = null) {
 }
 */
 
-function system_write_cache_token_session($user, $old_session_id, $permanent_session = MOD_SECURITY_SESSION_PERMANENT) {
-	if($user["username"] == MOD_SEC_GUEST_USER_ID)
-		return false;
-	if(!$permanent_session)
-		return false;
-
-	$u = array();
-	$user_permission = get_session("user_permission");
-	$account = ($user_permission["username_slug"]
-		? $user_permission["username_slug"]
-		: ($user_permission["username"]
-			? ffCommon_url_rewrite($user_permission["username"])
-			: ffCommon_url_rewrite($user_permission["email"])
-		)
-	);
-	$gid = ($user_permission["primary_gid_name"]
-                ? $user_permission["primary_gid_name"]
-                : $user_permission["primary_gid_default_name"]
-            );
-
-
-	//$precision = 8;
-	$file_token_dir = CM_CACHE_PATH . "/token";
-
-    $token = cache_token_get_session_cookie();
-    if($token) {
-    	$objToken = cache_token_resolve($token, $account);
-		if(is_file($file_token_dir . "/" . $objToken["public"] . ".php")) {
-			require($file_token_dir . "/" . $objToken["public"] . ".php");
-			if($u["uniqid"] == $objToken["private"]) {
-				if($u["expire"] >= time()) {
-					$token_valid = true;
-				}
-			}
-
-			if(!$token_valid)
-				unlink($file_token_dir . "/" . $objToken["public"] . ".php");
-		}
-    } else {
-    	$objToken["new"] = cache_token_generate($account);
-    }
-
-	if(!$token_valid) {
-		//cache_token_set_session_cookie($objToken["new"]);
-
-	    //$u["logs"][$_SERVER["REMOTE_ADDR"]]++;
-	    $u = array(
-			"account" => $user["username"]
-			, "uid" => $user["ID"]
-			, "group" => $gid
-			, "uniqid" => $objToken["new"]["private"]
-			, "expire" => $objToken["new"]["expire"]
-			, "renew" => true
-			, "addr" => $_SERVER["REMOTE_ADDR"]
-			, "agent" => $_SERVER["HTTP_USER_AGENT"] 
-		);
-				
-		cache_token_write($u, $objToken["new"]);
-
-/*
-	    $file_token = $file_token_dir . "/" . $objToken["new"]["public"] . ".php";
-		if(!is_dir($file_token_dir))
-			@mkdir($file_token_dir, 0777, true);
-		
-		$content = "<?php\n";
-		$content .= '$u = ' . var_export($u, true) . ";";
- 		if($handle = @fopen($file_token, 'w')) {
-     		@fwrite($handle, $content); 
-     		@fclose($handle);
-		}*/              
-	}
-}
-
 function system_destroy_cache_token_session() {
 	//$precision = 8;
     //$cookie_name = "_ut";
-    $file_token = CM_CACHE_PATH . "/token.php";
+    $file_token = CM_CACHE_DISK_PATH . "/token.php";
 
 	$token = cache_token_get_session_cookie();
 	if($token) {
 		$objToken = cache_token_resolve($token);
 
-		$file_token = CM_CACHE_PATH . "/token/" . $objToken["public"] . ".php";
+		$file_token = CM_CACHE_DISK_PATH . "/token/" . $objToken["public"] . ".php";
 		if(is_file($file_token)) {
 			require($file_token);
 
@@ -520,7 +443,7 @@ function system_destroy_cache_token_session() {
 		$public = substr($token, 0, strlen($token) - strlen($new_private));
 		$private = substr($token, strlen($public));
 
-		$file_token_dir = CM_CACHE_PATH . "/token";
+		$file_token_dir = CM_CACHE_DISK_PATH . "/token";
 	    $file_token = $file_token_dir . "/" . $public . ".php";
 
 		if(is_file($file_token)) {

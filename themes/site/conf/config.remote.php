@@ -7,15 +7,15 @@ define("FF_SITE_PATH", (getenv("SITE_PATH")
     ? getenv("SITE_PATH")
     : ""
 ));
-define("SITE_UPDIR", "/uploads");
-define("DISK_UPDIR", "/var/www/vhosts/blueocarina.net/subdomains/dev/httpdocs/uploads");
+define("FF_SITE_UPDIR", "/uploads");
+define("FF_DISK_UPDIR", "/var/www/vhosts/blueocarina.net/subdomains/dev/httpdocs/uploads");
 
 /**
  * Session
  */
 define("SESSION_SAVE_PATH", "/tmp");
 define("SESSION_NAME", 'PHPSESS_abq42619');
-define("MOD_SECURITY_SESSION_PERMANENT", true);
+define("MOD_AUTH_SESSION_PERMANENT", true);
 
 /**
  * Database
@@ -165,10 +165,7 @@ define("ADMIN_THEME"			, "admin");
 /**
  * Server Settings
  */
-define("PHP_EXT_MEMCACHE", false);
-define("PHP_EXT_APC", false);
 define("PHP_EXT_JSON", true);
 define("PHP_EXT_GD", true);
 define("APACHE_MODULE_EXPIRES", true);
-define("MYSQLI_EXTENSIONS", true);
 define("MEMORY_LIMIT", '96M');

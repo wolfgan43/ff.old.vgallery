@@ -114,10 +114,9 @@ if($db->nextRecord()) {
     
 	$limit_by_groups = $db->getField("limit_by_groups", "Text", true);
 	if(strlen($limit_by_groups)) {
+        $user = Auth::get("user");
 		$limit_by_groups = explode(",", $limit_by_groups);
-		$user_permission = get_session("user_permission"); 			
-
-		if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+		if(array_search($user->acl, $limit_by_groups) !== false) {
 			$allow_form = true;
 		} else {
 			$allow_form = false;
@@ -240,7 +239,7 @@ if($enable_revision) {
 			ORDER BY module_form_revision.ID DESC";
 	$db->query($sSQL);
 	if($db->nextRecord()) {
-		$tpl = ffTemplate::factory(ffCommon_dirname(__FILE__));
+		$tpl = ffTemplate::factory(__DIR__);
 		$tpl->load_file("revision-menu.html", "main");
 		$tpl->set_var("site_path", FF_SITE_PATH);
 		$tpl->set_var("theme_inset", THEME_INSET);
@@ -343,7 +342,7 @@ if($db->nextRecord()) {
     $oRecord->user_vars["form_title"] = $form_display_name;
     $oRecord->user_vars["report"] = $report;
     
-    if(AREA_SHOW_ECOMMERCE) {
+    if(Cms::env("AREA_SHOW_ECOMMERCE")) {
         $oRecord->user_vars["enable_ecommerce"] = $enable_ecommerce;
         $oRecord->user_vars["enable_ecommerce_weight"] = $enable_ecommerce_weight;
         $oRecord->user_vars["enable_dynamic_cart"] = $enable_dynamic_cart;
@@ -513,7 +512,7 @@ if($db->nextRecord()) {
 	            	if(strlen($db->getField("group_cover_mode")->getValue())) {
 	            		$field[$ID_field]["group_cover"] = CM_SHOWFILES . "/" . $db->getField("group_cover_mode")->getValue() . $db->getField("group_cover")->getValue();
 	            	} else {
-            			$field[$ID_field]["group_cover"] = SITE_UPDIR . $db->getField("group_cover")->getValue();
+            			$field[$ID_field]["group_cover"] = FF_SITE_UPDIR . $db->getField("group_cover")->getValue();
 					}
 
 					$field[$ID_field]["group_cover"] = '<img src="' . $field[$ID_field]["group_cover"] . '" />';
@@ -579,7 +578,7 @@ if($db->nextRecord()) {
             
             $field[$ID_field]["default_value"] = $arrDefaultValue[$ID_field];
             
-            if(AREA_SHOW_ECOMMERCE 
+            if(Cms::env("AREA_SHOW_ECOMMERCE")
                 && $field[$ID_field]["form"]["enable_ecommerce"]
             ) {
             	if($field[$ID_field]["type"] == "price")
@@ -657,44 +656,6 @@ if($db->nextRecord()) {
 			$oRecord->buttons_options["delete"]["display"] = false;
 		}
 		
-		/*
-		if($restore_default_by_cart) {
-			$add_cond = " AND ecommerce_order.owner = " . $db->toSql(get_session("UserNID"), "Number");
-
-			if (get_session("UserID") == MOD_SEC_GUEST_USER_NAME && check_function("ecommerce_cart_get_sid")) {
-				$add_cond .= " AND ecommerce_order.SID = " . $db->toSql(ecommerce_cart_get_sid());
-			} else {
-				if(ENABLE_MULTICART) {
-					$cart_name = get_session("cart_name");
-					$add_cond .= " AND ecommerce_order.cart_name = " . $db->toSql($cart_name);
-				}
-			}		
-			$db->query("SELECT module_form_rel_nodes_fields.*
-								FROM module_form_rel_nodes_fields
-                                    INNER JOIN module_form_nodes ON module_form_nodes.ID = module_form_rel_nodes_fields.ID_form_nodes
-								WHERE module_form_nodes.ID_module = " . $db->toSql($ID_form, "Number") . "
-                                    AND module_form_rel_nodes_fields.ID_form_nodes IN (
-									SELECT ecommerce_order_detail.ID_items
-			                        FROM ecommerce_order_detail
-			                            INNER JOIN ecommerce_order ON ecommerce_order.ID = ecommerce_order_detail.ID_order
-			                        WHERE 
-			                            ecommerce_order_detail.source_url = " . $db->toSql($oRecord->user_vars["MD_chk"]["ret_url"]) . "
-			                            AND ecommerce_order_detail.tbl_src = ''
-			                            AND ecommerce_order_detail.ID_items > 0
-			                            AND ecommerce_order.is_cart > 0
-			                            $add_cond
-			                    )");
-			if($db->nextRecord()) {  
-                $oRecord->user_vars["ID_form_node"] =  $ID_form_node;
-				do {
-					$ID_field = $db->getField("ID_form_fields", "Number", true);
-					if(array_key_exists($ID_field, $field)) {
-						$field[$ID_field]["default_value"] = $db->getField("value", "Text", true);
-					}
-				} while($db->nextRecord());				
-			}		
-		}*/
-
         if($enable_dep && is_array($arrDep["source"]) && count($arrDep["source"]))
         {
             $sSQL = "SELECT module_form_dep.*

@@ -1,9 +1,6 @@
 <?php
-if(!mod_security_check_session(false) 
-	|| get_session("UserNID") == MOD_SEC_GUEST_USER_ID
-	|| !(AREA_NOTIFY_SHOW_MODIFY || AREA_SCHEDULE_SHOW_MODIFY)
-) {
-	prompt_login();
+if(!Auth::isLogged()) {
+    exit;
 }
 
 $cm->oPage->addContent(null, true, "rel"); 

@@ -116,7 +116,7 @@ if($db->nextRecord()) {
     $obj_page_field->label = ffTemplate::_get_word_by_code("register_password");
     $obj_page_field->extended_type = "Password";
     $obj_page_field->crypt_method = "mysql_password";
-	if(ENABLE_PASSWORD_VALIDATOR) {
+	if(Cms::env("ENABLE_PASSWORD_VALIDATOR")) {
 	    $obj_page_field->addValidator("password");
 	}
     $obj_page_field->required = true;
@@ -450,10 +450,10 @@ if($db->nextRecord()) {
                     $obj_page_field->file_normalize = true;
                      
                     $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
                     if($writable) {
                         $obj_page_field->control_type = "file";
@@ -494,10 +494,10 @@ if($db->nextRecord()) {
                     $obj_page_field->file_normalize = true;
                      
                     $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
                     if($writable) {
                         $obj_page_field->control_type = "file";
@@ -538,10 +538,10 @@ if($db->nextRecord()) {
                     $obj_page_field->file_normalize = true;
                      
                     $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
-//                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
+//                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 
                     if($writable) {
                         $obj_page_field->control_type = "file";
@@ -659,8 +659,8 @@ if($db->nextRecord()) {
         $obj_page_field->required = true;
         $oRecord->addContent($obj_page_field, "ecommerce");
 
-        if(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) {
-        	$oRecord->additional_fields["shippingstate"] = new ffData(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE, "Number");
+        if(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0) {
+        	$oRecord->additional_fields["shippingstate"] = new ffData(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE"), "Number");
 		} else {
 	        $obj_page_field = ffField::factory($cm->oPage);
 	        $obj_page_field->id = "shippingstate";

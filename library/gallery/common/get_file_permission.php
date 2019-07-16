@@ -24,45 +24,34 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 function get_file_permission($user_path, $type = "files", $range = null, $is_dir = null, &$arrCheckReturn = null) {
-	$db = ffDB_Sql::factory();
-	$file_permission = array();
-	$res = null;
-	//static $cache = array(); 	
-	
- 	$cache = get_session("cache");
- 	$cache["auth"] = array(); 
+    $db = ffDB_Sql::factory();
+    $file_permission = array();
+    $res = null;
+    //static $cache = array();
 
- 	
-	if($user_path !== null 
-		&& isset($cache["auth"][$type][$user_path]) 
-		&& is_array($cache["auth"][$type][$user_path]) 
-		&& count($cache["auth"][$type][$user_path])
-	) {
-		return $cache["auth"][$type][$user_path];
-	} 
+    $cache = get_session("cache");
+    $cache["auth"] = array();
 
-	$cached_path = check_file_permission($cache, $user_path, $type);
-	if($cached_path === null) {
-		$user_permission = get_session("user_permission");
-        if(is_array($user_permission) && count($user_permission) && is_array($user_permission["groups"]) && count($user_permission["groups"])) {
-        	if(strlen($user_permission["primary_gid_default_name"]) && !array_key_exists($user_permission["primary_gid_default_name"], $user_permission["groups"])) {
-				$user_permission["groups"][$user_permission["primary_gid_default_name"]] = $user_permission["primary_gid_default"];
-        	}
-        	if(strlen($user_permission["primary_gid_name"]) && !array_key_exists($user_permission["primary_gid_name"], $user_permission["groups"])) {
-				$user_permission["groups"][$user_permission["primary_gid_name"]] = $user_permission["primary_gid"];
-        	}        	
-		    $user_groups = implode(", ", $user_permission["groups"]);
-			if(array_search(MOD_SEC_GUEST_GROUP_ID, $user_permission["groups"]) === false) {
-		    	$user_groups .= ", " . MOD_SEC_GUEST_GROUP_ID;
-		    	$is_guest = false;
-		    } else {
-		    	$is_guest = true;
-		    }
-		    
-		    switch($type) {
-		    	case "vgallery_nodes":
+
+    if($user_path !== null
+        && isset($cache["auth"][$type][$user_path])
+        && is_array($cache["auth"][$type][$user_path])
+        && count($cache["auth"][$type][$user_path])
+    ) {
+        return $cache["auth"][$type][$user_path];
+    }
+
+    $cached_path = check_file_permission($cache, $user_path, $type);
+    if($cached_path === null) {
+        $user = Auth::get("user");
+        $is_guest = Auth::isGuest();
+
+
+        if($user) {
+            switch($type) {
+                case "vgallery_nodes":
                     if(OLD_VGALLERY) {
-		    		    $sSQL_visible = "SELECT 
+                        $sSQL_visible = "SELECT 
 									        GROUP_CONCAT(DISTINCT CONCAT(IF(ISNULL(vgallery_rel_nodes_fields.description), 1, vgallery_rel_nodes_fields.description), '-', " . FF_PREFIX . "languages.code)) AS vlang
 								        FROM
 									        " . FF_PREFIX . "languages
@@ -87,9 +76,9 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
                                         " . FF_PREFIX . "languages.status > 0
                                         AND `" . $type . "_rel_languages`.ID_nodes = ID_item";
                     }
-		    		break;
-		    	case "files":
-		    		$sSQL_visible = "SELECT 
+                    break;
+                case "files":
+                    $sSQL_visible = "SELECT 
 								    GROUP_CONCAT(DISTINCT CONCAT(IF(ISNULL(`" . $type . "_rel_languages`.visible), 1, `" . $type . "_rel_languages`.visible), '-', " . FF_PREFIX . "languages.code)) AS vlang
 							    FROM
 								    " . FF_PREFIX . "languages
@@ -97,13 +86,13 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 							     WHERE 
 					                " . FF_PREFIX . "languages.status > 0
 					                AND `" . $type . "_rel_languages`.ID_" . $type . " = ID_item";
-		    		break;
-		    	default:
-		    		$sSQL_visible = "''";
-		    }
-		    
-		    
-		    $sSQL = "SELECT 
+                    break;
+                default:
+                    $sSQL_visible = "''";
+            }
+
+
+            $sSQL = "SELECT 
 					    `" . $type . "_rel_groups`.*
 					    , " . CM_TABLE_PREFIX . "mod_security_groups.name AS group_name
 					    , CONCAT(IF(`" . $type . "`.parent = '/', '', `" . $type . "`.parent), '/', `" . $type . "`.name) AS full_path
@@ -115,70 +104,70 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 					    INNER JOIN `" . $type . "_rel_groups` ON `" . $type . "`.ID = `" . $type . "_rel_groups`.`ID_" . $type . "`
 					    INNER JOIN " . CM_TABLE_PREFIX . "mod_security_groups ON " . CM_TABLE_PREFIX . "mod_security_groups.gid = `" . $type . "_rel_groups`.gid
 				    WHERE 
-					    `" . $type . "_rel_groups`.gid IN (" . $db->toSql($user_groups, "Text", false) . ")
+					    `" . $type . "_rel_groups`.gid IN (" . $db->toSql($user->acl, "Text", false) . ")
 				    ORDER  BY 
 					    LENGTH(full_path) ASC
 					    , " . CM_TABLE_PREFIX . "mod_security_groups.level DESC
 					    , `" . $type . "_rel_groups`.mod DESC";
-		    $db->query($sSQL);
+            $db->query($sSQL);
 
-		    $file_permission = array();
-		    $file_permission["groups"] = array();
-		    
-		    if ($db->nextRecord()) {
-			    do {
-				    $full_path = $db->getField("full_path", "Text", true);
-				    if(!strlen($full_path))
-					    continue;
+            $file_permission = array();
+            $file_permission["groups"] = array();
 
-			    	$ID_item = $db->getField("ID_item", "Number", true);
-					if($db->getField("gid", "Number", true) == MOD_SEC_GUEST_GROUP_ID && !$is_guest) {
-						if(!isset($cache["auth"][$type][$full_path]["groups"][$user_permission["primary_gid_default_name"]]))
-							$cache["auth"][$type][$full_path]["groups"][$user_permission["primary_gid_default_name"]] = $db->getField("mod")->getValue();
-					} else {
-						$cache["auth"][$type][$full_path]["groups"][$db->getField("group_name")->getValue()] = $db->getField("mod")->getValue();
-					}
+            if ($db->nextRecord()) {
+                do {
+                    $full_path = $db->getField("full_path", "Text", true);
+                    if(!strlen($full_path))
+                        continue;
 
-				    $cache["auth"][$type][$full_path]["owner"] = $db->getField("item_owner", "Number", true);
+                    $ID_item = $db->getField("ID_item", "Number", true);
+                    if($db->getField("gid", "Number", true) == Cms::env("MOD_AUTH_GUEST_GROUP_ID") && !$is_guest) {
+                        if(!isset($cache["auth"][$type][$full_path]["groups"][$user->acl_primary]))
+                            $cache["auth"][$type][$full_path]["groups"][$user->acl_primary] = $db->getField("mod")->getValue();
+                    } else {
+                        $cache["auth"][$type][$full_path]["groups"][$db->getField("group_name")->getValue()] = $db->getField("mod")->getValue();
+                    }
 
-				    $visible_by_lang = $db->getField("visible_by_lang", "Text", true);
-				    if(strlen($visible_by_lang)) {
-					    $arrVisible_by_lang = explode(",", $visible_by_lang);
-					    if(is_array($arrVisible_by_lang) && count($arrVisible_by_lang)) {
-						    foreach($arrVisible_by_lang AS $vlang_key => $vlang_value) {
-							    if(strlen($vlang_value)) {
-								    $code_visible = explode("-", $vlang_value); 
-								    if(is_array($code_visible) && count($code_visible) == 2) {
-									    if($code_visible[0]) 
-										    $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = TRUE;
-									    else
-										    $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = FALSE;
-								    } else {
-									    $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = TRUE;		
-								    }
-							    }
-						    } 
-					    }
-				    }
-				    if(!isset($cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET]))
-					    $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = TRUE;
+                    $cache["auth"][$type][$full_path]["owner"] = $db->getField("item_owner", "Number", true);
 
-					if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
-						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
-							unset($arrCheckReturn[$ID_item]);
-						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
-							$arrCheckReturn[$ID_item]["is_admin"] = true;
-					}
-			    } while($db->nextRecord());	
-		    }
+                    $visible_by_lang = $db->getField("visible_by_lang", "Text", true);
+                    if(strlen($visible_by_lang)) {
+                        $arrVisible_by_lang = explode(",", $visible_by_lang);
+                        if(is_array($arrVisible_by_lang) && count($arrVisible_by_lang)) {
+                            foreach($arrVisible_by_lang AS $vlang_key => $vlang_value) {
+                                if(strlen($vlang_value)) {
+                                    $code_visible = explode("-", $vlang_value);
+                                    if(is_array($code_visible) && count($code_visible) == 2) {
+                                        if($code_visible[0])
+                                            $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = TRUE;
+                                        else
+                                            $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = FALSE;
+                                    } else {
+                                        $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = TRUE;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(!isset($cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET]))
+                        $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = TRUE;
+
+                    if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
+                        if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
+                            unset($arrCheckReturn[$ID_item]);
+                        elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
+                            $arrCheckReturn[$ID_item]["is_admin"] = true;
+                    }
+                } while($db->nextRecord());
+            }
         }
-	}
+    }
 
-	$cached_path = check_file_permission($cache, $user_path, $type);
-	if($user_path !== null && $cached_path == $user_path) {
-		$res = $cache["auth"][$type][$user_path];
-	} else {
-		//$cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
+    $cached_path = check_file_permission($cache, $user_path, $type);
+    if($user_path !== null && $cached_path == $user_path) {
+        $res = $cache["auth"][$type][$user_path];
+    } else {
+        //$cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
         if($is_dir === true) {
             $sSQL_is_dir = " AND `" . $type . "`.is_dir > 0 ";
         } elseif($is_dir === false) {
@@ -186,14 +175,14 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
         } else {
             $sSQL_is_dir = "";
         }
-        
-	    if($type == "vgallery_nodes") { 
-			$sSQL = "
+
+        if($type == "vgallery_nodes") {
+            $sSQL = "
 						SELECT `" . $type . "`.owner AS item_owner 
 							, CONCAT(IF(`" . $type . "`.parent = '/', '', `" . $type . "`.parent), '/', `" . $type . "`.name) AS full_path
 							, `" . $type . "`.ID AS ID_item
 							, (" . (OLD_VGALLERY
-                                ? "SELECT 
+                    ? "SELECT 
 									    GROUP_CONCAT(DISTINCT CONCAT(IF(ISNULL(vgallery_rel_nodes_fields.description), 1, vgallery_rel_nodes_fields.description), '-', " . FF_PREFIX . "languages.code)) AS vlang
 								    FROM
 									    " . FF_PREFIX . "languages
@@ -208,7 +197,7 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 								     WHERE 
 					                    " . FF_PREFIX . "languages.status = '1'
 					                    AND vgallery_rel_nodes_fields.ID_nodes = ID_item"
-                                : "SELECT 
+                    : "SELECT 
                                         GROUP_CONCAT(DISTINCT CONCAT(IF(ISNULL(`" . $type . "_rel_languages`.visible), 1, `" . $type . "_rel_languages`.visible), '-', " . FF_PREFIX . "languages.code)) AS vlang
                                     FROM
                                         " . FF_PREFIX . "languages
@@ -216,64 +205,64 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
                                      WHERE 
                                         " . FF_PREFIX . "languages.status > 0
                                         AND `" . $type . "_rel_languages`.ID_nodes = ID_item"
-                            ) . ") AS visible_by_lang
+                ) . ") AS visible_by_lang
 						FROM `" . $type . "` 
 						WHERE " . ($user_path === null
-							? " 0 "
-							: "(`" . $type . "`.parent = " . $db->toSql(ffCommon_dirname($user_path)) . "
+                    ? " 0 "
+                    : "(`" . $type . "`.parent = " . $db->toSql(ffCommon_dirname($user_path)) . "
 							AND `" . $type . "`.name = " . $db->toSql(basename($user_path)) . ") "
-						)
-						. ($range === null
-							? ""
-							: (is_array($range)
-								? " OR (`" . $type . "`.ID IN (" . $db->toSql(implode(",", $range), "Text", false) . "))"
-								: " OR (`" . $type . "`.parent LIKE '" . $db->toSql($user_path, "Text", false) . "%')"
-							)
-						) . $sSQL_is_dir;
-			$db->query($sSQL);
-			if($db->nextRecord()) {
-				do {
-					$ID_item = $db->getField("ID_item", "Number", true);
-					$full_path = $db->getField("full_path", "Text", true);
-					if(!isset($cache["auth"][$type][$full_path])) {
-						$cached_path = check_file_permission($cache, $full_path, $type);
-						
-						$cache["auth"][$type][$full_path] = $cache["auth"][$type][$cached_path];	
-						$cache["auth"][$type][$full_path]["owner"] = $db->getField("item_owner", "Number", true);
-						
-						$visible_by_lang = $db->getField("visible_by_lang", "Text", true);
-						if(strlen($visible_by_lang)) {
-							$arrVisible_by_lang = explode(",", $visible_by_lang);
-							if(is_array($arrVisible_by_lang) && count($arrVisible_by_lang)) {
-								foreach($arrVisible_by_lang AS $vlang_key => $vlang_value) {
-									if(strlen($vlang_value)) {
-										$code_visible = explode("-", $vlang_value);
-										if(is_array($code_visible) && count($code_visible) == 2) {
-											if($code_visible[0]) 
-												$cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = true;
-											else
-												$cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = false;
-										} else {
-											$cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true; 
-										}
-									}
-								} 
-							}
-						}
-						if(!isset($cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET]))
-							$cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true;
-					}
-					
-					if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
-						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
-							unset($arrCheckReturn[$ID_item]);
-						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
-							$arrCheckReturn[$ID_item]["is_admin"] = true;
-					}							
-				} while($db->nextRecord());
-			}
-	    } else {
-			$sSQL = "
+                )
+                . ($range === null
+                    ? ""
+                    : (is_array($range)
+                        ? " OR (`" . $type . "`.ID IN (" . $db->toSql(implode(",", $range), "Text", false) . "))"
+                        : " OR (`" . $type . "`.parent LIKE '" . $db->toSql($user_path, "Text", false) . "%')"
+                    )
+                ) . $sSQL_is_dir;
+            $db->query($sSQL);
+            if($db->nextRecord()) {
+                do {
+                    $ID_item = $db->getField("ID_item", "Number", true);
+                    $full_path = $db->getField("full_path", "Text", true);
+                    if(!isset($cache["auth"][$type][$full_path])) {
+                        $cached_path = check_file_permission($cache, $full_path, $type);
+
+                        $cache["auth"][$type][$full_path] = $cache["auth"][$type][$cached_path];
+                        $cache["auth"][$type][$full_path]["owner"] = $db->getField("item_owner", "Number", true);
+
+                        $visible_by_lang = $db->getField("visible_by_lang", "Text", true);
+                        if(strlen($visible_by_lang)) {
+                            $arrVisible_by_lang = explode(",", $visible_by_lang);
+                            if(is_array($arrVisible_by_lang) && count($arrVisible_by_lang)) {
+                                foreach($arrVisible_by_lang AS $vlang_key => $vlang_value) {
+                                    if(strlen($vlang_value)) {
+                                        $code_visible = explode("-", $vlang_value);
+                                        if(is_array($code_visible) && count($code_visible) == 2) {
+                                            if($code_visible[0])
+                                                $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = true;
+                                            else
+                                                $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = false;
+                                        } else {
+                                            $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(!isset($cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET]))
+                            $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true;
+                    }
+
+                    if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
+                        if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
+                            unset($arrCheckReturn[$ID_item]);
+                        elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
+                            $arrCheckReturn[$ID_item]["is_admin"] = true;
+                    }
+                } while($db->nextRecord());
+            }
+        } else {
+            $sSQL = "
 						SELECT `" . $type . "`.owner AS item_owner 
 							, CONCAT(IF(`" . $type . "`.parent = '/', '', `" . $type . "`.parent), '/', `" . $type . "`.name) AS full_path
 							, `" . $type . "`.ID AS ID_item
@@ -289,96 +278,96 @@ function get_file_permission($user_path, $type = "files", $range = null, $is_dir
 							) AS visible_by_lang
 						FROM `" . $type . "` 
 						WHERE " . ($user_path === null
-							? " 0 "
-							: "(`" . $type . "`.parent = " . $db->toSql(ffCommon_dirname($user_path)) . "
+                    ? " 0 "
+                    : "(`" . $type . "`.parent = " . $db->toSql(ffCommon_dirname($user_path)) . "
 							AND `" . $type . "`.name = " . $db->toSql(basename($user_path)) . ") "
-						)
-						. ($range === null
-							? ""
-							: (is_array($range)
-								? " OR (`" . $type . "`.ID IN (" . $db->toSql(implode(",", $range), "Text", false) . "))"
-								: " OR (`" . $type . "`.parent LIKE '" . $db->toSql($user_path, "Text", false) . "%')"
-							)
-						) . $sSQL_is_dir;
-			$db->query($sSQL);
-			if($db->nextRecord()) {
-				do {
-					$ID_item = $db->getField("ID_item", "Number", true);
-					$full_path = $db->getField("full_path", "Text", true);
-					if(!isset($cache["auth"][$type][$full_path])) {
-						$cached_path = check_file_permission($cache, $full_path, $type);
-						
-						$cache["auth"][$type][$full_path] = $cache["auth"][$type][$cached_path];	
-						$cache["auth"][$type][$full_path]["owner"] = $db->getField("item_owner", "Number", true);
+                )
+                . ($range === null
+                    ? ""
+                    : (is_array($range)
+                        ? " OR (`" . $type . "`.ID IN (" . $db->toSql(implode(",", $range), "Text", false) . "))"
+                        : " OR (`" . $type . "`.parent LIKE '" . $db->toSql($user_path, "Text", false) . "%')"
+                    )
+                ) . $sSQL_is_dir;
+            $db->query($sSQL);
+            if($db->nextRecord()) {
+                do {
+                    $ID_item = $db->getField("ID_item", "Number", true);
+                    $full_path = $db->getField("full_path", "Text", true);
+                    if(!isset($cache["auth"][$type][$full_path])) {
+                        $cached_path = check_file_permission($cache, $full_path, $type);
 
-						$visible_by_lang = $db->getField("visible_by_lang", "Text", true);
-						if(strlen($visible_by_lang)) {
-							$arrVisible_by_lang = explode(",", $visible_by_lang);
-							if(is_array($arrVisible_by_lang) && count($arrVisible_by_lang)) {
-								foreach($arrVisible_by_lang AS $vlang_key => $vlang_value) {
-									if(strlen($vlang_value)) {
-										$code_visible = explode("-", $vlang_value);
-										if(is_array($code_visible) && count($code_visible) == 2) {
-											if($code_visible[0]) 
-												$cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = true;
-											else
-												$cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = false;
-										} else {
-											$cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true;
-										}
-									}
-								} 
-							}
-						}
-						if(!isset($cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET]))
-							$cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true;
-					}
+                        $cache["auth"][$type][$full_path] = $cache["auth"][$type][$cached_path];
+                        $cache["auth"][$type][$full_path]["owner"] = $db->getField("item_owner", "Number", true);
 
-					if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
-						if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
-							unset($arrCheckReturn[$ID_item]);
-						elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), AREA_VGALLERY_SHOW_MODIFY))
-							$arrCheckReturn[$ID_item]["is_admin"] = true;
-					}							
-				} while($db->nextRecord());
-			}
-		}		
-	}
+                        $visible_by_lang = $db->getField("visible_by_lang", "Text", true);
+                        if(strlen($visible_by_lang)) {
+                            $arrVisible_by_lang = explode(",", $visible_by_lang);
+                            if(is_array($arrVisible_by_lang) && count($arrVisible_by_lang)) {
+                                foreach($arrVisible_by_lang AS $vlang_key => $vlang_value) {
+                                    if(strlen($vlang_value)) {
+                                        $code_visible = explode("-", $vlang_value);
+                                        if(is_array($code_visible) && count($code_visible) == 2) {
+                                            if($code_visible[0])
+                                                $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = true;
+                                            else
+                                                $cache["auth"][$type][$full_path]["visible"][$code_visible[1]] = false;
+                                        } else {
+                                            $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if(!isset($cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET]))
+                            $cache["auth"][$type][$full_path]["visible"][LANGUAGE_INSET] = true;
+                    }
 
-	if($res === null) {
-		if($user_path !== null) {
-			if(!isset($cache["auth"][$type][$user_path]) && $type == "vgallery_nodes") {
-				$cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
-				$cache["auth"][$type][$user_path][LANGUAGE_INSET] = false;
-			} elseif(!isset($cache["auth"][$type][$user_path]) && $type == "files") {
-				$cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
-				$cache["auth"][$type][$user_path][LANGUAGE_INSET] = true;
-			} elseif(!isset($cache["auth"][$type][$user_path]) && $type == "static_pages") {
-				$cache["auth"][$type][$user_path] = null;
-				$cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
-				$cache["auth"][$type][$user_path][LANGUAGE_INSET] = true;
-			}
-			
-			$res = $cache["auth"][$type][$user_path];
-		}
-	}
+                    if(is_array($arrCheckReturn) && array_key_exists($ID_item, $arrCheckReturn)) {
+                        if(!check_mod($cache["auth"][$type][$full_path], 1, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
+                            unset($arrCheckReturn[$ID_item]);
+                        elseif(check_mod($cache["auth"][$type][$full_path], 2, ($arrCheckReturn[$ID_item]["enable_multilang_visible"] ? true : LANGUAGE_DEFAULT), Auth::env("AREA_VGALLERY_SHOW_MODIFY")))
+                            $arrCheckReturn[$ID_item]["is_admin"] = true;
+                    }
+                } while($db->nextRecord());
+            }
+        }
+    }
+
+    if($res === null) {
+        if($user_path !== null) {
+            if(!isset($cache["auth"][$type][$user_path]) && $type == "vgallery_nodes") {
+                $cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
+                $cache["auth"][$type][$user_path][LANGUAGE_INSET] = false;
+            } elseif(!isset($cache["auth"][$type][$user_path]) && $type == "files") {
+                $cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
+                $cache["auth"][$type][$user_path][LANGUAGE_INSET] = true;
+            } elseif(!isset($cache["auth"][$type][$user_path]) && $type == "static_pages") {
+                $cache["auth"][$type][$user_path] = null;
+                $cache["auth"][$type][$user_path] = $cache["auth"][$type][$cached_path];
+                $cache["auth"][$type][$user_path][LANGUAGE_INSET] = true;
+            }
+
+            $res = $cache["auth"][$type][$user_path];
+        }
+    }
     set_session("cache", $cache);
 
-	return $res;
+    return $res;
 }
 
 function check_file_permission(&$cache, $user_path, $type) {
-	$cached_path = null;
+    $cached_path = null;
 
-	if($user_path === null)
-		$user_path = "/";
+    if($user_path === null)
+        $user_path = "/";
 
- 	do {
-	    if(isset($cache["auth"][$type][$user_path])) {
-	    	$cached_path = $user_path;
-	    	break;
-		}
-	} while($user_path != "/" && $user_path = ffCommon_dirname($user_path));
-	
-	return $cached_path;
+    do {
+        if(isset($cache["auth"][$type][$user_path])) {
+            $cached_path = $user_path;
+            break;
+        }
+    } while($user_path != "/" && $user_path = ffCommon_dirname($user_path));
+
+    return $cached_path;
 }

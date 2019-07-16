@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_INTERNATIONAL_SHOW_MODIFY) {
+if (!Auth::env("AREA_INTERNATIONAL_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -118,7 +118,7 @@ if(is_array($arrLang) && count($arrLang))
         $oRecord->groups["header"] = array(
             "title" => ffTemplate::_get_word_by_code("header")
             , "cols" => 1
-            , "class" => cm_getClassByFrameworkCss(array(12,12,7,7), "col")
+            , "class" => Cms::getInstance("frameworkcss")->get(array(12,12,7,7), "col")
         );
         $oField = ffField::factory($cm->oPage);
         $oField->id = "name_" . $language_name;
@@ -235,7 +235,7 @@ if($db->nextRecord()) {
     $oRecord->groups["categories"] = array(
         "title" => ffTemplate::_get_word_by_code("tag_page_modify_group")
         , "cols" => 1
-        , "class" => cm_getClassByFrameworkCss(array(12), "col")
+        , "class" => Cms::getInstance("frameworkcss")->get(array(12), "col")
     );
 
     do {

@@ -55,6 +55,7 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
     				) . ".html";
     
     //$tpl_data["custom"] = "breadcrumb.html";
+    $tpl_data["id"] = $unic_id;
     $tpl_data["custom"] = $layout["smart_url"] . ".html";
     $tpl_data["base"] = $template_name;
     $tpl_data["path"] = $layout["tpl_path"];
@@ -62,29 +63,30 @@ function process_breadcrumb($user_path, $settings_path, $root_path = "/", $layou
     $tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
     
     $tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-	$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+	//$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+    $tpl->load_file($tpl_data["result"]["name"], "main");
 
     /**
     * Admin Father Bar
     */
-    if(AREA_ORINAV_SHOW_MODIFY) {
+    if(Auth::env("AREA_BREADCRUMB_SHOW_MODIFY")) {
         $admin_menu["admin"]["unic_name"] = $unic_id;
         $admin_menu["admin"]["title"] = $layout["title"];
         $admin_menu["admin"]["class"] = $layout["type_class"];
         $admin_menu["admin"]["group"] = $layout["type_group"];
         $admin_menu["admin"]["modify"] = "";
         $admin_menu["admin"]["delete"] = "";
-        if(AREA_PROPERTIES_SHOW_MODIFY) {
+        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
             $admin_menu["admin"]["extra"] = "";
         }
-        if(AREA_ECOMMERCE_SHOW_MODIFY) {
+        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
             $admin_menu["admin"]["ecommerce"] = "";
         }
-        if(AREA_LAYOUT_SHOW_MODIFY) {
+        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
             $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
             $admin_menu["admin"]["layout"]["type"] = $layout["type"];
         }
-        if(AREA_SETTINGS_SHOW_MODIFY) {
+        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
             $admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
         }
         

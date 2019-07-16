@@ -125,7 +125,7 @@ if(check_function("set_field_gmap")) {
                     $disable_scroll = $db->getField("disableScroll")->getValue();
                     $disable_drag = $db->getField("disableDrag")->getValue(); 
 					
-                    $tpl = ffTemplate::factory(get_template_cascading($user_path, "maps3.html", "/modules/maps", ffCommon_dirname(__FILE__)));
+                    $tpl = ffTemplate::factory(get_template_cascading($user_path, "maps3.html", "/modules/maps", __DIR__));
                     $tpl->load_file("maps3.html", "main");
 
                     $tpl->set_var("site_path", FF_SITE_PATH);
@@ -249,7 +249,7 @@ if(check_function("set_field_gmap")) {
                     $shadow_width = $db->getField("shadow_width")->getValue();
                     $shadow_height = $db->getField("shadow_height")->getValue();
 
-                    $tpl = ffTemplate::factory(get_template_cascading($user_path, "maps.html", "/modules/maps", ffCommon_dirname(__FILE__)));
+                    $tpl = ffTemplate::factory(get_template_cascading($user_path, "maps.html", "/modules/maps", __DIR__));
                     $tpl->load_file("maps.html", "main");
 
                     $tpl->set_var("site_path", FF_SITE_PATH);
@@ -679,7 +679,7 @@ if(check_function("set_field_gmap")) {
                                 $tpl->set_var("icon_width", $icon_width);
                                 $tpl->set_var("icon_height", $icon_height);
 
-                                $tpl->set_var("icon", FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/" . $map_name . "/" . $icon);
+                                $tpl->set_var("icon", CM_SHOWFILES . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH . "/modules/maps/" . $map_name . "/" . $icon);
                                 $tpl->parse("SezMarkerIcon", false); 
                             } else {
                                 $tpl->parse("SezMarker", false);

@@ -434,13 +434,13 @@ function importcsv_open($filename = null, $sep_field = null, $page = null, $limi
 
 	$count_data = 0;
 	$globals->import_fields = array();
-	if(is_file(FF_DISK_PATH . "/uploads/importcsv/" . $filename)) {
+	if(is_file(FF_DISK_UPDIR . "/importcsv/" . $filename)) {
 		if(!get_session("importcsvlinetotal") > 0) {
-			$linecount = count(file(FF_DISK_PATH . "/uploads/importcsv/" . $filename));
+			$linecount = count(file(FF_DISK_UPDIR . "/importcsv/" . $filename));
 			set_session("importcsvlinetotal", $linecount);
 		}
 
-		$handle = fopen(FF_DISK_PATH . "/uploads/importcsv/" . $filename, "r");
+		$handle = fopen(FF_DISK_UPDIR . "/importcsv/" . $filename, "r");
 		if ($handle)
 		{
 			while (!feof($handle))

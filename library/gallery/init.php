@@ -87,7 +87,8 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 	
 	if(is_array($tpl_data))
 	{
-		$tpl_prefix 		= $tpl_data["prefix"];
+        $tpl_id 		    = $tpl_data["id"];
+        $tpl_prefix 		= $tpl_data["prefix"];
 		$tpl_custom_name 	= $tpl_data["custom"];
 		$tpl_base_name 		= $tpl_data["base"];
 		
@@ -102,18 +103,29 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
 	}
 
 	if(strlen($tpl_custom_name)) {
-		if($tpl_prefix) {
+        if($tpl_id) {
+            if($globals->html["frontend"]["/" . $tpl_id . ".html"]) {
+                $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents";
+                $real_prefix = $tpl_prefix . "_";
+
+                $tpl_name = $tpl_id . ".html";
+            }
+        } elseif($tpl_prefix) {
 			if($globals->html["frontend"]["/" . $tpl_prefix . "_" . $tpl_custom_name]) {
 				$real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents";
 				$real_prefix = $tpl_prefix . "_";
+
+                $tpl_name = $tpl_prefix . "_" . $tpl_custom_name;
 			}
 		}
 		if($real_path === NULL) {
 			do {
 		         if($location && $globals->html["frontend"][stripslash($tmp_path) . $location . "/" . $tpl_custom_name]) {
 		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path) . $location;
+		            $tpl_name = $tpl_custom_name;
 		         } elseif($globals->html["frontend"][stripslash($tmp_path) . "/" . $tpl_custom_name]) {
 		            $real_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/contents" . stripslash($tmp_path);
+		            $tpl_name = $tpl_custom_name;
 				 }
 		     } while($tmp_path != ffCommon_dirname($tmp_path) && $real_path === NULL && $tmp_path = ffCommon_dirname($tmp_path));
 		}
@@ -124,9 +136,11 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
     	{
 			if(strlen($force_base_path)) {
 				$real_path = $force_base_path;
+                $tpl_name = $tpl_base_name;
 			} else {
 				$real_path = __CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents" . stripslash($sub_path);
-			}
+                $tpl_name = $tpl_base_name;
+            }
     	
 			$tpl_type = "base";
 		}
@@ -136,6 +150,7 @@ function get_template_cascading($path, $tpl_data, $sub_path = "", $force_base_pa
     	return array("path" => $real_path
     				, "type" => $tpl_type
     				, "prefix" => $real_prefix
+                    , "name" => ($tpl_name ? $tpl_name : $tpl_base_name )
     			);
 	else 
     	return $real_path;
@@ -177,7 +192,7 @@ function get_template_cascading_old($path, $tpl_data, $sub_path = "", $force_bas
 		}
 		if($real_path === NULL) {
 			do {
-				if(isset($_REQUEST["__tplcascading__"]) && get_session("UserID") == SUPERADMIN_USERNAME) {
+				if(isset($_REQUEST["__tplcascading__"]) && Auth::isAdmin()) {
 					if($location)
 						echo FF_THEME_DIR . "/" . $cm->oPage->theme . "/contents" . stripslash($tmp_path) . $location . "/" . $tpl_custom_name . "<br>";
 

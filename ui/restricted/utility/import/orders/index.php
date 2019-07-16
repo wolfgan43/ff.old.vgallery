@@ -1,7 +1,7 @@
 <?php
     require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-    if (!AREA_IMPORT_SHOW_MODIFY) {
+    if (!Auth::env("AREA_IMPORT_SHOW_MODIFY")) {
         ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
     }
 
@@ -495,7 +495,7 @@
                                                 , " . $db->toSql($ID_anagraph, "Number") . "
 							                    , " . $db->toSql($last_update) . "
 							                    , " . $db->toSql($last_update) . "
-							                    , " . $db->toSql(ECOMMERCE_CART_TIMEOUT, "Number") . "
+							                    , " . $db->toSql(Cms::env("ECOMMERCE_CART_TIMEOUT"), "Number") . "
                                                 , " . $db->toSql($date, "Date") . "
                                                 , " . $db->toSql($object) . "
                                                 , " . $db->toSql("-1", "Number") . "

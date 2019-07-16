@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if (!(AREA_VGALLERY_SHOW_MODIFY || AREA_VGALLERY_TYPE_SHOW_MODIFY || AREA_VGALLERY_SELECTION_SHOW_MODIFY)) {
+if (!(Auth::env("AREA_VGALLERY_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY") || AREA_VGALLERY_SELECTION_SHOW_MODIFY)) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -137,8 +137,8 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "field"))) {
 	$oGrid->record_id = "VGalleryTypeModify";
 	$oGrid->resources[] = $oGrid->record_id;
 	$oGrid->display_edit_bt = false;
-	$oGrid->display_delete_bt = AREA_VGALLERY_TYPE_SHOW_MODIFY;
-	$oGrid->display_new = AREA_VGALLERY_SHOW_TYPE_MODIFY;
+	$oGrid->display_delete_bt = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
+	$oGrid->display_new = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
 	$oGrid->addEvent("on_before_parse_row", "vgalleryType_on_before_parse_row");
 
 	/**
@@ -191,7 +191,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "field"))) {
 		$oButton->frmAction = "setpublic";
 		$oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . $cm->real_path_info . "/[name_VALUE]?[KEYS]&setpublic=1";
 		$oButton->aspect = "link";
-        $oButton->icon = cm_getClassByFrameworkCss("globe", "icon-tag", "transparent");
+        $oButton->icon = Cms::getInstance("frameworkcss")->get("globe", "icon-tag", "transparent");
 		$oButton->display_label = false;
 		$oGrid->addGridButton($oButton);
 	}
@@ -243,7 +243,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "field"))) {
 	    $cm->oPage->addContent($oGrid, "rel", null, array("title" => ffTemplate::_get_word_by_code("vgallery_selection"))); 
 	}
 
-	if(AREA_VGALLERY_GROUP_SHOW_MODIFY) 
+	if(Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY"))
     {
 	    $oGrid = ffGrid::factory($cm->oPage);
 	    $oGrid->full_ajax = true;
@@ -263,9 +263,9 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "field"))) {
 	    $oGrid->record_id = "VGalleryGroupModify";
 	    $oGrid->resources[] = $oGrid->record_id;
 	    $oGrid->display_edit_bt = false;
-	    $oGrid->display_edit_url = AREA_VGALLERY_GROUP_SHOW_MODIFY;
-	    $oGrid->display_delete_bt = AREA_VGALLERY_GROUP_SHOW_MODIFY;
-	    $oGrid->display_new = AREA_VGALLERY_GROUP_SHOW_MODIFY;
+	    $oGrid->display_edit_url = Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY");
+	    $oGrid->display_delete_bt = Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY");
+	    $oGrid->display_new = Auth::env("AREA_VGALLERY_GROUP_SHOW_MODIFY");
 
 	    // Chiave
 	    $oField = ffField::factory($cm->oPage);
@@ -379,9 +379,9 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "field"))) {
         $oGrid_models->bt_insert_url = $cm->oPage->site_path . $cm->oPage->page_path  . "/add";
         $oGrid_models->record_id = "VGalleryTypeModify";
         $oGrid_models->resources[] = $oGrid_models->record_id;
-        $oGrid_models->display_edit_url = AREA_VGALLERY_TYPE_SHOW_MODIFY;
-        $oGrid_models->display_delete_bt = AREA_VGALLERY_TYPE_SHOW_MODIFY;
-        $oGrid_models->display_new = AREA_VGALLERY_SHOW_TYPE_MODIFY;
+        $oGrid_models->display_edit_url = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
+        $oGrid_models->display_delete_bt = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
+        $oGrid_models->display_new = Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY");
         $oGrid_models->addEvent("on_before_parse_row", "vgalleryType_on_before_parse_row");
 
         // Chiave
@@ -416,7 +416,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "field"))) {
         $oButton->frmAction = "setpublic";
         $oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . $cm->real_path_info . "/[name_VALUE]?[KEYS]&setpublic=0";
         $oButton->aspect = "link";
-        $oButton->icon = cm_getClassByFrameworkCss("globe", "icon-tag");
+        $oButton->icon = Cms::getInstance("frameworkcss")->get("globe", "icon-tag");
         $oButton->display_label = false;
         $oGrid_models->addGridButton($oButton);
 

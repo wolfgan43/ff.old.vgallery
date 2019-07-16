@@ -42,7 +42,7 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
     if (is_dir($absolute_path)) {
         if ($handle = @opendir($absolute_path)) {
             while (false !== ($file = readdir($handle))) { 
-                if ($file != "." && $file != ".." && $file != CM_SHOWFILES_THUMB_PATH && $file !=  "_sys") { 
+                if ($file != "." && $file != ".." && $file != ffMedia::STORING_BASE_NAME) {
                     if (is_dir($absolute_path . "/" . $file)) {
                         check_fs(stripslash($absolute_path) . "/" . $file, stripslash($relative_path) . "/" . $file);
                     } else {
@@ -66,22 +66,14 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
                     }
                 }
             }
-            if(ffCommon_url_rewrite(ffGetFilename($absolute_path)) != ffGetFilename($absolute_path) && !file_exists(ffCommon_dirname($absolute_path) . "/" . ffCommon_url_rewrite(ffGetFilename($absolute_path)) . (pathinfo($absolute_path, PATHINFO_EXTENSION) ? "." . ffCommon_url_rewrite(pathinfo($absolute_path, PATHINFO_EXTENSION)) : ""))) {
+
+            if(ffCommon_url_rewrite(basename($absolute_path)) != basename($absolute_path) && !file_exists(ffCommon_dirname($absolute_path) . "/" . ffCommon_url_rewrite(basename($absolute_path)))) {
                 rename($absolute_path
                         , ffCommon_dirname($absolute_path)
                             . "/" 
-                            . ffCommon_url_rewrite(ffGetFilename($absolute_path)) 
-                            . (pathinfo($absolute_path, PATHINFO_EXTENSION)
-                                ? "." . ffCommon_url_rewrite(pathinfo($absolute_path, PATHINFO_EXTENSION))
-                                : ""
-                            )
+                            . ffCommon_url_rewrite(basename($absolute_path))
                         );
-                $relative_name = ffCommon_url_rewrite(ffGetFilename(stripslash($absolute_path) . "/" . $file)) 
-                        . (pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION)
-                            ? "." . ffCommon_url_rewrite(pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION))
-                            : ""
-                        );
-
+                $relative_name = ffCommon_url_rewrite(basename($absolute_path));
             } else {
                 $relative_name = basename($relative_path);
             }
@@ -98,9 +90,9 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
                             : ""
                         )
                     );
-            $relative_name = ffCommon_url_rewrite(ffGetFilename(stripslash($absolute_path) . "/" . $file)) 
-                    . (pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION)
-                        ? "." . ffCommon_url_rewrite(pathinfo(stripslash($absolute_path) . "/" . $file, PATHINFO_EXTENSION))
+            $relative_name = ffCommon_url_rewrite(ffGetFilename($absolute_path))
+                    . (pathinfo($absolute_path, PATHINFO_EXTENSION)
+                        ? "." . ffCommon_url_rewrite(pathinfo($absolute_path, PATHINFO_EXTENSION))
                         : ""
                     );
         } else {
@@ -115,7 +107,7 @@ function check_fs($absolute_path, $relative_path, $purge_fs_db = true) {
 function check_fs_closest_db($strFile) {
 	if($strFile) 
 	{
-		$is_dir = is_dir(DISK_UPDIR . $strFile);
+		$is_dir = is_dir(FF_DISK_UPDIR . $strFile);
 
 		do {
 			check_fs_db(ffCommon_dirname($strFile), basename($strFile), $is_dir);
@@ -165,7 +157,7 @@ function check_fs_db($strPath, $strFile, $is_dir) {
                         , " . $db->toSql($strPath, "Text") . "
                         , " . $db->toSql($is_dir, "Text") . "
                         , " . $db->toSql(time(), "Text") . "
-                        , " . $db->toSql(get_session("UserNID"), "Number") . "
+                        , " . $db->toSql(Auth::get("user")->id, "Number") . "
                     )";
             $db->query($sSQL);
             if($db->affectedRows()) {
@@ -223,7 +215,7 @@ function purge_fs_db($user_path) {
     $db->query($sSQL);
     if ($db->nextRecord()) {
         do {
-            if(!(is_dir(DISK_UPDIR . $db->getField("full_path")->getValue()) || is_file(DISK_UPDIR . $db->getField("full_path")->getValue())) || (strpos($db->getField("full_path")->getValue(), "/" . "_sys") !== false)) {
+            if(!(is_dir(FF_DISK_UPDIR . $db->getField("full_path")->getValue()) || is_file(FF_DISK_UPDIR . $db->getField("full_path")->getValue()))) {
                 delete_file_from_db($db->getField("parent")->getValue(), $db->getField("name")->getValue());
             }
         } while($db->nextRecord());
@@ -268,27 +260,27 @@ function normalize_fs_db($user_path)
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'à', 'a')         
+                description = REPLACE(description, 'ï¿½', 'a')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'è', 'e')         
+                description = REPLACE(description, 'ï¿½', 'e')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'ì', 'i')         
+                description = REPLACE(description, 'ï¿½', 'i')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'ò', 'o')         
+                description = REPLACE(description, 'ï¿½', 'o')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);
     $sSQL = "UPDATE `vgallery_rel_nodes_fields` SET 
-                description = REPLACE(description, 'ù', 'u')         
+                description = REPLACE(description, 'ï¿½', 'u')         
             WHERE description LIKE '" . $db->toSql($user_path, "Text", false) . "%'
                 AND ID_fields IN(SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.ID_extended_type IN (SELECT extended_type.ID FROM extended_type WHERE extended_type.`group` = 'upload'))";
     $db->execute($sSQL);

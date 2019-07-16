@@ -1,7 +1,7 @@
 <?php  
 require_once(FF_DISK_PATH . "/conf/index." . FF_PHP_EXT);
 
-if (!AREA_UPDATER_SHOW_MODIFY) {
+if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -155,7 +155,7 @@ $oRecord->groups["billing"] = array(
                                          , "cols" => 1
                                       );
 
-                                      
+$user = Auth::get("user");
 $sSQL = "SELECT anagraph_categories.ID
 				, anagraph_categories.name
 				, anagraph_categories.limit_by_groups 
@@ -168,10 +168,10 @@ if($db_gallery->nextRecord()) {
 		if(strlen($limit_by_groups)) {
 			$limit_by_groups = explode(",", $limit_by_groups);
 			
-			if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
-				if(strlen($allowed_ana_cat))
-					$allowed_ana_cat .= ",";
-
+			if(array_search($user->acl, $limit_by_groups) !== false) {
+				if(strlen($allowed_ana_cat)) {
+                    $allowed_ana_cat .= ",";
+                }
 				$allowed_ana_cat .= $db_gallery->getField("ID", "Number", true);
 			}
 		} else {

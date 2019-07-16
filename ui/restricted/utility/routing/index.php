@@ -48,9 +48,9 @@ $oGrid->bt_insert_url = $cm->oPage->site_path . $cm->oPage->page_path . "/redire
 $oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/redirect/modify";
 $oGrid->record_id = "RedirectModify";
 $oGrid->resources[] = $oGrid->record_id;
-$oGrid->display_new = AREA_SITEMAP_SHOW_ADDNEW;
+$oGrid->display_new = Auth::env("AREA_SITEMAP_SHOW_ADDNEW");
 $oGrid->display_edit_bt = false;
-$oGrid->display_edit_url = AREA_SITEMAP_SHOW_MODIFY;
+$oGrid->display_edit_url = Auth::env("AREA_SITEMAP_SHOW_MODIFY");
 //$oGrid->display_delete_bt = false;
 $oGrid->addEvent("on_before_parse_row", "routing_redirect_on_before_parse_row");
 
@@ -115,9 +115,9 @@ $oGrid->bt_insert_url = $cm->oPage->site_path . $cm->oPage->page_path . "/alias/
 $oGrid->record_url = $cm->oPage->site_path . $cm->oPage->page_path . "/alias/modify";
 $oGrid->record_id = "AliasModify";
 $oGrid->resources[] = $oGrid->record_id;
-$oGrid->display_new = AREA_SITEMAP_SHOW_ADDNEW;
+$oGrid->display_new = Auth::env("AREA_SITEMAP_SHOW_ADDNEW");
 $oGrid->display_edit_bt = false;
-$oGrid->display_edit_url = AREA_SITEMAP_SHOW_MODIFY;
+$oGrid->display_edit_url = Auth::env("AREA_SITEMAP_SHOW_MODIFY");
 //$oGrid->display_delete_bt = false;
 $oGrid->addEvent("on_before_parse_row", "routing_alias_on_before_parse_row");
 
@@ -168,7 +168,7 @@ function routing_redirect_on_before_parse_row($component) {
         $record_url = $component->grid_buttons["status"]->parent[0]->record_url;
 
         if($component->db[0]->getField("status", "Number", true)) {
-            $component->grid_buttons["status"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["status"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["status"]->icon = null;
             if(0) {
                 $component->grid_buttons["status"]->action_type = "gotourl";
@@ -183,7 +183,7 @@ function routing_redirect_on_before_parse_row($component) {
                 }
             }   
         } else {
-            $component->grid_buttons["status"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["status"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["status"]->icon = null;
             if(0) {
                 $component->grid_buttons["status"]->action_type = "gotourl";
@@ -208,7 +208,7 @@ function routing_alias_on_before_parse_row($component) {
         $record_url = $component->grid_buttons["status"]->parent[0]->record_url;
 
         if($component->db[0]->getField("status", "Number", true)) {
-            $component->grid_buttons["status"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["status"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["status"]->icon = null;            
             if(0) {
                 $component->grid_buttons["status"]->action_type = "gotourl";
@@ -223,7 +223,7 @@ function routing_alias_on_before_parse_row($component) {
                 }
             }   
         } else {
-            $component->grid_buttons["status"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["status"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["status"]->icon = null;
             if(0) {
                 $component->grid_buttons["status"]->action_type = "gotourl";

@@ -145,7 +145,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = $cm->oPage->site_path . ffCommon_dirname($cm->oPage->page_path) . "/city?ID_state=[ID_VALUE]";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("place_city");
-$oButton->icon = cm_getClassByFrameworkCss("building", "icon-tag");
+$oButton->icon = Cms::getInstance("frameworkcss")->get("building", "icon-tag");
 $oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
@@ -155,7 +155,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = $cm->oPage->site_path . ffCommon_dirname($cm->oPage->page_path) . "/province?ID_state=[ID_VALUE]";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("place_province");
-$oButton->icon = cm_getClassByFrameworkCss("map-o", "icon-tag");
+$oButton->icon = Cms::getInstance("frameworkcss")->get("map-o", "icon-tag");
 $oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 
@@ -165,7 +165,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = $cm->oPage->site_path . ffCommon_dirname($cm->oPage->page_path) . "/region?ID_state=[ID_VALUE]";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("place_region");
-$oButton->icon = cm_getClassByFrameworkCss("globe", "icon-tag");
+$oButton->icon = Cms::getInstance("frameworkcss")->get("globe", "icon-tag");
 $oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 

@@ -1,82 +1,172 @@
-#enable rewrite rule
- RewriteEngine on
-# Apache mimetype configuration
- AddType text/cache-manifest .manifest
- AddDefaultCharset UTF-8
+RewriteEngine on
 
-#error
- ErrorDocument 404 [FF_SITE_PATH]/error-document
- ErrorDocument 403 [FF_SITE_PATH]/error-document
+AddType text/cache-manifest .manifest
+AddDefaultCharset UTF-8
 
-#redirect http non-www to https://www
- RewriteCond %{HTTPS} off
- RewriteCond %{HTTP_HOST} ^!(www\.)?[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
- RewriteRule (.*) [DOMAIN_PROTOCOL]://www.[DOMAIN_NAME].[DOMAIN_EXT]/$1 [R=301,L,QSA]
+##################
+# LEGEND
+#-----------------
+#
+# [DOMAIN_PROTOCOL]
+# [DOMAIN_SUB]
+# [DOMAIN_NAME]
+# [DOMAIN_EXT]
+# [FF_SITE_PATH]
+# [FF_DISK_PATH]
+# [CMS_DISK_PATH] => __CMS_DIR__
+#
 
-#redirect http non-www to https://www
- RewriteCond %{HTTPS} on
- RewriteCond %{HTTP_HOST} ^[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
- RewriteRule (.*) [DOMAIN_PROTOCOL]://www.[DOMAIN_NAME].[DOMAIN_EXT]/$1 [R=301,L,QSA]
+
+#############
+# ENV
+#------------
+
+#Symbolic Link
+#SetEnvIf Host "[DOMAIN_SUB].[DOMAIN_NAME].[DOMAIN_EXT]" FF_TOP_DIR=[FF_DISK_PATH]
+#SetEnvIf Host "[DOMAIN_SUB].[DOMAIN_NAME].[DOMAIN_EXT]" CMS_TOP_DIR=[CMS_DISK_PATH]
+
+# Options +FollowSymLinks
+# RewriteEngine On
+
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteRule ^ index.php [L]
+
+
+
+#############
+# Redirect non https or non-www to https://www
+#------------
+RewriteCond %{HTTPS}                        off [OR]
+RewriteCond %{HTTP_HOST}                    ^[DOMAIN_NAME]\.[DOMAIN_EXT]$
+RewriteRule (.*)                            https://www.[DOMAIN_NAME].[DOMAIN_EXT]%{REQUEST_URI} [L,R=301]
+
+#############
+# Redirect non https to https (sub domains)
+#------------
+RewriteCond %{HTTPS}                        off
+RewriteRule (.*)                            https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+#############
+# Error
+#------------
+ErrorDocument 404                           [FF_SITE_PATH]/cm/error.php
+ErrorDocument 403                           [FF_SITE_PATH]/cm/error.php
+
+
+#############
+# Asset
+#------------
+
+#css | js
+RewriteCond   %{HTTP_HOST}  	            [DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+RewriteCond   %{REQUEST_URI}  	            ^[FF_SITE_PATH]/asset
+RewriteRule   ^asset/(.*)                   [FF_SITE_PATH]/cache/$1 [L]
 
 #media
- RewriteCond %{HTTP_HOST}           ^media\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/cache/_thumb
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/error-document
- RewriteRule ^(.*)                  [FF_SITE_PATH]/cache/_thumb/$0 [L,QSA]
+RewriteCond   %{HTTP_HOST}  	            [DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+RewriteCond   %{REQUEST_URI}  	            ^[FF_SITE_PATH]/media
+RewriteRule   ^media/(.*)                   [FF_SITE_PATH]/cache/.thumbs/$1 [L]
 
-# if file notfound goto static
- RewriteCond %{HTTP_HOST}           ^media\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
- RewriteCond %{REQUEST_FILENAME}    ^!-f
- RewriteRule ^cache/_thumb/(.*)     [DOMAIN_PROTOCOL]://static.[DOMAIN_NAME].[DOMAIN_EXT]/$1 [L,R=302,E=nocache:1]
+#static
+RewriteCond   %{HTTP_HOST}  	            [DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+RewriteCond   %{REQUEST_URI}	            ^[FF_SITE_PATH]/static
+RewriteRule   ^static(.*)                  [FF_SITE_PATH]/cm/static\.php?_ffq_=$1 [L,QSA]
 
-#cm showfiles in static
- RewriteCond %{HTTP_HOST}           ^static\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/cm/showfiles\.php
- RewriteRule ^(.*)                  [FF_SITE_PATH]/cm/showfiles\.php/$0 [L,QSA]
 
-#media: if not subdomains
-#RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [OR,NC]
-#RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.local$ [NC]
-#RewriteCond %{REQUEST_URI}  	    ^[FF_SITE_PATH]/media
-#RewriteRule ^media/(.*)            [FF_SITE_PATH]/cache/_thumb/$1 [L]
+#############
+# Using Sub Domains for Render Images
+#------------
 
-#assets
- RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [OR,NC]
- RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.local$ [NC]
- RewriteCond %{REQUEST_URI}  	    ^[FF_SITE_PATH]/asset
- RewriteRule ^asset/(.*)            [FF_SITE_PATH]/cache/$1 [L]
+#media with SubDomains
+RewriteCond %{HTTP_HOST}                    ^media\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+RewriteCond %{REQUEST_URI}  	            ![FF_SITE_PATH]/cache/.thumbs
+RewriteCond %{REQUEST_URI}  	            ![FF_SITE_PATH]/cm/error\.php
+RewriteRule ^(.*)                           [FF_SITE_PATH]/cache/.thumbs/$0 [L,QSA]
 
-#modules
- RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [OR,NC]
- RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.local$ [NC]
- RewriteCond %{REQUEST_URI}	        ^[FF_SITE_PATH]/modules
- RewriteCond %{REQUEST_URI}	        !^[FF_SITE_PATH]/modules/([^/]+)/themes(.+)
- RewriteRule ^modules/([^/]+)(.+)   [FF_SITE_PATH]/modules/$1/themes$2 [L,QSA]
+#media:404 goto static
+#RewriteCond %{HTTP_HOST}                   ^media\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+#RewriteCond %{REQUEST_FILENAME}            ^!-f
+#RewriteRule ^cache/.thumbs/(.*)            [DOMAIN_PROTOCOL]://static.[DOMAIN_NAME].[DOMAIN_EXT]/$1 [L,R=302,E=nocache:1]
 
-#primary page
- RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [OR,NC]
- RewriteCond %{HTTP_HOST}           ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.local$ [NC]
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/index\.php
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/cm/main\.php
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/cm/showfiles\.php
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/themes
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/applets/.*/?themes
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/modules/.*/?themes
- RewriteCond %{REQUEST_URI}         !^[FF_SITE_PATH]/uploads
- RewriteCond %{REQUEST_URI}         !^[FF_SITE_PATH]/cache
- RewriteCond %{REQUEST_URI}         !^[FF_SITE_PATH]/asset
- RewriteCond %{REQUEST_URI}         !^[FF_SITE_PATH]/media
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/robots\.txt
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/favicon
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/conf/gallery/install
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/conf/gallery/updater
- RewriteCond %{REQUEST_URI}  	    !^[FF_SITE_PATH]/router\.php
- RewriteRule ^(.*)                  [FF_SITE_PATH]/index\.php/$0 [L,QSA]
+#static with SubDomains
+RewriteCond %{HTTP_HOST}                    ^static\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+RewriteCond %{REQUEST_URI}  	            ![FF_SITE_PATH]/cm/static\.php
+RewriteRule ^(.*)                           [FF_SITE_PATH]/cm/static\.php?_ffq_=$1 [L,QSA]
 
-#router
- RewriteCond %{HTTP_HOST}           !^[DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
- RewriteCond   %{REQUEST_URI}       !^[FF_SITE_PATH]/?router\.php
- RewriteRule   ^(.*)                [FF_SITE_PATH]/router\.php/$0 [L,QSA]
+
+
+
+
+#RewriteCond %{REQUEST_URI}  	            !^/cache
+#RewriteCond %{REQUEST_FILENAME}             !-d
+#RewriteCond %{REQUEST_FILENAME}             !-f
+#RewriteCond %{REQUEST_FILENAME}             !-l
+#RewriteRule ^(.*)                           /cache/http/%{HTTP_HOST}/$0/index%{QUERY_STRING}.html [L,QSA]
+
+#RewriteCond %{REQUEST_FILENAME}             !-d
+#RewriteCond %{REQUEST_FILENAME}             !-f
+#RewriteCond %{REQUEST_FILENAME}             !-l
+#RewriteRule ^(.*)                           /index.php [L,QSA]
+
+
+
+
+
+
+
+
+
+#############
+# Modules
+#------------
+
+RewriteCond   %{HTTP_HOST}  	            [DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+RewriteCond   %{REQUEST_URI}	            ^[FF_SITE_PATH]/modules
+RewriteCond   %{REQUEST_URI}	            ![FF_SITE_PATH]/modules/([^/]+)/themes(.+)
+RewriteRule  ^modules/([^/]+)(.+)           [FF_SITE_PATH]/modules/$1/themes$2 [L,QSA]
+
+#############
+# Basic rules
+#------------
+RewriteCond   %{HTTP_HOST}                  ^[DOMAIN_SUB]\.[DOMAIN_NAME]\.[DOMAIN_EXT]$ [NC]
+#core
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/applets/([^/]+)/themes(.+)
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/modules/([^/]+)/themes(.+)
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/domains
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/cm/showfiles
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/cm/static
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/cm/error
+
+#install
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/install
+
+#static
+RewriteCond   %{REQUEST_URI}                ![FF_SITE_PATH]/cache
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/themes
+RewriteCond   %{REQUEST_URI}                ![FF_SITE_PATH]/uploads
+
+#libs
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/xhprof
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/vendor
+
+#root file
+RewriteCond   %{REQUEST_URI}  	            ![FF_SITE_PATH]/robots\.txt
+
+#cms
+RewriteCond %{REQUEST_URI}  	            ![FF_SITE_PATH]/index\.php
+RewriteCond %{REQUEST_URI}  	            ![FF_SITE_PATH]/conf/gallery/install
+RewriteCond %{REQUEST_URI}  	            ![FF_SITE_PATH]/conf/gallery/updater
+RewriteRule ^(.*)                           [FF_SITE_PATH]/index\.php/$0 [L,QSA]
+
+#############
+# CMS Router
+#------------
+# RewriteCond %{HTTP_HOST}                  ^[DOMAIN_ALIAS1]$ [NC, OR]
+# RewriteCond %{HTTP_HOST}                  ^[DOMAIN_ALIAS2]$ [NC, OR]
+# RewriteCond %{HTTP_HOST}                  ^[DOMAIN_ALIAS3]$ [NC]
+# RewriteCond %{REQUEST_URI}                ![FF_SITE_PATH]/router\.php
+# RewriteRule ^(.*)                         [FF_SITE_PATH]/router\.php/$0 [L,QSA]
 
 # RULES
 <IfModule mod_deflate.c>
@@ -91,7 +181,7 @@
   </IfModule>
   # Legacy versions of Apache
   AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
-  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/javascript text/javascript
   AddOutputFilterByType DEFLATE text/xml application/xml text/x-component
   AddOutputFilterByType DEFLATE application/xhtml+xml application/rss+xml application/atom+xml
   AddOutputFilterByType DEFLATE application/vnd.ms-fontobject application/x-font-ttf font/opentype

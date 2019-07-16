@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_MODULES_SHOW_MODIFY) {
+if (!Auth::env("AREA_MODULES_SHOW_MODIFY")) {
 	ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 $db = ffDB_Sql::factory();
@@ -514,7 +514,7 @@ if($record["noentry"])
 		        $oDetail_fields->addContent($oField);
 		    }                        
 			        
-		    if(AREA_SHOW_ECOMMERCE && $ecommerce_type && $actual_type && $actual_type != "pricelist") {
+		    if(Cms::env("AREA_SHOW_ECOMMERCE") && $ecommerce_type && $actual_type && $actual_type != "pricelist") {
 		        if($actual_type == "multiplier")
 		        {
 		            $oField = ffField::factory($cm->oPage);
@@ -708,7 +708,7 @@ if($record["noentry"])
 	        $oRecord->addContent($oField);
             } else 
 		{
-	        if(AREA_SHOW_ECOMMERCE && $ecommerce_type && $actual_type) 
+	        if(Cms::env("AREA_SHOW_ECOMMERCE") && $ecommerce_type && $actual_type)
 			{  
 	            /*$oField = ffField::factory($cm->oPage);
 	            $oField->id = "qta";
@@ -827,7 +827,7 @@ if($record["noentry"])
 	                                  );
 	    }
 	    
-	    if(AREA_SHOW_ECOMMERCE && $ecommerce_type && $actual_type)
+	    if(Cms::env("AREA_SHOW_ECOMMERCE") && $ecommerce_type && $actual_type)
 	    {
 	            if(!strlen($fields["show_price_in_label"])) 
 	            {
@@ -1329,7 +1329,7 @@ function FormConfigFieldSelectionModify_on_before_parse_row($component)
 {
     //ffErrorHandler::raise("ASD", E_USER_ERROR, null, get_defined_vars());
     if(isset($component->detail_buttons["module_form_dep"])) {
-        $component->detail_buttons["module_form_dep"]["obj"]->class = cm_getClassByFrameworkCss("chain", "icon");
+        $component->detail_buttons["module_form_dep"]["obj"]->class = Cms::getInstance("frameworkcss")->get("chain", "icon");
         $component->detail_buttons["module_form_dep"]["obj"]->action_type = "submit"; 
         $component->detail_buttons["module_form_dep"]["obj"]->label = ffTemplate::_get_word_by_code("module_form_dep");
         $component->detail_buttons["module_form_dep"]["obj"]->form_action_url = $component->detail_buttons["module_form_dep"]["obj"]->parent[0]->page_path . "/dep?[KEYS]" . "keys[ID-subval]=" . $component->key_fields["ID"]->getValue() . "&ret_url=" . urlencode($component->parent[0]->getRequestUri());

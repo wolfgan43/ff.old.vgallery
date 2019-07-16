@@ -30,7 +30,7 @@ $db_module = ffDB_Sql::factory();
 
 $db_xml->query("SELECT * FROM module_swf WHERE name = " . $db_xml->toSql($module_name) . " AND enable_xml = " . $db_xml->toSql("1", "Number"));
 if($db_xml->nextRecord()) {
-	$tpl = ffTemplate::factory(get_template_cascading($user_path, "tpl_xml.xml", "/modules/swf", ffCommon_dirname(__FILE__)));
+	$tpl = ffTemplate::factory(get_template_cascading($user_path, "tpl_xml.xml", "/modules/swf", __DIR__));
     $tpl->load_file("tpl_xml.xml", "main");
     
 	$md_swf_ID = $db_xml->getField("ID")->getValue();
@@ -90,25 +90,25 @@ if($db_xml->nextRecord()) {
 					$layout_value = $db_module->getField("layout_value", "Text", true);
 					
                     $available_path = $layout_value;
-                    $real_path = realpath(DISK_UPDIR . stripslash($layout_value));
+                    $real_path = realpath(FF_DISK_UPDIR . stripslash($layout_value));
 
-                    if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+                    if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
                     	$file_permission = get_file_permission($layout_value, "files", true);
 
                     //File permessi Cartella (controllo se l'utente ha diritti di lettura)
-                    if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+                    if (check_mod($file_permission, 1, true, Auth::env("AREA_GALLERY_SHOW_MODIFY"))) {
                         if(is_dir($real_path)) {
                             $rst_file = array();
                             $rst_dir = array();
                             $arr_real_path = glob($real_path . "/*");
                             if(is_array($arr_real_path) && count($arr_real_path)) {
                                 foreach ($arr_real_path AS $real_file) { 
-                                    $file = str_replace(DISK_UPDIR, "", $real_file);
+                                    $file = str_replace(FF_DISK_UPDIR, "", $real_file);
                                     $description = "";
-									if ((is_dir($real_file) && basename($real_file) != CM_SHOWFILES_THUMB_PATH /*&& basename($real_file) != GALLERY_TPL_PATH*/) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
-                                        if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+									if ((is_dir($real_file) /*&& basename($real_file) != ffMedia::STORING_BASE_NAME && basename($real_file) != GALLERY_TPL_PATH*/) || (is_file($real_file) && strpos(basename($real_file), "pdf-conversion") === false) && strpos(basename($real_file), ".") !== 0) {
+                                        if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
                                         	$file_permission = get_file_permission($file);
-                                        if (check_mod($file_permission, 1, true, AREA_GALLERY_SHOW_MODIFY)) {
+                                        if (check_mod($file_permission, 1, true, Auth::env("AREA_GALLERY_SHOW_MODIFY"))) {
                                             $rst_dir[$file]["permission"] = $file_permission;
                                         }
                                     }
@@ -123,8 +123,8 @@ if($db_xml->nextRecord()) {
 							$layout["type"] = $layout_type;
 							$layout["location"] = "Content";
 							$layout["visible"] = NULL;
-							if(check_function("get_layout_settings"))
-								$layout["settings"] = get_layout_settings(NULL, $layout_type);    
+							//if(check_function("get_layout_settings"))
+								$layout["settings"] = Cms::getPackage($layout_type); //get_layout_settings(NULL, $layout_type);
 							
 							$tpl_data["tag"]["title"] = $md_swf_tpl_title_tag;
 							$tpl_data["tag"]["gallery"] = $md_swf_tpl_main_tag;
@@ -198,8 +198,8 @@ if($db_xml->nextRecord()) {
 					$layout["type"] = $layout_type;
 					$layout["location"] = "Content";
 					$layout["visible"] = NULL;
-					if(check_function("get_layout_settings"))
-						$layout["settings"] = get_layout_settings(NULL, $layout_type);    
+					//if(check_function("get_layout_settings"))
+						$layout["settings"] = Cms::getPackage($layout_type); //get_layout_settings(NULL, $layout_type);
 				    
 					if(check_function("process_vgallery_thumb"))
 						$res = process_vgallery_thumb(
@@ -253,8 +253,8 @@ if($db_xml->nextRecord()) {
 					$layout["type"] = $layout_type;
 					$layout["location"] = "Content";
 					$layout["visible"] = NULL;
-					if(check_function("get_layout_settings"))
-						$layout["settings"] = get_layout_settings(NULL, $layout_type);    
+					//if(check_function("get_layout_settings"))
+						$layout["settings"] = Cms::getPackage($layout_type); //get_layout_settings(NULL, $layout_type);
 					
 	                if($publish_type == "gallery") {
 						$tpl_data["tag"]["title"] = $md_swf_tpl_title_tag;

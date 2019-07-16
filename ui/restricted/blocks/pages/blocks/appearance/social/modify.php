@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_PROPERTIES_SHOW_MODIFY) {
+if (!Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -242,9 +242,7 @@ function ExtrasSocialModify_on_done_action($component, $action) {
                     `layout`.`last_update` = (SELECT `settings_thumb_social`.last_update FROM settings_thumb_social WHERE settings_thumb_social.ID = " . $db->toSql($component->key_fields["ID"]->value) . ") 
                 WHERE layout.ID_type IN (" . $db->toSql($block_type["virtual-gallery"]["ID"], "Number") . ", " . $db->toSql($block_type["gallery"]["ID"], "Number") . ", " . $db->toSql($block_type["publishing"]["ID"], "Number") . ")";
         $db->execute($sSQL);
-        
-        if (FF_ENABLE_MEM_SHOWFILES_CACHING) {
-			ffCache::getInstance(CM_CACHE_ADAPTER)->set("__vgallery_settings_thumb__");
-		}
+
+        ffCache::getInstance()->clear("/vg/thumbs");
     }
 }

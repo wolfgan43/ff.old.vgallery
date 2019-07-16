@@ -57,29 +57,36 @@ function system_set_meta($oPage)
 
 
     $standard_meta["description"] = (is_array($globals->meta["description"]) ? implode(", ", $globals->meta["description"]) : "");
-    if(strlen($standard_meta["description"]) > VG_SEO_DESCRIPTION_LIMIT) {
-        $standard_meta["description"] = substr($standard_meta["description"], 0, VG_SEO_DESCRIPTION_LIMIT);
+    if(strlen($standard_meta["description"]) > Cms::env("LIMIT_CHARACTER_SEO")) {
+        $standard_meta["description"] = substr($standard_meta["description"], 0, Cms::env("LIMIT_CHARACTER_SEO"));
         $standard_meta["description"] = substr($standard_meta["description"], 0, strrpos($standard_meta["description"], " "));
     }
      
-	 if(!defined("AVOID_META_KEYWORDS") || !AVOID_META_KEYWORDS)
+	 if(!Cms::env("AVOID_META_KEYWORDS"))
      	$standard_meta["keywords"] = (is_array($globals->meta["keywords"]) ? implode(", ", $globals->meta["keywords"]) : "");
 	 else 
 	 	$standard_meta["keywords"] = "";
 	 	
 	 if(is_array($html_attr) && count($html_attr)) {
-	    foreach ($html_attr AS $key => $value) {
-    		if(strlen($value)) {
-				$oPage->tplAddHtmlAttr($value, true, $key);
-			}
+	    foreach (array_filter($html_attr) AS $key => $value) {
+            $oPage->tplAddHtmlAttr($key, $value);
 		}
 	 }
     foreach ($standard_meta AS $key => $value) {
         if(is_array($value)) {
-            $oPage->tplAddMeta($key, preg_replace('/(\r|\n|\")/', " ", $value["content"]), false, $value["type"]);
+            $params = array(
+                "content" => $value["content"]
+                , ($value["type"] ? $value["type"] : "name") => $key
+            );
+
         } elseif(strlen($value)) {
-            $oPage->tplAddMeta($key, preg_replace('/(\r|\n|\")/', " ", $value));
+            $params = array(
+                "content" => $value["content"]
+                , "name" => $key
+            );
         }
+
+        $oPage->tplAddMeta($params);
     }
 
     //$oPage->parse_meta();

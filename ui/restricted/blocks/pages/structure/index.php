@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
- if (!(AREA_SECTION_SHOW_MODIFY || AREA_LAYER_SHOW_MODIFY )) {
+ if (!(Auth::env("AREA_SECTION_SHOW_MODIFY") || Auth::env("AREA_LAYER_SHOW_MODIFY"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -33,8 +33,8 @@ $db = ffDB_Sql::factory();
 $cm->oPage->title = ffTemplate::_get_word_by_code("structure");
 $cm->oPage->addContent(null, true, "rel"); 
 
-if (AREA_SECTION_SHOW_MODIFY) {
-    $framework_css = cm_getFrameworkCss();
+if (Auth::env("AREA_SECTION_SHOW_MODIFY")) {
+    $framework_css = Cms::getInstance("frameworkcss")->getFramework();
     $framework_css_name = $framework_css["name"];
     
     $oGrid = ffGrid::factory($cm->oPage);
@@ -164,7 +164,7 @@ if (AREA_SECTION_SHOW_MODIFY) {
     $cm->oPage->addContent($oGrid, "rel", null, array("title" => ffTemplate::_get_word_by_code("section_title"))); 
 }
 
-if(AREA_LAYER_SHOW_MODIFY) {
+if(Auth::env("AREA_LAYER_SHOW_MODIFY")) {
     $oGrid_layer = ffGrid::factory($cm->oPage);
     $oGrid_layer->full_ajax = true;
     $oGrid_layer->id = "Layer";

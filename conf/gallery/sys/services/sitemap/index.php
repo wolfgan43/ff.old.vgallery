@@ -23,8 +23,9 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-  if(!mod_security_check_session(false) || get_session("UserNID") == MOD_SEC_GUEST_USER_ID) {
-	prompt_login();
-  }
+if(!Auth::isLogged()) {
+    exit;
+}
+
   
   

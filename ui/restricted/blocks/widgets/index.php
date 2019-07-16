@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!(AREA_PUBLISHING_SHOW_ADDNEW || AREA_PUBLISHING_SHOW_MODIFY || AREA_PUBLISHING_SHOW_DELETE || AREA_PUBLISHING_SHOW_DETAIL || AREA_PUBLISHING_SHOW_PREVIEW)) {
+if (!(Auth::env("AREA_PUBLISHING_SHOW_ADDNEW") || Auth::env("AREA_PUBLISHING_SHOW_MODIFY") || Auth::env("AREA_PUBLISHING_SHOW_DELETE") || Auth::env("AREA_PUBLISHING_SHOW_DETAIL"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 } 
 check_function("system_ffcomponent_set_title");
@@ -49,10 +49,10 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "structure/modify"
 	$oGrid->resources[] = $oGrid->record_id;
 	//$oGrid->addit_insert_record_param = "extype=publishing&";
 	//$oGrid->addit_record_param = "extype=publishing&";
-	$oGrid->display_new = AREA_PUBLISHING_SHOW_ADDNEW;
+	$oGrid->display_new = Auth::env("AREA_PUBLISHING_SHOW_ADDNEW");
 	$oGrid->display_edit_bt = false;
-	$oGrid->display_edit_url = AREA_PUBLISHING_SHOW_MODIFY;
-	$oGrid->display_delete_bt = AREA_PUBLISHING_SHOW_DELETE;
+	$oGrid->display_edit_url = Auth::env("AREA_PUBLISHING_SHOW_MODIFY");
+	$oGrid->display_delete_bt = Auth::env("AREA_PUBLISHING_SHOW_DELETE");
 
 	/**
 	* Title
@@ -91,7 +91,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "structure/modify"
 	$oGrid->addContent($oField);
 
 
-	if(AREA_PROPERTIES_SHOW_MODIFY) {
+	if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 	    $oButton = ffButton::factory($cm->oPage);
 	    $oButton->ajax = $oGrid->record_id;
 	    $oButton->id = "properties"; 
@@ -104,7 +104,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "structure/modify"
 	    $oGrid->addGridButton($oButton);
 	}
 
-	if(AREA_PUBLISHING_SHOW_DETAIL) {
+	if(Auth::env("AREA_PUBLISHING_SHOW_DETAIL")) {
 	    $oButton = ffButton::factory($cm->oPage);
 	    $oButton->id = "addnew";
 	    $oButton->action_type = "gotourl";
@@ -116,7 +116,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, array("modify", "structure/modify"
 	    $oGrid->addGridButton($oButton);
 	}
 
-	if(AREA_PUBLISHING_SHOW_PREVIEW) {
+	if(Auth::env("AREA_PUBLISHING_SHOW_DETAIL")) {
 	    $oButton = ffButton::factory($cm->oPage);
 	    $oButton->id = "preview";
 	    $oButton->action_type = "gotourl";

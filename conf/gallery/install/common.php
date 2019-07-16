@@ -24,6 +24,8 @@
  */
 error_reporting((E_ALL ^ E_WARNING ^ E_NOTICE ^ E_DEPRECATED) | E_STRICT);
 
+
+
 if(!function_exists("file_post_contents")) {
 	function file_post_contents($url, $data = null, $username = null, $password = null, $method = "POST", $timeout = 60) {
 		$postdata = null;
@@ -58,19 +60,7 @@ if(!function_exists("file_post_contents")) {
 		return @file_get_contents($url, false, $context);
 	}
 }
-if(!function_exists("ffCommon_dirname")) {
-	function ffCommon_dirname($path)
-	{
-		$res = dirname($path);
-		if(dirname("/") == "\\")
-			$res = str_replace("\\", "/", $res);
 
-		if($res == ".")
-			$res = "";
-
-		return $res;
-	}
-}
 if(!function_exists("ftp_purge_dir")) {
 	function ftp_purge_dir($conn_id, $ftp_disk_path, $relative_path, $local_disk_path = null) {
 		$absolute_path = $ftp_disk_path . $relative_path;
@@ -130,13 +120,14 @@ if(!function_exists("ftp_purge_dir")) {
 	}
 }
 
+function installer_commandExist($cmd) {
+    $return                                                     = shell_exec(sprintf("which %s", escapeshellarg($cmd)));
+    return !empty($return);
+}
+
 function installer_check_FF_class() {
 	$arrError = array();
 	$path = installer_get_path();
-
-	if (!defined("FF_ENABLE_MEM_TPL_CACHING"))    define("FF_ENABLE_MEM_TPL_CACHING", false);
-	if (!defined("FF_ENABLE_MEM_PAGE_CACHING")) define("FF_ENABLE_MEM_PAGE_CACHING", false);
-	if (!defined("FF_CACHE_ADAPTER")) define("FF_CACHE_ADAPTER", "");
 
 	if(!class_exists("ffTemplate")) {
 		if(file_exists($path["disk_path"] . "/ff/classes/ffTemplate.php"))
@@ -156,13 +147,13 @@ function installer_check_FF_class() {
 		else
 			$arrError[] = "Missing ffEvents";
 	}
-	if(!class_exists("ffMemCache")) {
+	if(!class_exists("ffCache")) {
 		if(file_exists($path["disk_path"] . "/ff/classes/ffCache/ffCache.php")) {
 			require_once($path["disk_path"] . "/ff/classes/ffCache/ffCache.php");
 			if(file_exists($path["disk_path"] . "/ff/classes/ffCache/ffCacheAdapter.php"))
 				require_once($path["disk_path"] . "/ff/classes/ffCache/ffCacheAdapter.php");
 		} else
-			$arrError[] = "Missing ffMemCache";
+			$arrError[] = "Missing ffCache";
 	}
 	if(!class_exists("ffData")) {
 		if(file_exists($path["disk_path"] . "/ff/classes/ffData/ffData.php"))
@@ -192,7 +183,7 @@ function installer_write($file_dest, $filename_source, $ftp, $vars = array(), $w
 	//Scrittura del file
 	///////////////////////////////
 	$root_path = ($ftp["path"] == "/" ? "" : $ftp["path"]);
-	$dirname_file = ffCommon_dirname($file_dest);
+	$dirname_file = dirname($file_dest);
 	if($dirname_file  && $dirname_file != "/") {
 		if($writable)
 			@ftp_chmod($ftp["conn_id"], 0777, $root_path . $dirname_file);
@@ -419,7 +410,7 @@ function installer_get_domain() {
 
 		$res["protocol"] = ($_SERVER["HTTPS"] ? "http" : "https");
 		if (substr_count($res["name"], ".") == 1
-            || strpos($res["name"], "www") === 0
+			|| strpos($res["name"], "www") === 0
 //			|| substr($res["name"], 0, strpos($res["name"], ".")) > substr($res["name"], strpos($res["name"], ".") + 1)
 		) {
 			$res["sub"] = "";
@@ -437,8 +428,6 @@ function installer_get_domain() {
 			$res["sig"] = $res["primary"] . "." . $res["ext"];
 			$res["unique"] = $res["sub"] . "." . $res["primary"];
 		}
-
-
 	}
 	return $res;
 }
@@ -485,12 +474,12 @@ function installer_tpl_vars($custom = array()) {
 
 		$res = array(
 			"[DOMAIN]"									=> $domain["host_name"]
-		, "[DOMAIN_PROTOCOL]"						=> $domain["protocol"]
-		, "[DOMAIN_NAME]"							=> $domain["primary"]
-		, "[DOMAIN_SUB]"							=> ($domain["sub"] ? $domain["sub"] : "www")
-		, "[DOMAIN_EXT]"							=> $domain["ext"]
-		, "[FF_SITE_PATH]"							=> $path["site_path"]
-		, "[FF_SITE_UPDIR]"							=> $path["site_updir"]
+            , "[DOMAIN_PROTOCOL]"						=> $domain["protocol"]
+            , "[DOMAIN_NAME]"							=> $domain["primary"]
+            , "[DOMAIN_SUB]"							=> ($domain["sub"] ? $domain["sub"] : "www")
+            , "[DOMAIN_EXT]"							=> $domain["ext"]
+            , "[FF_SITE_PATH]"							=> $path["site_path"]
+            , "[FF_SITE_UPDIR]"							=> $path["FF_SITE_UPDIR"]
 		);
 	}
 

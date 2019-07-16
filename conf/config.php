@@ -59,7 +59,7 @@ if(defined("SHOWFILES_IS_RUNNING"))
 
 		if(!$res) {
 			//da migliorare usando cache_olp_path e quindi redirect 301
-			$mime = ffMimeTypeByFilename($_SERVER["REQUEST_URI"]);
+			$mime = ffMedia::getMimeTypeByFilename($_SERVER["REQUEST_URI"]);
 			switch ($mime) {
 				case "image/svg+xml":
 				case "image/jpeg":
@@ -69,7 +69,7 @@ if(defined("SHOWFILES_IS_RUNNING"))
 					if (is_file(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/noimg.svg")) {
 						$res["filepath"] = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/noimg.svg";
 					} else {
-						$res["filepath"] = FF_DISK_PATH . FF_THEME_DIR . "/" . CM_DEFAULT_THEME . "/images/noimg.svg";
+						$res["filepath"] = FF_DISK_PATH . FF_THEME_DIR . "/" . FF_MAIN_THEME . "/images/noimg.svg";
 					}
 
 					if (stripos($mode, "x") !== false) {

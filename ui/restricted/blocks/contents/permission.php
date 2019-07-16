@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if (!(AREA_VGALLERY_SHOW_PERMISSION && ENABLE_STD_PERMISSION)) {
+if (!(Auth::env("AREA_VGALLERY_SHOW_PERMISSION") && Cms::env("ENABLE_STD_PERMISSION"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 

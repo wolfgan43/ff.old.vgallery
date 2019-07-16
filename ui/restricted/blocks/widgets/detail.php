@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_PUBLISHING_SHOW_DETAIL) {
+if (!Auth::env("AREA_PUBLISHING_SHOW_DETAIL")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -318,7 +318,7 @@ switch($frmAction) {
                     $sSQL = "SELECT anagraph.ID
                                 , CONCAT(
                                     IF(anagraph.avatar = ''
-                                        , '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+                                        , '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
                                         , CONCAT('<img src=\"" . CM_SHOWFILES . "/32x32', anagraph.avatar, '\" />')  
                                     ) 
                                     , anagraph.name
@@ -482,7 +482,7 @@ $oRecord = ffRecord::factory($cm->oPage);
 $oRecord->id = "PublishingDetail";
 $oRecord->resources[] = $oRecord->id;
 //$oRecord->title = ffTemplate::_get_word_by_code("publishing_detail_title");
-//$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content-adv">' . cm_getClassByFrameworkCss("vg-publishing", "icon-tag", array("2x", "content-adv")) . $publishing_title . '</h1>';
+//$oRecord->fixed_pre_content = '<h1 class="dialogTitle admin-title vg-content-adv">' . Cms::getInstance("frameworkcss")->get("vg-publishing", "icon-tag", array("2x", "content-adv")) . $publishing_title . '</h1>';
 if(check_function("system_ffcomponent_set_title"))
 	$oRecord->setTitle(system_ffcomponent_set_title(
 		$publishing_title
@@ -491,7 +491,7 @@ if(check_function("system_ffcomponent_set_title"))
 			, "type" => "content-adv"
 		)
 	), 'admin-title vg-content-adv');
-$oRecord->setTitle(cm_getClassByFrameworkCss("vg-publishing", "icon-tag", array("2x", "content-adv")) . $publishing_title, 'admin-title vg-content-adv');
+$oRecord->setTitle(Cms::getInstance("frameworkcss")->get("vg-publishing", "icon-tag", array("2x", "content-adv")) . $publishing_title, 'admin-title vg-content-adv');
 
 $oRecord->src_table = "publishing";
 if(0 && $_REQUEST["XHR_CTX_ID"]) {
@@ -552,7 +552,7 @@ if($db->getField("full_selection", "Number", true) > 0) {
 switch($oRecord->user_vars["src_type"]) {
     case "gallery":
     //  if(check_function("check_fs"))
-    //      check_fs(DISK_UPDIR . $oRecord->user_vars["relative_path"], $oRecord->user_vars["relative_path"]);
+    //      check_fs(FF_DISK_UPDIR . $oRecord->user_vars["relative_path"], $oRecord->user_vars["relative_path"]);
 
         $oField = ffField::factory($cm->oPage);
         $oField->id = "relfiles";
@@ -795,14 +795,7 @@ switch($oRecord->user_vars["src_type"]) {
         $oField->autocompletetoken_compare_having = "display_path";
     //            $oField->autocompletetoken_limit = 1;
 
-    /* //DA sistemare FRONTEND
-    " . (AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK
-                                            ? "
-                                                INNER JOIN ecommerce_settings ON ecommerce_settings.ID_items = vgallery_nodes.ID 
-                                                    AND ecommerce_settings.actual_qta > 0 "
-                                            : ""
-                                    ) . "
-    */
+
         $oField->resources[] = "DetailModify";
         $oField->source_SQL = "SELECT DISTINCT vgallery_nodes.ID
                                     $display_fields
@@ -810,7 +803,7 @@ switch($oRecord->user_vars["src_type"]) {
                                     INNER JOIN vgallery ON vgallery.ID = vgallery_nodes.ID_vgallery
                                     
                                WHERE " . $contest_sql . "
-                                    AND (" . (AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK
+                                    AND (" . (Cms::env("AREA_SHOW_ECOMMERCE") && Cms::env("AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK")
                                             ? "IF(vgallery.enable_ecommerce > 0
                                                 , IF(vgallery.use_pricelist_as_item_thumb > 0
                                                     , IFNULL( 
@@ -847,7 +840,7 @@ switch($oRecord->user_vars["src_type"]) {
                                                 )
                                             WHERE 1
                                     )
-                                    " . (ENABLE_STD_PERMISSION
+                                    " . (Cms::env("ENABLE_STD_PERMISSION")
                                         ? "
                                             AND vgallery_nodes.ID
                                                 NOT IN 
@@ -877,21 +870,6 @@ switch($oRecord->user_vars["src_type"]) {
                                [HAVING]
                                [ORDER] [COLON] vgallery_nodes.is_dir DESC, display_path
                                [LIMIT]";
-    /*
-                                    " . (AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK
-                                            ? "
-                                                AND (
-                                                        (
-                                                            SELECT ecommerce_settings.actual_qta 
-                                                            FROM ecommerce_settings 
-                                                            WHERE ecommerce_settings.ID_items = vgallery_nodes.ID 
-                                                             GROUP BY ecommerce_settings.ID_items
-                                                        ) > 0
-                                                        OR (vgallery_nodes.is_dir > 0)
-                                                    )"
-                                            : ""
-                                    ) . "
-    */
         $oField->actex_update_from_db = true;
         $oField->parent_page = array($cm->oPage);
 
@@ -927,7 +905,7 @@ switch($oRecord->user_vars["src_type"]) {
                                     rel_nodes.ID AS ID
                                     , (SELECT
                                         IF( 
-                                            " . (ENABLE_STD_PERMISSION
+                                            " . (Cms::env("ENABLE_STD_PERMISSION")
                                                 ? "
                                                     vgallery_nodes.ID
                                                         NOT IN 
@@ -1055,7 +1033,7 @@ switch($oRecord->user_vars["src_type"]) {
         $oField->source_SQL = "SELECT DISTINCT anagraph.ID 
                                     , CONCAT(anagraph.name, ' ', anagraph.surname) AS display_path
                                     , IF(anagraph.avatar = ''
-                                        , '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+                                        , '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
                                         , CONCAT('<img src=\"" . CM_SHOWFILES . "/80x80', anagraph.avatar, '\" />')  
                                     ) AS image
                                 FROM anagraph
@@ -1108,7 +1086,7 @@ switch($oRecord->user_vars["src_type"]) {
                                     , (SELECT 
                                         CONCAT(
                                             IF(anagraph.avatar = ''
-                                                , '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+                                                , '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
                                                 , CONCAT('<img src=\"" . CM_SHOWFILES . "/80x80', anagraph.avatar, '\" />')  
                                             ) 
                                             , anagraph.name
@@ -1241,196 +1219,13 @@ $oDetail->widget_deps[] = array(
             , "ID"
         )
     );
-/*
-                                "SELECT 
-	                                rel_nodes.ID AS ID
-	                                , IF(ID_node_src = [ID_FATHER] AND contest_src = 'publishing'
-	                                    , IF(contest_dst <> 'files'
-	                                        , (SELECT  
-													IFNULL(
-                										(
-							                                SELECT 
-							                                    IF(vgallery_nodes.is_dir > 0
-    																, CONCAT(
-						                                                REPLACE(IF(vgallery_nodes.parent = '/', '', CONCAT(vgallery_nodes.parent, '/')), '-', ' ')
-						                                                , (GROUP_CONCAT(DISTINCT 
-                                                        					IF(vgallery_rel_nodes_fields.description_text = ''
-                                                        						, vgallery_rel_nodes_fields.description
-                                                        						, vgallery_rel_nodes_fields.description_text
-                                                        					) 
-                                                        					ORDER BY vgallery_fields.`order_backoffice` SEPARATOR ' - ')
-						                                                )
-						                                            )
-							                                        , CONCAT(
-						                                                (GROUP_CONCAT(DISTINCT 
-                                                        					IF(vgallery_rel_nodes_fields.description_text = ''
-                                                        						, vgallery_rel_nodes_fields.description
-                                                        						, vgallery_rel_nodes_fields.description_text
-                                                        					) 
-                                                        					ORDER BY vgallery_fields.enable_in_menu, vgallery_fields.`order_backoffice` SEPARATOR ' - ')
-						                                                )
-							                                            , REPLACE(IF(REPLACE(vgallery_nodes.parent, " . $db->toSql($oRecord->user_vars["contest"]) . ", '') = '', '', CONCAT(' (', REPLACE(vgallery_nodes.parent, " . $db->toSql($oRecord->user_vars["contest"] . "/") . ", ''), ') ')), '-', ' ')
-							                                        )
-	                                        					) AS name
-							                                FROM vgallery_rel_nodes_fields 
-							                                    INNER JOIN vgallery_fields ON vgallery_fields.ID = vgallery_rel_nodes_fields.ID_fields 
-							                                WHERE 
-							                                    1
-							                                    AND vgallery_rel_nodes_fields.ID_nodes = vgallery_nodes.ID 
-							                                    AND vgallery_rel_nodes_fields.ID_fields IN (SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.enable_in_menu > 0 OR vgallery_fields.enable_smart_url > 0)
-							                                    AND vgallery_rel_nodes_fields.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
-						                                )
-						                                , vgallery_nodes.name
-						                            ) AS name 
-                                            	FROM vgallery_nodes 
-                                            	WHERE vgallery_nodes.ID = ID_node_dst
-	                                        )
-	                                        , (SELECT name 
-                                            	FROM files 
-                                            	WHERE files.ID = ID_node_dst
-	                                        )
-	                                    )
-	                                    ,  IF(contest_src <> 'files'
-	                                        , (SELECT
-													IF( 
-														" . (ENABLE_STD_PERMISSION
-							                                ? "
-							                                    vgallery_nodes.ID
-							                                        NOT IN 
-							                                        (
-							                                            SELECT vgallery_rel_nodes_fields.ID_nodes
-							                                                FROM vgallery_rel_nodes_fields
-							                                            WHERE
-							                                                vgallery_rel_nodes_fields.ID_fields = (SELECT vgallery_fields.ID 
-							                                                                                        FROM vgallery_fields 
-							                                                                                            INNER JOIN vgallery_type ON vgallery_type.ID = vgallery_fields.ID_type 
-							                                                                                        WHERE vgallery_fields.name = " .  $db->toSql("visible", "Text") . " 
-							                                                                                            AND vgallery_type.name = " .  $db->toSql("System", "Text") . ")
-							                                                AND vgallery_rel_nodes_fields.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
-							                                                AND vgallery_rel_nodes_fields.description_text = " . $db->toSql("0", "Text") . "
-							                                        )
-							                                "
-							                                : " vgallery_nodes.visible"
-							                            ) . "
-                               							" . ($publish_hide_dir
-                               		    					? " AND IF(vgallery.limit_level = (LENGTH(CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name)) - LENGTH(REPLACE(CONCAT(IF(vgallery_nodes.parent = '/', '', vgallery_nodes.parent), '/', vgallery_nodes.name), '/', '')))
-							                                        , 1
-							                                        , NOT(vgallery_nodes.is_dir > 0) 
-							                                    )"
-                               		    					: ""
-                               							) . "
-														, IFNULL(
-                											(
-								                                SELECT 
-								                                    IF(vgallery_nodes.is_dir > 0
-    																	, CONCAT(
-							                                                REPLACE(IF(vgallery_nodes.parent = '/', '', CONCAT(vgallery_nodes.parent, '/')), '-', ' ')
-							                                                , (GROUP_CONCAT(DISTINCT 
-                                                        						IF(vgallery_rel_nodes_fields.description_text = ''
-                                                        							, vgallery_rel_nodes_fields.description
-                                                        							, vgallery_rel_nodes_fields.description_text
-                                                        						) 
-                                                        						ORDER BY vgallery_fields.`order_backoffice` SEPARATOR ' - ')
-							                                                )
-							                                            )
-								                                        , CONCAT(
-							                                                (GROUP_CONCAT(DISTINCT 
-                                                        						IF(vgallery_rel_nodes_fields.description_text = ''
-                                                        							, vgallery_rel_nodes_fields.description
-                                                        							, vgallery_rel_nodes_fields.description_text
-                                                        						) 
-                                                        						ORDER BY vgallery_fields.enable_in_menu, vgallery_fields.`order_backoffice` SEPARATOR ' - ')
-							                                                )
-								                                            , REPLACE(IF(REPLACE(vgallery_nodes.parent, " . $db->toSql($oRecord->user_vars["contest"]) . ", '') = '', '', CONCAT(' (', REPLACE(vgallery_nodes.parent, " . $db->toSql($oRecord->user_vars["contest"] . "/") . ", ''), ') ')), '-', ' ')
-								                                        )
-	                                        						) AS name
-								                                FROM vgallery_rel_nodes_fields 
-								                                    INNER JOIN vgallery_fields ON vgallery_fields.ID = vgallery_rel_nodes_fields.ID_fields 
-								                                WHERE 
-								                                    1
-								                                    AND vgallery_rel_nodes_fields.ID_nodes = vgallery_nodes.ID 
-								                                    AND vgallery_rel_nodes_fields.ID_fields IN (SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.enable_in_menu > 0 OR vgallery_fields.enable_smart_url > 0)
-								                                    AND vgallery_rel_nodes_fields.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
-							                                )
-							                                , vgallery_nodes.name
-							                            )
-								                        , CONCAT('<del>'
-								                            , IFNULL(
-                												(
-									                                SELECT 
-									                                    IF(vgallery_nodes.is_dir > 0
-    																		, CONCAT(
-								                                                REPLACE(IF(vgallery_nodes.parent = '/', '', CONCAT(vgallery_nodes.parent, '/')), '-', ' ')
-								                                                , (GROUP_CONCAT(DISTINCT 
-                                                        							IF(vgallery_rel_nodes_fields.description_text = ''
-                                                        								, vgallery_rel_nodes_fields.description
-                                                        								, vgallery_rel_nodes_fields.description_text
-                                                        							) 
-                                                        							ORDER BY vgallery_fields.`order_backoffice` SEPARATOR ' - ')
-								                                                )
-								                                            )
-									                                        , CONCAT(
-								                                                (GROUP_CONCAT(DISTINCT 
-                                                        							IF(vgallery_rel_nodes_fields.description_text = ''
-                                                        								, vgallery_rel_nodes_fields.description
-                                                        								, vgallery_rel_nodes_fields.description_text
-                                                        							) 
-                                                        							ORDER BY vgallery_fields.enable_in_menu, vgallery_fields.`order_backoffice` SEPARATOR ' - ')
-								                                                )
-									                                            , REPLACE(IF(REPLACE(vgallery_nodes.parent, " . $db->toSql($oRecord->user_vars["contest"]) . ", '') = '', '', CONCAT(' (', REPLACE(vgallery_nodes.parent, " . $db->toSql($oRecord->user_vars["contest"] . "/") . ", ''), ') ')), '-', ' ')
-									                                        )
-	                                        							) AS name
-									                                FROM vgallery_rel_nodes_fields 
-									                                    INNER JOIN vgallery_fields ON vgallery_fields.ID = vgallery_rel_nodes_fields.ID_fields 
-									                                WHERE 
-									                                    1
-									                                    AND vgallery_rel_nodes_fields.ID_nodes = vgallery_nodes.ID 
-									                                    AND vgallery_rel_nodes_fields.ID_fields IN (SELECT vgallery_fields.ID FROM vgallery_fields WHERE vgallery_fields.enable_in_menu > 0 OR vgallery_fields.enable_smart_url > 0)
-									                                    AND vgallery_rel_nodes_fields.ID_lang = " . $db->toSql(LANGUAGE_INSET_ID, "Number") . "
-								                                )
-								                                , vgallery_nodes.name
-								                            )
-								                            , '</del>'
-								                        )
-							                        ) AS name
-                                            	FROM vgallery_nodes 
-                                            		INNER JOIN vgallery ON vgallery.ID = vgallery_nodes.ID_vgallery
-                                            	WHERE vgallery_nodes.ID = ID_node_src
-	                                        )
-	                                        , (SELECT name 
-                                            	FROM files 
-                                            	WHERE files.ID = ID_node_src
-	                                        )
-	                                    )
-	                                ) AS nodes
-	                                , rel_nodes.ID_node_src AS ID_node_src
-	                                , rel_nodes.contest_src AS contest_src
-	                                , rel_nodes.ID_node_dst AS ID_node_dst
-	                                , rel_nodes.contest_dst AS contest_dst
-	                                , rel_nodes.date_begin AS date_begin
-	                                , rel_nodes.date_end AS date_end
-	                                , rel_nodes.class AS class
-	                                , [ID_FATHER] AS ID_node_dst
-	                            FROM rel_nodes 
-	                            WHERE 
-	                            (
-	                                ID_node_src = [ID_FATHER] 
-	                                AND contest_src = 'publishing'
-	                            ) 
-	                            OR 
-	                            (
-	                                ID_node_dst = [ID_FATHER] 
-	                                AND contest_dst ='publishing'
-	                            ) 
-	                            ORDER BY rel_nodes.ID";
-*/
 $oDetail->display_grid_location = "Footer";
 
 $oField->parent = array($oDetail);
 //$f_publish_start->parent = array($oDetail);
 //$f_publish_end->parent = array($oDetail);
 
-$oDetail->fixed_post_content = '<div class="' . cm_getClassByFrameworkCss("", "row-default") . " " . $oField->get_control_class() . '">' . $oField->process() . $oAddRel->process() . '</div>';
+$oDetail->fixed_post_content = '<div class="' . Cms::getInstance("frameworkcss")->get("", "row-default") . " " . $oField->get_control_class() . '">' . $oField->process() . $oAddRel->process() . '</div>';
 
 
 $oField = ffField::factory($cm->oPage);

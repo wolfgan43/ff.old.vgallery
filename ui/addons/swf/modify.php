@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -76,10 +76,10 @@ $oField->file_temp_path = FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "
 $oField->file_max_size = MAX_UPLOAD;
 
 $oField->file_show_preview = true;
-$oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-$oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb" . "/[_FILENAME_]";
-//$oField->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-//$oField->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb" . "/[_FILENAME_]";
+$oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+$oField->file_saved_preview_url = CM_SHOWFILES . "/thumb" . "/[_FILENAME_]";
+//$oField->file_temp_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+//$oField->file_temp_preview_url = CM_SHOWFILES . "/thumb" . "/[_FILENAME_]";
 $oField->file_allowed_mime = array("swf");
 
 $oField->file_base_path = FF_DISK_PATH . FF_THEME_DIR;

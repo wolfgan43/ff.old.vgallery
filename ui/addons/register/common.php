@@ -291,7 +291,7 @@ function MD_register_on_done_action($component, $action) {
                 }
             }
             
-            if (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) {
+            if (Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0) {
                 $check_shipping = true;
             } else {
                 if (isset($component->form_fields["billstate"]) && strlen($component->form_fields["billstate"]->getValue())) {
@@ -451,8 +451,8 @@ function MD_register_on_done_action($component, $action) {
 
                 /* BASE INFORMATION */
                 if ($enable_general_data) {
-                    if (ENABLE_AVATAR_SYSTEM && isset($component->form_fields["avatar"]) && check_function("get_user_avatar")) {
-                        $fields_registration["account"]["avatar"] = get_user_avatar($component->form_fields["avatar"]->getValue(), true, $component->form_fields["email"]->getValue(), cm_showfiles_get_abs_url('/avatar'));
+                    if (Cms::env("ENABLE_AVATAR_SYSTEM") && isset($component->form_fields["avatar"])) {
+                        $fields_registration["account"]["avatar"] = Auth::getUserAvatar($component->form_fields["avatar"]->getValue());
                     }
                     if (isset($component->form_fields["name"]))
                         $fields_registration["account"]["name"] = $component->form_fields["name"]->getValue();
@@ -485,7 +485,7 @@ function MD_register_on_done_action($component, $action) {
                 if (isset($component->form_fields["billprovince"]) && strlen($component->form_fields["billprovince"]->getValue()))
                     $fields_registration["account"]["billprovince"] = $component->form_fields["billprovince"]->getValue();
                 if (isset($component->form_fields["billstate"]) && strlen($component->form_fields["billstate"]->getValue())) {
-                    if (!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0)) {
+                    if (!(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0)) {
                         $sSQL = "SELECT 
                                     IFNULL(
                                         (SELECT " . FF_PREFIX . "international.description
@@ -500,7 +500,7 @@ function MD_register_on_done_action($component, $action) {
                                     ) AS description
                                 FROM " . FF_SUPPORT_PREFIX . "state 
                                 WHERE 
-                                    " . FF_SUPPORT_PREFIX . "state.ID = " . (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0 ? AREA_ECOMMERCE_SHIPPING_LIMIT_STATE : $db->toSql($component->form_fields["billstate"]->value)) . "
+                                    " . FF_SUPPORT_PREFIX . "state.ID = " . (Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0 ? Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") : $db->toSql($component->form_fields["billstate"]->value)) . "
                                 ORDER BY description";
                         $db->query($sSQL);
                         if ($db->nextRecord()) {
@@ -521,7 +521,7 @@ function MD_register_on_done_action($component, $action) {
                 if (isset($component->form_fields["shippingprovince"]) && strlen($component->form_fields["shippingprovince"]->getValue()))
                     $fields_registration["account"]["shippingprovince"] = $component->form_fields["shippingprovince"]->getValue();
                 if (isset($component->form_fields["shippingstate"]) && strlen($component->form_fields["shippingstate"]->getValue())) {
-                    if (!(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0)) {
+                    if (!(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0)) {
                         $sSQL = "SELECT IFNULL(
                                             (SELECT " . FF_PREFIX . "international.description
                                                     FROM " . FF_PREFIX . "international
@@ -534,7 +534,7 @@ function MD_register_on_done_action($component, $action) {
                                             , " . FF_SUPPORT_PREFIX . "state.name
                                         ) AS description
                                     FROM " . FF_SUPPORT_PREFIX . "state 
-                                    WHERE " . FF_SUPPORT_PREFIX . "state.ID = " . (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0 ? AREA_ECOMMERCE_SHIPPING_LIMIT_STATE : $db->toSql($component->form_fields["shippingstate"]->value)) . "
+                                    WHERE " . FF_SUPPORT_PREFIX . "state.ID = " . (Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0 ? Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") : $db->toSql($component->form_fields["shippingstate"]->value)) . "
                                     ORDER BY description";
                         $db->query($sSQL);
                         if ($db->nextRecord()) {
@@ -547,7 +547,7 @@ function MD_register_on_done_action($component, $action) {
                 $to_active[0]["mail"] = $email;
                 
                 if (is_array($to_active) && count($to_active) > 0) {
-                    $rnd_active = mod_sec_createRandomPassword();
+                    $rnd_active = Auth::password();
 
                     $sSQL = "UPDATE anagraph SET active_sid = PASSWORD(" . $db->toSql($rnd_active, "Text") . ") WHERE ID = " . $db->toSql($ID_anagraph, "Number");
                     $db->execute($sSQL);
@@ -803,8 +803,8 @@ function MD_register_on_done_action($component, $action) {
                                                     foreach ($vgallery[$vgallery_key]["match_fields"] AS $field_key => $field_value) {
                                                         if ($field_value["extended_type"] == "Image" || $field_value["extended_type"] == "Upload" || $field_value["extended_type"] == "UploadImage"
                                                         ) {
-                                                            if (is_file(DISK_UPDIR . "/users/" . $field_value["value"]) && check_function("fs_operation")) {
-                                                                full_copy(DISK_UPDIR . "/users/" . $field_value["value"], DISK_UPDIR . stripslash($vgallery_value["parent"]) . "/" . ffCommon_url_rewrite($smart_url) . "/" . $field_value["value"], true);
+                                                            if (is_file(FF_DISK_UPDIR . "/users/" . $field_value["value"]) && check_function("fs_operation")) {
+                                                                full_copy(FF_DISK_UPDIR . "/users/" . $field_value["value"], FF_DISK_UPDIR . stripslash($vgallery_value["parent"]) . "/" . ffCommon_url_rewrite($smart_url) . "/" . $field_value["value"], true);
                                                                 $field_value["value"] = stripslash($vgallery_value["parent"]) . "/" . ffCommon_url_rewrite($smart_url) . "/" . $field_value["value"];
                                                             }
                                                         }

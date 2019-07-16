@@ -153,7 +153,7 @@ if(!$strError) {
 								: ""
 							) . "
 	                        " . ($is_owner
-                        		? "AND static_pages.owner = " . $db->toSql(get_session("UserNID"), "Number")
+                        		? "AND static_pages.owner = " . $db->toSql(Auth::get("user")->id, "Number")
                         		: ""
 	                        ) . "
 							[AND] [WHERE]
@@ -414,7 +414,7 @@ if(!$strError) {
 	        $oField->container_class = "meta-keywords page-meta helper";
 	        $oField->label = ffTemplate::_get_word_by_code("seo_meta_keywords");
 	        $oField->store_in_db = false;
-	        $oField->description = '<a class="' . cm_getClassByFrameworkCss("help", "icon") . '" href="javascript:void(0);"></a><p class="hidden helper-content">' . ffTemplate::_get_word_by_code("seo_meta_keywords_help") . '</p>';
+	        $oField->description = '<a class="' . Cms::getInstance("frameworkcss")->get("help", "icon") . '" href="javascript:void(0);"></a><p class="hidden helper-content">' . ffTemplate::_get_word_by_code("seo_meta_keywords_help") . '</p>';
 	        //$oField->extended_type = "Selection";
 	        $oField->source_SQL = "SELECT search_tags.name
 	                                    , search_tags.name 
@@ -639,7 +639,7 @@ if(!$strError) {
 	        $oField->id = $arrField["keywords"];
 	        $oField->container_class = "meta-keywords page-meta helper";
 	        $oField->label = ffTemplate::_get_word_by_code("seo_meta_keywords");
-	        //$oField->description = '<a class="' . cm_getClassByFrameworkCss("help", "icon") . '" href="javascript:void(0);"></a><p class="hidden helper-content">' . ffTemplate::_get_word_by_code("seo_meta_keywords_help") . '</p>';
+	        //$oField->description = '<a class="' . Cms::getInstance("frameworkcss")->get("help", "icon") . '" href="javascript:void(0);"></a><p class="hidden helper-content">' . ffTemplate::_get_word_by_code("seo_meta_keywords_help") . '</p>';
 	        //$oField->extended_type = "Selection";
 	        $oField->source_SQL = "SELECT search_tags.name
 	                                    , search_tags.name 
@@ -737,12 +737,12 @@ if(!$strError) {
 }
 if($_REQUEST["grp"]) {
 	$cm->oPage->addContent($oRecord, $_REQUEST["grp"], null, array("title" => ffTemplate::_get_word_by_code($_REQUEST["grp"] . "_" . $oRecord->id)));
-	//$cm->oPage->addContent('<div class="spellcheck ' . cm_getClassByFrameworkCss(array(9), "push") . " " . cm_getClassByFrameworkCss(array(3), "col") . '" style="position:absolute;"></div>', $_REQUEST["grp"]);
-	$cm->oPage->addContent('<div class="spellcheck ' . cm_getClassByFrameworkCss(array(0, 0, 4, 4), "col") . '"></div>', $_REQUEST["grp"], $oRecord->id);
+	//$cm->oPage->addContent('<div class="spellcheck ' . Cms::getInstance("frameworkcss")->get(array(9), "push") . " " . Cms::getInstance("frameworkcss")->get(array(3), "col") . '" style="position:absolute;"></div>', $_REQUEST["grp"]);
+	$cm->oPage->addContent('<div class="spellcheck ' . Cms::getInstance("frameworkcss")->get(array(0, 0, 4, 4), "col") . '"></div>', $_REQUEST["grp"], $oRecord->id);
 } else {
 	$cm->oPage->addContent($oRecord);
-	//$cm->oPage->addContent('<div class="spellcheck ' . cm_getClassByFrameworkCss(array(9), "push") . " " . cm_getClassByFrameworkCss(array(3), "col") . '" style="position:absolute;"></div>');
-	$cm->oPage->addContent('<div class="spellcheck ' . cm_getClassByFrameworkCss(array(0, 0, 4, 4), "col") . '"></div>');
+	//$cm->oPage->addContent('<div class="spellcheck ' . Cms::getInstance("frameworkcss")->get(array(9), "push") . " " . Cms::getInstance("frameworkcss")->get(array(3), "col") . '" style="position:absolute;"></div>');
+	$cm->oPage->addContent('<div class="spellcheck ' . Cms::getInstance("frameworkcss")->get(array(0, 0, 4, 4), "col") . '"></div>');
 }
 
 
@@ -783,7 +783,7 @@ function SeoModifyField_on_do_action($component, $action) {
 				    	if($component->recordset[$rst_key]["ID_languages"]->getValue() == LANGUAGE_DEFAULT_ID) {
  							$component->displayError(ffTemplate::_get_word_by_code("smart_url_empty") . " (" . $lang["description"] . ")");
 			                return true;
-				    	} elseif(!DISABLE_SMARTURL_CONTROL) {
+				    	} elseif(!Cms::env("DISABLE_SMARTURL_CONTROL")) {
  							$component->displayError(ffTemplate::_get_word_by_code("smart_url_empty") . " (" . $lang["description"] . ")");
 			                return true;
 				    	}
@@ -845,7 +845,7 @@ function SeoModifyField_on_do_action($component, $action) {
 		            		array(
 		            			"smart_url" => ($component->user_vars["src"]["seo"]["smart_url"] && isset($rst_value["smart_url"])
 		            				? $rst_value["smart_url"]->getValue()
-		            				: null
+		            				: false
 		            			)
 		            			, "title" => ($component->user_vars["src"]["seo"]["title"] && isset($rst_value["title"])
 		            				? $rst_value["title"]->getValue()

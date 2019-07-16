@@ -47,33 +47,13 @@ date_default_timezone_set(TIMEZONE);
  */
 define("FF_THEME_RESTRICTED_LIBS_CACHE", false);
 define("FF_TEMPLATE_ENABLE_TPL_JS", true);
-define("FF_URLREWRITE_REMOVEHYPENS", true);
 define("CM_CSSCACHE_RENDER_THEME_PATH", (!defined("APACHE_MODULE_EXPIRES") || APACHE_MODULE_EXPIRES ? false : true));
-define("CM_CACHE_ADAPTER", (PHP_EXT_MEMCACHE
-    ? "memcached"
-    : (PHP_EXT_APC
-        ? "apc"
-        : ""
-    )
-));
 define("CM_ENABLE_MEM_CACHING", false);			/* se abiliti CM_ENABLE_MEM_CACHING puoi usare __CLEARCACHE__ nell'url per resettare la cache */
-define("FF_ENABLE_MEM_TPL_CACHING", false);		/* questo fa la cache dei template */
-define("FF_ENABLE_MEM_PAGE_CACHING", false);	/* fa la cache dell'elaborazione dei template ed ? + invasiva e complicata ma quando funziona, riduce i tempi di brutto*/
-define("FF_ENABLE_MEM_SHOWFILES_CACHING", CM_CACHE_ADAPTER == "memcached" /* questo fa la cache dei template */
-    ? true
-    : false
-);
 
 /**
  * Mysql Settings
  */
-if(MYSQLI_EXTENSIONS) {
-    define("FF_DB_INTERFACE", "mysqli");
-    define("FF_ORM_ENABLE", false);
-} else {
-    define("FF_DB_INTERFACE", "mysql");
-    define("FF_ORM_ENABLE", false);
-}
+
 define("FF_DB_MYSQLI_AVOID_SELECT_DB", true);
 define("FF_SYSTEM_LOCALE", "ISO9075"); /* Default Locale */
 define("FF_DEFAULT_CHARSET", "UTF-8");  /* Charset Default */
@@ -89,12 +69,11 @@ if(defined("SESSION_NAME"))
 /**
  * FF Error Handler
  */
-if(!defined("DISABLE_CACHE"))
+if(DEBUG_MODE !== true)
 {
     define("FF_ERROR_HANDLER_HIDE", true);
     define("FF_ERROR_HANDLER_CUSTOM_TPL", "/themes/gallery/contents/error_handler.html");
     define("FF_ERROR_HANDLER_MINIMAL", "/themes/gallery/contents/error_handler.html");
-
 }
 
 /**
@@ -119,8 +98,6 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 	}
 
     define("OLD_VGALLERY", false);
-
-	define("VG_SEO_DESCRIPTION_LIMIT"                           , 320);
 
     define("VG_UI_PATH"											, "/ui");
     define("VG_SYS_PATH"										, "/conf/gallery");
@@ -179,7 +156,7 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 		//&& defined("FONT_ICON")
 	) {
 		define("FF_ERROR_HANDLER_LOG", true);
-		define("FF_ERROR_HANDLER_LOG_PATH", CM_CACHE_PATH . "/errors");
+		define("FF_ERROR_HANDLER_LOG_PATH", CM_CACHE_DISK_PATH . "/errors");
 
 		if (basename($_SERVER["PATH_INFO"]) == "install"
 			&& strpos($_SERVER["HTTP_REFERER"], "://" . MASTER_SITE . "/admin/system/domains") !== false
@@ -196,6 +173,21 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 			//exit;
 		}*/
 	} else {
+        echo "<h1>Add constant in /themes/site/conf/config.*.php</h1>";
+
+        if(!defined("FF_DISK_PATH"))            echo "Missing: <b>FF_DISK_PATH</b><br />\n";
+        if(!defined("SESSION_NAME"))            echo "Missing: <b>SESSION_NAME</b><br />\n";
+        if(!defined("FF_DATABASE_NAME"))        echo "Missing: <b>FF_DATABASE_NAME</b><br />\n";
+        if(!defined("SUPERADMIN_PASSWORD"))     echo "Missing: <b>SUPERADMIN_PASSWORD</b><br />\n";
+        if(!defined("MASTER_SITE"))             echo "Missing: <b>MASTER_SITE</b><br />\n";
+        if(!defined("FTP_PASSWORD"))            echo "Missing: <b>FTP_PASSWORD</b><br />\n";
+        if(!defined("APPID"))                   echo "Missing: <b>APPID</b><br />\n";
+        if(!defined("LANGUAGE_DEFAULT"))        echo "Missing: <b>LANGUAGE_DEFAULT</b><br />\n";
+        if(!defined("ADMIN_THEME"))             echo "Missing: <b>ADMIN_THEME</b><br />\n";
+        if(!defined("FRAMEWORK_CSS"))           echo "Missing: <b>FRAMEWORK_CSS</b><br />\n";
+        if(!defined("FONT_ICON"))               echo "Missing: <b>FONT_ICON</b><br />\n";
+        exit;
+
 		//|| !isset($config_check["admin"]) || !isset($config_check["updater"])
 		$host_name = $_SERVER["HTTP_HOST"];
 		if (strpos(php_uname(), "Windows") !== false)
@@ -227,7 +219,6 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 		if(basename($_SERVER["PATH_INFO"]) == "install") {
 			define("FF_DISK_PATH", $disk_path);
 			define("FF_SITE_PATH", $site_path);
-			define("CM_DONT_RUN_LAYOUT", true);
 			define("EVENT_DONT_RUN", true);
 			define("GALLERY_INSTALLATION_PHASE", true);
 		} elseif(basename($_SERVER["PATH_INFO"]) == "setup") {
@@ -237,51 +228,5 @@ if(!defined("SHOWFILES_IS_RUNNING"))
 			header("Location: " . $site_path . VG_SYS_PATH . "/install");
 			exit;
 		}
-	}
-}
-
-function vgAutoload()
-{
-	static $loaded = false;
-	if(!$loaded) {
-		spl_autoload_register(function ($class) {
-			switch ($class) {
-				case "Anagraph":
-				case "Cache":
-				case "Filemanager":
-				case "Mailer":
-				case "Notifier":
-				case "Stats":
-				case "Storage":
-				case "Jobs":
-					require(__CMS_DIR__ . "/library/gallery/models/" . strtolower($class) . "/" . $class . ".php");
-					break;
-				case "vgCommon":
-					require(__CMS_DIR__ . "/library/gallery/models/" . $class . ".php");
-					break;
-				case "ffDB_Sql";
-				case "ffDb_Sql";
-					require(__TOP_DIR__  . "/ff/classes/ffDb_Sql/ffDb_Sql_mysqli.php");
-					break;
-				case "ffDB_MongoDB";
-				case "ffDB_MongoDB";
-					require_once(__TOP_DIR__ . "/ff/classes/ffDB_Mongo/ffDb_MongoDB.php");
-					break;
-				case "ffTemplate";
-					require(__TOP_DIR__  . "/ff/classes/ffTemplate.php");
-					break;
-				case "phpmailer":
-					require(__TOP_DIR__ . "/library/phpmailer/class.phpmailer.php");
-					require(__TOP_DIR__ . "/library/phpmailer/class.phpmaileroauth.php");
-					require(__TOP_DIR__ . "/library/phpmailer/class.phpmaileroauthgoogle.php");
-					require(__TOP_DIR__ . "/library/phpmailer/class.smtp.php");
-					require(__TOP_DIR__ . "/library/phpmailer/class.pop3.php");
-					require(__TOP_DIR__ . "/library/phpmailer/extras/EasyPeasyICS.php");
-					require(__TOP_DIR__ . "/library/phpmailer/extras/ntlm_sasl_client.php");
-					break;
-				default:
-			}
-		});
-		$loaded = true;
 	}
 }

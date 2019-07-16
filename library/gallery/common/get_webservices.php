@@ -36,15 +36,14 @@
 					INNER JOIN " . CM_TABLE_PREFIX . "mod_security_domains_fields ON " . CM_TABLE_PREFIX . "mod_security_domains_fields.ID_domains = " . CM_TABLE_PREFIX . "mod_security_domains.ID 
 				WHERE " . CM_TABLE_PREFIX . "mod_security_domains.nome = " . $db->toSql(DOMAIN_NAME, "Text");
 		  $db->query($sSQL);
-		  if($db->nextRecord()) {
-		  	  do {
-				  $webservices[strtolower($db->getField("group", "Text", true))][$db->getField("field", "Text", true)] = $db->getField("value", "Text", true);
-			  } while($db->nextRecord());
-		  } 
-	  }
+          $recordset                                                            = $db->getRecordset();
+          foreach($recordset AS $record) {
+              $webservices[strtolower($record["group"])][$record["field"]]      = $record["value"];
+          }
+      }
 
 	  if($oPage)
-	  	  process_webservices($webservices, $oPage);
+	  	  process_webservices($webservices);
 
 	  if(strlen($group) && is_array($webservices) && array_key_exists($group, $webservices)) {
 		  return $webservices[$group];
@@ -53,7 +52,7 @@
 	  }
   }
   
-  function process_webservices($webservices, &$oPage) {
+  function process_webservices($webservices) {
     $cm = cm::getInstance();
     $globals = ffGlobals::getInstance("gallery");
 

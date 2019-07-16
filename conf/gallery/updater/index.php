@@ -28,7 +28,7 @@ define("REAL_PATH", "/conf/gallery");
 if(!defined("FF_DISK_PATH"))
     exit;
 
-if (!AREA_UPDATER_SHOW_MODIFY) {
+if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
 }
 

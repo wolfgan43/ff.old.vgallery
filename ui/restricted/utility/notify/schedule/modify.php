@@ -24,12 +24,9 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_SCHEDULE_SHOW_MODIFY) {
+if (!Auth::env("AREA_SCHEDULE_SHOW_MODIFY")) {
 	ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
-
-$user_permission = get_session("user_permission");
-$uid = $user_permission["ID"];
 
 // -------------------------
 //          RECORD
@@ -106,7 +103,7 @@ $oField->default_value = new ffData("1", "Number");
 $oRecord->addContent($oField);
 
 
-$oRecord->additional_fields = array("owner" => new ffData($uid, "Number")
+$oRecord->additional_fields = array("owner" => new ffData(Auth::get("user")->id, "Number")
                                     , "last_update" =>  new ffData(time(), "Number")
                                     );
 

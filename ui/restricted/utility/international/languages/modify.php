@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_LANGUAGES_SHOW_MODIFY) {
+if (!Auth::env("AREA_LANGUAGES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -41,8 +41,8 @@ if(isset($_REQUEST["frmAction"]) && isset($_REQUEST["setvisible"]) && isset($_RE
 				WHERE " . FF_PREFIX . "languages.ID = " . $db->toSql($_REQUEST["keys"]["ID"], "Number");
     $db->execute($sSQL);
 
-    @unlink(CM_CACHE_PATH . "/locale." . FF_PHP_EXT);
-    @unlink(CM_CACHE_PATH . "/locale-nocurrent." . FF_PHP_EXT);
+    @unlink(CM_CACHE_DISK_PATH . "/locale." . FF_PHP_EXT);
+    @unlink(CM_CACHE_DISK_PATH . "/locale-nocurrent." . FF_PHP_EXT);
     
 	die(ffCommon_jsonenc(array("close" => false, "refresh" => true, "resources" => array("LanguagesModify")), true));
    

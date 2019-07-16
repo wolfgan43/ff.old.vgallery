@@ -59,7 +59,7 @@
 	    $videobar_channel_list = $db->getField("channel_list")->getValue();
 	    $videobar_search_list = $db->getField("search_list")->getValue();
 		
-		$tpl = ffTemplate::factory(get_template_cascading($user_path, "videobar.html", "/modules/videobar", ffCommon_dirname(__FILE__)));
+		$tpl = ffTemplate::factory(get_template_cascading($user_path, "videobar.html", "/modules/videobar", __DIR__));
 	    $tpl->load_file("videobar.html", "main");
 
 	    $tpl->set_var("site_path", FF_SITE_PATH);

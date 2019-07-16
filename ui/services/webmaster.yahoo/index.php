@@ -27,5 +27,8 @@
     // $actual_srv = params defined by system
 
     if(isset($actual_srv["code"]) && strlen($actual_srv["code"])) { 
-        $oPage->tplAddMeta("y_key", $actual_srv["code"]);
+        $oPage->tplAddMeta(array(
+            "name" => "y_key"
+            , "content" => $actual_srv["code"]
+        ));
     }

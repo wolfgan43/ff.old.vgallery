@@ -23,8 +23,8 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if(!mod_security_check_session(false) || get_session("UserNID") == MOD_SEC_GUEST_USER_ID) {
-	prompt_login();
+if(!Auth::isLogged()) {
+    exit;
 }
 
 if(strpos($_REQUEST["resource"], "mod_") === 0) {
@@ -184,15 +184,15 @@ $resources = array(
                             , "insertMissing" => array(
                                 "parent" => $cm->real_path_info
                                 , "is_dir" => 0
-                                , "owner" => get_session("UserNID")
+                                , "owner" => Auth::get("user")->id
                                 , "created" => time()
                                 , "last_update" => time()
-                                , "ID_domain" => mod_security_get_domain()
+                                , "ID_domain" => Auth::get("user")->id_domain
                             )
     )
 );
 
-$resources = cache_get_settings("services", "sort", $resources);
+$resources = Cms::getSchema("services", "sort", $resources);
 
 $res = $cm->doEvent("vg_on_sort_grid", array(&$resources));        
 					

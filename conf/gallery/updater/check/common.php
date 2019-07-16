@@ -144,7 +144,7 @@ function updater_get_params($cm, $externals = false) {
 		$pathInfo = $cm->path_info;
 		$realPathInfo = $cm->real_path_info;
 		if($pathInfo == VG_RULE_UPDATER) {
-			if (!AREA_UPDATER_SHOW_MODIFY) {
+			if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
 				ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
 			}
 		}
@@ -548,7 +548,7 @@ function updater_get_fs($absolute_path, $fs_exclude = NULL) {
 		$handle = opendir($absolute_path);
 		if ($handle) {
 			while (false !== ($file = readdir($handle))) {
-				if ($file != "." && $file != ".." && $file != ".svn" && $file != ".git" && $file != CM_SHOWFILES_THUMB_PATH && $file != ".thumbs") {
+				if ($file != "." && $file != ".." && $file != ".svn" && $file != ".git" && $file != ".thumbs") {
 					if(array_key_exists($relative_path . "/" . $file, $fs_exclude)
 						&& !is_array($fs_exclude[$relative_path . "/" . $file])
 						&& $fs_exclude[$relative_path . "/" . $file] == true

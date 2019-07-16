@@ -46,8 +46,8 @@ check_function("get_schema_def");
 check_function("system_layer_shards");
 check_function("Notifier");
 
-cm_getFrameworkCss(FF_THEME_FRAMEWORK_CSS);
-cm_getFontIcon(FF_THEME_FONT_ICON);
+Cms::getInstance("frameworkcss")->getFramework(FF_THEME_FRAMEWORK_CSS);
+Cms::getInstance("frameworkcss")->getFontIcon(FF_THEME_FONT_ICON);
 
 system_layer_shards_page_by_referer();
 
@@ -86,7 +86,7 @@ if(is_array($req) && count($req)) {
 															, "actions" 	=> null
 														)
 													);*/
-	$schema = cache_get_settings();
+	$schema = Cms::getSchema();
 	//$schema_def = get_schema_def();
 
 	/*$req["/api/1.0/get-tag-list"] = array();
@@ -135,7 +135,9 @@ if(is_array($req) && count($req)) {
 		} elseif($schema["page"]["/" . $service["opt"]["type"]]["group"] == "service") {
 			if($service["opt"]["async"]) {
 				$response[$service_name] = Jobs::getInstance()->add($service_path, $service["params"]);
-				Jobs::async("/api/job");
+				//Jobs::async("/api/job");
+                Jobs::async("/api/jobs/tools/run");
+
 				/*$stack["top"]["actions"][$service_path] = array(
 					"url" => $service_path
 					, "data" => $service["params"]
@@ -280,221 +282,3 @@ if(DEBUG_PROFILING === true)
 
 echo ffCommon_jsonenc($response, true);
 exit;
-
-
-/*
-//non e usato
-function get_response_by_service($service, $params = null, $opt = null) {
-	if ($opt["async"]) {
-		$url = ($params["url"]
-				? $params["url"]
-				: $service
-			);
-
-		$response = get_response_by_service_async($url, $params);
-	} else {
-		switch($opt["type"]) {
-			case "srv":
-				$response 								= get_response_by_service_srv($service, $params, $opt["schema"]);
-				break;
-			case "api":
-				$response 								= get_response_by_service_api($service, $params, $opt["schema"]);
-				break;
-			default:
-				$response 								= get_response_by_service_http($service, $params);
-		}
-	}
-
-	return $response;
-}
-
-function get_response_include($include, $cm = null) {
-	if($cm) {
-		$cm->oPage->output_buffer = "";
-		require($include);
-
-		if (is_array($cm->oPage->output_buffer))
-			$return = $cm->oPage->output_buffer;
-		elseif (strlen($cm->oPage->output_buffer)) {
-			$return["html"] = $cm->oPage->output_buffer;
-		}
-	} else {
-		require($include);
-	}
-
-	return $return;
-}
-function get_response_by_service_srv($service, $params = array(), $schema_def = null) {
-	$start 									= Stats::stopwatch();
-
-	$cm 									= cm::getInstance();
-	$post 									= $_POST;
-	$request 								= $_REQUEST;
-
-	$_POST 									= $params["data"];
-	$_REQUEST 								= $_POST;
-	//parse_str($params						, $_GET);
-
-	$service_path 							= ltrim(($params["url"]
-												? $params["url"]
-												: $service
-											), "/");
-
-	if(strpos($service_path, "srv/") === 0)
-		$service_path = substr($service_path, 4);
-
-	$include = resolve_include_service("/" . $service_path, $schema_def);
-	if($include) {
-		$return = get_response_include($include, $cm);
-	} else {
-		$return["error"] = "missing include path: " . "/" . $service_path;
-	}
-
-	if(DEBUG_PROFILING === true) {
-		$return["exTime"] = Stats::stopwatch($start);
-	}
-
-	$_POST 									= $post;
-	$_REQUEST 								= $request;
-
-	return $return;
-}
-function get_response_by_service_api($service, $params = array(), $schema_def = null) {
-	$start 									= Stats::stopwatch();
-
-	//$cm 									= cm::getInstance();
-	$get 									= $_GET;
-	$request 								= $_REQUEST;
-
-	$_GET 									= $params["data"];
-	$_REQUEST 								= $_GET;
-	//parse_str($params						, $_GET);
-	$service_path 							= ($params["url"]
-												? $params["url"]
-												: $service
-											);
-
-	$arrPath = explode("/", ltrim($service_path, "/api/"), 2);
-	$include = resolve_include_api("/" . $arrPath[1], "/api/" . $arrPath[0], $schema_def, "include");
-	if($include) {
-		$return["result"] = get_response_include($include);
-	} else {
-		$return["error"] = "missing include path: ". "/" . $arrPath[1];
-	}
-
-	if(DEBUG_PROFILING === true) {
-		$return["exTime"] = Stats::stopwatch($start);
-	}
-
-	$_GET 									= $get;
-	$_REQUEST 								= $request;
-
-	return $return;
-}
-function get_response_by_service_http($service, $params = array()) {
-	$start = Stats::stopwatch();
-
-    check_function("get_locale");
-	check_function("file_post_contents");
-
-    $url 							= $params["url"];
-	$method 						= $params["method"];
-	if(strpos($url, "://") !== false) {
-		$username 					= false;
-		$password 					= false;
-		if(!$method)
-			$method 				= "GET";
-		$data 						= $params["data"];
-	} else {
-		$url 						= "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $url;
-		$data["params"]             = $params["data"];
-		$data["user_permission"]    = get_session("user_permission");
-		$data["user_path"]          = $_SERVER["HTTP_REFERER"];
-		$data["locale"]             = get_locale();
-		$data["ip"]                 = $_SERVER["REMOTE_ADDR"];
-	}
-
-
-	$res = file_post_contents_with_headers($url, $data, $username, $password, $method);
-	if($res["headers"]["response_code"] == "200") {
-		$return 					= json_decode($res["content"], true);
-		if(json_last_error()) {
-			$return["html"] 		= $res["content"];
-		}
-	} else {
-		$return["responseCode"] 	= $res["headers"]["response_code"];
-	}
-	if(is_array($params["response"])) {
-		$return = $return + $params["response"];
-	}
-	if(DEBUG_PROFILING === true) {
-		$return["exTime"] 			= Stats::stopwatch($start);
-		if(strpos($res["content"], "Fatal error") !== false) {
-			$return["error"] 		= strip_tags($res["content"]);
-		} elseif(!$res["content"] && $res["headers"]["response_code"] == "200")
-			$return["error"] 		= "Possible Max Execution Time";
-	}
-    return $return;
-}
-
-function get_response_by_service_async($service, $params = array())
-{
-    check_function("get_locale");
-
-	$service_path 							= ltrim(($params["url"]
-												? $params["url"]
-												: $service
-											), "/");
-
-	$url = "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . "/" . $service_path;
-
-    $data             			= $params["data"];
-    $data["user_permission"]    = get_session("user_permission");
-    $data["user_path"]          = $_SERVER["HTTP_REFERER"];
-    $data["locale"]             = get_locale();
-    $data["ip"]                 = $_SERVER["REMOTE_ADDR"];
-
-    $postdata = http_build_query(
-        $data
-    );
-
-    $url_info = parse_url($url);
- 	switch ($url_info['scheme']) {
-        case 'https':
-            $scheme = 'ssl://';
-            $port = 443;
-            break;
-        case 'http':
-        default:
-            $scheme = '';
-            $port = 80;
-    }
-	try {
-	    $fp = fsockopen($scheme . $url_info['host']
-		        , $port
-		        , $errno
-		        , $errstr
-		        , 30
-	        );
-
-		if($fp) {
-		    $out = "POST ".$url_info['path']." HTTP/1.1\r\n";
-		    $out.= "Host: ".$url_info['host']."\r\n";
-		    $out.= "Content-Type: application/x-www-form-urlencoded\r\n";
-		    if(defined("AUTH_USERNAME") && AUTH_USERNAME)
-				$out.= "Authorization: Basic " . base64_encode(AUTH_USERNAME . ":" . AUTH_PASSWORD) . "\r\n";
-
-			$out.= "Content-Length: ".strlen($postdata)."\r\n";
-		    $out.= "Connection: Close\r\n\r\n";
-		    if (isset($postdata)) $out.= $postdata;
-
-		    fwrite($fp, $out);
-		    fclose($fp);
-		}
- 	} catch (Exception $e) {
-    	$errstr = $e;
-		Cache::log("URL: " . $scheme . $url_info['host'] . "  Error: " . $errstr, "request_async");
-	}
-
-    return ($errstr ? $errstr : false);
-}*/

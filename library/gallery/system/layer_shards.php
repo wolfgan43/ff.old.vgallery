@@ -31,7 +31,7 @@ function system_layer_shards($shards) {
 	system_layer_shards_page_by_referer();
 
 	if(!is_array($shards) && strlen($shards)) {
-		$schema = cache_get_settings();
+		$schema = Cms::getSchema();
 		$arrShard 					= explode("/", ltrim($shards, "/"), 2);
 		$service["opt"]["type"]		= $arrShard[0];
 		$service["opt"]["path"] 	= $arrShard[1];

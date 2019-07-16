@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if (!AREA_VGALLERY_TYPE_SHOW_MODIFY) {
+if (!Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -51,7 +51,7 @@ if(check_function("get_schema_fields_by_type")) {
 	$cm->real_path_info = $_REQUEST["keys"]["permalink"];	
 }
 
-$framework_css = cm_getFrameworkCss();
+$framework_css = Cms::getInstance("frameworkcss")->getFramework();
 $framework_css_name = $framework_css["name"];
     
 $group_sel = $_REQUEST["sel"];
@@ -417,7 +417,7 @@ if($record["noentry"]) {
 	if(!$group_limit || array_search($group_field, $group_limit) !== false) {
         $sSQL_file = "";
 
-        if(AREA_SHOW_ECOMMERCE) {
+        if(Cms::env("AREA_SHOW_ECOMMERCE")) {
             $sSQL_file = "
 				) UNION ( 
 					SELECT 
@@ -1092,7 +1092,7 @@ if($record["noentry"]) {
 	if(!$group_limit || array_search($group_field, $group_limit) !== false) {
 	    $oRecord->addContent(null, true, $group_thumb); 
 	    $oRecord->groups[$group_thumb] = array(
-													"title" => cm_getClassByFrameworkCss("th-large", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
+													"title" => Cms::getInstance("frameworkcss")->get("th-large", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
 													, "primary_field" => "enable_thumb"
 													, "current" => ($group_sel == $group_field)
 	                                                , "tab" => $group_thumb
@@ -1472,7 +1472,7 @@ if($record["noentry"]) {
 	    $oRecord->addContent(null, true, $group_detail); 
 
 	    $oRecord->groups[$group_detail] = array(
-													"title" => cm_getClassByFrameworkCss("file", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
+													"title" => Cms::getInstance("frameworkcss")->get("file", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
 													, "primary_field" => "enable_detail"
 													, "current" => ($group_sel == $group_field)
 	                                                , "tab" => $group_detail
@@ -1817,7 +1817,7 @@ if($record["noentry"]) {
 	if(!$group_limit || array_search($group_field, $group_limit) !== false) {
 	    $oRecord->addContent(null, true, $group_backoffice); 
 	    $oRecord->groups[$group_backoffice] = array(
-													"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
+													"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
 													, "current" => ($group_sel == $group_field)
 	                                                , "tab" => $group_backoffice
 	                                              );   
@@ -1961,7 +1961,7 @@ if($record["noentry"]) {
 		$oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_limit_groups");
 		$oField->base_type = "Text";
 		$oField->extended_type = "Selection";
-		$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . MOD_SEC_GUEST_GROUP_NAME . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
+		$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
 		$oField->control_type = "input";
 		$oField->widget = "checkgroup";
 		$oField->grouping_separator = ",";
@@ -1974,7 +1974,7 @@ if($record["noentry"]) {
 		$oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_limit_groups_frontend");
 		$oField->base_type = "Text";
 		$oField->extended_type = "Selection";
-		$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . MOD_SEC_GUEST_GROUP_NAME . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
+		$oField->source_SQL = "SELECT DISTINCT gid, IF(name='" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "', 'default', name) FROM " . CM_TABLE_PREFIX . "mod_security_groups ORDER BY name";
 		$oField->control_type = "input";
 		$oField->widget = "checkgroup";
 		$oField->grouping_separator = ",";
@@ -1990,7 +1990,7 @@ $cm->oPage->tplAddJs("ff.cms.admin.vgallery-type-extra-modify");
 
 function FormConfigField_on_before_parse_row($component) {
     if(isset($component->grid_buttons["module_form_dep"])) {
-        $component->grid_buttons["module_form_dep"]->class = cm_getClassByFrameworkCss("chain", "icon");
+        $component->grid_buttons["module_form_dep"]->class = Cms::getInstance("frameworkcss")->get("chain", "icon");
         $component->grid_buttons["module_form_dep"]->action_type = "submit"; 
         $component->grid_buttons["module_form_dep"]->label = ffTemplate::_get_word_by_code("module_form_dep");
         $component->grid_buttons["module_form_dep"]->form_action_url = $component->grid_buttons["module_form_dep"]->parent[0]->page_path . "/dep?[KEYS]" . $component->grid_buttons["module_form_dep"]->parent[0]->addit_record_param . "setcv=1&ret_url=" . urlencode($component->parent[0]->getRequestUri());
@@ -2076,7 +2076,7 @@ function VgalleryModify_on_process_template($component, $tpl) {
 		, "alt_name" => array("label" => ffTemplate::_get_word_by_code("alt_name"))
 	);
 	
-	$tpl->set_var("row_class", cm_getClassByFrameworkCss("", "row-default"));
+	$tpl->set_var("row_class", Cms::getInstance("frameworkcss")->get("", "row-default"));
 	if(is_array($custom_tag) && count($custom_tag))
 	{
 		foreach($custom_tag AS $key => $label)
@@ -2103,7 +2103,7 @@ function VgalleryModify_on_process_template($component, $tpl) {
 		$limit_by_groups_frontend = explode(",", $string_limit_by_groups_frontend);
 	}
 	
-	$sSQL = "SELECT DISTINCT gid, IF(name='" . MOD_SEC_GUEST_GROUP_NAME . "', 'default', name) AS name
+	$sSQL = "SELECT DISTINCT gid, IF(name='" . Cms::env("MOD_AUTH_GUEST_GROUP_NAME") . "', 'default', name) AS name
 				FROM " . CM_TABLE_PREFIX . "mod_security_groups
 				ORDER BY name";
 	$db->query($sSQL);

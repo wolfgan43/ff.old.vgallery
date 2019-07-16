@@ -35,8 +35,6 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
     //$globals->is_restricted_page        = false;
     $globals->user_path                 = null;
     $globals->request          			= null;
-    $globals->user_path_params          = "";
-    $globals->user_path_shard           = ""; //non usata realmente ffl e page in path
     //$globals->frame_path                = null;
     //$globals->error_path                = null;
     //$globals->services_path             = null;
@@ -88,7 +86,6 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
 
     $globals->canonical                 = null;
     $globals->tags                 		= null;
-    //$globals->favicon               	= null;
     //$globals->menifest                = null;
 
 	$globals->links						= null;
@@ -96,7 +93,6 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
 											"menu" => null
 											, "pages" => null
 										);
-    $globals->settings                  = array();
     $globals->fixed_pre                 = array(
 											"body" => null
 											, "content" => null
@@ -144,21 +140,48 @@ if(!defined("GALLERY_INSTALLATION_PHASE") && !defined("SHOWFILES_IS_RUNNING")) {
 	};
     $globals->setAuthor = function($id, $params = null) {
         $globals = ffGlobals::getInstance("gallery");
+        $author = array();
 
         if(!$params) {
-            //todo: da implementare la classe anagraph
-            check_function("get_user_data");
-            $params 							= user2anagraph($id, "anagraph");
+            $anagraph                                                   = Anagraph::getInstanceNoStrict()->read(
+                                                                            array(
+                                                                                "anagraph.ID"
+                                                                                , "anagraph.avatar"
+                                                                                , "anagraph.name"
+                                                                                , "anagraph.email"
+                                                                                , "anagraph.tel"
+                                                                                , "anagraph_seo.visible"
+                                                                                , "anagraph_seo.permalink"
+                                                                                , "anagraph.tags"
+                                                                                , "anagraph.ID_user"
+                                                                                , "anagraph_role.name" => "role"
+                                                                            )
+                                                                            , array(
+                                                                                "anagraph.ID" => $id
+                                                                            )
+                                                                        );
 
+            if(is_array($anagraph) && count($anagraph)) {
+                $author = array(
+                    "id" 												=> $anagraph["ID"]
+                    , "avatar"											=> $anagraph["avatar"]
+                    , "name" 											=> ($anagraph["role"] ? $anagraph["role"] . " " : "") . $anagraph["name"]
+                    , "smart_url" 										=> ffCommon_url_rewrite($anagraph["name"])
+                    , "email"											=> $anagraph["email"]
+                    , "tel"												=> $anagraph["tel"]
+                    , "src" 											=> ($anagraph["visible"] ? $anagraph["permalink"] : "")
+                    , "url" 											=> ($anagraph["visible"] ? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . $_SERVER["HTTP_HOST"] . $anagraph["permalink"] : "")
+                    , "tags" 											=> explode(",", $anagraph["tags"])
+                    , "uid" 											=> $anagraph["ID_user"]
+                    , "user_vars"										=> array()
+                );
+            }
         }
-        $globals->author = array(
-            "id" 								=> (int) $id
-        , "avatar"							=> $params["avatar"]
-        , "name" 							=> ($params["role"] ? $params["role"] . " " : "") . $params["name"] . " " . $params["surname"]
-        , "src" 							=> ($params["visible"] ? $params["permalink"] : "")
-        , "url" 							=> ($params["visible"] ? "http" . ($_SERVER["HTTPS"] ? "s" : "") . "://" . DOMAIN_INSET . $params["permalink"] : "")
-        , "tags" 							=> explode(",", $params["tags"])
-        , "uid" 							=> (int) $params["uid"]
+
+        $globals->author = array_replace(
+            (array) $globals->author
+            , (array) $author
+            , (array) $params
         );
     };
     $globals->setPage = function($user_vars) {

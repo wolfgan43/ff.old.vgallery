@@ -70,13 +70,13 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
             $icon_size = "lg";          
             $icon_layout_size = "lg";
             $allow_delete = false;
-            $tpl->set_var("block_edit_class", cm_getClassByFrameworkCss(null, "icon", "stack")); 
-            $tpl->set_var("block_edit_icon", cm_getClassByFrameworkCss("th-large", "icon-tag", $icon_layout_size)); 
-            $tpl->set_var("block_delete_class", cm_getClassByFrameworkCss(null, "icon", "stack"));
-            $tpl->set_var("block_delete_icon", cm_getClassByFrameworkCss("deleterow", "icon-tag", $icon_layout_size));
-            $tpl->set_var("block_delete_class", cm_getClassByFrameworkCss("deleterow", "icon", $icon_layout_size));
+            $tpl->set_var("block_edit_class", Cms::getInstance("frameworkcss")->get(null, "icon", "stack")); 
+            $tpl->set_var("block_edit_icon", Cms::getInstance("frameworkcss")->get("th-large", "icon-tag", $icon_layout_size)); 
+            $tpl->set_var("block_delete_class", Cms::getInstance("frameworkcss")->get(null, "icon", "stack"));
+            $tpl->set_var("block_delete_icon", Cms::getInstance("frameworkcss")->get("deleterow", "icon-tag", $icon_layout_size));
+            $tpl->set_var("block_delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon", $icon_layout_size));
             
-            $tpl->set_var("toggle_class", cm_getClassByFrameworkCss("ellipsis-v", "icon", $icon_layout_size)); 
+            $tpl->set_var("toggle_class", Cms::getInstance("frameworkcss")->get("ellipsis-v", "icon", $icon_layout_size)); 
         }
 		
         if(isset($admin_menu["group"]) && strlen($admin_menu["group"])) { 
@@ -86,8 +86,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 		}
 
 		if(isset($admin_menu["class"]) && strlen($admin_menu["class"])) { 
-            $tpl->set_var("block_class", cm_getClassByFrameworkCss("vg-" . $admin_menu["class"], "icon", array($admin_menu["group"], "2x")));
-            $tpl->set_var("block_icon", cm_getClassByFrameworkCss("vg-" . $admin_menu["class"], "icon-tag", array($admin_menu["group"], "2x")));
+            $tpl->set_var("block_class", Cms::getInstance("frameworkcss")->get("vg-" . $admin_menu["class"], "icon", array($admin_menu["group"], "2x")));
+            $tpl->set_var("block_icon", Cms::getInstance("frameworkcss")->get("vg-" . $admin_menu["class"], "icon-tag", array($admin_menu["group"], "2x")));
 		}
 
 		if(isset($admin_menu["title"]) && strlen($admin_menu["title"])) {
@@ -95,19 +95,10 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
         	$tpl->parse("SezMenuAdminTitle", false);
 		}
 
-        if(file_exists(FF_DISK_PATH . $cm->oPage->getThemePath(false) . "/images/icons/sep." . THEME_ICO_EXTENSION)) {
-			$tpl->set_var("icon_sep_path", FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . $cm->oPage->theme . "/images/icons/sep." . THEME_ICO_EXTENSION);
-		} else {
-			$tpl->set_var("icon_sep_path", FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . THEME_INSET . "/images/icons/" . THEME_ICO . "/sep." . THEME_ICO_EXTENSION);
-		}
-        
-
-        
-        
-        $tpl->set_var("modify_class", cm_getClassByFrameworkCss("editrow", "icon", $icon_size)); 
-        $tpl->set_var("modify_icon", cm_getClassByFrameworkCss("editrow", "icon-tag", $icon_size)); 
-        $tpl->set_var("delete_class", cm_getClassByFrameworkCss("deleterow", "icon", $icon_size));
-        $tpl->set_var("delete_icon", cm_getClassByFrameworkCss("deleterow", "icon-tag", $icon_size));
+        $tpl->set_var("modify_class", Cms::getInstance("frameworkcss")->get("editrow", "icon", $icon_size));
+        $tpl->set_var("modify_icon", Cms::getInstance("frameworkcss")->get("editrow", "icon-tag", $icon_size)); 
+        $tpl->set_var("delete_class", Cms::getInstance("frameworkcss")->get("deleterow", "icon", $icon_size));
+        $tpl->set_var("delete_icon", Cms::getInstance("frameworkcss")->get("deleterow", "icon-tag", $icon_size));
 
         if(isset($admin_menu["layout"]) && is_array($admin_menu["layout"])) {
             $count_element++;
@@ -167,8 +158,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 			if(array_key_exists("extra", $admin_menu["module"]) && strlen($admin_menu["module"]["extra"]))
 			{
 				$count_element++;
-                $tpl->set_var("property_icon", cm_getClassByFrameworkCss("table", "icon-tag", $icon_size));
-                $tpl->set_var("property_class", cm_getClassByFrameworkCss("table", "icon", $icon_size));
+                $tpl->set_var("property_icon", Cms::getInstance("frameworkcss")->get("table", "icon-tag", $icon_size));
+                $tpl->set_var("property_class", Cms::getInstance("frameworkcss")->get("table", "icon", $icon_size));
 
 				$tpl->set_var("item_path", $admin_menu["module"]["extra"]);
 				$tpl->set_var("class_name", $class_name);
@@ -184,8 +175,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 
             $tpl->set_var("item_path", $admin_menu["adddir"]);
             
-            $tpl->set_var("adddir_class", cm_getClassByFrameworkCss(null, "icon", "stack"));
-            $tpl->set_var("adddir_icon", implode("", cm_getClassByFrameworkCss(array("plus", "folder"), "icon-tag", "stack")));
+            $tpl->set_var("adddir_class", Cms::getInstance("frameworkcss")->get(null, "icon", "stack"));
+            $tpl->set_var("adddir_icon", implode("", Cms::getInstance("frameworkcss")->get(array("plus", "folder"), "icon-tag", "stack")));
 
 			$tpl->set_var("class_name", $class_name);
             $tpl->parse("SezMenuAdminAddDir", false);
@@ -198,8 +189,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 
             $tpl->set_var("item_path", $admin_menu["addnew"]);
 
-            $tpl->set_var("addnew_class", cm_getClassByFrameworkCss(null, "icon", "stack"));
-            $tpl->set_var("addnew_icon", implode("", cm_getClassByFrameworkCss(array("plus", "file"), "icon-tag", "stack")));
+            $tpl->set_var("addnew_class", Cms::getInstance("frameworkcss")->get(null, "icon", "stack"));
+            $tpl->set_var("addnew_icon", implode("", Cms::getInstance("frameworkcss")->get(array("plus", "file"), "icon-tag", "stack")));
 
             $tpl->set_var("class_name", $class_name . $class_primary);
             $class_primary = "";
@@ -228,7 +219,7 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
                $tpl->set_var("SezMenuAdminDelete", "");
         }
 
-		if(AREA_PROPERTIES_SHOW_MODIFY && isset($admin_menu["fields"]) && strlen($admin_menu["fields"])) {
+		if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY") && isset($admin_menu["fields"]) && strlen($admin_menu["fields"])) {
             $count_element++;
             
             if(strpos($admin_menu["fields"], "?") === false) {
@@ -238,41 +229,41 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
 			}
             $tpl->set_var("item_path", $admin_menu["fields"]);
             
-            $tpl->set_var("fields_icon", cm_getClassByFrameworkCss("table", "icon-tag", $icon_size));
-            $tpl->set_var("fields_class", cm_getClassByFrameworkCss("table", "icon", $icon_size));
+            $tpl->set_var("fields_icon", Cms::getInstance("frameworkcss")->get("table", "icon-tag", $icon_size));
+            $tpl->set_var("fields_class", Cms::getInstance("frameworkcss")->get("table", "icon", $icon_size));
 			$tpl->set_var("class_name", $class_name);
             $tpl->parse("SezMenuAdminFields", false);
         } else {
                $tpl->set_var("SezMenuAdminFields", "");
         }
         
-        if(AREA_PROPERTIES_SHOW_MODIFY && isset($admin_menu["extra"]) && strlen($admin_menu["extra"])) {
+        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY") && isset($admin_menu["extra"]) && strlen($admin_menu["extra"])) {
             $count_element++;
             
             $tpl->set_var("item_path", $admin_menu["extra"]);
             
-            $tpl->set_var("property_icon", cm_getClassByFrameworkCss("object-group", "icon-tag", $icon_size));
-            $tpl->set_var("property_class", cm_getClassByFrameworkCss("object-group", "icon", $icon_size));
+            $tpl->set_var("property_icon", Cms::getInstance("frameworkcss")->get("object-group", "icon-tag", $icon_size));
+            $tpl->set_var("property_class", Cms::getInstance("frameworkcss")->get("object-group", "icon", $icon_size));
 			$tpl->set_var("class_name", $class_name);
             $tpl->parse("SezMenuAdminExtra", false);
         } else {
                $tpl->set_var("SezMenuAdminExtra", "");
         }
 
-        if(AREA_SHOW_ECOMMERCE && isset($admin_menu["ecommerce"]) && strlen($admin_menu["ecommerce"])) {
+        if(Cms::env("AREA_SHOW_ECOMMERCE") && isset($admin_menu["ecommerce"]) && strlen($admin_menu["ecommerce"])) {
             $count_element++;
 
             $tpl->set_var("item_path", $admin_menu["ecommerce"]);
 
-			$tpl->set_var("ecommerce_icon", cm_getClassByFrameworkCss("shopping-cart", "icon-tag", $icon_size));
-            $tpl->set_var("ecommerce_class", cm_getClassByFrameworkCss("shopping-cart", "icon", $icon_size));
+			$tpl->set_var("ecommerce_icon", Cms::getInstance("frameworkcss")->get("shopping-cart", "icon-tag", $icon_size));
+            $tpl->set_var("ecommerce_class", Cms::getInstance("frameworkcss")->get("shopping-cart", "icon", $icon_size));
 			$tpl->set_var("class_name", $class_name);
             $tpl->parse("SezMenuAdminEcommerce", false);
         } else {
                $tpl->set_var("SezMenuAdminEcommerce", "");
         }
 
-        if(AREA_SETTINGS_SHOW_MODIFY && isset($admin_menu["setting"])) {
+        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY") && isset($admin_menu["setting"])) {
         	$skip_setting = false;
 			if(is_array($admin_menu["setting"]) && count($admin_menu["setting"])) {
 	            $tpl->set_var("item_path", $admin_menu["setting"]["path"]);
@@ -284,8 +275,8 @@ function process_admin_menu($admin_menu, $template_name = "menu", $user_path = "
         	if(!$skip_setting) {
 	            $count_element++;
 	            
-	            $tpl->set_var("setting_icon", cm_getClassByFrameworkCss("lock", "icon-tag", $icon_size));
-                $tpl->set_var("setting_class", cm_getClassByFrameworkCss("lock", "icon", $icon_size));
+	            $tpl->set_var("setting_icon", Cms::getInstance("frameworkcss")->get("lock", "icon-tag", $icon_size));
+                $tpl->set_var("setting_class", Cms::getInstance("frameworkcss")->get("lock", "icon", $icon_size));
 				$tpl->set_var("class_name", $class_name);
 	            $tpl->parse("SezMenuAdminSetting", false);
 			}

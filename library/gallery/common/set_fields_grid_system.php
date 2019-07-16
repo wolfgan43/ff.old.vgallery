@@ -32,7 +32,7 @@
 		$group_class = ($params["group"] ? $params["group"] : null);
 
         if($framework_css === null) {
-        	$framework_css = cm_getFrameworkCss();
+        	$framework_css = Cms::getInstance("frameworkcss")->getFramework();
         }
                 
 	    $framework_css_name = $framework_css["name"];
@@ -72,13 +72,13 @@
 	                    $oField->multi_pairs[] = array(new ffData("-3", "Number"), new ffData(!isset($params["fluid"]["hide"]) || is_bool($params["fluid"]["hide"]) ? ffTemplate::_get_word_by_code("grid_hide") : $params["fluid"]["hide"]));
 					$oField->multi_pairs[] = array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_skip_all")));  
 					if($params === null || !isset($params["fluid"]) || !isset($params["fluid"]["col"]) || $params["fluid"]["col"]) {
-					    $oField->multi_pairs[] = array(new ffData("0", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_column") . ": DIV" . (cm_getClassByFrameworkCss(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), null, $framework_css) ? "." . str_replace(array(" ", "3", "4", "5", "6"), array(".", "X", "X", "X", "X"), cm_getClassByFrameworkCss(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), null, $framework_css)) : "") . ""));
+					    $oField->multi_pairs[] = array(new ffData("0", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_column") . ": DIV" . (Cms::getInstance("frameworkcss")->get(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), null, $framework_css) ? "." . str_replace(array(" ", "3", "4", "5", "6"), array(".", "X", "X", "X", "X"), Cms::getInstance("frameworkcss")->get(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), null, $framework_css)) : "") . ""));
 						if($params === null || !isset($params["fluid"]) || !isset($params["fluid"]["skip-prepost"]) || $params["fluid"]["skip-prepost"])    					
-    						$oField->multi_pairs[] = array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_column") . ": DIV" . (cm_getClassByFrameworkCss(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), null, $framework_css) ? "." . str_replace(array(" ", "3", "4", "5", "6"), array(".", "X", "X", "X", "X"), cm_getClassByFrameworkCss(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), array("skip-prepost" => true), $framework_css)) : "") . ""));
+    						$oField->multi_pairs[] = array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_column") . ": DIV" . (Cms::getInstance("frameworkcss")->get(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), null, $framework_css) ? "." . str_replace(array(" ", "3", "4", "5", "6"), array(".", "X", "X", "X", "X"), Cms::getInstance("frameworkcss")->get(array(3,4,5,6), "col" . ($framework_css["is_fluid"] ? "-fluid" : ""), array("skip-prepost" => true), $framework_css)) : "") . ""));
 					}
 					if($params === null || !isset($params["fluid"]) || !isset($params["fluid"]["row"]) || $params["fluid"]["row"]) {
-    					$oField->multi_pairs[] = array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_row") . ": DIV" . (cm_getClassByFrameworkCss("", "row", null, $framework_css) ? "." . cm_getClassByFrameworkCss("", "row", null, $framework_css) : "") . ""));
-					    $oField->multi_pairs[] = array(new ffData("-2", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_row") . ": DIV" . (cm_getClassByFrameworkCss("", "row-fluid", null, $framework_css) ? "." . cm_getClassByFrameworkCss("", "row-fluid", null, $framework_css) : "") . ""));
+    					$oField->multi_pairs[] = array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_row") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "row", null, $framework_css) ? "." . Cms::getInstance("frameworkcss")->get("", "row", null, $framework_css) : "") . ""));
+					    $oField->multi_pairs[] = array(new ffData("-2", "Number"), new ffData(ffTemplate::_get_word_by_code("grid_row") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "row-fluid", null, $framework_css) ? "." . Cms::getInstance("frameworkcss")->get("", "row-fluid", null, $framework_css) : "") . ""));
 					}
 					if($enable_slider && !$params["fluid"]["full_row"]) {
 						$oField->setWidthComponent($fluid_columns);
@@ -317,8 +317,8 @@
                     } else {
 				        $oField->multi_pairs = array(	
 						                            array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": " . ffTemplate::_get_word_by_code("grid_skip_all"))),
-						                            array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap", null, $framework_css) ? "." . cm_getClassByFrameworkCss("", "wrap", null, $framework_css) : "") . "")),
-						                            array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap-fluid", null, $framework_css) ? "." . cm_getClassByFrameworkCss("", "wrap-fluid", null, $framework_css) : "") . ""))
+						                            array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap", null, $framework_css) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap", null, $framework_css) : "") . "")),
+						                            array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap-fluid", null, $framework_css) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap-fluid", null, $framework_css) : "") . ""))
 											    );
                     }
                     if(isset($params["wrap"]["select_one_label"])) { 

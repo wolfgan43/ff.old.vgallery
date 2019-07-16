@@ -60,9 +60,9 @@
 	{
  		$tpl = ffTemplate::factory(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents/import");
 		$tpl->load_file("struct.html", "main");
-		$tpl->set_var("container_class", cm_getClassByFrameworkCss("wizard-struct", "row"));
+		$tpl->set_var("container_class", Cms::getInstance("frameworkcss")->get("wizard-struct", "row"));
 
-		$tpl->set_var("item_class", cm_getClassByFrameworkCss(array(12,12,4,4), "col")); 
+		$tpl->set_var("item_class", Cms::getInstance("frameworkcss")->get(array(12,12,4,4), "col")); 
 		
 		$res = glob(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/xml/struct/*");
 		if(is_array($res) && count($res)) {

@@ -25,7 +25,7 @@
  */
 
 
-if (!AREA_MODULES_SHOW_MODIFY) {
+if (!Auth::env("AREA_MODULES_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -80,7 +80,7 @@ system_ffcomponent_set_title(
 	, $oRecord
 );     
 
-if(AREA_SHOW_ECOMMERCE && $record["enable_ecommerce"]) {
+if(Cms::env("AREA_SHOW_ECOMMERCE") && $record["enable_ecommerce"]) {
 	$oField = ffField::factory($cm->oPage);
 	$oField->id = "skip_vat_by_anagraph_type";
 	$oField->label = ffTemplate::_get_word_by_code("form_config_skip_vat_by_anagraph_type");
@@ -202,7 +202,7 @@ if($record["field_enable_dep"]) {
 	$oGrid->addActionButtonHeader($oButton);
 }
 
-if(AREA_SHOW_ECOMMERCE && $record["enable_pricelist"])
+if(Cms::env("AREA_SHOW_ECOMMERCE") && $record["enable_pricelist"])
 {
 	$oButton = ffButton::factory($cm->oPage);
 	$oButton->ajax = $oGrid->record_id;

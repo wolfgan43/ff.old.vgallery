@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_LAYOUT_SHOW_MODIFY) {
+if (!Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -57,8 +57,8 @@ if($_REQUEST["grp"] ||  system_ffcomponent_switch_by_path(__DIR__/*, false*/))
 									GROUP_CONCAT(
 										CONCAT(
 												IF(rules.visible
-													, '" . cm_getClassByFrameworkCss("eye", "icon-tag") . "'
-													, '" . cm_getClassByFrameworkCss("eye-slash", "icon-tag") . "'
+													, '" . Cms::getInstance("frameworkcss")->get("eye", "icon-tag") . "'
+													, '" . Cms::getInstance("frameworkcss")->get("eye-slash", "icon-tag") . "'
 												)
 												, rules.path
 												, IF(rules.cascading
@@ -170,7 +170,7 @@ if($_REQUEST["grp"] ||  system_ffcomponent_switch_by_path(__DIR__/*, false*/))
 	$oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . (basename($cm->oPage->page_path) == "blocks" ? "" : "/blocks") . "/appearance?extype=[appearance_VALUE]&path=[appearance_path_VALUEPATH]";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("static_appearance");
-	$oButton->icon = cm_getClassByFrameworkCss("object-group fa", "icon-tag");
+	$oButton->icon = Cms::getInstance("frameworkcss")->get("object-group fa", "icon-tag");
 	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);	
 	
@@ -363,7 +363,7 @@ if($_REQUEST["grp"] ||  system_ffcomponent_switch_by_path(__DIR__/*, false*/))
 		));
 
 		if($template) {
-			$oRecord->addContent('<pre class="' . cm_getClassByFrameworkCss(array(3), "col"). '" style="height:400px;">' .structure_parse_tpl_vars($template["buffer"]) . '</pre>', $group_custom);
+			$oRecord->addContent('<pre class="' . Cms::getInstance("frameworkcss")->get(array(3), "col"). '" style="height:400px;">' .structure_parse_tpl_vars($template["buffer"]) . '</pre>', $group_custom);
 		}
 
 		$html_wizard = system_process_page(array(

@@ -93,9 +93,9 @@ function update_vgallery_models($action, $ID_vgallery, $ID_node, $vgallery_name,
 		                                
 		                                if($old_file_full_path != stripslash($parzial_node_src_path) . $tmp_nodes_src_path) {
 											if(strpos(stripslash($parzial_node_src_path) . $tmp_nodes_src_path, $old_file_full_path) !== 0 && check_function("fs_operation")) {
-			                            		full_copy(DISK_UPDIR . $old_file_full_path, DISK_UPDIR . stripslash($parzial_node_src_path) . $tmp_nodes_src_path, true);
+			                            		full_copy(FF_DISK_UPDIR . $old_file_full_path, FF_DISK_UPDIR . stripslash($parzial_node_src_path) . $tmp_nodes_src_path, true);
                                                 if($old_file_full_path && ffCommon_dirname($old_file_full_path) != $old_file_full_path && check_function("fs_operation"))
-			                                        purge_dir(DISK_UPDIR . $old_file_full_path, $old_file_full_path, false);
+			                                        purge_dir(FF_DISK_UPDIR . $old_file_full_path, $old_file_full_path, false);
 											}
 		                                    $sSQL = "UPDATE files 
 		                                            SET 
@@ -121,9 +121,9 @@ function update_vgallery_models($action, $ID_vgallery, $ID_node, $vgallery_name,
 		                            if(strlen($part_node_src_path)) {
 		                                $parzial_node_src_path = stripslash($parzial_node_src_path) . "/" . $part_node_src_path;
 		                                
-		                                if(!is_dir(DISK_UPDIR . $parzial_node_src_path)) {
-		                                    if(@mkdir(DISK_UPDIR . $parzial_node_src_path))
-		                                        @chmod(DISK_UPDIR . $parzial_node_src_path, 0777);
+		                                if(!is_dir(FF_DISK_UPDIR . $parzial_node_src_path)) {
+		                                    if(@mkdir(FF_DISK_UPDIR . $parzial_node_src_path))
+		                                        @chmod(FF_DISK_UPDIR . $parzial_node_src_path, 0777);
 		                                }
 
 		                                $sSQL = "SELECT * 

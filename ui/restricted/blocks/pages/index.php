@@ -23,7 +23,7 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
-if (!AREA_STATIC_SHOW_MODIFY) {
+if (!Auth::env("AREA_STATIC_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -47,8 +47,9 @@ if(system_ffcomponent_switch_by_path(__DIR__, false)) {
 						, owner
 						, ID_domain
 						, visible
-						, meta_title
 						, permalink
+                        , meta_title
+                        , meta_title_alt
 					)
 					VALUES
 					(
@@ -58,8 +59,9 @@ if(system_ffcomponent_switch_by_path(__DIR__, false)) {
 						, '-1'
 						, '0'
 						, '1'
-						, ''
-						, '/'				
+						, '/'
+						, 'Home'
+						, 'Home'
 					)";
 			$db->execute($sSQL);
 		}
@@ -133,10 +135,10 @@ if(system_ffcomponent_switch_by_path(__DIR__, false)) {
 	$oGrid->record_id = "PageModify";
 	$oGrid->resources[] = $oGrid->record_id;
 	$oGrid->addEvent("on_before_parse_row", "static_on_before_parse_row");
-	$oGrid->display_new = AREA_STATIC_SHOW_ADDNEW;
+	$oGrid->display_new = Auth::env("AREA_STATIC_SHOW_ADDNEW");
 	$oGrid->display_edit_bt = false;
-	$oGrid->display_edit_url = AREA_STATIC_SHOW_MODIFY;
-	$oGrid->display_delete_bt = AREA_STATIC_SHOW_DELETE;
+	$oGrid->display_edit_url = Auth::env("AREA_STATIC_SHOW_MODIFY");
+	$oGrid->display_delete_bt = Auth::env("AREA_STATIC_SHOW_DELETE");
 	$oGrid->setWidthDialog("large");
 	$oGrid->widget_deps[] = array(
 		"name" => "labelsort"
@@ -213,7 +215,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, false)) {
 	$oButton->user_vars["url"] = $cm->oPage->site_path . $cm->oPage->page_path . "/appearance[full_path_VALUEPATH]";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("static_appearance");
-	$oButton->icon = cm_getClassByFrameworkCss("object-group fa", "icon-tag");
+	$oButton->icon = Cms::getInstance("frameworkcss")->get("object-group fa", "icon-tag");
 	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);		
 	
@@ -223,7 +225,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, false)) {
 	$oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "[full_path_VALUEPATH]/builder";
 	$oButton->aspect = "link";
 	$oButton->label = ffTemplate::_get_word_by_code("static_builder");
-	$oButton->icon = cm_getClassByFrameworkCss("industry", "icon-tag");
+	$oButton->icon = Cms::getInstance("frameworkcss")->get("industry", "icon-tag");
 	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);	
 		
@@ -238,7 +240,7 @@ if(system_ffcomponent_switch_by_path(__DIR__, false)) {
 	$oButton->display_label = false;
 	$oGrid->addGridButton($oButton);
 
-	if(ENABLE_STD_PERMISSION) {
+	if(Cms::env("ENABLE_STD_PERMISSION")) {
 	    $oButton = ffButton::factory($cm->oPage);
 	    $oButton->id = "permissions"; 
 		$oButton->ajax = ($disable_dialog ? false : $oGrid_models->record_id);
@@ -276,10 +278,10 @@ function static_on_before_parse_row($component) {
 	if(isset($component->grid_buttons["visible"])) {
 	    if($component->db[0]->getField("visible", "Number", true)) {
 	    	$component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->user_vars["url"] . "setvisible=0";
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
 	    } else {
 	    	$component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->user_vars["url"] . "setvisible=1";
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
 	    }
 	}	
 }

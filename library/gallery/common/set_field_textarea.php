@@ -25,21 +25,12 @@
  */
 function set_field_textarea($component = null) {
     $cm = cm::getInstance();
-    $textarea_choose = global_settings("TEXTAREA_DECISION");
 
-    $rev = array(
-                "codemirror" => "editarea", 
-                "editarea" => "codemirror"
-                );
-    
     if($component !== null)
     {
         $component->widget = "";
-        if(strlen($textarea_choose) &&  is_dir(FF_DISK_PATH . "/themes/library/". $textarea_choose) && is_dir(FF_DISK_PATH . "/themes/responsive/ff/ffField/widgets/" . $textarea_choose)) {
-            $component->widget = $textarea_choose;
-        } elseif (is_dir(FF_DISK_PATH . "/themes/library/" . $rev[$textarea_choose]) && is_dir(FF_DISK_PATH . "/themes/responsive/ff/ffField/widgets/" . $rev[$textarea_choose])) {
-            $component->widget = $rev[$textarea_choose];
-
+        if(is_dir(FF_DISK_PATH . "/themes/library/codemirror") && is_dir(FF_DISK_PATH . "/themes/responsive/ff/ffField/widgets/codemirror")) {
+            $component->widget = "codemirror";
         }
     } else {
         $component = true; 

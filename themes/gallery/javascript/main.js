@@ -1089,7 +1089,7 @@ ff.cms = (function () {
                     });
                 });
             },
-            "login" : {
+            /*"login" : {
                 "social" : function(name, title) {
                         ff.modules.security.social.requestLogin(title, '/login/social/' + name);
                 },
@@ -1116,7 +1116,7 @@ ff.cms = (function () {
 
                     return false;
                 }
-            },
+            },*/
             "load" : function(link, elem, effect, mode, onClickCallback, blockUI, jumpUI) {
                 loadAjax(link, elem, effect, mode, onClickCallback, blockUI, jumpUI);
             },
@@ -1258,7 +1258,13 @@ ff.cms = (function () {
                         mode = "append";
                         jumpUI = false;
                     }
+
                     if(link) {
+                        ff.cms.get(link);
+                        return false;
+                    }
+
+                    /*if(link) {
                         var linkHistory = window.location.href;
                         var linkParams = [];
                         if(params["search"]) {
@@ -1297,7 +1303,7 @@ ff.cms = (function () {
 
                         loadAjax(link + (linkParams.length ? "?" + linkParams.join("&") : ""), elem, effect, mode, callback, blockUI, jumpUI);
                         return false;
-                    }
+                    }*/
                 }
             }
 	};

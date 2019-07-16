@@ -49,8 +49,6 @@ if (!$cm->isXHR()/* && strpos(strtolower($_SERVER["HTTP_USER_AGENT"]), "googlebo
 //require_once("../../../../../../ff/main.php");
 //require_once("../../../../../../modules/security/common.php");
 //if ($plgCfg_ActiveComboEX_UseOwnSession)
-//else
-//    mod_security_check_session();
 
 $php_array = array();
 
@@ -81,11 +79,7 @@ if(isset($_REQUEST["term"]) && strlen($_REQUEST["term"]))
 $data_src = $_REQUEST["data_src"];
 //$selected_value = $_REQUEST["sel_val"];
 
-$actex_main_db = false;
-if ($actex_main_db)
-    $db = mod_security_get_main_db();
-else
-    $db = ffDB_Sql::factory();
+$db = ffDB_Sql::factory();
 
 
 

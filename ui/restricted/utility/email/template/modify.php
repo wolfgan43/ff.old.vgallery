@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_EMAIL_SHOW_MODIFY) {
+if (!Auth::env("AREA_EMAIL_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -39,7 +39,7 @@ if(defined("FTP_USERNAME") && strlen(FTP_USERNAME) && defined("FTP_PASSWORD") &&
 		$content = file_get_contents($base_path . $_REQUEST["keys"]["path"]);
 		$name = basename(ffcommon_dirname($_REQUEST["keys"]["path"]));
 	} else {
-		$content = file_get_contents(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents/mail/email.tpl");
+		$content = file_get_contents(__CMS_DIR__ . FF_THEME_DIR . "/" . THEME_INSET . "/contents/email/email.tpl");
 		$name = $_REQUEST["name"];
 	}
 	$is_valid = true;

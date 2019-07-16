@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-    if (!AREA_CHECKER_SHOW_MODIFY) {
+    if (!Auth::env("AREA_CHECKER_SHOW_MODIFY")) {
         ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
     }
     
@@ -149,7 +149,7 @@
 				$strError = set_uploads_repair();
 
                 if(check_function("check_fs"))
-				    check_fs(DISK_UPDIR, "/");
+				    check_fs(FF_DISK_UPDIR, "/");
 
 		        if(!$strError) {
 		            ffRedirect($ret_url);
@@ -231,7 +231,7 @@
 	}	
     $tpl = ffTemplate::factory(FF_DISK_PATH . "/themes/gallery/contents");
     $tpl->load_file("checker.html", "Main");
-	$tpl->set_var("ajax_loader", cm_getClassByFrameworkCss("spinner", "icon-tag", "spin"));
+	$tpl->set_var("ajax_loader", Cms::getInstance("frameworkcss")->get("spinner", "icon-tag", "spin"));
 /*
 	// cache
 	$selector = "cache";

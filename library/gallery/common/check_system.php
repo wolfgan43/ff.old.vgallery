@@ -75,23 +75,23 @@ function check_system($show_info = true) {
 
                 $check["info"] .= "/template" . " => " . ffTemplate::_get_word_by_code("tot_file_size") . get_literal_size($tot_size) . "<br>";
             }
-            if(!@is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . CM_SHOWFILES_THUMB_PATH)) {
-                $check["status"] .= ffTemplate::_get_word_by_code("directory_not_exist") . " " . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . CM_SHOWFILES_THUMB_PATH . "<br>";
+            if(!@is_dir(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images")) {
+                $check["status"] .= ffTemplate::_get_word_by_code("directory_not_exist") . " " . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images" . "<br>";
             } elseif($show_info) {
-                $fs = get_check_fs(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images/" . CM_SHOWFILES_THUMB_PATH);
+                $fs = get_check_fs(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/images");
                 $arrDir = array("d" => 1);
                 $tot_size = array_sum(array_diff($fs, $arrDir));
 
-                $check["info"] .= "/images/" . CM_SHOWFILES_THUMB_PATH . " => " . ffTemplate::_get_word_by_code("tot_file_size") . get_literal_size($tot_size) . "<br>";
+                $check["info"] .= "/images" . " => " . ffTemplate::_get_word_by_code("tot_file_size") . get_literal_size($tot_size) . "<br>";
             }
-            if(!@is_dir(DISK_UPDIR . "/users")) {
-                $check["status"] .= ffTemplate::_get_word_by_code("directory_not_exist") . " /" . basename(DISK_UPDIR) . "/users" . "<br>";
+            if(!@is_dir(FF_DISK_UPDIR . "/users")) {
+                $check["status"] .= ffTemplate::_get_word_by_code("directory_not_exist") . " /" . basename(FF_DISK_UPDIR) . "/users" . "<br>";
             } elseif($show_info) {
-                $fs = get_check_fs(DISK_UPDIR . "/users");
+                $fs = get_check_fs(FF_DISK_UPDIR . "/users");
                 $arrDir = array("d" => 1);
                 $tot_size = array_sum(array_diff($fs, $arrDir));
 
-                $check["info"] .= "/" . basename(DISK_UPDIR) . "/users" . " => " . ffTemplate::_get_word_by_code("tot_file_size") . get_literal_size($tot_size) . "<br>";
+                $check["info"] .= "/" . basename(FF_DISK_UPDIR) . "/users" . " => " . ffTemplate::_get_word_by_code("tot_file_size") . get_literal_size($tot_size) . "<br>";
             }                                                                                             
 
             $fs = get_check_fs(FF_DISK_PATH . FF_THEME_DIR . "/" . FRONTEND_THEME . "/" . GALLERY_TPL_PATH);

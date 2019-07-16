@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -166,7 +166,7 @@ if($db->nextRecord()) {
 	    $oRecord->addContent($obj_page_field, "account");
 	        
 	    if($generate_password) {
-	        $rnd_password = mod_sec_createRandomPassword();
+	        $rnd_password = Auth::password();
 
 	        $obj_page_field = ffField::factory($cm->oPage);
 	        $obj_page_field->id = "password";
@@ -175,7 +175,7 @@ if($db->nextRecord()) {
 	        $obj_page_field->properties["title"] = ffTemplate::_get_word_by_code(preg_replace('/[^a-zA-Z0-9]/', '', $register_name . "confirmpassword") . "_tip");   
 	        $obj_page_field->extended_type = "Password";
 	        $obj_page_field->crypt_method = "mysql_password";
-			if(ENABLE_PASSWORD_VALIDATOR) {
+			if(Cms::env("ENABLE_PASSWORD_VALIDATOR")) {
 			    $obj_page_field->addValidator("password");
 			}
 	        $obj_page_field->required = true;
@@ -190,7 +190,7 @@ if($db->nextRecord()) {
 	        $obj_page_field->properties["title"] = ffTemplate::_get_word_by_code(preg_replace('/[^a-zA-Z0-9]/', '', $register_name . "password") . "_tip");   
 	        $obj_page_field->extended_type = "Password";
 	        $obj_page_field->crypt_method = "mysql_password";
-			if(ENABLE_PASSWORD_VALIDATOR) {
+			if(Cms::env("ENABLE_PASSWORD_VALIDATOR")) {
 			    $obj_page_field->addValidator("password");
 			}
 	        $obj_page_field->required = true;
@@ -218,39 +218,19 @@ if($db->nextRecord()) {
 		                                         , "cols" => 1
 		                                      );
 
-	    if(ENABLE_AVATAR_SYSTEM) {                                          
+	    if(Cms::env("ENABLE_AVATAR_SYSTEM")) {
 	        $obj_page_field = ffField::factory($cm->oPage);
 	        $obj_page_field->id = "avatar";
 	        $obj_page_field->container_class = "register_avatar";
 	        //$obj_page_field->label = ffTemplate::_get_word_by_code("user_account_avatar");
-	        $obj_page_field->base_type = "Text";
 	        $obj_page_field->extended_type = "File";
-	        $obj_page_field->file_storing_path = DISK_UPDIR . "/user/[register-ID_VALUE]";
-	        $obj_page_field->file_temp_path = DISK_UPDIR . "/user";
+	        $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/user/[register-ID_VALUE]";
+	        $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/user";
 	        $obj_page_field->file_max_size = MAX_UPLOAD;
 	        $obj_page_field->file_full_path = true;
-	        $obj_page_field->file_check_exist = true;
-	        $obj_page_field->file_normalize = true;
-	        $obj_page_field->file_show_preview = true;
-
-		    $obj_page_field->uploadify_model = "vertical";
-		    $obj_page_field->uploadify_model_thumb = "avatar" . "vertical";
-
-	        $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-	        $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . $obj_page_field->uploadify_model_thumb . "/[_FILENAME_]";
-	//        $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-	//        $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/" . $obj_page_field->uploadify_model_thumb . "/[_FILENAME_]";
-
-	        $obj_page_field->control_type = "file";
-	        $obj_page_field->file_show_delete = true;
-	        $obj_page_field->widget = "uploadify"; 
-			if(check_function("set_field_uploader")) { 
-				$obj_page_field = set_field_uploader($obj_page_field);
-			}
-			$obj_page_field->file_writable = false;	
-			$obj_page_field->file_show_filename = false; 
-
-	        $oRecord->addContent($obj_page_field, "accountinfo"); 
+		    $obj_page_field->file_thumb = "avatar";
+	        $obj_page_field->widget = "uploadifive";
+	        $oRecord->addContent($obj_page_field, "accountinfo");
 	    }
 		                                      
 		$obj_page_field = ffField::factory($cm->oPage);
@@ -607,8 +587,8 @@ if($db->nextRecord()) {
                     $obj_page_field->base_type = "Text";
                     $obj_page_field->extended_type = "File";
 
-                    $obj_page_field->file_storing_path = DISK_UPDIR . "/users/[register-ID_VALUE]";
-                    $obj_page_field->file_temp_path = DISK_UPDIR . "/users";
+                    $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/users/[register-ID_VALUE]";
+                    $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/users";
                     $obj_page_field->file_max_size = MAX_UPLOAD;
 
                     $obj_page_field->file_show_filename = true; 
@@ -617,10 +597,10 @@ if($db->nextRecord()) {
                     $obj_page_field->file_normalize = true;
                      
                     $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[register-ID_VALUE]/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[register-ID_VALUE]/[_FILENAME_]";
-                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[_FILENAME_]";
-                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/users/[register-ID_VALUE]/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/users/[register-ID_VALUE]/[_FILENAME_]";
+                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/users/[_FILENAME_]";
+                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/users/[_FILENAME_]";
 
                     if($writable) {
                         $obj_page_field->control_type = "file";
@@ -651,8 +631,8 @@ if($db->nextRecord()) {
                     $obj_page_field->base_type = "Text";
                     $obj_page_field->extended_type = "File";
 
-                    $obj_page_field->file_storing_path = DISK_UPDIR . "/users/[register-ID_VALUE]";
-                    $obj_page_field->file_temp_path = DISK_UPDIR . "/users";
+                    $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/users/[register-ID_VALUE]";
+                    $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/users";
                     $obj_page_field->file_max_size = MAX_UPLOAD;
 
                     $obj_page_field->file_show_filename = true; 
@@ -661,10 +641,10 @@ if($db->nextRecord()) {
                     $obj_page_field->file_normalize = true;
                      
                     $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[register-ID_VALUE]/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[register-ID_VALUE]/[_FILENAME_]";
-                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[_FILENAME_]";
-                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/users/[register-ID_VALUE]/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/users/[register-ID_VALUE]/[_FILENAME_]";
+                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/users/[_FILENAME_]";
+                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/users/[_FILENAME_]";
 
                     if($writable) {
                         $obj_page_field->control_type = "file";
@@ -695,8 +675,8 @@ if($db->nextRecord()) {
                     $obj_page_field->base_type = "Text";
                     $obj_page_field->extended_type = "File";
 
-                    $obj_page_field->file_storing_path = DISK_UPDIR . "/users/[register-ID_VALUE]";
-                    $obj_page_field->file_temp_path = DISK_UPDIR . "/users";
+                    $obj_page_field->file_storing_path = FF_DISK_UPDIR . "/users/[register-ID_VALUE]";
+                    $obj_page_field->file_temp_path = FF_DISK_UPDIR . "/users";
                     $obj_page_field->file_max_size = MAX_UPLOAD;
 
                     $obj_page_field->file_show_filename = true; 
@@ -705,10 +685,10 @@ if($db->nextRecord()) {
                     $obj_page_field->file_normalize = true;
                      
                     $obj_page_field->file_show_preview = true;
-                    $obj_page_field->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[register-ID_VALUE]/[_FILENAME_]";
-                    $obj_page_field->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[register-ID_VALUE]/[_FILENAME_]";
-                    $obj_page_field->file_temp_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/users/[_FILENAME_]";
-                    $obj_page_field->file_temp_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/users/[_FILENAME_]";
+                    $obj_page_field->file_saved_view_url = CM_SHOWFILES . "/users/[register-ID_VALUE]/[_FILENAME_]";
+                    $obj_page_field->file_saved_preview_url = CM_SHOWFILES . "/thumb/users/[register-ID_VALUE]/[_FILENAME_]";
+                    $obj_page_field->file_temp_view_url = CM_SHOWFILES . "/users/[_FILENAME_]";
+                    $obj_page_field->file_temp_preview_url = CM_SHOWFILES . "/thumb/users/[_FILENAME_]";
 
                     if($writable) {
                         $obj_page_field->control_type = "file";
@@ -842,8 +822,8 @@ if($db->nextRecord()) {
         $obj_page_field->required = true;
         $oRecord->addContent($obj_page_field, "bill");
 
-        if(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) {
-        	$oRecord->additional_fields["shippingstate"] = new ffData(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE, "Number");
+        if(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0) {
+        	$oRecord->additional_fields["shippingstate"] = new ffData(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE"), "Number");
 		} else {
 	        $obj_page_field = ffField::factory($cm->oPage);
 	        $obj_page_field->id = "billstate";
@@ -918,8 +898,8 @@ if($db->nextRecord()) {
         $obj_page_field->required = true;
         $oRecord->addContent($obj_page_field, "ecommerce");
 
-        if(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0) {
-        	$oRecord->additional_fields["shippingstate"] = new ffData(AREA_ECOMMERCE_SHIPPING_LIMIT_STATE, "Number");
+        if(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0) {
+        	$oRecord->additional_fields["shippingstate"] = new ffData(Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE"), "Number");
 		} else {
 	        $obj_page_field = ffField::factory($cm->oPage);
 	        $obj_page_field->id = "shippingstate";

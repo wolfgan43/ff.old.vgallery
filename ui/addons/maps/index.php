@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!MODULE_SHOW_CONFIG) {
+if (!Auth::env("MODULE_SHOW_CONFIG")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -77,7 +77,7 @@ if(system_ffcomponent_switch_by_path(__DIR__)) {
 	$oButton = ffButton::factory($cm->oPage);
 	$oButton->id = "markers";
 	$oButton->label = ffTemplate::_get_word_by_code("marker_add");
-	$oButton->icon = cm_getClassByFrameworkCss("map-marker", "icon-tag");
+	$oButton->icon = Cms::getInstance("frameworkcss")->get("map-marker", "icon-tag");
 	$oButton->action_type = "gotourl";
 	$oButton->url = $cm->oPage->site_path . $cm->oPage->page_path . "/[name_VALUE]/fields";
 	$oButton->aspect = "link";

@@ -25,7 +25,7 @@
  */
 
 
-if (!(AREA_PROPERTIES_SHOW_MODIFY || AREA_PROPERTIES_DESIGN_SHOW_MODIFY)) {
+if (!(Auth::env("AREA_PROPERTIES_SHOW_MODIFY") || Auth::env("AREA_PROPERTIES_DESIGN_SHOW_MODIFY"))) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -306,7 +306,7 @@ switch ($item_source_tbl) {
 		$db->query($sSQL);
 		if (!$db->nextRecord()) {
 	        if($item_source_path != "/" && check_function("check_fs"))
-				check_fs(DISK_UPDIR . $item_source_path, $item_source_path);
+				check_fs(FF_DISK_UPDIR . $item_source_path, $item_source_path);
 
 			$sSQL = "SELECT files.*
         				FROM files
@@ -944,14 +944,14 @@ if ($hide_source) {
     $oRecord->addContent($oField);  */
 }
 
-if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY) 
+if (Auth::env("AREA_PROPERTIES_DESIGN_SHOW_MODIFY"))
 {
 
 	$group_field = "thumb";
 	$group_thumb = $group_field;
 	$oRecord->addContent(null, true, $group_thumb); 
    	$oRecord->groups[$group_thumb] = array(
-										"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+										"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 										, "tab" => ($skip_detail && !$allow_fs ? null: $group_thumb)
 										, "primary_field" => "thumb_hide"
 									 );  
@@ -1046,7 +1046,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 	$group_thumb_aspect = "thumb-" . $group_field;
 	$oRecord->addContent(null, true, $group_thumb_aspect); 
    	$oRecord->groups[$group_thumb_aspect] = array(
-										"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+										"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 										, "tab" => ($skip_detail && !$allow_fs ? null: $group_thumb)
 										, "primary_field" => "thumb_fluid"
 									 );       
@@ -1078,15 +1078,15 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 				    "container" => array(
 						"multi_pairs" => array(
 						    array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": " . ffTemplate::_get_word_by_code("grid_skip_all"))),
-						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
-						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
+						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
+						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
 						)
 				    )
 				    , "row" => array(
 						"multi_pairs" => array(
 						    array(new ffData("-1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": " . ffTemplate::_get_word_by_code("grid_skip_all"))),
-						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
-						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . cm_getClassByFrameworkCss("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
+						    array(new ffData("1", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "-fluid" : "")) : "") . "")),
+						    array(new ffData("2", "Number"), new ffData(ffTemplate::_get_word_by_code("yes") . ": DIV" . (Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) ? "." . Cms::getInstance("frameworkcss")->get("", "wrap" . ($framework_css["is_fluid"] ? "" : "-fluid")) : "") . ""))
 						)
 				    )
 				)
@@ -1101,7 +1101,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 	$group_thumb_image = "thumb-" . $group_field;
 	$oRecord->addContent(null, true, $group_thumb_image); 
    	$oRecord->groups[$group_thumb_image] = array(
-										"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+										"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 										, "tab" => ($skip_detail && !$allow_fs ? null: $group_thumb)
 										, "primary_field" => "thumb_image"
 									 );      
@@ -1202,7 +1202,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_thumb_sort = "thumb-" . $group_field;
 		$oRecord->addContent(null, true, $group_thumb_sort); 
    		$oRecord->groups[$group_thumb_sort] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_thumb)
 										 );     
 		/*$oRecord->addContent(null, true, "ThumbSort");
@@ -1246,7 +1246,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_thumb_nav = "thumb-" . $group_field;
 		$oRecord->addContent(null, true, $group_thumb_nav); 
    		$oRecord->groups[$group_thumb_nav] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_thumb)
 											, "primary_field" => "thumb_pagenav_location"
 										 );  
@@ -1408,7 +1408,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_detail = $group_field;
 		$oRecord->addContent(null, true, $group_detail); 
    		$oRecord->groups[$group_detail] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_detail)
 											, "primary_field" => "preview_hide"
 										 );  		 
@@ -1489,7 +1489,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_detail_aspect = "detail-" . $group_field;
 		$oRecord->addContent(null, true, $group_detail_aspect); 
    		$oRecord->groups[$group_detail_aspect] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_detail)
 											, "primary_field" => "preview_fluid"
 										 ); 		 
@@ -1527,7 +1527,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_detail_image = "detail-" . $group_field;
 		$oRecord->addContent(null, true, $group_detail_image); 
    		$oRecord->groups[$group_detail_image] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_detail)
 											, "primary_field" => "preview_image"
 										 );
@@ -1608,7 +1608,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_detail_social = "detail-" . $group_field;
 		$oRecord->addContent(null, true, $group_detail_social); 
    		$oRecord->groups[$group_detail_social] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_detail)
 										 );
 			/*							 		 
@@ -1640,7 +1640,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_detail_settings = "detail-" . $group_field;
 		$oRecord->addContent(null, true, $group_detail_settings); 
    		$oRecord->groups[$group_detail_settings] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_detail_settings)
 										 );
 		/*								 		 
@@ -1677,7 +1677,7 @@ if (AREA_PROPERTIES_DESIGN_SHOW_MODIFY)
 		$group_detail_settings_file = "detail-" . $group_field;
 		$oRecord->addContent(null, true, $group_detail_settings_file); 
    		$oRecord->groups[$group_detail_settings_file] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code("extras_" . $group_field)
 											, "tab" => ($skip_detail && !$allow_fs ? null: $group_detail_settings)
 										 );		
 		/*
@@ -1802,9 +1802,7 @@ function ExtrasModify_on_done_action($component, $action) {
 				refresh_cache($cache_type, $ID_item, "update");
 			}
 		    
-			if (FF_ENABLE_MEM_SHOWFILES_CACHING) {
-				ffCache::getInstance(CM_CACHE_ADAPTER)->clear("__vgallery_settings_thumb__");
-			}	    
+            ffCache::getInstance()->clear("/vg/thumbs");
 		}
     }
 }

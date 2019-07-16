@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
  
-if (!AREA_HTML_SHOW_MODIFY) {
+if (!Auth::env("AREA_HTML_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -67,7 +67,7 @@ system_ffcomponent_set_title(
 if(is_array($arrLang) && count($arrLang))
 {
 	$oRecord->user_vars["arrLang"] = $arrLang;
-	$oRecord->buttons_options["delete"]["display"] = AREA_HTML_SHOW_DELETE;
+	$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_HTML_SHOW_DELETE");
 	$oRecord->addEvent("on_do_action", "HtmlModify_on_do_action");
 
 	$is_valid = true;

@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_PUBLISHING_SHOW_DETAIL) {
+if (!Auth::env("AREA_PUBLISHING_SHOW_DETAIL")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -297,7 +297,7 @@ if($frmAction) {
 	                    $sSQL = "SELECT anagraph.ID
 	                                , CONCAT(
 	                                    IF(anagraph.avatar = ''
-	                                        , '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+	                                        , '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
 	                                        , CONCAT('<img src=\"" . CM_SHOWFILES . "/32x32', anagraph.avatar, '\" />')  
 	                                    ) 
 	                                    , anagraph.name
@@ -530,7 +530,7 @@ $publish_hide_dir = false; //da aggiungere hide dir
 switch($record["type"]) {
     case "gallery":
     //  if(check_function("check_fs"))
-    //      check_fs(DISK_UPDIR . $oRecord->user_vars["relative_path"], $oRecord->user_vars["relative_path"]);
+    //      check_fs(FF_DISK_UPDIR . $oRecord->user_vars["relative_path"], $oRecord->user_vars["relative_path"]);
 
         $oField = ffField::factory($cm->oPage);
         $oField->id = "relfiles";
@@ -734,26 +734,7 @@ switch($record["type"]) {
 	    $oField->actex_multi = true;  
 	    $oField->actex_having_field = "display_path";  
 	    $oField->actex_update_from_db = true;
-	    
-/*        $oField->widget = "autocompletetoken";
-        $oField->autocompletetoken_minLength = 0;
-        $oField->autocompletetoken_theme = "";
-        $oField->autocompletetoken_not_found_label = ffTemplate::_get_word_by_code("autocompletetoken_not_found");
-        $oField->autocompletetoken_init_label = ffTemplate::_get_word_by_code("autocompletetoken_init");
-        $oField->autocompletetoken_searching_label = ffTemplate::_get_word_by_code("autocompletetoken_searching");
-        $oField->autocompletetoken_label = ffTemplate::_get_word_by_code("autocompletetoken_label");
-        $oField->autocompletetoken_combo = true;
-        $oField->autocompletetoken_compare_having = "display_path";*/
-    //            $oField->autocompletetoken_limit = 1;
 
-    /* //DA sistemare FRONTEND
-    " . (AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK
-                                            ? "
-                                                INNER JOIN ecommerce_settings ON ecommerce_settings.ID_items = vgallery_nodes.ID 
-                                                    AND ecommerce_settings.actual_qta > 0 "
-                                            : ""
-                                    ) . "
-    */
         $oField->resources[] = "DetailModify";
         $oField->source_SQL = "SELECT DISTINCT vgallery_nodes.ID
                                     $display_fields
@@ -761,7 +742,7 @@ switch($record["type"]) {
                                     INNER JOIN vgallery ON vgallery.ID = vgallery_nodes.ID_vgallery
                                     
                                WHERE " . $contest_sql . "
-                                    AND (" . (AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK
+                                    AND (" . (Cms::env("AREA_SHOW_ECOMMERCE") && Cms::env("AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK")
                                             ? "IF(vgallery.enable_ecommerce > 0
                                                 , IF(vgallery.use_pricelist_as_item_thumb > 0
                                                     , IFNULL( 
@@ -798,9 +779,9 @@ switch($record["type"]) {
                                                 )
                                             WHERE 1
                                     )
-                                    " . (ENABLE_STD_PERMISSION 
+                                    " . (Cms::env("ENABLE_STD_PERMISSION")
 										? ""
-										: (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && ENABLE_ADV_PERMISSION && !OLD_VGALLERY
+										: (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && Cms::env("ENABLE_ADV_PERMISSION") && !OLD_VGALLERY
 											? " AND vgallery_nodes_rel_languages.visible > 0 " 
 											: " AND vgallery_nodes.visible > 0 "
 										)
@@ -816,21 +797,7 @@ switch($record["type"]) {
                                [HAVING]
                                [ORDER] [COLON] vgallery_nodes.is_dir DESC, display_path
                                [LIMIT]";
-    /*
-                                    " . (AREA_SHOW_ECOMMERCE && AREA_ECOMMERCE_LIMIT_FRONTEND_BY_STOCK
-                                            ? "
-                                                AND (
-                                                        (
-                                                            SELECT ecommerce_settings.actual_qta 
-                                                            FROM ecommerce_settings 
-                                                            WHERE ecommerce_settings.ID_items = vgallery_nodes.ID 
-                                                             GROUP BY ecommerce_settings.ID_items
-                                                        ) > 0
-                                                        OR (vgallery_nodes.is_dir > 0)
-                                                    )"
-                                            : ""
-                                    ) . "
-    */
+
         $oField->actex_update_from_db = true;
         $oField->parent_page = array($cm->oPage);
 
@@ -866,9 +833,9 @@ switch($record["type"]) {
         $sSQL_publishing_detail = "SELECT 
                                     rel_nodes.ID AS ID
                                     , (SELECT
-                                        IF( " . (ENABLE_STD_PERMISSION 
+                                        IF( " . (Cms::env("ENABLE_STD_PERMISSION")
 													? " 1 "
-													: (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && ENABLE_ADV_PERMISSION && !OLD_VGALLERY
+													: (LANGUAGE_INSET_ID != LANGUAGE_DEFAULT_ID && Cms::env("ENABLE_ADV_PERMISSION") && !OLD_VGALLERY
 														? " vgallery_nodes_rel_languages.visible > 0 " 
 														: " vgallery_nodes.visible > 0 "
 													)
@@ -941,7 +908,7 @@ switch($record["type"]) {
         $oField->source_SQL = "SELECT DISTINCT anagraph.ID 
                                     , CONCAT(anagraph.name, ' ', anagraph.surname) AS display_path
                                     , IF(anagraph.avatar = ''
-                                        , '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+                                        , '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
                                         , CONCAT('<img src=\"" . CM_SHOWFILES . "/80x80', anagraph.avatar, '\" />')  
                                     ) AS image
                                 FROM anagraph
@@ -993,7 +960,7 @@ switch($record["type"]) {
                                     , (SELECT 
                                         CONCAT(
                                             IF(anagraph.avatar = ''
-                                                , '" . cm_getClassByFrameworkCss("noimg", "icon-tag", "2x") . " ' 
+                                                , '" . Cms::getInstance("frameworkcss")->get("noimg", "icon-tag", "2x") . " ' 
                                                 , CONCAT('<img src=\"" . CM_SHOWFILES . "/80x80', anagraph.avatar, '\" />')  
                                             ) 
                                             , anagraph.name
@@ -1129,7 +1096,7 @@ $oDetail->display_grid_location = "Footer";
 
 $oField->parent = array($oDetail);
 
-$oDetail->fixed_post_content = '<div class="' . cm_getClassByFrameworkCss("", "row-default") . '"><div class="' . cm_getClassByFrameworkCss(array(10), "col") . '">' . $oField->process() . '</div>' . $oAddRel->process() . '</div>';
+$oDetail->fixed_post_content = '<div class="' . Cms::getInstance("frameworkcss")->get("", "row-default") . '"><div class="' . Cms::getInstance("frameworkcss")->get(array(10), "col") . '">' . $oField->process() . '</div>' . $oAddRel->process() . '</div>';
 
 
 $oField = ffField::factory($cm->oPage);

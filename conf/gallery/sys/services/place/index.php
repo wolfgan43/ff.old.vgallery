@@ -48,8 +48,6 @@ if (!$cm->isXHR()/* && strpos(strtolower($_SERVER["HTTP_USER_AGENT"]), "googlebo
 
 //if ($plgCfg_ActiveComboEX_UseOwnSession)
 
-//else
-//    mod_security_check_session();
 
 check_function("get_locale");
 
@@ -246,11 +244,7 @@ if(!$params["out"]) {
 
 function vg_place_search($params, $schema_field, $field) {
     $arrResult = array();
-    $actex_main_db = false; 
-    if ($actex_main_db)
-        $db = mod_security_get_main_db();
-    else
-        $db = ffDB_Sql::factory();
+    $db = ffDB_Sql::factory();
 
     if($params["father"] && $params["place"] && $params["father"]["key"] != $params["place"]) {
         switch($params["father"]["key"]) {
@@ -486,9 +480,14 @@ function vg_place_search($params, $schema_field, $field) {
             $relevance_search = explode("%", $params["term"]);
             if(is_array($compare)&& count($compare)) {
                 if(LANGUAGE_INSET != LANGUAGE_DEFAULT) {
-                    $term_translated = translate($params["term"], LANGUAGE_DEFAULT, LANGUAGE_INSET);
-                    if($term_translated == $params["term"])
-                        $term_translated = "";
+                    check_function("get_webservices");
+                    $webservices    = get_webservices(); //todo:da sistemare il webservices e fare servizio di translation per il cms
+                    if($webservices["translate.google"] && $webservices["translate.google"]["enable"]) {
+                        $translator = ffTranslator::getInstance("google", $webservices["translate.google"]["code"]);
+                        $term_translated = $translator->translate($params["term"]);
+                        if ($term_translated == $params["term"])
+                            $term_translated = "";
+                    }
                 }
                 foreach($compare AS $field_key => $field_name) {
                     if($term_translated) {
@@ -552,11 +551,17 @@ function vg_place_add_result($db, $params, $res = array()) {
 		$cat 																			= $params["prefix"] . $group . $params["postfix"];
 
 	$arrDesc 																			= explode(" - ", $db->getField("name", "Text", true));
-	$desc 																				= (LANGUAGE_INSET == LANGUAGE_DEFAULT
-                                                                                            ? ffCommon_charset_encode($arrDesc[0])
-                                                                                            : ffCommon_charset_encode(translate($arrDesc[0], LANGUAGE_INSET))
-                                                                                        );
-	$html_title 																		= $desc;
+    $desc = $arrDesc[0];
+    if(LANGUAGE_INSET != LANGUAGE_DEFAULT) {
+        check_function("get_webservices");
+        $webservices    = get_webservices(); //todo:da sistemare il webservices e fare servizio di translation per il cms
+        if($webservices["translate.google"] && $webservices["translate.google"]["enable"]) {
+            $translator = ffTranslator::getInstance("google", $webservices["translate.google"]["code"]);
+            $desc = $translator->translate($desc);
+        }
+    }
+
+	$html_title 																		= ffCommon_charset_encode($desc);
 	if($params["term"])
 		$html_title 																	= preg_replace("/(" . preg_quote(str_replace("%", " ", $params["term"])) . ")/i", "<mark>\${1}</mark>", $html_title);
 
@@ -579,10 +584,10 @@ function vg_place_add_result($db, $params, $res = array()) {
 			if(!$cat)
 				$cat 																	= ffTemplate::_get_word_by_code($params["place"]);
 
-			$res[$cat][] 																= '<li' . ($params["current"] == ffCommon_url_rewrite($ID_node) ? ' class=' . cm_getClassByFrameworkCss("current", "util") : '') . '>' . $html_title . '</li>';
+			$res[$cat][] 																= '<li' . ($params["current"] == ffCommon_url_rewrite($ID_node) ? ' class=' . Cms::getInstance("frameworkcss")->get("current", "util") : '') . '>' . $html_title . '</li>';
 			break;
 		case "ul":
-			$res[] 																		= '<li' . ($params["current"] == ffCommon_url_rewrite($ID_node) ? ' class=' . cm_getClassByFrameworkCss("current", "util") : '') . '>' . $html_title . ($cat ? " - " . $cat : "") . '</li>';
+			$res[] 																		= '<li' . ($params["current"] == ffCommon_url_rewrite($ID_node) ? ' class=' . Cms::getInstance("frameworkcss")->get("current", "util") : '') . '>' . $html_title . ($cat ? " - " . $cat : "") . '</li>';
 			break;
 		default:
 			$res[] 																		= array(

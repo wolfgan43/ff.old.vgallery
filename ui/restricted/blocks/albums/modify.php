@@ -24,17 +24,17 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
- 	if (!(AREA_GALLERY_SHOW_MODIFY || AREA_GALLERY_SHOW_ADDNEW || AREA_GALLERY_SHOW_DELETE)) {
+ 	if (!(Auth::env("AREA_GALLERY_SHOW_MODIFY") || Auth::env("AREA_GALLERY_SHOW_ADDNEW") || Auth::env("AREA_GALLERY_SHOW_DELETE"))) {
 	    ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 	}
 	
 	check_function("system_ffcomponent_set_title");
 	
 	system_ffcomponent_resolve_by_path();
-	if(!is_dir(DISK_UPDIR . $_REQUEST["keys"]["permalink"]))
-		mkdir(DISK_UPDIR . $_REQUEST["keys"]["permalink"], 0777, true);
+	if(!is_dir(FF_DISK_UPDIR . $_REQUEST["keys"]["permalink"]))
+		mkdir(FF_DISK_UPDIR . $_REQUEST["keys"]["permalink"], 0777, true);
 
-	if(!is_writable(DISK_UPDIR . $_REQUEST["keys"]["permalink"]))
+	if(!is_writable(FF_DISK_UPDIR . $_REQUEST["keys"]["permalink"]))
 		$strError = ffTemplate::_get_word_by_code("gallery_unable_to_write");	
 
 	$oRecord = ffRecord::factory($cm->oPage);
@@ -58,10 +58,10 @@
 		$album_title = ucwords(str_replace("-", " " , basename($_REQUEST["keys"]["permalink"])));
 		
 		if(!$strError && check_function("check_fs"))
-			check_fs(DISK_UPDIR . $_REQUEST["keys"]["permalink"], $_REQUEST["keys"]["permalink"]);    		
+			check_fs(FF_DISK_UPDIR . $_REQUEST["keys"]["permalink"], $_REQUEST["keys"]["permalink"]);    		
 
 	
-		$it = new FilesystemIterator(DISK_UPDIR . $_REQUEST["keys"]["permalink"]);
+		$it = new FilesystemIterator(FF_DISK_UPDIR . $_REQUEST["keys"]["permalink"]);
 		foreach ($it as $fileinfo) {
 			$arrPath[] = stripslash($_REQUEST["keys"]["permalink"]) . "/" . $fileinfo->getFilename();
 		}			
@@ -109,8 +109,8 @@
 	$oField->base_type = "Text";
 	$oField->control_type = "file";
 	$oField->extended_type = "File";
-	$oField->file_storing_path = DISK_UPDIR . "/[albumName_VALUE]";
-	$oField->file_temp_path = DISK_UPDIR . "/tmp";
+	$oField->file_storing_path = FF_DISK_UPDIR . "/[albumName_VALUE]";
+	$oField->file_temp_path = FF_DISK_UPDIR . "/tmp";
 	$oField->file_full_path = true;
 	$oField->file_check_exist = true;
 	$oField->file_show_filename = true; 
@@ -138,7 +138,7 @@
  		$albumNameOld = $component->form_fields["albumName"]->default_value	->getValue();
  	
 		if($albumNameOld != $albumName) {
-			@rename(DISK_UPDIR . "/" . $albumNameOld, DISK_UPDIR . "/" . $albumName);
+			@rename(FF_DISK_UPDIR . "/" . $albumNameOld, FF_DISK_UPDIR . "/" . $albumName);
 			
 			ffRedirect(ffcommon_dirname($cm->oPage->getRequestUri()) . "/" . $albumName);
 		}

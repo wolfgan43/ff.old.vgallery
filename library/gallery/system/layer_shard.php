@@ -295,8 +295,6 @@
 			} else {
 				check_function("system_get_sections");
 				check_function("system_layer_gallery");
-				//if(check_function("get_layout_settings"))
-				//	$layout_settings_popup = get_layout_settings(NULL, "ADMIN");
 
 				$template = system_get_blocks(null, array(
 					"blocks" => array(
@@ -319,66 +317,6 @@
 
 				$frame_buffer = $buffer["pre"] . $buffer["content"] . $buffer["post"];
 
-				/*
-				if(check_function("query_layout"))
-					$sSQL = query_layout_by_smart_url(basename($settings_path));
-
-				if(strlen($sSQL))
-				{
-					$db->query($sSQL);
-					if($db->nextRecord() && check_function("system_layer_gallery")) {
-						$ID_layout 		= $db->getField("ID", "Number", true);
-						$type 			= $db->getField("type", "Text", true);
-						$layout["ID"] 													= $ID_layout;
-						$layout["ID_type"] 												= $db->getField("ID_type", "Number", true);
-						$layout["ID_section"] 											= null;
-						$layout["prefix"] 												= "L";
-						$layout["smart_url"] 											= $db->getField("smart_url", "Text", true);
-						$layout["title"] 												= $db->getField("name", "Text", true);
-						$layout["type_class"] 											= $db->getField("type_class", "Text", true);
-						$layout["type_group"] 											= $db->getField("type_group", "Text", true);
-						$layout["multi_id"] 											= $db->getField("multi_id", "Text", true);
-						$layout["type"] 												= $type;
-						$layout["location"] 											= $db->getField("location", "Text", true);
-						$layout["template"] 											= $db->getField("template", "Text", true);
-						$layout["template_detail"] 										= $db->getField("template_detail", "Text", true);
-						$layout["tpl_path"] 											= $db->getField("tpl_path", "Text", true);
-						$layout["value"] 												= $db->getField("value", "Text", true);
-						$layout["params"] 												= $db->getField("params", "Text", true);
-						$layout["last_update"] 											= $db->getField("last_update", "Text", true);
-						$layout["frequency"] 											= $db->getField("frequency", "Text", true);
-						$layout["use_in_content"] 										= $db->getField("use_in_content", "Number", true);
-						$layout["ajax"] 												= $db->getField("use_ajax", "Number", true);
-						$layout["ajax_on_ready"] 										= $db->getField("ajax_on_ready", "Text", true);
-						$layout["ajax_on_event"] 										= $db->getField("ajax_on_event", "Text", true);
-						$layout["content"] 												= "";
-						$layout["settings"] 											= null;
-						$layout["plugins"] 												= $db->getField("js_lib", "Text", true);
-						$layout["js"] 													= $db->getField("js", "Text", true);
-						$layout["css"] 													= $db->getField("css", "Text", true);
-						$layout["visible"] 												= $db->getField("visible", "Text", true);
-						if($layout["visible"]) {
-							if(check_function("get_layout_settings"))
-								$layout["settings"] = get_layout_settings($ID_layout, $type);
-							$layout["ajax"] = false;
-							$layout["db"]["value"] = $layout["value"];
-							$layout["db"]["params"] = $layout["params"];
-							$layout["db"]["real_path"] = $db->getField("real_path", "Text", true);
-						}
-
-						$main_section_params["search"] = $globals->search;
-						$main_section_params["navigation"] = $globals->navigation;
-
-						$main_section_params["user_path"] = $layout["db"]["real_path"];
-						$main_section_params["settings_path"] = $layout["db"]["real_path"];
-
-						$buffer = system_block_process($layout, $main_section_params);
-
-						$main_section_params = $buffer["params"];
-						$main_section_params["count_block"]++;
-						$frame_buffer = $buffer["default"];
-					}
-				}*/
 			}
     }
 

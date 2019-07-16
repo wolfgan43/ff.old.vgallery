@@ -77,7 +77,7 @@ function process_landing_search($user_path, $group = null)
 
 	$arrLandingPage = process_landing_search_data($user_path, $group);
 
-    $arrLandingPageGroup = process_landing_tag_group(null, global_settings("SEARCH_VGALLERY_LIMIT")); //process_landing_tag_group_default(global_settings("SEARCH_VGALLERY_LIMIT"));
+    $arrLandingPageGroup = process_landing_tag_group(null, Cms::env("SEARCH_VGALLERY_LIMIT")); //process_landing_tag_group_default(Cms::env("SEARCH_VGALLERY_LIMIT"));
     //print_r($arrLandingPageGroup);
 	if($cm->isXHR()) {
         $res = process_landing_tag_content_by_type($arrLandingPage, $group, "search", false);
@@ -101,12 +101,22 @@ function process_landing_place($user_path, $type) {
     $arrLandingPageGroup = process_landing_tag_group($group);
     $vg_params["search"]["place"]["city"] = $arrLandingPlace["keys"];
     $vg_params["settings_path"] = true;
+
+
+    $landing_name = $arrLandingPlace["name"];
+    if(LANGUAGE_INSET != LANGUAGE_DEFAULT) {
+        check_function("get_webservices");
+        $webservices    = get_webservices(); //todo:da sistemare il webservices e fare servizio di translation per il cms
+        if($webservices["translate.google"] && $webservices["translate.google"]["enable"]) {
+            $translator = ffTranslator::getInstance("google", $webservices["translate.google"]["code"]);
+            $landing_name = $translator->translate($landing_name);
+        }
+    }
+
+
     $vg_params["title"] = (0 && $arrLandingPlace["h1"]
         ? $arrLandingPlace["h1"]
-        : ffTemplate::_get_word_by_code("landing_place_" . $group) . " " . preposition("in", (LANGUAGE_INSET != LANGUAGE_DEFAULT
-            ? translate($arrLandingPlace["name"], LANGUAGE_INSET)
-            : $arrLandingPlace["name"]
-        ))
+        : ffTemplate::_get_word_by_code("landing_place_" . $group) . " " . preposition("in", $landing_name)
     );
     $vg_params["description"] = $arrLandingPlace["pre_content"];
     //$vg_params["fixed_pre_content"] = "" //$arrLandingPlace["pre_content"];
@@ -305,7 +315,7 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
     $cm = cm::getInstance();  
     $globals = ffGlobals::getInstance("gallery");
 
-	if(is_array($arrLandingPage) && count($arrLandingPage) && check_function("get_layout_settings")) 
+	if(is_array($arrLandingPage) && count($arrLandingPage) && check_function("get_layout_settings"))
     {
         check_function("preposition");
         
@@ -334,18 +344,20 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
         		)
         	)
         );
-		$framework_css = cache_get_settings("framework_css", "landing-page", $framework_css);
+		$framework_css = Cms::getSchema("framework_css", "landing-page", $framework_css);
 		        
        // $framework_css = array_replace_recursive($framework_css, $arrLandingPage["framework_css"]);
         /***
         * Open Template
         */
+
         $tpl_data["custom"] = "landing-page" . str_replace("/", "_", $user_path). ".html";
         $tpl_data["base"] = "landing_page.html";
         $tpl_data["result"] = get_template_cascading($user_path, $tpl_data);
 
         $tpl = ffTemplate::factory($tpl_data["result"]["path"]);
-        $tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");   
+        //$tpl->load_file($tpl_data["result"]["prefix"] . $tpl_data[$tpl_data["result"]["type"]], "main");
+        $tpl->load_file($tpl_data["result"]["name"], "main");
 
         /***
         * Init Template
@@ -357,16 +369,16 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 
         //da potenziare
         $tpl->set_var("landing_type", $type);
-        $tpl->set_var("landing_wrap", cm_getClassByDef($framework_css["header"]["container"]));
-        $tpl->set_var("landing_wrap_inner", cm_getClassByDef($framework_css["header"]["inner"]));
+        $tpl->set_var("landing_wrap", Cms::getInstance("frameworkcss")->getClass($framework_css["header"]["container"]));
+        $tpl->set_var("landing_wrap_inner", Cms::getInstance("frameworkcss")->getClass($framework_css["header"]["inner"]));
         
         /**
         * Process Content Landing Page
         */
 		if(is_array($arrLandingPageGroup["contents"]) && count($arrLandingPageGroup["contents"])) {
-        	$tpl->set_var("landing_menu_class", cm_getClassByDef($framework_css["body"]["menu"])); 
-        	$tpl->set_var("landing_type_class", cm_getClassByFrameworkCss("navbar", "bar"));
-            $tpl->set_var("landing_container_class", cm_getClassByDef($framework_css["body"]["container"])); 
+        	$tpl->set_var("landing_menu_class", Cms::getInstance("frameworkcss")->getClass($framework_css["body"]["menu"])); 
+        	$tpl->set_var("landing_type_class", Cms::getInstance("frameworkcss")->get("navbar", "bar"));
+            $tpl->set_var("landing_container_class", Cms::getInstance("frameworkcss")->getClass($framework_css["body"]["container"])); 
 			/*if(!$group) {
 				$group = $arrLandingPageGroup["starter"];
 			}*/
@@ -381,7 +393,7 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 			);			
 
 			$res = process_landing_tag_content_by_type($arrLandingPage, $group, $type, false);            
-			if(global_settings("SEARCH_MENU") && $res["group"] !== false) {
+			if($res["group"] !== false) {
 	            foreach($arrLandingPageGroup["contents"] AS $group_key => $arrContent) {
             		if(is_array($res["group"]) && array_search($group_key, $res["group"]) === false)
             			continue;
@@ -391,7 +403,7 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 	                $tpl->set_var("landing_item_name", $arrContent["label"]);
 	                $tpl->set_var("landing_item_class", "");
 	                if($group == $arrContent["name"]) {
-                		$tpl->set_var("landing_item_class", ' class="' . cm_getClassByFrameworkCss("current", "util") . '"');
+                		$tpl->set_var("landing_item_class", ' class="' . Cms::getInstance("frameworkcss")->get("current", "util") . '"');
 	                    $current_group = $arrContent;
 	                }
 	                $tpl->parse("SezTypeItem", true);
@@ -422,7 +434,7 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
                 "base" => "landing-page"
                 , "default" => $arrLandingPage["smart_url"]
             )
-            , "settings" => get_layout_settings(null, "SEARCH")
+            , "settings" => Cms::getPackage("search") // get_layout_settings(null, "SEARCH")
         );
         
         $unic_id = "landing-page-" . $arrLandingPage["code"];
@@ -434,15 +446,15 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 		$globals->seo["current"] 							= "tag";
         $globals->seo["tag"]["ID"]                      	= $arrLandingPage["ID"];
          if($group) {
-		 	$globals->seo["tag"]["title"]                   = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["title"]), global_settings("SEARCH_META_TITLE_PROTOTYPE"));
-			$globals->seo["tag"]["title_header"]            = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["h1"]), global_settings("SEARCH_META_TITLE_HEADER_PROTOTYPE"));
-			$globals->seo["tag"]["meta"]["description"][]   = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["description"]), global_settings("SEARCH_META_DESCRIPTION_PROTOTYPE"));
-			$globals->seo["tag"]["meta"]["keywords"][]      = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["keywords"]), global_settings("SEARCH_KEYWORDS_PROTOTYPE"));
+		 	$globals->seo["tag"]["title"]                   = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["title"]), Cms::env("SEARCH_META_TITLE_PROTOTYPE"));
+			$globals->seo["tag"]["title_header"]            = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["h1"]), Cms::env("SEARCH_META_TITLE_HEADER_PROTOTYPE"));
+			$globals->seo["tag"]["meta"]["description"][]   = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["description"]), Cms::env("SEARCH_META_DESCRIPTION_PROTOTYPE"));
+			$globals->seo["tag"]["meta"]["keywords"][]      = str_replace(array("[GROUP]", "[TERM]"), array($current_group["label"], $arrLandingPage["keywords"]), Cms::env("SEARCH_KEYWORDS_PROTOTYPE"));
         } else {
-		 	$globals->seo["tag"]["title"]                   = str_replace("[TERM]", $arrLandingPage["title"], global_settings("SEARCH_OVERVIEW_META_TITLE_PROTOTYPE"));
-			$globals->seo["tag"]["title_header"]            = str_replace("[TERM]", $arrLandingPage["title"], global_settings("SEARCH_OVERVIEW_META_TITLE_HEADER_PROTOTYPE"));
-			$globals->seo["tag"]["meta"]["description"][]   = str_replace("[TERM]", $arrLandingPage["title"], global_settings("SEARCH_OVERVIEW_META_DESCRIPTION_PROTOTYPE"));
-			$globals->seo["tag"]["meta"]["keywords"][]      = str_replace("[TERM]", $arrLandingPage["title"], global_settings("SEARCH_OVERVIEW_KEYWORDS_PROTOTYPE"));
+		 	$globals->seo["tag"]["title"]                   = str_replace("[TERM]", $arrLandingPage["title"], Cms::env("SEARCH_OVERVIEW_META_TITLE_PROTOTYPE"));
+			$globals->seo["tag"]["title_header"]            = str_replace("[TERM]", $arrLandingPage["title"], Cms::env("SEARCH_OVERVIEW_META_TITLE_HEADER_PROTOTYPE"));
+			$globals->seo["tag"]["meta"]["description"][]   = str_replace("[TERM]", $arrLandingPage["title"], Cms::env("SEARCH_OVERVIEW_META_DESCRIPTION_PROTOTYPE"));
+			$globals->seo["tag"]["meta"]["keywords"][]      = str_replace("[TERM]", $arrLandingPage["title"], Cms::env("SEARCH_OVERVIEW_KEYWORDS_PROTOTYPE"));
         }
         
 
@@ -472,24 +484,24 @@ function parse_landing_page($user_path, $arrLandingPage, $arrLandingPageGroup, $
 	    /**
 	    * Admin Father Bar
 	    */
-	    if(AREA_SEARCH_SHOW_MODIFY) {
+	    if(Auth::env("AREA_SEARCH_SHOW_MODIFY")) {
 	        $admin_menu["admin"]["unic_name"] = $unic_id;
 	        $admin_menu["admin"]["title"] = $layout["title"];
 	        $admin_menu["admin"]["class"] = $layout["type_class"];
 	        $admin_menu["admin"]["group"] = $layout["type_group"];
 	        $admin_menu["admin"]["modify"] = "/restricted/tags/page/modify?keys[code]=" . $arrLandingPage["code"];
 	        $admin_menu["admin"]["delete"] = "";
-	        if(AREA_PROPERTIES_SHOW_MODIFY) {
+	        if(Auth::env("AREA_PROPERTIES_SHOW_MODIFY")) {
 	            $admin_menu["admin"]["extra"] = VG_SITE_RESTRICTED . "/tags/group";
 	        }
-	        if(AREA_ECOMMERCE_SHOW_MODIFY) {
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
 	            $admin_menu["admin"]["ecommerce"] = "";
 	        }
-	        if(AREA_LAYOUT_SHOW_MODIFY) {
+	        if(Auth::env("AREA_LAYOUT_SHOW_MODIFY")) {
 	           // $admin_menu["admin"]["layout"]["ID"] = $layout["ID"];
 	           // $admin_menu["admin"]["layout"]["type"] = $layout["type"];
 	        }
-	        if(AREA_SETTINGS_SHOW_MODIFY) {
+	        if(Auth::env("AREA_SETTINGS_SHOW_MODIFY")) {
 	            $admin_menu["admin"]["setting"] = ""; //$layout["type"]; 
 	        }
 
@@ -547,8 +559,8 @@ function parse_landing_page_overview($arrLandingPage, $arrLandingPageGroup, $vg_
             } else {
                 $landing_data = $arrLandingPageGroup["contents"][$overview_data["name"]];
 
-                $vg_params["limit"]["elem"] = global_settings("SEARCH_OVERVIEW_LIMIT");
-                if(global_settings("SEARCH_OVERVIEW_SUBTITLE"))
+                $vg_params["limit"]["elem"] = Cms::env("SEARCH_OVERVIEW_LIMIT");
+                if(Cms::env("SEARCH_OVERVIEW_SUBTITLE"))
                 	$vg_params["fixed_pre_content"] = '<a class="lp-grp" href="javascript:void(0);" rel="' . $overview_data["name"] . '">' . $overview_data["label"] . '</a>';
             }
 

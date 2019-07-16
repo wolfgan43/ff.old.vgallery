@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
  
-if (!AREA_VGALLERY_TYPE_SHOW_MODIFY) {
+if (!Auth::env("AREA_VGALLERY_TYPE_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 $db = ffDB_Sql::factory(); 
@@ -258,7 +258,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$oRecord->addContent(null, true, $group_thumb); 
 	        
    		$oRecord->groups[$group_thumb] = array(
-											"title" => cm_getClassByFrameworkCss("th-large", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("th-large", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
 											, "tab" => $group_thumb
 										 );    
 	    
@@ -361,7 +361,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$oButton->aspect = "link"; 
 		$oButton->class = "showall thumb";
 		$oButton->label = ffTemplate::_get_word_by_code("vgallery_type_show_all");
-		$oButton->icon = cm_getClassByFrameworkCss("plus-square-o", "icon-tag", "lg"); 
+		$oButton->icon = Cms::getInstance("frameworkcss")->get("plus-square-o", "icon-tag", "lg"); 
 		$oButton->jsaction = "javascript:void(0);";
 	    $oGrid_thumb->addActionButtonHeader($oButton);
 	    
@@ -507,7 +507,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$oRecord->addContent(null, true, $group_detail); 
 
    		$oRecord->groups[$group_detail] = array(
-											"title" => cm_getClassByFrameworkCss("file", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("file", "icon-tag") . ffTemplate::_get_word_by_code("vgallery_type_" . $group_field)
 											, "tab" => $group_detail
 										 );    
 	    
@@ -609,7 +609,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$oButton->aspect = "link"; 
 		$oButton->class = "showall detail";
 		$oButton->label = ffTemplate::_get_word_by_code("vgallery_type_show_all");
-		$oButton->icon = cm_getClassByFrameworkCss("plus-square-o", "icon-tag", "lg"); 
+		$oButton->icon = Cms::getInstance("frameworkcss")->get("plus-square-o", "icon-tag", "lg"); 
 		$oButton->jsaction = "javascript:void(0);";
 	    $oGrid_detail->addActionButtonHeader($oButton);
 	    	    
@@ -735,7 +735,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$group_backoffice = "list-" . $group_field;
 		$oRecord->addContent(null, true, $group_backoffice); 
    		$oRecord->groups[$group_backoffice] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
 											, "tab" => $group_backoffice
 										 );  
 
@@ -876,7 +876,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$group_seo = "list-" . $group_field;
 		$oRecord->addContent(null, true, $group_seo); 
    		$oRecord->groups[$group_seo] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
 											, "tab" => $group_seo
 										 );  
 
@@ -1013,7 +1013,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$group_displayrule = "list-" . $group_field;
 		$oRecord->addContent(null, true, $group_displayrule); 
    		$oRecord->groups[$group_displayrule] = array(
-											"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
+											"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
 											, "tab" => $group_seo
 										 );  
 
@@ -1200,7 +1200,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		$oField->user_vars["default_value"] = $default_value;
 		$oRecord->addContent($oField, $group_displayrule);
 
-		if(AREA_SHOW_ECOMMERCE && $src["type"] == "vgallery") {
+		if(Cms::env("AREA_SHOW_ECOMMERCE") && $src["type"] == "vgallery") {
 			$oField = ffField::factory($cm->oPage);
 			$oField->id = "enable_in_cart";
 			$oField->label = ffTemplate::_get_word_by_code("admin_vgallery_type_enable_in_cart");
@@ -1328,7 +1328,7 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 			$group_public = "list-" . $group_field;
 			$oRecord->addContent(null, true, $group_public); 
    			$oRecord->groups[$group_public] = array(
-												"title" => cm_getClassByFrameworkCss("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
+												"title" => Cms::getInstance("frameworkcss")->get("edit", "icon-tag") . ffTemplate::_get_word_by_code($src["type"] . "_fields_" . $group_field)
 												, "tab" => $group_public
 											 );  
 		
@@ -1339,8 +1339,8 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 	        $oField->base_type = "Text";
 	        $oField->control_type = "file";
 		    $oField->extended_type = "File";
-		    $oField->file_storing_path = DISK_UPDIR . "/" . $src["type"] . "-type/[name_FATHER]";
-		    $oField->file_temp_path = DISK_UPDIR . "/tmp/" . $src["type"] . "-type";
+		    $oField->file_storing_path = FF_DISK_UPDIR . "/" . $src["type"] . "-type/[name_FATHER]";
+		    $oField->file_temp_path = FF_DISK_UPDIR . "/tmp/" . $src["type"] . "-type";
 			$oField->file_allowed_mime = array();	                
 		    $oField->file_full_path = true;
 	        $oField->file_check_exist = true;
@@ -1349,8 +1349,8 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 		    $oField->file_writable = false;
 		    $oField->file_normalize = true;
 	        $oField->file_show_preview = true;
-		    $oField->file_saved_view_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/[_FILENAME_]";
-		    $oField->file_saved_preview_url = FF_SITE_PATH . constant("CM_SHOWFILES") . "/thumb/[_FILENAME_]";
+		    $oField->file_saved_view_url = CM_SHOWFILES . "/[_FILENAME_]";
+		    $oField->file_saved_preview_url = CM_SHOWFILES . "/thumb/[_FILENAME_]";
 			
 			$oField->widget = "uploadify";
 			if(check_function("set_field_uploader")) { 
@@ -1383,18 +1383,18 @@ if(check_function("get_update_by_service") && !set_interface_for_copy_by_service
 
 function VGalleryFields_on_before_parse_row($component)
 {
-    $check_enabled = cm_getClassByFrameworkCss("check-square-o", "icon");
-    $check_disabled = cm_getClassByFrameworkCss("square-o", "icon");
+    $check_enabled = Cms::getInstance("frameworkcss")->get("check-square-o", "icon");
+    $check_disabled = Cms::getInstance("frameworkcss")->get("square-o", "icon");
     $enable_field = "";
     if(isset($component->db[0]->fields["visible"])) {
     	$url_action = "javascript:ff.ajax.doRequest({'action': 'setvisible', 'fields': [], 'url': '" . ffCommon_specialchars($component->record_url) . "?keys[ID]=" . $component->key_fields["ID"]->getValue() . "&src=" . $component->user_vars["src"]["type"] . "&value=" . !$component->db[0]->getField("visible", "Number", true) . "&limit=" . $component->user_vars["limit"] . "'});";
     	if($component->db[0]->getField("visible", "Number", true)) {
 			  $component->grid_disposition_elem["rows"][1] = array();
-			  $enable_field = '<a href="' . $url_action . '" class="' . cm_getClassByFrameworkCss("eye", "icon") . '"></a>';
+			  $enable_field = '<a href="' . $url_action . '" class="' . Cms::getInstance("frameworkcss")->get("eye", "icon") . '"></a>';
 			  $component->row_class = "";
     	} else {
     		$component->grid_disposition_elem["rows"][1]["class"] = "hidden";
-    		$enable_field = '<a href="' . $url_action . '" class="' . cm_getClassByFrameworkCss("eye-slash", "icon", "transparent") . '"></a>';
+    		$enable_field = '<a href="' . $url_action . '" class="' . Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent") . '"></a>';
     		$component->row_class = "hideable hidden";
     	}
     }
@@ -1403,7 +1403,7 @@ function VGalleryFields_on_before_parse_row($component)
     	$component->grid_fields["name"]->setValue(
 			$enable_field
 			. '<a href="' . $component->grid_fields["name"]->url_parsed . '">'
-    		. cm_getClassByFrameworkCss("vg-" . ffCommon_url_rewrite($component->db[0]->getField("extended_type", "Text", true)), "icon-tag", array("2x"))
+    		. Cms::getInstance("frameworkcss")->get("vg-" . ffCommon_url_rewrite($component->db[0]->getField("extended_type", "Text", true)), "icon-tag", array("2x"))
     		. " [" . $component->db[0]->getField("extended_type", "Text", true) . "] "
     		. $component->db[0]->getField("name", "Text", true)
     		. '</a>'

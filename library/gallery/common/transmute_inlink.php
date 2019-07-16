@@ -34,7 +34,7 @@
 	$escaped_url = str_replace(".", "\.", $escaped_url);
 	$escaped_url = str_replace("-", "\-", $escaped_url);
 
-	    if(!global_settings("TRANSMUTE_ALIAS") || $alias === null) {
+	    if(!Cms::env("TRANSMUTE_ALIAS") || $alias === null) {
 	/*
 	        $description = preg_replace( '|\w{3,10}://[\w\.\-_]+(:\d+)?[^\s\"\'<>\(\)\{\}]*|',  
 	                    '<a href="\\0" target="_blank">' . '\\0' . '</a>', $description);
@@ -57,7 +57,7 @@
 
 		$description = str_replace("http://http://", "http://", $description);
 
-	    if(!global_settings("TRANSMUTE_ALIAS") || $email_alias === null) {
+	    if(!Cms::env("TRANSMUTE_ALIAS") || $email_alias === null) {
 	        /*$description = eregi_replace('[-a-z0-9!#$%&\'*+/=?^_`{|}~.]+@([.]?[a-zA-Z0-9_/-])*',
 	           '<a href="mailto:\\0">' . '\\0' . '</a>', $description);*/
 	        $description = preg_replace('/([.0-9a-z_-]+)@(([0-9a-z-]+\.)+[0-9a-z]{2,4})/i','<a href="mailto:$1@$2">$1@$2</a>', $description);

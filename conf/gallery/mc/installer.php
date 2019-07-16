@@ -23,7 +23,7 @@
  * @link https://bitbucket.org/cmsff/vgallery
  */
 
-if (!AREA_UPDATER_SHOW_MODIFY) {
+if (!Auth::env("AREA_UPDATER_SHOW_MODIFY")) {
 	ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -94,7 +94,7 @@ if($db->nextRecord()) {
 $res = force_install($token, $ftp_host, $ftp_user, $ftp_password, $ftp_path, $ftp_ip, "execute");
 
 if(!$res["error"]) {
-	$tpl = ffTemplate::factory(ffCommon_dirname(__FILE__));
+	$tpl = ffTemplate::factory(__DIR__);
 	$tpl->load_file("installer.html", "main");
 	$tpl->set_var("site_path", FF_SITE_PATH);
 	$tpl->set_var("domain", "http://" . basename($cm->real_path_info) . "/index.php");
@@ -257,3 +257,4 @@ function force_install($token, $ftp_host, $ftp_user, $ftp_password, $ftp_path, $
 
 	return array("total" => count($arrBasicInstallFile), "count" => $count_check_file, "error" => $strError);
 }
+

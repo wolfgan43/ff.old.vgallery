@@ -194,7 +194,7 @@ function FormManageDetail_on_before_parse_row($component) {
 
     if(isset($component->grid_buttons["visible"])) {
         if($component->db[0]->getField("visible", "Number", true)) {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye", "icon");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye", "icon");
             $component->grid_buttons["visible"]->icon = null;
             $component->grid_buttons["visible"]->action_type = "submit"; 
             $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0&ret_url=" . urlencode($component->parent[0]->getRequestUri());
@@ -206,7 +206,7 @@ function FormManageDetail_on_before_parse_row($component) {
                 //$component->grid_buttons["visible"]->url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=0&frmAction=setvisible&ret_url=" . urlencode($component->parent[0]->getRequestUri());
             }   
         } else {
-            $component->grid_buttons["visible"]->class = cm_getClassByFrameworkCss("eye-slash", "icon", "transparent");
+            $component->grid_buttons["visible"]->class = Cms::getInstance("frameworkcss")->get("eye-slash", "icon", "transparent");
             $component->grid_buttons["visible"]->icon = null;
             $component->grid_buttons["visible"]->action_type = "submit";     
             $component->grid_buttons["visible"]->form_action_url = $component->grid_buttons["visible"]->parent[0]->record_url . "?[KEYS]" . $component->grid_buttons["visible"]->parent[0]->addit_record_param . "setvisible=1&ret_url=" . urlencode($component->parent[0]->getRequestUri());

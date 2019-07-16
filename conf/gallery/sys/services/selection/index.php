@@ -48,8 +48,6 @@ if (!$cm->isXHR()/* && strpos(strtolower($_SERVER["HTTP_USER_AGENT"]), "googlebo
 
 //if ($plgCfg_ActiveComboEX_UseOwnSession)
 
-//else
-//    mod_security_check_session();
 
 $php_array                  = array();
 $actex_sql                  = null;
@@ -114,10 +112,7 @@ $relevance_search = array();
 if($search_value)
     $relevance_search = explode("%", $search_value);
 
-if ($actex_main_db)
-	$db = mod_security_get_main_db();
-else
-	$db = ffDB_Sql::factory();
+$db = ffDB_Sql::factory();
 
 if ($operation && strpos($operation, "[VALUE]") !== false)
 {

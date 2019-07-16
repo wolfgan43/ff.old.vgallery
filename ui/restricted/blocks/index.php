@@ -23,4 +23,3 @@
  * @license http://opensource.org/licenses/gpl-3.0.html
  * @link https://github.com/wolfgan43/vgallery
  */
- $cm->oPage->tplAddCss("ff.core");

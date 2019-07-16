@@ -156,8 +156,8 @@ if(defined("MASTER_SITE") && strlen(MASTER_SITE)) {
 
             if(is_array($arr_slave)) {
                 $operation = array();
-                require(ffCommon_dirname(__FILE__) . "/check/fixed_operations.php");    
-				require(ffCommon_dirname(__FILE__) . "/check/force_drop_db.php");
+                require(__DIR__ . "/check/fixed_operations.php");    
+				require(__DIR__ . "/check/force_drop_db.php");
 
                 $isset_operation_fixed = false;
 

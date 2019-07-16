@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_PUBLISHING_SHOW_MODIFY) {
+if (!Auth::env("AREA_PUBLISHING_SHOW_MODIFY")) {
     ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
@@ -49,7 +49,7 @@ $oRecord->populate_edit_SQL = "SELECT publishing.*
 									) AS display_name
 								FROM publishing 
 								WHERE publishing.ID =" . $db->toSql($_REQUEST["keys"]["ID"], "Number");
-$oRecord->buttons_options["delete"]["display"] = AREA_PUBLISHING_SHOW_DELETE;
+$oRecord->buttons_options["delete"]["display"] = Auth::env("AREA_PUBLISHING_SHOW_DELETE");
 $oRecord->addEvent("on_do_action", "PublishingModify_on_do_action");
 $oRecord->addEvent("on_done_action", "PublishingModify_on_done_action");
 $oRecord->tab = true;

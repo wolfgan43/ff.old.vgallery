@@ -24,12 +24,10 @@
  * @link https://github.com/wolfgan43/vgallery
  */
 
-if (!AREA_NOTIFY_SHOW_MODIFY) {
+if (!Auth::env("AREA_NOTIFY_SHOW_MODIFY")) {
 	ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
 }
 
-$user_permission = get_session("user_permission");
-$uid = $user_permission["ID"];
 
 // -------------------------
 //          RECORD

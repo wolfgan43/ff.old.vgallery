@@ -175,7 +175,7 @@ $oButton->action_type = "gotourl";
 $oButton->url = $cm->oPage->site_path . ffCommon_dirname($cm->oPage->page_path) . "/city?ID_province=[ID_VALUE]";
 $oButton->aspect = "link";
 $oButton->label = ffTemplate::_get_word_by_code("place_city");
-$oButton->icon = cm_getClassByFrameworkCss("building", "icon-tag");
+$oButton->icon = Cms::getInstance("frameworkcss")->get("building", "icon-tag");
 $oButton->display_label = false;
 $oGrid->addGridButton($oButton);
 

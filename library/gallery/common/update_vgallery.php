@@ -318,10 +318,10 @@
 		                ) {
 		                    if(strpos($field_value->getValue(), "/") !== 0) {
 		                        if(is_file($field_value->file_temp_path . "/" . $field_value->getValue())) {
-		                            $field_value->setValue(str_replace(DISK_UPDIR, "", $field_value->file_storing_path) . "/" . $field_value->getValue());
+		                            $field_value->setValue(str_replace(FF_DISK_UPDIR, "", $field_value->file_storing_path) . "/" . $field_value->getValue());
 		                            //@unlink($component->form_fields[$field_key]->file_temp_path . "/" . $field_value->getValue());
 								} elseif(is_file($field_value->file_storing_path . "/" . $field_value->getValue())) {
-		                            $field_value->setValue(str_replace(DISK_UPDIR, "", $field_value->file_storing_path) . "/" . $field_value->getValue());
+		                            $field_value->setValue(str_replace(FF_DISK_UPDIR, "", $field_value->file_storing_path) . "/" . $field_value->getValue());
 								} else  {
 									$field_value->setValue("/" . $field_value->getValue());
 								}
@@ -397,8 +397,8 @@
 		                    || $field_value->user_vars["extended_type"] == "UploadImage" 	                
 		                ) {
 		                	if(strlen($field_value->getValue())
-		                		&& !is_file(DISK_UPDIR . $field_value->getValue())
-		                		&& is_file(DISK_UPDIR . $folder . "/" . basename($field_value->getValue()))
+		                		&& !is_file(FF_DISK_UPDIR . $field_value->getValue())
+		                		&& is_file(FF_DISK_UPDIR . $folder . "/" . basename($field_value->getValue()))
 		                	) {
 		                		$field_value->setValue($folder . "/" . basename($field_value->getValue()));
 		                	} 
@@ -633,11 +633,11 @@
 
 		if(is_array($resources) && count($resources)) {
 			foreach($resources AS $resource_path => $resource) {
-				$files = glob(DISK_UPDIR . $component->user_vars["parent_old"] . "/" . $component->user_vars["name_old"] . $resource_path . "/*");
+				$files = glob(FF_DISK_UPDIR . $component->user_vars["parent_old"] . "/" . $component->user_vars["name_old"] . $resource_path . "/*");
 
 				if(is_array($files) && count($files)) {
 					foreach ($files as $real_file) {
-						$file = str_replace(DISK_UPDIR, "" , $real_file);
+						$file = str_replace(FF_DISK_UPDIR, "" , $real_file);
 						if(!is_dir($real_file) && array_search($file, $resource) === false) {
 							@unlink($real_file);
 						}
@@ -882,7 +882,7 @@
 
 			if($lang["ID"] == LANGUAGE_DEFAULT_ID) {
 				if(!strlen($smart_url)) {
-					if(!DISABLE_SMARTURL_CONTROL) {
+					if(!Cms::env("DISABLE_SMARTURL_CONTROL")) {
 						$component->tplDisplayError(ffTemplate::_get_word_by_code("smart_url_empty"));
 						return true;
 					}
@@ -900,7 +900,7 @@
 		            $not_unic = false;
 		        }
 
-		        if(($not_unic || AREA_VGALLERY_ADD_ID_IN_REALNAME) && strpos($primary_meta["smart_url"], "-" . $ID_node) === false && !$is_dir) {
+		        if(($not_unic || Auth::env("AREA_VGALLERY_ADD_ID_IN_REALNAME")) && strpos($primary_meta["smart_url"], "-" . $ID_node) === false && !$is_dir) {
         			$postfix_smart_url = "-" . $ID_node;
 		        }
 		        
@@ -1015,22 +1015,22 @@
   function vgallery_convert_resource($content, $full_path) {
   	static $gallery = null;
   	if(!$gallery) {
-  		$gallery = glob(DISK_UPDIR . $full_path . "/*", GLOB_ONLYDIR);
+  		$gallery = glob(FF_DISK_UPDIR . $full_path . "/*", GLOB_ONLYDIR);
   	}
 
-	preg_match_all('#' . SITE_UPDIR . '[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $content, $media);
+	preg_match_all('#' . FF_SITE_UPDIR . '[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $content, $media);
 	if(is_array($media) && count($media[0])) {
 		foreach($media[0] AS $media_value) {
-			$base_path = SITE_UPDIR;
+			$base_path = FF_SITE_UPDIR;
 			$file = $media_value;
 		
 			if(!is_file(FF_DISK_PATH . $file)) {
-				if(is_file(DISK_UPDIR . $full_path . "/" . basename($media_value)))
+				if(is_file(FF_DISK_UPDIR . $full_path . "/" . basename($media_value)))
 					$field_path = "";
-				elseif(is_file(DISK_UPDIR . $full_path . "/" . basename(ffCommon_dirname($media_value)) . "/" . basename($media_value)))
+				elseif(is_file(FF_DISK_UPDIR . $full_path . "/" . basename(ffCommon_dirname($media_value)) . "/" . basename($media_value)))
 					$field_path = "/" . basename(ffCommon_dirname($media_value));
 			
-				if(is_file(DISK_UPDIR . $full_path . $field_path . "/" . basename($media_value)))
+				if(is_file(FF_DISK_UPDIR . $full_path . $field_path . "/" . basename($media_value)))
 					$url_rewrite[$media_value] = $base_path . $full_path . $field_path . "/" . basename($media_value);
 					
 				if(is_array($gallery) && count($gallery)) {
@@ -1050,15 +1050,15 @@
 	if(is_array($media) && count($media[0])) {
 		foreach($media[0] AS $media_value) {
 			$base_path = CM_SHOWFILES;
-			$file = str_replace(CM_SHOWFILES, SITE_UPDIR, $media_value);
+			$file = str_replace(CM_SHOWFILES, FF_SITE_UPDIR, $media_value);
 		
 			if(!is_file(FF_DISK_PATH . $file)) {
-				if(is_file(DISK_UPDIR . $full_path . "/" . basename($media_value)))
+				if(is_file(FF_DISK_UPDIR . $full_path . "/" . basename($media_value)))
 					$field_path = "";
-				elseif(is_file(DISK_UPDIR . $full_path . "/" . basename(ffCommon_dirname($media_value)) . "/" . basename($media_value)))
+				elseif(is_file(FF_DISK_UPDIR . $full_path . "/" . basename(ffCommon_dirname($media_value)) . "/" . basename($media_value)))
 					$field_path = "/" . basename(ffCommon_dirname($media_value));
 
-				if(is_file(DISK_UPDIR . $full_path . $field_path . "/" . basename($media_value)))
+				if(is_file(FF_DISK_UPDIR . $full_path . $field_path . "/" . basename($media_value)))
 					$url_rewrite[$media_value] = $base_path . $full_path . $field_path . "/" . basename($media_value);
 
 				if(is_array($gallery) && count($gallery)) {

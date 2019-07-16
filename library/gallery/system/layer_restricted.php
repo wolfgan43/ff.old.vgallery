@@ -26,8 +26,8 @@ This program is free software: you can redistribute it and/or modify
 
 function system_load_menu($type = "admin") 
 {
-	if(is_file(CM_CACHE_PATH . "/menu/" . $type . "." . FF_PHP_EXT))
-		require CM_CACHE_PATH . "/menu/" . $type . "." . FF_PHP_EXT;
+	if(is_file(CM_CACHE_DISK_PATH . "/menu/" . $type . "." . FF_PHP_EXT))
+		require CM_CACHE_DISK_PATH . "/menu/" . $type . "." . FF_PHP_EXT;
 
     /** @var include $menu */
     if(!is_array($menu))
@@ -669,7 +669,8 @@ function system_load_menu($type = "admin")
         						"key" 							=> $vgallery_name
 							    , "subkey" 						=> "V-" . $ID_node
 							    , "path" 						=> "/" . $type . "/contents" . $full_path
-							    , "label" 						=> $meta_title . '<span class="nav-label">' . $count_node . '</span>'
+							    , "label" 						=> $meta_title
+                                , "badge"                       => $count_node
 								, "dialog" 						=> false
         					);
 
@@ -685,7 +686,7 @@ function system_load_menu($type = "admin")
 			*/
 			if($menu_override["albums"] !== false)
 			{
-				$album = glob(DISK_UPDIR . "/*", GLOB_ONLYDIR);
+				$album = glob(FF_DISK_UPDIR . "/*", GLOB_ONLYDIR);
 				if(is_array($album) && count($album)) {
 					$extend["block"]["contents"]["albums"] 		= true;
 					$extend["content"]["contents"]["albums"]	= true;
@@ -718,7 +719,7 @@ function system_load_menu($type = "admin")
 								, "subkey" 							=> $album_name 
 								, "path" 							=> "/" . $type . "/albums/" . $album_name
 								, "rel"								=> $block_type["gallery"]["smart_url"] . "-" . $album_name
-								, "label" 							=> ucwords(str_replace("-", " " , $album_name)) . '<span class="sub-title">' . SITE_UPDIR . "/" . $album_name .'</span>'
+								, "label" 							=> ucwords(str_replace("-", " " , $album_name)) . '<span class="sub-title">' . FF_SITE_UPDIR . "/" . $album_name .'</span>'
 								, "dialog" 							=> $block["dialog"]	
 		 	 				);
 
@@ -1219,8 +1220,9 @@ function system_load_menu($type = "admin")
 					$menu["users"]["nodes"][] = array(
  						"key" 								=> "users"
 						, "subkey" 							=> "users-all"
-						, "path"							=>"/" . $type . "/users/" . ffCommon_url_rewrite($cat_name) . '<span class="nav-label">' . $count_node . '</span>'
-						, "label" 							=>  $cat_name  
+						, "path"							=> "/" . $type . "/users/" . ffCommon_url_rewrite($cat_name)
+						, "label" 							=>  $cat_name
+		                , "badge"                           => $count_node
 				    ); 	
 
 					if(is_array($menu_override["auth"]["piece"]))
@@ -1448,10 +1450,8 @@ function system_layer_manage($cm)
 	//}
 
 	check_function("set_generic_tags");
-	//if(check_function("check_chron_job"))
-	//    check_chron_job(ffGetFilename(VG_WS_ECOMMERCE));
 
-	if (!AREA_ECOMMERCE_SHOW_MODIFY) {
+	if (!Auth::env("AREA_ECOMMERCE_SHOW_MODIFY")) {
 	    prompt_login(null, FF_SITE_PATH . ($globals->page["alias"] ? "" : VG_WS_ECOMMERCE) . "/login");
 	    //ffRedirect(FF_SITE_PATH . VG_WS_ECOMMERCE . "/login?ret_url=" . urlencode($_SERVER['REQUEST_URI']) . "&relogin");
 	}
@@ -1469,7 +1469,7 @@ function system_layer_manage($cm)
 	                            , "addstock" => "/addstock"
 	                        );
 	//Anagraph
-	if ((AREA_ANAGRAPH_SHOW_MODIFY || AREA_ANAGRAPH_SHOW_ADDNEW || AREA_ANAGRAPH_SHOW_DELETE)) {
+	if ((Auth::env("AREA_ANAGRAPH_SHOW_MODIFY") || Auth::env("AREA_ANAGRAPH_SHOW_ADDNEW") || Auth::env("AREA_ANAGRAPH_SHOW_DELETE"))) {
         mod_restricted_add_menu_child(array(
             "key"       => "anagraph"
             , "path"    => VG_WS_ECOMMERCE . "/anagraph"
@@ -1496,9 +1496,7 @@ function system_layer_manage($cm)
 	                            , (SELECT count(*) FROM anagraph WHERE anagraph.categories = '') AS count_nodes 
 	                        ");
 	    if($db->nextRecord()) {
-	        if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
-	            || strpos($cm->path_info, VG_WS_ECOMMERCE . "/anagraph") === 0
-	        ) {
+	        if(strpos($cm->path_info, VG_WS_ECOMMERCE . "/anagraph") === 0) {
 	            if(strpos($cm->path_info, VG_WS_ECOMMERCE . "/anagraph") === 0 && strpos($cm->path_info, "modify") !== false) {
 	                $hide_anagraph_categories = true;
 	            } else {
@@ -1518,7 +1516,7 @@ function system_layer_manage($cm)
 	    }
 	}
 	//Products 
-	if((AREA_VGALLERY_SHOW_MODIFY || AREA_VGALLERY_SHOW_ADDNEW || AREA_VGALLERY_SHOW_DELETE || AREA_VGALLERY_SHOW_SEO || AREA_VGALLERY_SHOW_PERMISSION || AREA_ECOMMERCE_SHOW_MODIFY)) {
+	if((Auth::env("AREA_VGALLERY_SHOW_MODIFY") || Auth::env("AREA_VGALLERY_SHOW_ADDNEW") || Auth::env("AREA_VGALLERY_SHOW_DELETE") || Auth::env("AREA_VGALLERY_SHOW_SEO") || Auth::env("AREA_VGALLERY_SHOW_PERMISSION") || Auth::env("AREA_ECOMMERCE_SHOW_MODIFY"))) {
 	    $db_manage_detail = ffDB_Sql::factory();
 	    $db->query("SELECT vgallery.* 
 	                           FROM vgallery
@@ -1534,11 +1532,11 @@ function system_layer_manage($cm)
 	        } while($db->nextRecord());    
 	        
 	        if(is_array($vg_data) && count($vg_data)) {
-	            if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	            if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 	                get_file_permission(null, "vgallery_nodes", array_keys($vg_data));
 
 	            foreach($vg_data AS $vg_data_key => $vg_data_value) {
-	                if(ENABLE_STD_PERMISSION && check_function("get_file_permission"))
+	                if(Cms::env("ENABLE_STD_PERMISSION") && check_function("get_file_permission"))
 	                    $file_permission = get_file_permission($vg_data_value["full_path"], "vgallery_nodes");
 	                if(!check_mod($file_permission, 1, false))
 	                    continue;
@@ -1549,9 +1547,7 @@ function system_layer_manage($cm)
                         , "label"   => ffTemplate::_get_word_by_code("vgallery_" . $vg_data_value["name"])
                     ));
 
-	                if(MOD_RES_FULLBAR || array_key_exists("fullbar", $cm->modules["restricted"])
-	                    || strpos($cm->path_info, VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])) === 0
-	                ) {
+	                if(strpos($cm->path_info, VG_WS_ECOMMERCE . "/vgallery/" . ffCommon_url_rewrite($vg_data_value["name"])) === 0) {
 	                    if(basename($cm->path_info) == "ecommerce") {
 	                        foreach($menu_structure AS $structure_key => $structure_value) {
 	                            if(constant("AREA_ECOMMERCE_" . strtoupper($structure_key) . "_SHOW_MODIFY")) {
@@ -1580,7 +1576,7 @@ function system_layer_manage($cm)
                                         ));
 	                                }
 	                            }
-	                        } elseif(constant("AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY")) {
+	                        } elseif(Auth::env("AREA_ECOMMERCE_SETTINGS_SHOW_MODIFY")) {
                                 mod_restricted_add_menu_sub_element(array(
                                     "key"           => $vg_data_value["name"]
                                     , "subkey"      => "ecommerce_settings"
@@ -1603,7 +1599,7 @@ function system_layer_manage($cm)
 	                            , "[QUERY_STRING]");
 	                        }*/
 
-	                        if(AREA_ECOMMERCE_SHOW_LOCATION && ECOMMERCE_CHARGE_METHOD) {
+	                        if(Cms::env("AREA_ECOMMERCE_SHOW_LOCATION") && Cms::env("ECOMMERCE_CHARGE_METHOD")) {
 	                            $location  = (strlen($_REQUEST["frmAction"]) ? $_REQUEST["location"] : null);
 	                        }
 	                        
@@ -1645,7 +1641,7 @@ function system_layer_manage($cm)
 	                                                                , vgallery_nodes.parent AS parent
 	                                                            FROM vgallery_nodes
 	                                                                  LEFT JOIN ecommerce_settings ON ecommerce_settings.ID_items = vgallery_nodes.ID"
-	                                                                . (AREA_ECOMMERCE_SHOW_LOCATION && ECOMMERCE_CHARGE_METHOD
+	                                                                . (Cms::env("AREA_ECOMMERCE_SHOW_LOCATION") && Cms::env("ECOMMERCE_CHARGE_METHOD")
 	                                                                    ? ($location > 0 
 	                                                                        ? " INNER JOIN ecommerce_settings_location ON ecommerce_settings_location.ID_items = vgallery_nodes.ID AND ecommerce_settings_location.ID_location = " . $db_manage_detail->toSql($location, "Number") . "
 	                                                                            INNER JOIN ecommerce_location ON ecommerce_location.ID = ecommerce_settings_location.ID_location"
@@ -1674,7 +1670,7 @@ function system_layer_manage($cm)
 	                                                                    , 1
 	                                                                    , 0
 	                                                                )
-	                                                                " . (AREA_ECOMMERCE_SHOW_LOCATION && ECOMMERCE_CHARGE_METHOD && $location === "0"
+	                                                                " . (Cms::env("AREA_ECOMMERCE_SHOW_LOCATION") && Cms::env("ECOMMERCE_CHARGE_METHOD") && $location === "0"
 	                                                                    ? " AND ISNULL(ecommerce_settings_location.ID) "
 	                                                                    : ""
 	                                                                ) . " 
@@ -1711,14 +1707,14 @@ function system_layer_manage($cm)
 	    }
 	}
 	//Discount
-	if(AREA_ECOMMERCE_USE_COUPON || AREA_ECOMMERCE_USE_PROMOTION) {
+	if(Cms::env("AREA_ECOMMERCE_USE_COUPON") || Cms::env("AREA_ECOMMERCE_USE_PROMOTION")) {
         mod_restricted_add_menu_child(array(
             "key"       => "discount"
             , "path"    => VG_WS_ECOMMERCE . "/discount"
             , "label"   => ffTemplate::_get_word_by_code("discount")
         ));
 
-	    if(AREA_ECOMMERCE_USE_COUPON && AREA_COUPON_SHOW_MODIFY) {
+	    if(Cms::env("AREA_ECOMMERCE_USE_COUPON") && AREA_COUPON_SHOW_MODIFY) {
             mod_restricted_add_menu_sub_element(array(
                 "key"           => "discount"
                 , "subkey"      => "coupon"
@@ -1762,15 +1758,15 @@ function system_layer_manage($cm)
         ));
 	}
 	//Documents
-	if(AREA_ECOMMERCE_SHOW_DOCUMENT) {
+	if(Cms::env("AREA_ECOMMERCE_SHOW_DOCUMENT")) {
         mod_restricted_add_menu_child(array(
             "key"       => "documents"
             , "path"    => VG_WS_ECOMMERCE . "/documents"
             , "label"   => ffTemplate::_get_word_by_code("documents")
         ));
 
-	    if(AREA_BILL_SHOW_MODIFY) {
-	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
+	    if(Auth::env("AREA_BILL_SHOW_MODIFY")) {
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_ACTIVITY"))
                 mod_restricted_add_menu_sub_element(array(
                     "key"           => "documents"
                     , "subkey"      => "bill_sent"
@@ -1778,7 +1774,7 @@ function system_layer_manage($cm)
                     , "label"       => ffTemplate::_get_word_by_code("bill_sent")
                 ));
 
-	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_PASSIVITY"))
                 mod_restricted_add_menu_sub_element(array(
                     "key"           => "documents"
                     , "subkey"      => "bill_received"
@@ -1786,8 +1782,8 @@ function system_layer_manage($cm)
                     , "label"       => ffTemplate::_get_word_by_code("bill_received")
                 ));
 	    }
-	    if(AREA_PAYMENTS_SHOW_MODIFY) {
-	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
+	    if(Auth::env("AREA_PAYMENTS_SHOW_MODIFY")) {
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_PASSIVITY"))
                 mod_restricted_add_menu_sub_element(array(
                     "key"           => "documents"
                     , "subkey"      => "payments_sent"
@@ -1795,7 +1791,7 @@ function system_layer_manage($cm)
                     , "label"       => ffTemplate::_get_word_by_code("payments_sent")
                 ));
 
-	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_ACTIVITY"))
                 mod_restricted_add_menu_sub_element(array(
                     "key"           => "documents"
                     , "subkey"      => "payments_received"
@@ -1804,7 +1800,7 @@ function system_layer_manage($cm)
                 ));
 	    }
 	    if(1) {
-	        if(AREA_ECOMMERCE_SHOW_ACTIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_ACTIVITY"))
                 mod_restricted_add_menu_sub_element(array(
                     "key"           => "documents"
                     , "subkey"      => "contracts_sent"
@@ -1812,7 +1808,7 @@ function system_layer_manage($cm)
                     , "label"       => ffTemplate::_get_word_by_code("contracts_sent")
                 ));
 
-	        if(AREA_ECOMMERCE_SHOW_PASSIVITY)
+	        if(Auth::env("AREA_ECOMMERCE_SHOW_PASSIVITY"))
                 mod_restricted_add_menu_sub_element(array(
                     "key"           => "documents"
                     , "subkey"      => "contracts_received"
@@ -1822,7 +1818,7 @@ function system_layer_manage($cm)
 	    }
 	}
 	//Reports
-	if(AREA_ECOMMERCE_SHOW_REPORT && AREA_REPORT_SHOW_MODIFY) {
+	if(Cms::env("AREA_ECOMMERCE_SHOW_REPORT") && Auth::env("AREA_REPORT_SHOW_MODIFY")) {
         mod_restricted_add_menu_child(array(
             "key"       => "reports"
             , "path"    => VG_WS_ECOMMERCE . "/reports"
@@ -1845,7 +1841,7 @@ function system_layer_manage($cm)
 	    }
 	}
 	//Shipping
-	if(AREA_ECOMMERCE_USE_SHIPPING && AREA_ECOMMERCE_SHIPPINGPRICE_SHOW_MODIFY) {
+	if(Cms::env("AREA_ECOMMERCE_USE_SHIPPING") && Auth::env("AREA_ECOMMERCE_SHIPPINGPRICE_SHOW_MODIFY")) {
         mod_restricted_add_menu_child(array(
             "key"       => "shipping"
             , "path"    => VG_WS_ECOMMERCE . "/shipping"

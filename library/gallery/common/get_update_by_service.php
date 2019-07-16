@@ -75,9 +75,9 @@ function get_update_by_service_html($updater_data, $action_url = null) {
   	if(is_array($updater_data) && count($updater_data)) {
   		foreach($updater_data AS $key => $value) {
 			$html_content .= '
-				<div class="panel ' . cm_getClassByFrameworkCss(array(6,6,4,3), "col") . ' ' . cm_getClassByFrameworkCss("align-center", "util") . '">
-					<a class="' . cm_getClassByFrameworkCss("file", "icon", "12x") . '" href="javascript:void(0);" onclick="' . $action_url . '" rel="' . $value["name"] . '" title="' . $value["public_description"] . '">
-						<h3 class="' . cm_getClassByFrameworkCss("text-nowrap", "util") . '">' . ucwords(str_replace("-", " ", $value["name"])) . '</h3> 
+				<div class="panel ' . Cms::getInstance("frameworkcss")->get(array(6,6,4,3), "col") . ' ' . Cms::getInstance("frameworkcss")->get("align-center", "util") . '">
+					<a class="' . Cms::getInstance("frameworkcss")->get("file", "icon", "12x") . '" href="javascript:void(0);" onclick="' . $action_url . '" rel="' . $value["name"] . '" title="' . $value["public_description"] . '">
+						<h3 class="' . Cms::getInstance("frameworkcss")->get("text-nowrap", "util") . '">' . ucwords(str_replace("-", " ", $value["name"])) . '</h3> 
 					</a>
 					' . ($value["public_link_doc"] 
 						? '<a href="' . $value["public_link_doc"] . '" target="_blank">' . ffTemplate::_get_word_by_code("public_doc_more") . '</a>'
@@ -87,9 +87,9 @@ function get_update_by_service_html($updater_data, $action_url = null) {
   		}
   	}
 
-	$html_content .= '<div class="panel ' . cm_getClassByFrameworkCss(array(6,6,4,3), "col") . ' ' . cm_getClassByFrameworkCss("align-center", "util") . '">
-  						<a class="' . cm_getClassByFrameworkCss("file-o", "icon", "12x") . '" href="javascript:void(0);" onclick="' . $action_url . '" rel="" title="' . ffTemplate::_get_word_by_code("public_create_new") . '">
-							<h3 class="' . cm_getClassByFrameworkCss("text-nowrap", "util") . '">' . ffTemplate::_get_word_by_code("public_create_new") . '</h3> 
+	$html_content .= '<div class="panel ' . Cms::getInstance("frameworkcss")->get(array(6,6,4,3), "col") . ' ' . Cms::getInstance("frameworkcss")->get("align-center", "util") . '">
+  						<a class="' . Cms::getInstance("frameworkcss")->get("file-o", "icon", "12x") . '" href="javascript:void(0);" onclick="' . $action_url . '" rel="" title="' . ffTemplate::_get_word_by_code("public_create_new") . '">
+							<h3 class="' . Cms::getInstance("frameworkcss")->get("text-nowrap", "util") . '">' . ffTemplate::_get_word_by_code("public_create_new") . '</h3> 
   						</a>
   					</div>';
     

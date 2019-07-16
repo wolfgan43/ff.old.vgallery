@@ -24,7 +24,7 @@
  * @link https://github.com/wolfgan43/vgallery
  */
     
-    if (!AREA_SERVICES_SHOW_MODIFY) {
+    if (!Auth::env("AREA_SERVICES_SHOW_MODIFY")) {
         ffRedirect(FF_SITE_PATH . substr($cm->path_info, 0, strpos($cm->path_info . "/", "/", 1)) . "/login?ret_url=" . urlencode($cm->oPage->getRequestUri()) . "&relogin");
     }
 
@@ -74,4 +74,4 @@
     $type_field["mndLnkColorOver"] = "String";
 
 	if(check_function("system_services_modify"))
-		system_services_modify(basename(ffCommon_dirname(ffCommon_dirname(__FILE__))), $type_field);
+		system_services_modify(basename(ffCommon_dirname(__DIR__)), $type_field);

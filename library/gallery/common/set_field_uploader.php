@@ -25,63 +25,27 @@
  */
 	function set_field_uploader($component) {
 		$cm = cm::getInstance();
-		$html5_enabled = global_settings("ENABLE_HTML5");
-		
-		static $dialog_loaded = false;
-		
+
 		switch($component->widget) {
+            case "uploadifive":
 			case "uploadify":
-				if($html5_enabled) {
-					$component->widget = "uploadifive";
-				}
+                $component->widget = "uploadifive";
 				break;
+            case "kcuploadifive":
 			case "kcuploadify":
-				if($html5_enabled) {
-					$component->widget = "kcuploadifive";
-				}
+                $component->widget = "kcuploadifive";
 				break;
+            case "ckuploadifive":
 			case "ckuploadify":
-				if($html5_enabled) {
-					$component->widget = "ckuploadifive";
-				}
+                $component->widget = "ckuploadifive";
 				break;
-			case "uploadifive":
-				if(!$html5_enabled) {
-					$component->widget = "uploadify";
-				}
-				break;
-			case "kcuploadifive":
-				if(!$html5_enabled) {
-					$component->widget = "kcuploadify";
-				}
-				break;
-			case "ckuploadifive":
-				if(!$html5_enabled) {
-					$component->widget = "ckuploadify";
-				}
-				break;
-			default:				
+			default:
 		}
 		
 		$component->file_show_edit = true; 
         if(strpos($component->widget, "five") !== false) {
-            if(!$dialog_loaded) {
-            	$dialog_loaded = "showfilesManage";
-		        $cm->oPage->widgetLoad("dialog");
-				$cm->oPage->widgets["dialog"]->process(
-					 $dialog_loaded
-					, array(
-				        "title"          => $component->label
-						, "tpl_id"        => null
-					)
-					, $cm->oPage
-				);        
-			}
-			$component->file_modify_path = get_path_by_rule("seo");
-			$component->file_modify_dialog = $dialog_loaded;
-			$component->uploadifive_sort_path = get_path_by_rule("services") . "/sort";
+			$component->file_sortable = true;
 
-			$component->file_edit_type = "Aviary";
 			if(check_function("get_webservices")) {
 				$services_params = get_webservices("img.aviary");
 

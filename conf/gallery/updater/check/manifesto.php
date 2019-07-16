@@ -185,42 +185,7 @@
                     $manifesto["ff_theme/" . basename($relative_path)]["type"] = "Framework Theme";
                     $manifesto["ff_theme/" . basename($relative_path)]["path"][] = $relative_path;
                     $manifesto["ff_theme/" . basename($relative_path)]["db"] = array();
-                    
-                    if(file_exists(FF_DISK_PATH . $relative_path . "/theme_settings.xml")) {
-                        $theme_settings = new SimpleXMLElement(FF_DISK_PATH . $relative_path . "/theme_settings.xml", null, true);
-                        if (isset($theme_settings->default_css) && count($theme_settings->default_css)) {
-                            foreach ($theme_settings->default_css->children() as $key => $value) {
-                                if(strlen((string)$value->path) && strlen((string)$value->file) && strpos((string)$value->path, "/themes/library/plugins") === 0) {
-                                    $manifesto["ff_theme/" . basename($relative_path)]["dep"][] = "external_plugin/" . basename((string)$value->path);
-                                    if($manifesto["ff_theme/" . basename($relative_path)]["enable"])                                
-                                        $manifesto_dep["external_plugin/" . basename((string)$value->path)] = true;
-                                }
-                            }
-                        }
-                        if (isset($theme_settings->default_js) && count($theme_settings->default_js)) {
-                            foreach ($theme_settings->default_js->children() as $key => $value) {
-                                if(strlen((string)$value->path) && strlen((string)$value->file) && strpos((string)$value->path, "/themes/library/plugins") === 0) {
-                                    $manifesto["ff_theme/" . basename($relative_path)]["dep"][] = "external_plugin/" . basename((string)$value->path);
-                                    if($manifesto["ff_theme/" . basename($relative_path)]["enable"])
-                                        $manifesto_dep["external_plugin/" . basename((string)$value->path)] = true;
-                                }
-                            }
-                        }
-                        if (isset($theme_settings->default_jqueryui_theme) && count($theme_settings->default_jqueryui_theme)) {
-                            foreach ($theme_settings->default_jqueryui_theme->children() as $key => $value) {
-                                $attrs = $value->attributes();
-                                if(strlen((string)$attrs["name"])) {
-                                    $theme_ui = (string)$attrs["name"];
-                                } else {
-                                    $theme_ui = $key;
-                                }
-                                
-                                $manifesto["ff_theme/" . basename($relative_path)]["dep"][] = "jqueryui_theme/" . $theme_ui;
-                                if($manifesto["ff_theme/" . basename($relative_path)]["enable"])
-                                    $manifesto_dep["jqueryui_theme/" . $theme_ui] = true;
-                            }
-                        }
-                    }
+
                 }
             }
         }

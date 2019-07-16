@@ -9,8 +9,8 @@ else
 
 if(!defined("__TOP_DIR__"))
 	define("__TOP_DIR__"												, FF_DISK_PATH);
-if(!defined("CM_CACHE_PATH"))
-	define("CM_CACHE_PATH"												, FF_DISK_PATH . "/cache");
+if(!defined("CM_CACHE_DISK_PATH"))
+	define("CM_CACHE_DISK_PATH"												, FF_DISK_PATH . "/cache");
 /**********************************************************************************************************************
  * Config Framework and VGallery
  **********************************************************************************************************************/

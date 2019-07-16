@@ -72,7 +72,7 @@
     }
 
     function cache_get_page_by_id($id) {
-    	$page = cache_get_settings("page");
+    	$page = Cms::getSchema("page");
 
     	if(isset($page["/" . $id]))
             return "/" . $id;
@@ -89,8 +89,8 @@
     		if(is_file(FF_DISK_PATH . "/themes/site/settings.php")) {
     			require(FF_DISK_PATH . "/themes/site/settings.php");
     		}
-    		if(is_file(CM_CACHE_PATH . "/locale.php")) {
-    			require(CM_CACHE_PATH . "/locale.php");
+    		if(is_file(CM_CACHE_DISK_PATH . "/locale.php")) {
+    			require(CM_CACHE_DISK_PATH . "/locale.php");
 
                 /** @var include $locale */
                 $schema["locale"] = $locale;
@@ -115,7 +115,7 @@
 
     function cache_get_page_properties($user_path, $skip_locale = false) {
         //require(CACHE_DISK_PATH . "/library/gallery/settings.php");
-        $schema = cache_get_settings();
+        $schema = Cms::getSchema();
 
 		//strippa il path di base per la cache
 		if(is_array($schema["alias"]) && count($schema["alias"])) {
@@ -131,7 +131,7 @@
 				}
 
 				if($resAlias["alias"] != "/") {
-					$arrLocale = cache_get_settings("locale");
+					$arrLocale = Cms::getSchema("locale");
 					if($arrLocale["rev"]["lang"][basename($resAlias["alias"])]) {
 						$lang = $arrLocale["rev"]["lang"][basename($resAlias["alias"])];
 					} else {
@@ -230,7 +230,7 @@
     }
 
 	function cache_token_write($u, $objToken = null, $type = null) {
-		//$file_token_dir = CACHE_DISK_PATH . "/cache/token";
+		//$file_token_dir = CACHE_DISK_PATH . "/token";
 
 		if(is_array($objToken)) {
 			cache_token_set_session_cookie($objToken);
@@ -284,27 +284,22 @@
     	return $res;
     }
 
-	function cache_token_create($user_permission = null, $expire = null, $renew = true, $precision = 8) {
+	function cache_token_create($user = null, $expire = null, $renew = true, $precision = 8) {
 		$u = array();
 		$token_user = "t";
 
-		if(!$user_permission) {
-           // require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
-
-			$user_permission = $_SESSION[APPID . "user_permission"];
+		if(!$user) {
+            $user = Auth::get("user");
 		}
-		$uid = $user_permission["ID"];
-		$account = ($user_permission["username_slug"]
-			? $user_permission["username_slug"]
-			: ($user_permission["username"]
-				? cache_url_rewrite($user_permission["username"])
-				: cache_url_rewrite($user_permission["email"])
+		$uid = $user->id;
+		$account = ($user->username_slug
+			? $user->username_slug
+			: ($user->username_slug
+				? cache_url_rewrite($user->username)
+				: cache_url_rewrite($user->email)
 			)
 		);
-		$gid = ($user_permission["primary_gid_name"]
-					? $user_permission["primary_gid_name"]
-					: $user_permission["primary_gid_default_name"]
-				);
+		$gid = $user->acl_primary;
 
 		$objToken = cache_token_generate($account, $precision, $expire, $renew);
 
@@ -323,29 +318,23 @@
 
 		return $objToken["token"];
 	}
-	function cache_token_repair($token, $user_permission = null, $expire = null, $renew= true, $precision = 8) {
+	function cache_token_repair($token, $user = null, $expire = null, $renew= true, $precision = 8) {
 		$u = array();
 		$token_user = "t";
-		if(!$user_permission) {
-			// require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
-
-			$user_permission = $_SESSION[APPID . "user_permission"];
-		} elseif(!is_array($user_permission)) {
-			//todo: da fare con l'anagraph class
-			$user_permission = mod_security_get_user_data($user_permission, array("groups" => true));
+        if(!$user) {
+            $user = Auth::get("user");
+        } elseif(!is_array($user)) {
+			$user = Auth::get("user", array("ID_user" => $user));
 		}
-		$uid = $user_permission["ID"];
-		$account = ($user_permission["username_slug"]
-			? $user_permission["username_slug"]
-			: ($user_permission["username"]
-				? cache_url_rewrite($user_permission["username"])
-				: cache_url_rewrite($user_permission["email"])
+		$uid = $user->id;
+		$account = ($user->username_slug
+			? $user->username_slug
+			: ($user->username
+				? cache_url_rewrite($user->username)
+				: cache_url_rewrite($user->email)
 			)
 		);
-		$gid = ($user_permission["primary_gid_name"]
-			? $user_permission["primary_gid_name"]
-			: $user_permission["primary_gid_default_name"]
-		);
+		$gid = $user->acl_primary;
 
 		if(!$expire)
 			$expire = time() + (60 * 60 * 24 * 365);
@@ -435,7 +424,7 @@
     }
 
 	function cache_token_get_file_token($public_token, $type = null, $create_dir = false) {
-		$dir_token = CM_CACHE_PATH . "/token";
+		$dir_token = CM_CACHE_DISK_PATH . "/token";
 		switch($type) {
 			case "t":
 				$step = "/" . substr($public_token, 0, 3);
@@ -455,7 +444,7 @@
 		$u = array();
 
 		if($token) {
-			$file = FF_DISK_PATH . "/cache/token/" . substr($token, 0, 3) . "/" . substr($token, 0, 11) . ".php";
+			$file = CM_CACHE_DISK_PATH . "/token/" . substr($token, 0, 3) . "/" . substr($token, 0, 11) . ".php";
 			if (is_file($file))
 				require $file;
 
@@ -466,7 +455,7 @@
 	}
 	function cache_check_session_by_token($token = null) {
 		static $user = null;
-		//$dir_token = CM_CACHE_PATH . "/token";
+		//$dir_token = CM_CACHE_DISK_PATH . "/token";
         $token_user = "t";
 
 		if(!$user) {
@@ -600,18 +589,16 @@
 	}
 
 	function cache_get_permission($username, $type = "perm") {
-		$file_permission = CM_CACHE_PATH . "/cfg/" . $type . "/" . $username . ".php";
+		$file_permission = CM_CACHE_DISK_PATH . "/cfg/" . $type . "/" . $username . ".php";
 
 		if(is_file($file_permission)) {
 			require($file_permission);
 		}
 		switch($type) {
 			case "perm":
-                /** @var include $user_permission */
                 $res = $user_permission;
 				break;
 			case "gid":
-                /** @var include $permissions */
                 $res = $permissions;
 				break;
 			default:
@@ -677,7 +664,6 @@
 
 					$_SESSION[APPID . "user_permission"] 	= $user_permission;
 
-					define("MOD_SECURITY_SESSION_STARTED"	, true);
 				}
 			}
 		}
@@ -761,7 +747,7 @@
                 $arrLocale["country"]     = $user_permission["country"];
                 $arrLocale["rev"]         = $user_permission["rev"];
             } else {
-            	$arrLocale = cache_get_settings("locale");
+            	$arrLocale = Cms::getSchema("locale");
 			}
 
 			if(is_array($arrLocale["lang"][LANGUAGE_DEFAULT])) {
@@ -879,7 +865,6 @@
 
                 require_once(FF_DISK_PATH . "/library/gallery/common/get_international_settings_path.php");
                 require_once(FF_DISK_PATH . "/library/gallery/common/normalize_url.php");
-                require_once(FF_DISK_PATH . "/library/gallery/common/write_notification.php");
                 require_once(FF_DISK_PATH . "/library/gallery/process/html_page_error.php");
 
                 $res = get_international_settings_path($page["user_path"], FF_LOCALE);
@@ -989,7 +974,6 @@
                     	case "_ffq_":
 						case "__nocache__":
 						case "__debug__":
-						case "__query__":
 							unset($res["request"][$req_key]);
                     		break;
                         case "gclid": //params di google adwords e adsense
@@ -1114,14 +1098,16 @@
 
             //ricava la query valida
             if($_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest") {
-                if(!(defined("DEBUG_MODE") && (isset($get["__nocache__"]) || isset($get["__debug__"]) || isset($get["__query__"])))) {
+                if(!(defined("DEBUG_MODE") && (isset($get["__nocache__"]) || isset($get["__debug__"])))) {
+                    $res["valid"] = (is_array($res["get"]["query"]) && count($res["get"]["query"])
+                        ? "?" . implode("&", $res["get"]["query"])
+                        : ""
+                    );
+
                     if(is_array($res["get"]["invalid"]) && count($res["get"]["invalid"])
                         || ($rule["get"] === false && count($get) != count($res["get"]["query"]))
                     ) {
-                        $res["valid"] = (is_array($res["get"]["query"]) && count($res["get"]["query"])
-                            ? "?" . implode("&", $res["get"]["query"])
-                            : ""
-                        );
+                        $res["redirect"] = true;
                     }
                 }
             }
@@ -1743,10 +1729,10 @@
                      return false;
              }*/
             //define("CACHE_PAGE_STORING_PATH", $cache_file["cache_path"] . "/" . $cache_file["filename"]);
-            if(!$cache_file["is_error_document"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
+            /*if(!$cache_file["is_error_document"] && $_SERVER["HTTP_X_REQUESTED_WITH"] != "XMLHttpRequest" && TRACE_VISITOR === true) {
                 require_once(FF_DISK_PATH . "/library/gallery/system/trace.php");
                 system_trace("pageview");
-            }
+            }*/
 
             $enable_etag = $lang . "_". $group;
 
@@ -1876,8 +1862,6 @@
             if(strpos($domain_name, ":") !== false)
             	$domain_name = substr($domain_name, 0, strpos($domain_name, ":"));
 
-            //cache_get_locale($page["user_path"], $domain_name, $user_permission);
-
             if($cache_path)
                 $cache_base = "/cache" . "/" . $domain_name . "/" . strtolower(FF_LOCALE) . $cache_path;
 
@@ -1902,8 +1886,9 @@
 
     function cache_sem_get_params($namespace = null, $xhr = null) {
     	//require_once(FF_DISK_PATH . "/conf/gallery/config/session.php");
-    	if(!defined("APPID_SEM"))
-    		define("APPID_SEM", substr(preg_replace("/[^0-9 ]/", '', APPID), 0, 4));
+    	if(!defined("APPID_SEM")) {
+            define("APPID_SEM", substr(crc32(APPID), 0, 4));
+        }
 
 		$max = 1;
 		$remove = false;
@@ -1942,7 +1927,7 @@
 
      function cache_sem($namespace = null, $nowait = false, $max = null) {
      	$acquired = true;
-     	if(defined("DISABLE_CACHE"))
+     	if(DISABLE_CACHE === true)
 			return array("acquired" => true); //nn funziona
 
 		if(function_exists("sem_get")) {
@@ -1967,7 +1952,7 @@
 						, "max" => $max
 						, "key" => $params["key"]
 						, "remove" => $params["remove"]
-					), true), "log_sem");
+					), true), "sem");
 				} else {
 					cache_sem_remove($namespace);
 					Cache::log($namespace . " ERROR: " . print_r(error_get_last(), true), "log_error_sem");
@@ -1992,7 +1977,7 @@
     					if($sem["remove"] && $released !== false)
 					    	$removed = @sem_remove($sem["res"]);
 
-						Cache::log("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "log_sem");
+						Cache::log("Release:" . $released . " " . ($sem["remove"] && $released !== false ? "Removed: " . $removed . " " : "") . $message . " of: " . print_r($sem, true) . ($released === false ? " ERROR: " . print_r(error_get_last(), true) : ""), "sem");
 
 					    unset($arrSem[$key]);
 					}
@@ -2007,14 +1992,14 @@
 			$sem = @sem_get($params["key"]);
 			if($sem) {
 				$is_removed = @sem_remove($sem);
-				Cache::log("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+				Cache::log("ID: " . $params["key"] . " namespace: " . $namespace . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 			}
 			if($namespace != "create") {
 				$params = cache_sem_get_params("create");
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "create" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 			}
 			if($namespace != "update") {
@@ -2022,7 +2007,7 @@
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "update" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 			}
 			if($namespace) {
@@ -2030,14 +2015,14 @@
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 
 				$params = cache_sem_get_params(null, true);
 				$sem = @sem_get($params["key"]);
 				if($sem) {
 					$is_removed = @sem_remove($sem);
-					Cache::log("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "log_sem");
+					Cache::log("ID: " . $params["key"] . " namespace: " . "default XHR" . " " . ($is_removed ? "REMOVED" : "NO EXIST"), "sem");
 				}
 			}
 		}
@@ -2055,7 +2040,7 @@
 
     function cache_check_allowed_path($path_info, $do_redirect = true)
     {
-        $schema = cache_get_settings();
+        $schema = Cms::getSchema();
 
         if(is_array($schema["error"]["rules"]) && count($schema["error"]["rules"]))
         {
@@ -2127,8 +2112,8 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 	if(strlen($query))
 		$request_uri .= "?" . $query;
 
-	if(is_file(CM_CACHE_PATH . "/redirect/" . $hostname . ".php")) {
-		require(CM_CACHE_PATH . "/redirect/" . $hostname . ".php");
+	if(is_file(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php")) {
+		require(CM_CACHE_DISK_PATH . "/redirect/" . $hostname . ".php");
 
 		/** @var include $r */
 		if($r[$request_uri]) {
@@ -2219,7 +2204,7 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 
         $cache_params = cache_get_path(cache_get_page_properties($path_info));
 		if(is_array($cache_params)) { //da verificare il nocache
-            $schema = cache_get_settings();
+            $schema = Cms::getSchema();
 
             $rule["path"] = $cache_params["user_path"];
 
@@ -2254,7 +2239,7 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
 	        $request = cache_get_request($_GET, $_POST, $rule["match"]);
 	        if($request["nocache"]) {
 	            $cache_params = false;
-	        } elseif(isset($request["valid"])) {
+	        } elseif(isset($request["redirect"])) {
 	            $path_info = $_SERVER["PATH_INFO"];
 	            if($path_info == "/index")
 	                $path_info = "";
@@ -2274,9 +2259,9 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
                 cache_http_response_code(500);
 			} else {
 				$cache_media["url"] = "/media";
-				$cache_media["path"] = "/cache/_thumb";
-				$cache_media["theme_dir"] = "/themes";
-				$cache_media["theme"] = "site";
+				//$cache_media["path"] = ffMedia::STORING_SITE_PATH;
+				//$cache_media["theme_dir"] = "/themes";
+				//$cache_media["theme"] = "site";
 
 				if(strpos($_SERVER["REQUEST_URI"], $cache_media["url"]) === 0) {
 					cache_do_redirect(str_replace("/media", $_SERVER["HTTP_HOST"] . "/cm/showfiles.php", $_SERVER["REQUEST_URI"]), 307);
@@ -2320,7 +2305,7 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
                 }
             } elseif($cache_file["noexistfileerror"]) {
                 $arrSem[] = cache_sem($cache_file["error_path"]);
-            } elseif(!defined("DISABLE_CACHE")) {
+            } elseif(DISABLE_CACHE !== true) {
                 if(is_array($schema["priority"]) && array_search($path_info, $schema["priority"]) !== false) {
                     @touch($cache_file["cache_path"] . "/" . $cache_file["primary"], time() + 10); //evita il multi loading di pagine in cache
 					Cache::log($cache_file["cache_path"] . "/" . $cache_file["primary"] . "  " . filemtime($cache_file["cache_path"] . "/" . $cache_file["primary"]) . " => " . (time() + 10), "update_primary");
@@ -2400,7 +2385,7 @@ function cache_check_redirect($path_info, $query = null, $hostname = null)
         cache_sem_release($arrSem);
 
 
-        if(!defined("DISABLE_CACHE"))
+        if(DISABLE_CACHE !== true)
         {
             if($cache_file["is_error_document"])
             {
@@ -2429,7 +2414,7 @@ function cache_writeLog($string, $filename = "log") {
 	//require_once(__DIR__ . "/conf/gallery/config/other.php");
 
 	if(DEBUG_LOG === true) {
-		$log_path = FF_DISK_PATH . '/cache/logs';
+		$log_path = CM_CACHE_DISK_PATH . '/logs';
 		if(!is_dir($log_path))
 			mkdir($log_path, 0777, true);
 

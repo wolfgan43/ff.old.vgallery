@@ -26,7 +26,7 @@
  $globals = ffGlobals::getInstance("gallery");
  
 if($_REQUEST["out"] == "html") {
-	$cm->oPage->use_own_form = true;
+	//$cm->oPage->use_own_form = true;
 	$cm->oPage->template_file = "ffPage.html";
 }
 //ffErrorHandler::raise("sdf", E_USER_ERROR, get_defined_vars());
@@ -109,7 +109,7 @@ if(is_array($sys["module"]) && count($sys["module"]))
 			/**
 			* Admin Father Bar
 			*/                    
-            if(AREA_MODULES_SHOW_MODIFY) {
+            if(Auth::env("AREA_MODULES_SHOW_MODIFY")) {
                 $admin_menu["admin"]["unic_name"] = $module_value["layout"]["prefix"] . $module_value["layout"]["ID"];
                 $admin_menu["admin"]["title"] = $layout_value["title"] . ": " . $user_path;
                 $admin_menu["admin"]["class"] = $layout_value["type_class"];
@@ -123,7 +123,7 @@ if(is_array($sys["module"]) && count($sys["module"]))
                 $admin_menu["admin"]["ecommerce"] = "";
                 $admin_menu["admin"]["layout"] = "";
                 $admin_menu["admin"]["setting"] = ""; //$layout_value["type"];
-                if(MODULE_SHOW_CONFIG) {
+                if(Auth::env("MODULE_SHOW_CONFIG")) {
                     $admin_menu["admin"]["module"]["value"] = strtolower($module_key);
                     $admin_menu["admin"]["module"]["params"] = $module_value["layout"]["ID"];
 
@@ -185,7 +185,7 @@ elseif(isset($sys["type"]))
             break;
 		case "GALLERY_MENU_CHILD":       //da eliminare
 			if(check_function("process_gallery_menu_child"))
-				$frame_buffer = process_gallery_menu_child($user_path, $sys["source_user_path"], $sys["real_user_path"], $sys["layout"], ($sys["is_absolute"] ? FF_DISK_PATH : DISK_UPDIR), $sys["skip_control"]);
+				$frame_buffer = process_gallery_menu_child($user_path, $sys["source_user_path"], $sys["real_user_path"], $sys["layout"], ($sys["is_absolute"] ? FF_DISK_PATH : FF_DISK_UPDIR), $sys["skip_control"]);
 			break;
 		case "VGALLERY_MENU_CHILD":
 			if(check_function("process_vgallery_menu_child"))
@@ -495,8 +495,14 @@ elseif(strlen($settings_path))
 						$layout["css"] 													= $db->getField("css", "Text", true);
 						$layout["visible"] 												= $db->getField("visible", "Text", true);
 						if($layout["visible"]) {
-							if(check_function("get_layout_settings"))
-								$layout["settings"] = get_layout_settings($ID_layout, $type);
+                            $layout["settings"] = Cms::getPackage($layout["smart_url"]);
+                            if(!$layout["settings"]) {
+                                $layout["settings"] = Cms::getPackage($layout["type"]);
+                            }
+
+							/*if(check_function("get_layout_settings"))
+								$layout["settings"] = get_layout_settings($ID_layout, $type);*/
+
 							$layout["ajax"] = false;
 							$layout["db"]["value"] = $layout["value"];
 							$layout["db"]["params"] = $layout["params"];
@@ -613,7 +619,7 @@ elseif(strlen($settings_path))
 if(strlen($globals->frame_smart_url)) {
 	if($_REQUEST["out"] == "html") {
 		if($is_framework) {
-			$cm->oPage->use_own_js = true;
+			//$cm->oPage->use_own_js = true;
 
 			$js_struct = '
 				ff.load("ff.ajax", function() {

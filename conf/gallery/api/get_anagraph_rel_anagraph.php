@@ -150,7 +150,7 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
         
         $sSQL_field = "";  
         if(is_array($arrFormField) && count($arrFormField)) {
-            foreach($arrFormField AS $$arrFormField_key => $arrFormField_value) {
+            foreach($arrFormField AS $arrFormField_key => $arrFormField_value) {
                 $sSQL_field .= ", (SELECT 
                                     GROUP_CONCAT(IF(anagraph_rel_nodes_fields.`description_text` = ''
                                             , anagraph_rel_nodes_fields.`description`
@@ -175,7 +175,7 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
         }
     }
 
-    $user_permission = get_session("user_permission");
+    $user = Auth::get("user");
     $sSQL = "SELECT anagraph_categories.ID
                     , anagraph_categories.name
                     , anagraph_categories.limit_by_groups 
@@ -183,12 +183,13 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
             ORDER BY anagraph_categories.name";
     $db->query($sSQL);
     if($db->nextRecord()) {
+        $allowed_ana_cat = "";
         do {
             $limit_by_groups = $db->getField("limit_by_groups")->getValue();
             if(strlen($limit_by_groups)) {
                 $limit_by_groups = explode(",", $limit_by_groups);
                 
-                if(count(array_intersect($user_permission["groups"], $limit_by_groups))) {
+                if(array_search($user->acl, $limit_by_groups) !== false) {
                     if(strlen($allowed_ana_cat))
                         $allowed_ana_cat .= ",";
 
@@ -210,7 +211,7 @@ function api_get_anagraph_rel_anagraph($limit_data = null, $params = null, $sort
                 , " . CM_TABLE_PREFIX . "mod_security_users.avatar
                 , anagraph.avatar
             ) AS avatar
-            , (" . (AREA_ECOMMERCE_SHIPPING_LIMIT_STATE > 0
+            , (" . (Cms::env("AREA_ECOMMERCE_SHIPPING_LIMIT_STATE") > 0
                 ? "''"
                 : "IF(anagraph.billstate > 0
                             , (SELECT
