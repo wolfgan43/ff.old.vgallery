@@ -419,13 +419,14 @@ if($record["noentry"]) {
 
         if(Cms::env("AREA_SHOW_ECOMMERCE")) {
             $sSQL_file = "
-				) UNION ( 
+			    UNION ( 
 					SELECT 
 						name AS nameID
 						, name AS name
 						, (SELECT vgallery_fields_data_type.ID FROM vgallery_fields_data_type WHERE vgallery_fields_data_type.name = 'ecommerce.checkout') AS type 
 					FROM ecommerce_mpay
-					WHERE ecommerce_mpay.ecommerce > 0";
+					WHERE ecommerce_mpay.ecommerce > 0
+                )";
         }
 
 		$oRecord->addContent(null, true, $group_source); 
