@@ -43,6 +43,7 @@ $system_field = array(
     , "reference" => "bill"
     , "cf" => "bill"
     , "piva" => "bill"
+    , "sdi" => "bill"
     , "address" => "bill"
     , "cap" => "bill"
     , "town" => "bill"
